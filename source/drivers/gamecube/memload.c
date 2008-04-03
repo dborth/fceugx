@@ -62,12 +62,11 @@ int GCMemROM()
 		FCEU_ResetPalette();
 		FCEU_ResetMessages();	// Save state, status messages, etc.
 		SetSoundVariables();
-	    
      }
      else
      {
-         printf("Bad cartridge!");
-         while(1) {};
+		WaitPrompt("Bad cartridge!");
+        return -1;
      }
      
      return 0;;
