@@ -54,7 +54,8 @@ extern unsigned char GetAnalog(int Joy);
 
 #define MAXPAL 12
 
-#define SCROLLY 380
+#define SCROLLY 395
+#define SOFTRESET_ADR ((volatile u32*)0xCC003024)
 
 /* color palettes */
 struct
@@ -399,7 +400,7 @@ int configpadcount = 10;
 char padmenu[10][30] = { 
 	{ "NES BUTTON A - A" }, { "    BUTTON B - B" }, { "    START    - S" }, 
 	{ "    SELECT   - Z" }, { "    TURBO A  - X" }, { "    TURBO B  - Y" },
-	{ "    FOUR SCORE - OFF" }, { "  ANALOG CLIP - 70"}, { " TURBO SPEED - 30.00 pps" }, 
+	{ "    FOUR SCORE - OFF" }, { "  ANALOG CLIP - 40"}, { " TURBO SPEED - 30.00 pps" }, 
 	{ "Return to previous" } 
 };
 
@@ -507,6 +508,10 @@ void ConfigPAD()
                 padmenu[i][15] = PADMap( mpads[i], i );
 			}
 		}
+		
+        if ( j & PAD_BUTTON_B ) {
+            quit=1; return;
+        }
 
         if ( menu < 0 ) menu = configpadcount - 1;
 
@@ -596,6 +601,8 @@ int StateManager()
 					break;
 			}
 		}
+
+		if ( j & PAD_BUTTON_B ) quit = 1;
 
 		if ( menu < 0 )
 			menu = mccount - 1;
@@ -726,7 +733,8 @@ int VideoEnhancements()
 
 			}
 		}
-
+		
+		if ( j & PAD_BUTTON_B ) quit = 1;
 		if ( menu < 0 )
 			menu = vecount - 1;
 
@@ -793,7 +801,7 @@ void ShowROMInfo()
 
 	SetScreen();
 	
-    while ( !(PAD_ButtonsDown(0) & PAD_BUTTON_A ) )
+    while ( !(PAD_ButtonsDown(0) & (PAD_BUTTON_A | PAD_BUTTON_B)) )
     { VIDEO_WaitVSync(); }
 	
 }
@@ -802,10 +810,11 @@ void ShowROMInfo()
  * Media Select Screen
  ****************************************************************************/
  
-int mediacount = 4;
-char mediamenu[4][30] = { 
+int mediacount = 3;
+char mediamenu[3][30] = { 
 	{ "Load from DVD" }, { "Load from SDCARD"}, 
-	{ "Rom loading in SDCARD: SLOT A" }, { "Return to previous" } 
+	//{ "Rom loading in SDCARD: SLOT A" }, 
+	{ "Return to previous" } 
 };
 
 unsigned char msstext[][512] = {
@@ -815,7 +824,7 @@ unsigned char msstext[][512] = {
 	{ "How can You wait this long?! The games are waiting for You!!" }
 };
 
-int choosenSDSlot = 0;
+//int choosenSDSlot = 0;
 
 int MediaSelect()
 {
@@ -849,25 +858,27 @@ int MediaSelect()
 		if ( j & PAD_BUTTON_A ) {
 			redraw = 1;
 			switch ( menu ) {
-				case 0:	UseSDCARD = 0;
+				case 0:	UseSDCARD = 0; //DVD
 						OpenDVD();
 						return 1;
 						break;
 
-				case 1:	UseSDCARD = 1;
+				case 1:	UseSDCARD = 1; //SDCard
 						OpenSD();
 						return 1;
 						break;
-				case 2:
-						choosenSDSlot ^= 1;
+				/*case 2:	choosenSDSlot ^= 1; //Pick Slot
 						sprintf(mediamenu[2], (!choosenSDSlot) ? "Rom loading in SDCARD: SLOT A" : "Rom loading in SDCARD: SLOT B");						
-						break;
-				case 3: quit = 1;
+						break;*/
+				case 2: quit = 1; //Previous
 						break;
 
 				default: break ;
 			}
 		}
+
+		if ( j & PAD_BUTTON_B )
+			quit = 1;
 
 		if ( menu == mediacount  )
 			menu = 0;		
@@ -898,8 +909,8 @@ char credits[12][512] = {
 	{ "Misc. addons by KruLLo" },
 	{ "Extras features Askot" },
 	{ "Thank you to" },
-	{ "brakken, mithos, luciddream, HonkeyKong" },
-	{ "... and everyone who supported v1.0!" } 
+	{ "brakken, mithos, luciddream, HonkeyKong," },
+	{ "dsbomb for bringing it to the Wii" },
 };
 
 void ShowCredits(){
@@ -927,24 +938,31 @@ void ShowCredits(){
 
 	SetScreen();
 	
-    while ( !(PAD_ButtonsDown(0) & PAD_BUTTON_A ) )
+    while ( !(PAD_ButtonsDown(0) & (PAD_BUTTON_A | PAD_BUTTON_B)) )
     { VIDEO_WaitVSync(); }
 	
 }
 /****************************************************************************
  * Configuration Screen
  ****************************************************************************/
-int configmenucount = 10;
-char configmenu[10][30] = { 
-	{ "Play Game" }, { "Game Information" }, { "Configure Joypads" }, 
-	{ "Video Options" }, { "Load new Game" }, { "Reset NES" }, 
-	{ "Stop DVD Motor" }, { "STATE Manager" }, { "PSO/SD Reload" } ,
+int configmenucount = 11;
+char configmenu[11][30] = { 
+	{ "Play Game" }, 
+        { "Reset NES" }, 
+        { "Load New Game" }, 
+        { "State Manager" }, 
+        { "ROM Information" }, 
+        { "Configure Joypads" }, 
+	{ "Video Options" }, 
+	{ "Stop DVD Motor" }, 
+        { "PSO/SD Reload" } ,
+        { "Reboot Gamecube" },	
 	{ "Credits" } 
 };
 
 unsigned char cstext[][512] = {
  	//ConfigScreen
-	{ "FCE Ultra GameCube Edition - Version 1.0.8 \"SUPER-DELUXE\" ;)" },
+	{ "FCE Ultra GameCube Edition - Version 1.0.9 \"SUPER-DELUXE\" ;)" },
 	{ "Press L + R anytime to return to this menu!" },
 	{ "Press START + B + X anytime for PSO/SD-reload" },
 	{ "* * *" },
@@ -960,7 +978,7 @@ int ConfigScreen()
 	short j;
 	int redraw = 1;
 	
-	int *psoid = (int *) 0x80001800;
+	//int *psoid = (int *) 0x80001800;
 	void (*PSOReload) () = (void (*)()) 0x80001800;
 
 	/*** Stop any running Audio ***/
@@ -1008,45 +1026,59 @@ int ConfigScreen()
 		if (j & PAD_BUTTON_A ) {
 			redraw = 1;
 			switch ( menu ) {
-				case 0:	quit = 1; break;
+				case 0:	// Play Game		
+					quit = 1; 
+					break;
 
-				case 1:	ShowROMInfo(); break;
+				case 1:	// Reset NES
+					ResetNES();
+					return 1;
+					break;
 
-				case 2:	ConfigPAD(); scrollerx = 320 - MARGIN; break;
+				case 2:	// Load new Game
+					//if (MediaSelect()) {
+					//	if (GCMemROM() >= 0) return 1;/* Fix by Garglub. Thanks! */
+					//}
+					MediaSelect();
+					scrollerx = 320 - MARGIN; 
+					break;
 
-				case 3:	if (VideoEnhancements())
-							return 2; 
-						scrollerx = 320 - MARGIN;
-						break;
+				case 3: // State Manager
+					if (StateManager()) return 2;
+					scrollerx = 320 - MARGIN;
+					break;
 
-				case 4:	if (MediaSelect()) {
-							GCMemROM(); /* Fix by Garglub. Thanks! */
-							return 1;
-						}
-						scrollerx = 320 - MARGIN;
-						break;
+				case 4:	// Game Information
+					ShowROMInfo(); 
+					break;
 
-				case 5: ResetNES();
-						return 1; 
-						break;
+				case 5: // COnfigure Joypads
+					ConfigPAD(); 
+					scrollerx = 320 - MARGIN; 
+					break;
 
-				case 6: ShowAction("Stopping Motor"); 
-						dvd_motor_off();
-						WaitPrompt("DVD Motor Stopped"); 
-						break;
+				case 6: // Video Options
+					if (VideoEnhancements()) return 2; 
+					scrollerx = 320 - MARGIN;
+					break;
 
-				case 7:	if (StateManager())
-							return 2;
-						scrollerx = 320 - MARGIN;
-						break;
+				case 7:	// Stop DVD Motor
+					ShowAction("Stopping Motor");
+					dvd_motor_off();
+ 					WaitPrompt("DVD Motor Stopped"); 
+ 					break;
 
-				case 8:	
+				case 8:	// PSO/SD Reload
 					PSOReload ();
-					break;
+ 					break;
 
-				case 9: 
-					ShowCredits();
-					break;
+				case 9: // Reboot
+                    *SOFTRESET_ADR = 0x00000000;
+                    break;
+
+				case 10: // Credits 
+ 					ShowCredits();
+ 					break;
 
 				default: break ;
 			}
@@ -1065,7 +1097,7 @@ int ConfigScreen()
 	
 	/*** Remove any still held buttons ***/
 	while(PAD_ButtonsHeld(0)) VIDEO_WaitVSync();
-	
+            
 	/*** Stop the DVD from causing clicks while playing ***/
 	uselessinquiry ();
 	
