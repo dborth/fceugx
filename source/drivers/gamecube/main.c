@@ -44,19 +44,10 @@ long long basetime;
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
-void (*PSOReload) () = (void (*)()) 0x80001800;
-
-static void reset_cb() {
-    PSOReload();
-}
-
-extern int WaitPromptChoice (char *msg, char *bmsg, char *amsg);
-int choosenSDSlot = 0;
-
 int main(int argc, char *argv[])
 {
+
   initDisplay();
-  SYS_SetResetCallback (reset_cb);
   InitialiseSound();
   SDCARD_Init ();
   
@@ -78,7 +69,6 @@ int main(int argc, char *argv[])
   cleanSFMDATA();
   GCMemROM();
 
-  choosenSDSlot = !WaitPromptChoice("Choose a SLOT to load Roms from SDCARD", "SLOT B", "SLOT A");
   ConfigScreen(); 
 
   while (1)

@@ -9,29 +9,12 @@ This new version have asako and _svpe_ lastest added options.
 Enjoy it!
 Askot.
 
-What's new [20080331]
-
-+[Askot]
-- Fixed/changed SDCARD slot selection for searching roms, at 
-  start you will be prompted for this option.
-- Code cleanup.
-
-+[dsbomb]
-- Added Wii mode support.
-- Give a "Bad cartridge" error instead of locking up.
-- Joystick fixes due to libogc r14's changed stick values
-- Rearranged menu to make more sense, and consistent with Snes9x
-- Add "Reboot" menu option
-- Removed "." directory from SD card listing, it's pointless
-- Expand DVD reading to DVD9 size (once DVDs are working again)
-- Added option to go back a menu by pressing B.
-
 What's new? Askot [20080326]
 - Added saving state in SD Card (State files will be saved in root of SDCARD).
-  *Note: I can't make it work to save in root:\fceu\saves, so help needed.
+  *Note: I can't make it work to save in root:\fceugc\saves, so help needed.
 - Added SDCARD slot selection for searching roms, meaning, you can search roms 
   from SDCARD SLOT A & SLOT B (Beta, meaning, buggy, but works).
-- For standarization, you must create folders root:\fceu\roms to read NES 
+- For standarization, you must create folders root:\fceugc\roms to read NES 
   roms files from SDCARD.
 - Added C-Left to call Menu.
 - Reading files from SD Card it's faster, now they're called from cache

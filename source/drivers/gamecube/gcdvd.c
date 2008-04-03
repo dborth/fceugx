@@ -59,7 +59,6 @@ int UseSDCARD = 0;
 sd_file * filehandle;
 char rootSDdir[SDCARD_MAX_PATH_LEN];
 int haveSDdir = 0;
-int sdslot = 0;
 
 /****************************************************************************
  * DVD Lowlevel Functions
@@ -200,7 +199,7 @@ unsigned int dvd_read(void *dst, unsigned int len, u64 offset)
         
     DCInvalidateRange ((void *) buffer, len);
 
-    if (offset < 0x57057C00 || (isWii == true && offset < 0x1FD3E0000LL)) // don't read past the end of the dvd
+    if (offset < 0x57057C00 || (isWii == true && offset < 0x118244F00LL)) // don't read past the end of the dvd
     {
         dvd[0] = 0x2E;
         dvd[1] = 0;
@@ -433,7 +432,7 @@ int updateSDdirname()
   int size=0;
   char *test;
   char temp[1024];
-//  char tmpCompare[1024];
+  char tmpCompare[1024];
 
    /* current directory doesn't change */
    if (strcmp(filelist[selection].filename,".") == 0) return 0; 
@@ -455,8 +454,9 @@ int updateSDdirname()
      rootSDdir[size] = 0;
 
 	 /* handles root name */
-	 //sprintf(tmpCompare, "dev%d:",choosenSDSlot);
-	 if (strcmp(rootSDdir, sdslot ? "dev1:":"dev0:") == 0)sprintf(rootSDdir,"dev%d:\\fceu\\..", sdslot); 
+	 sprintf(tmpCompare, "dev%d:",choosenSDSlot);
+	 if (strcmp(rootSDdir,tmpCompare) == 0)sprintf(rootSDdir,"dev%d:\\fceu\\..", choosenSDSlot); 
+	 //if (strcmp(rootSDdir,"dev0:") == 0) sprintf(rootSDdir,"dev0:\\fceu\\..");
 	 
      return 1;
    }
@@ -466,9 +466,9 @@ int updateSDdirname()
      if ((strlen(rootSDdir)+1+strlen(filelist[selection].filename)) < SDCARD_MAX_PATH_LEN) 
      {
        /* handles root name */
-	   //sprintf(tmpCompare, "dev%d:\\fceu\\..",choosenSDSlot);
-	   //if (strcmp(rootSDdir, tmpCompare) == 0) sprintf(rootSDdir,"dev%d:",choosenSDSlot);
-	   if (strcmp(rootSDdir, sdslot ? "dev1:\\fceu\\.." : "dev0:\\fceu\\..") == 0) sprintf(rootSDdir,"dev%d:",sdslot);
+	   sprintf(tmpCompare, "dev%d:\\fceu\\..",choosenSDSlot);
+	   if (strcmp(rootSDdir, tmpCompare) == 0) sprintf(rootSDdir,"dev%d:",choosenSDSlot);
+	   //if (strcmp(rootSDdir,"dev0:\\fceu\\..") == 0) sprintf(rootSDdir,"dev0:");
 	 
        /* update current directory name */
        sprintf(rootSDdir, "%s\\%s",rootSDdir, filelist[selection].filename);
@@ -490,7 +490,6 @@ int parseSDdirectory()
 {
   int entries = 0;
   int nbfiles = 0;
-  int numstored = 0;
   DIR *sddir = NULL;
 
   /* initialize selection */
@@ -505,16 +504,13 @@ int parseSDdirectory()
 
   while (entries)
   {
-    if (strcmp((const char*)sddir[nbfiles].fname, ".") != 0) { // Skip "." directory
-        memset (&filelist[numstored], 0, sizeof (FILEENTRIES));
-        strncpy(filelist[numstored].filename,(const char*)sddir[nbfiles].fname,MAXJOLIET);
-        filelist[numstored].filename[MAXJOLIET-1] = 0;
-        filelist[numstored].length = sddir[nbfiles].fsize;
-        filelist[numstored].flags = (char)(sddir[nbfiles].fattr & SDCARD_ATTR_DIR);
-        numstored++;
-    }
-    nbfiles++;
-    entries--;
+      memset (&filelist[nbfiles], 0, sizeof (FILEENTRIES));
+      strncpy(filelist[nbfiles].filename,(const char*)sddir[nbfiles].fname,MAXJOLIET);
+      filelist[nbfiles].filename[MAXJOLIET-1] = 0;
+	  filelist[nbfiles].length = sddir[nbfiles].fsize;
+	  filelist[nbfiles].flags = (char)(sddir[nbfiles].fattr & SDCARD_ATTR_DIR);
+      nbfiles++;
+      entries--;
   }
 
   free(sddir);
@@ -568,8 +564,7 @@ void ShowFiles( int offset, int selection )
  * Let user select another ROM to load
  ****************************************************************************/
 bool inSz = false;
-//#define PADCAL 70
-extern int PADCAL;
+#define PADCAL 70
 
 void FileSelector()
 {
@@ -807,7 +802,7 @@ int OpenDVD()
 {
 
 	int i, j;
-	int driveid=-99;
+	int driveid;//char debug[128];
 
 	haveSDdir = 0;
 	
@@ -817,6 +812,10 @@ int OpenDVD()
 
 	/*** Make sure it's one I now about ***/
 	if ( ( driveid != 4 ) && ( driveid != 6 ) && ( driveid != 8 ) ) {
+		/*sprintf(debug, "Unknown drive id! (%d) ... Halted", driveid);
+		WaitPrompt(debug);
+		return 0;*/
+		// if the driveid isn't 4, 6 or 8 we are running on a Wii
 		isWii = true;
 	}
 
@@ -889,12 +888,11 @@ int OpenDVD()
 	return 1;		
 }
 
+
 int OpenSD () 
 {
   UseSDCARD = 1;
   char msg[128];
-  
-  if (choosenSDSlot != sdslot) haveSDdir = 0;
   
   if (haveSDdir == 0)
   {
@@ -903,7 +901,7 @@ int OpenSD ()
  
      /* Reset SDCARD root directory */
 	 sprintf(rootSDdir,"dev%d:\\fceu\\roms",choosenSDSlot);
-	 sdslot = choosenSDSlot;
+     //sprintf(rootSDdir,"dev0:\\fceu\\roms");
  
 	 /* Parse initial root directory and get entries list */
 	 ShowAction("Reading Directory ...");

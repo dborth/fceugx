@@ -86,7 +86,7 @@ unsigned char DecodeJoy( unsigned short pp )
  * 
  * Additional check for Analog X/Y
  ****************************************************************************/
-int PADCAL = 40;
+int PADCAL = 70;
 
 unsigned char GetAnalog(int Joy)
 {
@@ -130,7 +130,7 @@ int GetJoy()
 	int t = 0;
 
 	void (*PSOReload)() = (void(*)())0x80001800;
-	
+
 	/*** Before checking anything else, look for PSOReload ***/
 	if ( PAD_ButtonsHeld(0) == ( PAD_BUTTON_B | PAD_BUTTON_X | PAD_BUTTON_START ) )
 		PSOReload();
@@ -138,7 +138,7 @@ int GetJoy()
 	/*** Look for config menu ***/
 	signed char px;
 	px = PAD_SubStickX (0); 
-	if (((px < -PADCAL)) || (PAD_ButtonsHeld(0) == ( PAD_TRIGGER_L | PAD_TRIGGER_R ))) {
+	if (((px < -70)) || (PAD_ButtonsHeld(0) == ( PAD_TRIGGER_L | PAD_TRIGGER_R ))) {
 		t = ConfigScreen();
 		if (t == 1) {
 			 return 1;

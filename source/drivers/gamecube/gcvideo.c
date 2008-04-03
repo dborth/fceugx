@@ -84,42 +84,6 @@ void WaitPrompt( char *msg )
         }
 }
 
-/**
- * Wait for user to press A or B. Returns 0 = B; 1 = A
- */
-int WaitButtonAB ()
-{
-    int btns;
-  
-    while ( (PAD_ButtonsDown (0) & (PAD_BUTTON_A | PAD_BUTTON_B)) );
-  
-    while ( TRUE )
-    {
-        btns = PAD_ButtonsDown (0);
-        if ( btns & PAD_BUTTON_A )
-            return 1;
-        else if ( btns & PAD_BUTTON_B )
-            return 0;
-    }
-}
-
-/**
- * Show a prompt with choice of two options. Returns 1 if A button was pressed
-   and 0 if B button was pressed.
- */
-int WaitPromptChoice (char *msg, char *bmsg, char *amsg)
-{
-  char choiceOption[80];  
-  sprintf (choiceOption, "B = %s   :   A = %s", bmsg, amsg);
-
-  ClearScreen ();  
-  WriteCentre(220, msg);
-  WriteCentre(220 + font_height, choiceOption);  
-  SetScreen ();
-  
-  return WaitButtonAB ();
-}
-
 void ShowAction( char *msg )
 {
         memcpy (xfb[whichfb], &backdrop, 1280 * 480);

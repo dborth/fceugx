@@ -239,7 +239,7 @@ int GCFCEUSS_Save()
 	static unsigned char header[16] = "FCS\xff";
 	char chunk[] = "CHKE";
 	int zero = 0;
-	char Comment[2][32] = { { "FCEU GC Version 1.0.9" }, { "A GAME" } };
+	char Comment[2][32] = { { "FCEU GC Version 1.0.8" }, { "A GAME" } };
 
 	memopen();	/*** Reset Memory File ***/
 
