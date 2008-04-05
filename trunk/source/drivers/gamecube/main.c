@@ -55,44 +55,44 @@ int choosenSDSlot = 0;
 
 int main(int argc, char *argv[])
 {
-  initDisplay();
-  SYS_SetResetCallback (reset_cb);
-  InitialiseSound();
-  SDCARD_Init ();
-  
-  /*** Minimal Emulation Loop ***/
-  if ( !FCEUI_Initialize() ) {
-     printf("Ooops - unable to initialize system\n");
-     return 1;
-  }
- 
-  palyo=0;
-  FCEUI_SetVidSystem(palyo);
-  genie&=1;
-  FCEUI_SetGameGenie(genie);
-  fullscreen&=1;
-  soundo&=1;
-  FCEUI_SetSoundVolume(soundvolume);
-  FCEUI_SetSoundQuality(soundquality);  
+    initDisplay();
+    SYS_SetResetCallback (reset_cb);
+    InitialiseSound();
+    SDCARD_Init ();
 
-  cleanSFMDATA();
-  GCMemROM();
+    /*** Minimal Emulation Loop ***/
+    if ( !FCEUI_Initialize() ) {
+        printf("Ooops - unable to initialize system\n");
+        return 1;
+    }
 
-  choosenSDSlot = !WaitPromptChoice("Choose a SLOT to load Roms from SDCARD", "SLOT B", "SLOT A");
-  ConfigScreen(); 
+    palyo=0;
+    FCEUI_SetVidSystem(palyo);
+    genie&=1;
+    FCEUI_SetGameGenie(genie);
+    fullscreen&=1;
+    soundo&=1;
+    FCEUI_SetSoundVolume(soundvolume);
+    FCEUI_SetSoundQuality(soundquality);  
 
-  while (1)
-  {
-  	uint8 *gfx;
-  	int32 *sound;
-  	int32 ssize;
+    cleanSFMDATA();
+    GCMemROM();
 
-         FCEUI_Emulate(&gfx, &sound, &ssize, 0);
-         xbsave = gfx;
-         FCEUD_Update(gfx, sound, ssize);              
-  }
-  
-  return 0;
+    choosenSDSlot = !WaitPromptChoice("Choose a SLOT to load Roms from SDCARD", "SLOT B", "SLOT A");
+    ConfigScreen(); 
+
+    while (1)
+    {
+        uint8 *gfx;
+        int32 *sound;
+        int32 ssize;
+
+        FCEUI_Emulate(&gfx, &sound, &ssize, 0);
+        xbsave = gfx;
+        FCEUD_Update(gfx, sound, ssize);              
+    }
+
+    return 0;
 }
 
 /****************************************************************************
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
 /*** File Control ***/
 FILE *FCEUD_UTF8fopen(const char *n, const char *m)
 {
-  return(fopen(n,m));
+    return(fopen(n,m));
 }
 
 /*** General Logging ***/
@@ -117,9 +117,9 @@ void FCEUD_Message(char *text)
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count)
 {
 
-     PlaySound(Buffer, Count);
-     RenderFrame( XBuf, screenscaler );
-     GetJoy(); /* Fix by Garglub. Thanks! */
+    PlaySound(Buffer, Count);
+    RenderFrame( XBuf, screenscaler );
+    GetJoy(); /* Fix by Garglub. Thanks! */
 
 }
 
