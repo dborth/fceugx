@@ -707,39 +707,6 @@ void FileSelector()
                 }
                 redraw = 1;
             }
-            /*if ( p & PAD_BUTTON_B ) {
-              if ( cdfiles[1].filename[0] == 0x2e && cdfiles[1].filename[1] == 0x2e && cdfiles[1].flags ) {
-              if (UseSDCARD) {
-              char fname[SDCARD_MAX_PATH_LEN];
-              int pathpos = strlen(cdfiles[1].sdcardpath);
-              while (pathpos > 6) {
-              if (cdfiles[1].sdcardpath[pathpos] == '\\') break;
-              pathpos--;
-              }
-              if (pathpos < 7) {pathpos = 16; cdfiles[1].sdcardpath[pathpos-3] = '\\'; cdfiles[1].sdcardpath[pathpos-2] = '.'; cdfiles[1].sdcardpath[pathpos-1] = '.'; } // handle root case 
-              strncpy(fname, cdfiles[1].sdcardpath, pathpos);
-              fname[pathpos] = 0;
-              offset = selection = 0;
-              maxfiles = parse_sdcard_dir(fname);
-              }
-              else if(inSz == true)
-              {
-              rootdir = cdfiles[1].offset;
-              rootdirlength = cdfiles[1].length;
-              offset = selection = 0;
-              maxfiles = parsedir();
-              inSz = false;
-              SzClose();
-              }
-              else {
-              rootdir = cdfiles[1].offset;
-              rootdirlength = cdfiles[1].length;
-              offset = selection = 0;
-              maxfiles = parsedir();
-              }
-              redraw = 1;
-              }
-              }*/
         }
     }
 
