@@ -28,47 +28,47 @@ extern unsigned char nesrom[];
 
 int GCMemROM()
 {
-     
-     nesromptr = &nesrom[0];
 
-     ResetGameLoaded();
+    nesromptr = &nesrom[0];
 
-     /*** Allocate and clear GameInfo ***/
-     FCEUGameInfo = malloc(sizeof(FCEUGI));
-     memset(FCEUGameInfo, 0, sizeof(FCEUGI));
-     
-     /*** Set some default values ***/
-     FCEUGameInfo->soundchan = 1;
-     FCEUGameInfo->soundrate = SAMPLERATE;
-     FCEUGameInfo->name=0;
-     FCEUGameInfo->type=GIT_CART;
-     FCEUGameInfo->vidsys=GIV_USER;
-     FCEUGameInfo->input[0]=FCEUGameInfo->input[1]=-1;
-     FCEUGameInfo->inputfc=-1;
-     FCEUGameInfo->cspecial=0;
+    ResetGameLoaded();
 
-     /*** Set internal sound information ***/
-     FCEUI_Sound(SAMPLERATE);
-     FCEUI_SetSoundQuality(0);
-     FCEUI_SetSoundVolume(100);
-     FCEUI_SetLowPass(0);
+    /*** Allocate and clear GameInfo ***/
+    FCEUGameInfo = malloc(sizeof(FCEUGI));
+    memset(FCEUGameInfo, 0, sizeof(FCEUGI));
 
-     InitialisePads();
+    /*** Set some default values ***/
+    FCEUGameInfo->soundchan = 1;
+    FCEUGameInfo->soundrate = SAMPLERATE;
+    FCEUGameInfo->name=0;
+    FCEUGameInfo->type=GIT_CART;
+    FCEUGameInfo->vidsys=GIV_USER;
+    FCEUGameInfo->input[0]=FCEUGameInfo->input[1]=-1;
+    FCEUGameInfo->inputfc=-1;
+    FCEUGameInfo->cspecial=0;
 
-     if ( iNESMemLoad( nesromptr ) )
-     {
+    /*** Set internal sound information ***/
+    FCEUI_Sound(SAMPLERATE);
+    FCEUI_SetSoundQuality(0);
+    FCEUI_SetSoundVolume(100);
+    FCEUI_SetLowPass(0);
+
+    InitialisePads();
+
+    if ( iNESMemLoad( nesromptr ) )
+    {
         FCEU_ResetVidSys();
         PowerNES();
-		FCEU_ResetPalette();
-		FCEU_ResetMessages();	// Save state, status messages, etc.
-		SetSoundVariables();
-     }
-     else
-     {
-		WaitPrompt("Bad cartridge!");
+        FCEU_ResetPalette();
+        FCEU_ResetMessages();	// Save state, status messages, etc.
+        SetSoundVariables();
+    }
+    else
+    {
+        WaitPrompt("Bad cartridge!");
         return -1;
-     }
-     
-     return 0;;
+    }
+
+    return 0;;
 }
 

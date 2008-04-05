@@ -5,7 +5,7 @@
  * This file manages the 7zip support for this emulator.
  * Currently it only provides functions for loading a 7zip file from a DVD.
  ****************************************************************************/
- 
+
 #include <gccore.h>
 #include <ogcsys.h>
 #include <gctypes.h>
@@ -17,14 +17,14 @@
 
 typedef struct _SzFileInStream
 {
-  ISzInStream InStream;
-  u64 offset; // offset of the file
-  unsigned int len; // length of the file
-  u64 pos;  // current position of the file pointer
+    ISzInStream InStream;
+    u64 offset; // offset of the file
+    unsigned int len; // length of the file
+    u64 pos;  // current position of the file pointer
 } SzFileInStream;
 
 extern SZ_RESULT SzRes;
-						 
+
 #define DVD_LENGTH_MULTIPLY 32
 #define DVD_OFFSET_MULTIPLY 32
 #define DVD_MAX_READ_LENGTH 2048
