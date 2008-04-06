@@ -53,38 +53,31 @@ unsigned char dvdsf_buffer[DVD_SECTOR_SIZE];
 u64 dvdsf_last_offset = 0;
 u64 dvdsf_last_length = 0;
 
-int dvd_buffered_read(void *dst, u32 len, u64 offset)
-{
+int dvd_buffered_read(void *dst, u32 len, u64 offset) {
     int ret = 0;
 
     // only read data if the data inside dvdsf_buffer cannot be used
-    if(offset != dvdsf_last_offset || len > dvdsf_last_length)
-    {
+    if(offset != dvdsf_last_offset || len > dvdsf_last_length) {
         memset(&dvdsf_buffer, '\0', DVD_SECTOR_SIZE);
         ret = dvd_read(&dvdsf_buffer, len, offset);
         dvdsf_last_offset = offset;
         dvdsf_last_length = len;
-
     }
 
     memcpy(dst, &dvdsf_buffer, len);
     return ret;
 }
 
-int dvd_safe_read(void *dst_v, u32 len, u64 offset)
-{
+int dvd_safe_read(void *dst_v, u32 len, u64 offset) {
     unsigned char buffer[DVD_SECTOR_SIZE]; // buffer for one dvd sector
 
     // if read size and length are a multiply of DVD_(OFFSET,LENGTH)_MULTIPLY and length < DVD_MAX_READ_LENGTH
     // we don't need to fix anything
-    if(len % DVD_LENGTH_MULTIPLY == 0 && offset % DVD_OFFSET_MULTIPLY == 0 && len <= DVD_MAX_READ_LENGTH)
-    {
+    if(len % DVD_LENGTH_MULTIPLY == 0 && offset % DVD_OFFSET_MULTIPLY == 0 && len <= DVD_MAX_READ_LENGTH) {
         int ret = dvd_buffered_read(buffer, len, offset);
         memcpy(dst_v, &buffer, len);
         return ret;
-    }
-    else
-    {
+    } else {
         // no errors yet -> ret = 0
         // the return value of dvd_read will be OR'd with ret
         // because dvd_read does return 1 on error and 0 on success and
@@ -105,8 +98,7 @@ int dvd_safe_read(void *dst_v, u32 len, u64 offset)
         bufferOffset = 0;
 
         // fix first issue (offset is not a multiply of 32)
-        if(offset % DVD_OFFSET_MULTIPLY)
-        {
+        if(offset % DVD_OFFSET_MULTIPLY) {
             // calcualte offset of the prior 32 byte position
             i = currentOffset - (currentOffset % DVD_OFFSET_MULTIPLY);
 
@@ -117,8 +109,7 @@ int dvd_safe_read(void *dst_v, u32 len, u64 offset)
             k = DVD_OFFSET_MULTIPLY - j;
 
             // maybe we'll only need to copy a few bytes and we therefore don't even reach the next sector
-            if(k > len)
-            {
+            if(k > len) {
                 k = len;
             }
 
@@ -133,14 +124,12 @@ int dvd_safe_read(void *dst_v, u32 len, u64 offset)
         }
 
         // fix second issue (more than 2048 bytes are needed)
-        if(bytesToRead > DVD_MAX_READ_LENGTH)
-        {
+        if(bytesToRead > DVD_MAX_READ_LENGTH) {
             // calculate the number of 2048 bytes sector needed to get all data
             i = (bytesToRead - (bytesToRead % DVD_MAX_READ_LENGTH)) / DVD_MAX_READ_LENGTH;
 
             // read data in 2048 byte sector
-            for(j = 0; j < i; j++)
-            {
+            for(j = 0; j < i; j++) {
                 ret |= dvd_buffered_read(buffer, DVD_MAX_READ_LENGTH, currentOffset); // read sector
                 memcpy(&dst[bufferOffset], buffer, DVD_MAX_READ_LENGTH); // copy to output buffer
 
@@ -152,8 +141,7 @@ int dvd_safe_read(void *dst_v, u32 len, u64 offset)
         }
 
         // fix third issue (length is not a multiply of 32)
-        if(bytesToRead)
-        {
+        if(bytesToRead) {
             ret |= dvd_buffered_read(buffer, DVD_MAX_READ_LENGTH, currentOffset); // read 32 byte from the dvd
             memcpy(&dst[bufferOffset], buffer, bytesToRead); // copy bytes to output buffer
         }
@@ -204,20 +192,17 @@ SZ_RESULT SzDvdFileSeekImp(void *object, CFileSize pos)
     return SZ_OK;
 }
 
-SZ_RESULT SzDvdIsArchive(u64 dvd_offset)
-{
+SZ_RESULT SzDvdIsArchive(u64 dvd_offset) {
     // 7z signautre
     static Byte Signature[6] = {'7', 'z', 0xBC, 0xAF, 0x27, 0x1C};
     Byte Candidate[6];
 
     //  read the data from the DVD
-    dvd_safe_read (&Candidate, 6, dvd_offset);
+    int res = dvd_safe_read (&Candidate, 6, dvd_offset);
 
     size_t i;
-    for(i = 0; i < 6; i++)
-    {
-        if(Candidate[i] != Signature[i])
-        {
+    for(i = 0; i < 6; i++) {
+        if(Candidate[i] != Signature[i]) {
             return SZE_FAIL;
         }
     }
@@ -234,8 +219,7 @@ void SzDisplayError(SZ_RESULT res)
 static u64 rootdir;
 static int rootdirlength;
 
-void SzParse(void)
-{
+void SzParse(void) {
     // save the offset and the length of this file inside the archive stream structure
     SzArchiveStream.offset = filelist[selection].offset;
     SzArchiveStream.len = filelist[selection].length;
