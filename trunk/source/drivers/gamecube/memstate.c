@@ -320,7 +320,8 @@ int MountTheCard()
         *(unsigned long*)(0xcc006800) |= 1<<13;        /*** Disable Encryption ***/
         uselessinquiry();
         VIDEO_WaitVSync();
-        CardError = CARD_Mount(CARDSLOT, SysArea, NULL);        /*** Don't need or want a callback ***/
+        //CardError = CARD_Mount(CARDSLOT, SysArea, NULL);        /*** Don't need or want a callback ***/
+        CardError = CARD_Mount(CARDSLOT, SysArea, CardRemoved);
         if ( CardError == 0 )
             return 0;
         else {
@@ -329,7 +330,7 @@ int MountTheCard()
         tries++;
     }
 
-    return 1;
+    return -1;
 }
 
 /****************************************************************************
@@ -338,9 +339,7 @@ int MountTheCard()
  * This is based on the code from libogc
  ****************************************************************************/
 
-void MCManage(int mode, int slot)
-{
-
+void MCManage(int mode, int slot) {
     char mcFilename[80];
     int CardError;
     card_dir CardDir;
@@ -360,7 +359,7 @@ void MCManage(int mode, int slot)
     CARD_Init("FCEU", "00");
 
     /*** Try for memory card in slot A ***/
-    CardError = CARD_Mount(CARDSLOT, SysArea, CardRemoved );
+    CardError = MountTheCard();
 
     if ( CardError >= 0 )
     {
@@ -418,7 +417,7 @@ void MCManage(int mode, int slot)
 
                              CardError = CARD_Close(&CardFile);
                              sprintf(debug, "Saved %d bytes successfully!", savedBytes);
-                             WaitPrompt(debug);
+                             ShowAction(debug);
                          } 
                          else WaitPrompt("Save Failed!");
 
@@ -430,20 +429,16 @@ void MCManage(int mode, int slot)
             case 1: {	/*** Load state ***/
                         /*** Look for this file ***/
                         CardError = CARD_FindFirst(CARDSLOT, &CardDir, true);
-
                         memopen();	/*** Clear the buffer ***/
-
                         found = 0;
 
-                        while ( CardError != CARD_ERROR_NOFILE )
-                        {
+                        while ( CardError != CARD_ERROR_NOFILE ) {
                             CardError = CARD_FindNext(&CardDir);
                             if ( strcmp(CardDir.filename, mcFilename) == 0 )
                                 found = 1;
                         }
 
-                        if ( found == 0 )
-                        {
+                        if ( found == 0 ) {
                             WaitPrompt("No Save Game Found");
                             CARD_Unmount(CARDSLOT);
                             return;
@@ -459,8 +454,7 @@ void MCManage(int mode, int slot)
 
                         int sbo = SectorSize;
                         actualSize -= SectorSize;	
-                        while( actualSize > 0 )
-                        {
+                        while( actualSize > 0 ) {
                             CARD_Read(&CardFile, &statebuffer[sbo], SectorSize, sbo);
                             actualSize -= SectorSize;
                             sbo += SectorSize;
@@ -472,7 +466,7 @@ void MCManage(int mode, int slot)
 
                         CARD_Unmount(CARDSLOT);
                         sprintf(debug, "Loaded %d bytes successfully!", savedBytes);
-                        WaitPrompt(debug);
+                        ShowAction(debug);
 
                     } 
                     break;	/*** End load ***/
@@ -493,13 +487,12 @@ void SD_Manage(int mode, int slot){
     int filesize = 0;
     int len = 0;
 
-    //sprintf (filepath, "dev%d:\\%s\\%08x.fcs", slot, SAVEDIR, iNESGameCRC32);
-    sprintf (path, "dev%d:\\%08x.fcs", slot, iNESGameCRC32);
+    sprintf (path, "dev%d:\\%s\\%08x.fcs", slot, SAVEDIR, iNESGameCRC32);
 
     if (mode == 0) ShowAction ("Saving STATE to SD...");
     else ShowAction ("Loading STATE from SD...");
 
-    handle = (mode == 0) ? SDCARD_OpenFile (path, "wb") : SDCARD_OpenFile (path, "rb");
+    handle = SDCARD_OpenFile(path, (mode == 0) ? "wb" : "rb");
 
     if (handle == NULL){        
         sprintf(msg, "Couldn't open %s", path);
@@ -529,7 +522,7 @@ void SD_Manage(int mode, int slot){
         SDCARD_CloseFile (handle);
 
         sprintf (msg, "Loaded %d bytes successfully", offset);
-        WaitPrompt(msg);
+        ShowAction(msg);
 
         GCFCEUSS_Load();
         return ;

@@ -726,7 +726,6 @@ int LoadDVDFile( unsigned char *buffer )
  ****************************************************************************/
 static int havedir = 0;
 int OpenDVD() {
-    int i, j;
     haveSDdir = 0;
 
     havedir = offset = selection = 0;

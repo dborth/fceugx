@@ -1082,6 +1082,9 @@ int ConfigScreen()
             }
         }
 
+        if (j & PAD_BUTTON_B ) {
+            quit = 1;
+        }
         if ( menu == configmenucount  )
             menu = 0;		
 
