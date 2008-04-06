@@ -810,11 +810,10 @@ void ShowROMInfo()
  * Media Select Screen
  ****************************************************************************/
 
-int mediacount = 3;
-char mediamenu[3][30] = { 
+int mediacount = 4;
+char mediamenu[4][30] = { 
     { "Load from DVD" }, { "Load from SDCARD"}, 
-    //{ "Rom loading in SDCARD: SLOT A" }, 
-    { "Return to previous" } 
+    { "SD Gecko: Slot A" }, { "Return to previous" } 
 };
 
 unsigned char msstext[][512] = {
@@ -824,10 +823,9 @@ unsigned char msstext[][512] = {
     { "How can You wait this long?! The games are waiting for You!!" }
 };
 
-//int choosenSDSlot = 0;
+int choosenSDSlot = 0;
 
-int MediaSelect()
-{
+int MediaSelect() {
     int menu = 0;
     int quit = 0;
     short j;
@@ -867,10 +865,10 @@ int MediaSelect()
                         OpenSD();
                         return 1;
                         break;
-                        /*case 2:	choosenSDSlot ^= 1; //Pick Slot
-                          sprintf(mediamenu[2], (!choosenSDSlot) ? "Rom loading in SDCARD: SLOT A" : "Rom loading in SDCARD: SLOT B");						
-                          break;*/
-                case 2: quit = 1; //Previous
+                case 2:	choosenSDSlot ^= 1; //Pick Slot
+                        sprintf(mediamenu[2], "SD Gecko: %s", (!choosenSDSlot) ? "Slot A" : "Slot B");
+                        break;
+                case 3: quit = 1; //Previous
                         break;
 
                 default: break ;
@@ -1036,10 +1034,10 @@ int ConfigScreen()
                     break;
 
                 case 2:	// Load new Game
-                    //if (MediaSelect()) {
-                    //	if (GCMemROM() >= 0) return 1;/* Fix by Garglub. Thanks! */
-                    //}
-                    MediaSelect();
+                    if (MediaSelect()) {
+                    	if (GCMemROM() >= 0)
+                            return 1;/* Fix by Garglub. Thanks! */
+                    }
                     scrollerx = 320 - MARGIN; 
                     break;
 

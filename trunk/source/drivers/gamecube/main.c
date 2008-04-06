@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/time.h>
+#include <gctypes.h>
 #include "../../types.h"
 #include "common.h"
 
@@ -51,14 +52,25 @@ static void reset_cb() {
 }
 
 extern int WaitPromptChoice (char *msg, char *bmsg, char *amsg);
-int choosenSDSlot = 0;
+bool isWii = false;
+static unsigned char *inquiry=(unsigned char *)0x80000004;
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     initDisplay();
     SYS_SetResetCallback (reset_cb);
     InitialiseSound();
     SDCARD_Init ();
+
+    int driveid = -1;
+
+    /*** Get Drive Type ***/
+    dvd_inquiry();
+    driveid = (int)inquiry[2];
+
+    /*** Make sure it's one I now about ***/
+    if ( ( driveid != 4 ) && ( driveid != 6 ) && ( driveid != 8 ) ) {
+        isWii = true;
+    }
 
     /*** Minimal Emulation Loop ***/
     if ( !FCEUI_Initialize() ) {
@@ -77,12 +89,9 @@ int main(int argc, char *argv[])
 
     cleanSFMDATA();
     GCMemROM();
-
-    choosenSDSlot = !WaitPromptChoice("Choose a SLOT to load Roms from SDCARD", "SLOT B", "SLOT A");
     ConfigScreen(); 
 
-    while (1)
-    {
+    while (1) {
         uint8 *gfx;
         int32 *sound;
         int32 ssize;
