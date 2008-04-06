@@ -24,7 +24,7 @@ extern void ShowAction( char *msg );
 extern void WaitPrompt( char *msg );
 
 extern unsigned char readbuffer[2048];
-extern unsigned int dvd_read(void *dst, unsigned int len, unsigned int offset);
+extern unsigned int dvd_read(void *dst, unsigned int len, u64 offset);
 
 #define ZIPCHUNK 2048
 
@@ -122,7 +122,6 @@ int unzipDVDFile( unsigned char *outbuffer,
 
     if ( res != Z_OK )
         return 0;
-
     /*** Set ZipChunk for first pass ***/
     zipoffset = ( sizeof(PKZIPHEADER) + FLIP16(pkzip.filenameLength) + FLIP16(pkzip.extraDataLength ));
     zipchunk = ZIPCHUNK - zipoffset;
@@ -180,5 +179,4 @@ int unzipDVDFile( unsigned char *outbuffer,
 
     return 0;
 }
-
 
