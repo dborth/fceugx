@@ -710,7 +710,7 @@ int LoadDVDFile( unsigned char *buffer )
             memcpy(&buffer[offset], &readbuffer, i);
         }
     } else {
-        return unzipDVDFile( buffer, discoffset, rootdirlength);
+        return unzipDVDFile( buffer, (u32)discoffset, rootdirlength);
     }
     if (UseSDCARD) SDCARD_CloseFile (filehandle);
 
