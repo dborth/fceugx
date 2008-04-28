@@ -11,7 +11,6 @@
 #include "../../iplfont/iplfont.h"
 
 #define MARGIN 0
-//#define PSOSDLOADID 0x7c6000a6
 
 #define JOY_UP  	0x10
 #define JOY_DOWN        0x20
@@ -55,9 +54,7 @@ extern unsigned char GetAnalog(int Joy);
 void Reboot() {
 #ifdef HW_RVL
     // Thanks to hell_hibou
-    int fd = IOS_Open("/dev/stm/immediate", 0);
-    IOS_Ioctl(fd, 0x2001, NULL, 0, NULL, 0);
-    IOS_Close(fd);
+    SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 #else
 #define SOFTRESET_ADR ((volatile u32*)0xCC003024)
     *SOFTRESET_ADR = 0x00000000;
@@ -389,6 +386,7 @@ char PADMap( int padvalue, int padnum )
 
     switch( padvalue )
     {
+        default:
         case 0: gcpadmap[padnum] = PAD_BUTTON_A; padkey = 'A'; break;
         case 1: gcpadmap[padnum] = PAD_BUTTON_B; padkey = 'B'; break;
         case 2: gcpadmap[padnum] = PAD_BUTTON_X; padkey = 'X'; break;
@@ -933,7 +931,6 @@ int MediaSelect() {
                         quit = 1;
 #else
                         UseSDCARD = 0; //DVD
-                        UseFrontSDCARD = 0;
                         OpenDVD();
                         return 1;
 #endif

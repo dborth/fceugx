@@ -50,7 +50,7 @@ int b;
 
 
 
-void write_font(int x, int y, const unsigned char *string)
+void write_font(int x, int y, const char *string)
 {
 	while (*string)
 	{
@@ -61,7 +61,7 @@ void write_font(int x, int y, const unsigned char *string)
 	}
 }
 
-void writex(int x, int y, int sx, int sy, const unsigned char *string, unsigned int selected)
+void writex(int x, int y, int sx, int sy, const unsigned char *string, int selected)
 {
 	int ox = x;
 	while ((*string) && ((x) < (ox + sx)))

@@ -43,7 +43,9 @@ int sboffset;				/*** Used as a basic fileptr  ***/
 int mcversion = 0x981211;
 
 static u8 SysArea[CARD_WORKAREA] ATTRIBUTE_ALIGN(32);
+#ifdef HW_RVL
 extern FILINFO finfo;
+#endif
 extern int ChosenSlot;
 extern int ChosenDevice;
 /****************************************************************************
@@ -566,8 +568,7 @@ void SD_Manage(int mode, int slot) {
         }
 
         if (mode == 0) { // Save
-            WORD written = 0;
-            u32 total_written = 0;
+            u32 written = 0, total_written = 0;
 
             filesize = GCFCEUSS_Save();
             sprintf(msg, "Writing %d bytes..", filesize);
@@ -608,8 +609,7 @@ void SD_Manage(int mode, int slot) {
             f_close(&fp);
             return;
         } else { // Load
-            WORD bytes_read = 0;
-            u32 bytes_read_total = 0;
+            u32 bytes_read = 0, bytes_read_total = 0;
 
             memopen();
             while(bytes_read_total < finfo.fsize) {

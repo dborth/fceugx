@@ -7,7 +7,7 @@ ifeq ($(strip $(DEVKITPPC)),)
 $(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
 endif
 
-include $(DEVKITPPC)/gamecube_rules
+include $(DEVKITPPC)/wii_rules
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -15,22 +15,24 @@ include $(DEVKITPPC)/gamecube_rules
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 #---------------------------------------------------------------------------------
-TARGET		:=	fceu_gc
+TARGET		:=	fceu_wii_pal60
 BUILD		:=	build
 #SOURCES		:=	source source/sz source/boards source/linux source/linux/bits source/linux/gnu source/palettes source/fir source/input source/rom source/mappers source/mbshare source/drivers source/drivers/common source/drivers/gamecube source/iplfont 
 SOURCES		:=	source source/boards source/mappers source/input \
 			source/mbshare source/drivers/common \
 			source/drivers/gamecube source/roms \
-			source/iplfont source/sz
+			source/iplfont source/sz source/drivers/gamecube/wiisd
 DATA		:=	data  
-INCLUDES	:=	source/sz
+INCLUDES	:=	source/sz source/drivers/gamecube/wiisd
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
+
+#CFLAGS	= -g -O2 -Wall $(MACHDEP) $(INCLUDE) -DFCEU_VERSION_NUMERIC=9812 -DNGC=1 -DZLIB -DBIG_ENDIAN -DHAVE_ASPRINTF=1 -DSTDC -D_SZ_ONE_DIRECTORY=1 -D_LZMA_IN_CB=1 -D_LZMA_OUT_READ
 CFLAGS  = -g -Os -Wall $(MACHDEP) $(INCLUDE) -DFCEU_VERSION_NUMERIC=9812 -DNGC=1 \
 		-DZLIB -DBIG_ENDIAN -DHAVE_ASPRINTF=1 -DSTDC \
-	    -D_SZ_ONE_DIRECTORY=1 -D_LZMA_IN_CB=1 -D_LZMA_OUT_READ
+	    -D_SZ_ONE_DIRECTORY=1 -D_LZMA_IN_CB=1 -D_LZMA_OUT_READ -DFORCE_EURGB60
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
@@ -142,7 +144,6 @@ $(OUTPUT).elf: $(OFILES)
 #---------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------
-
 tags:
 	@( cd source; ctags *.c *.h \
 	    boards/*.c boards/*.h \
@@ -151,6 +152,7 @@ tags:
 	    mbshare/*.c mbshare/*.h \
 	    drivers/common/*.c drivers/common/*.h \
 	    drivers/gamecube/*.c drivers/gamecube/*.h \
+	    drivers/gamecube/wiisd/*.h drivers/gamecube/wiisd/*.c \
 	    iplfont/*.c iplfont/*.h \
 	    sz/*.c sz/*.h \
 	    /opt/devkitpro/libogc/include/*.h \
