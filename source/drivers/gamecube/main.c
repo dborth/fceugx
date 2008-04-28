@@ -45,9 +45,13 @@ long long basetime;
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
-void (*PSOReload) () = (void (*)()) 0x80001800;
-
 static void reset_cb() {
+#ifdef HW_RVL
+    void (*PSOReload)() = (void(*)())0x90000020;
+#else
+    void (*PSOReload)() = (void(*)())0x80001800;
+#endif
+
     PSOReload();
 }
 

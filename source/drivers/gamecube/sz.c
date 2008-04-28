@@ -9,6 +9,9 @@
 #include "gcdvd.h" 
 #include "sz.h"
 
+extern int UseSDCARD;
+extern int UseFrontSDCARD;
+extern sd_file *filehandle;
 
 // 7zip error list
 char szerrormsg[][30] = {"7z: Data error",
@@ -58,8 +61,17 @@ int dvd_buffered_read(void *dst, u32 len, u64 offset) {
 
     // only read data if the data inside dvdsf_buffer cannot be used
     if(offset != dvdsf_last_offset || len > dvdsf_last_length) {
+        char msg[1024];
+        sprintf(msg, "buff_read: len=%d, offset=%llX, UseSD=%d", len, offset, UseSDCARD);
+        //WaitPrompt(msg);
         memset(&dvdsf_buffer, '\0', DVD_SECTOR_SIZE);
-        ret = dvd_read(&dvdsf_buffer, len, offset);
+        if (UseSDCARD) {
+            if (filehandle == NULL)
+                GetSDInfo();
+            SDCARD_SeekFile(filehandle, offset, SDCARD_SEEK_SET);
+            SDCARD_ReadFile(filehandle, &dvdsf_buffer, len);
+        } else if (!UseFrontSDCARD)
+            ret = dvd_read(&dvdsf_buffer, len, offset);
         dvdsf_last_offset = offset;
         dvdsf_last_length = len;
     }
@@ -74,10 +86,16 @@ int dvd_safe_read(void *dst_v, u32 len, u64 offset) {
     // if read size and length are a multiply of DVD_(OFFSET,LENGTH)_MULTIPLY and length < DVD_MAX_READ_LENGTH
     // we don't need to fix anything
     if(len % DVD_LENGTH_MULTIPLY == 0 && offset % DVD_OFFSET_MULTIPLY == 0 && len <= DVD_MAX_READ_LENGTH) {
+        char msg[1024];
+        sprintf(msg, "simple_safe_read: len=%d, offset=%llX, UseSD=%d", len, offset, UseSDCARD);
+        //WaitPrompt(msg);
         int ret = dvd_buffered_read(buffer, len, offset);
         memcpy(dst_v, &buffer, len);
         return ret;
     } else {
+        char msg[1024];
+        sprintf(msg, "complex_safe_read: len=%d, offset=%llX, UseSD=%d", len, offset, UseSDCARD);
+        //WaitPrompt(msg);
         // no errors yet -> ret = 0
         // the return value of dvd_read will be OR'd with ret
         // because dvd_read does return 1 on error and 0 on success and
@@ -199,6 +217,15 @@ SZ_RESULT SzDvdIsArchive(u64 dvd_offset) {
 
     //  read the data from the DVD
     int res = dvd_safe_read (&Candidate, 6, dvd_offset);
+    char msg[1024];
+    sprintf(msg, "7zSig: %02X %02X %02X %02X %02X %02X",
+            Candidate[0],
+            Candidate[1],
+            Candidate[2],
+            Candidate[3],
+            Candidate[4],
+            Candidate[5]);
+    //WaitPrompt(msg);
 
     size_t i;
     for(i = 0; i < 6; i++) {
@@ -310,6 +337,7 @@ bool SzExtractROM(int i, unsigned char *buffer)
 
     // Unzip the file
     ShowAction("Un7zipping file. Please wait...");
+    WaitPrompt("Un7zipping file. Please wait...");
     SzRes = SzExtract2(
             &SzArchiveStream.InStream, 
             &SzDb,
