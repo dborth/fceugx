@@ -766,8 +766,7 @@ int LoadDVDFile( unsigned char *buffer ) {
 
 #ifdef HW_RVL
     FIL fp;
-    WORD bytes_read;
-    u32 bytes_read_total;
+    u32 bytes_read = 0, bytes_read_total = 0;
 
     if(UseFrontSDCARD) {
         ShowAction((char*)"Loading ... Wait");	
@@ -797,8 +796,6 @@ int LoadDVDFile( unsigned char *buffer ) {
             return 0;
         }
 
-        //printf("Reading %u bytes\n", (unsigned int)finfo.fsize);
-        bytes_read = bytes_read_total = 0;
         while(bytes_read_total < finfo.fsize) {
             if(f_read(&fp, buffer + bytes_read_total, 0x200, &bytes_read) != FR_OK) {
                 WaitPrompt((char*)"f_read failed");
@@ -958,6 +955,7 @@ int OpenFrontSD () {
 int OpenSD () {
     UseSDCARD = 1;
     UseFrontSDCARD = 0;
+    haveWiiSDdir = 0;
     char msg[128];
 
     if (ChosenSlot != sdslot) haveSDdir = 0;

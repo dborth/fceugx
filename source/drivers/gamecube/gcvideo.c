@@ -284,32 +284,39 @@ void GXDraw( unsigned char *XBuf )
  *
  * Helps keep the rendering at 2x sweet
  ****************************************************************************/
-void initDisplay()
-{
-
+void initDisplay() {
     /*** Start VIDEO Subsystem ***/
     VIDEO_Init();
 
+    extern GXRModeObj TVEurgb60Hz480IntDf;
     /*** Determine display mode
 NOTE: Force 60Hz 640x480 for PAL or NTSC ***/
 
-    /*	switch(VIDEO_GetCurrentTvMode())
-        {
+    switch(VIDEO_GetCurrentTvMode())
+    {
         case VI_NTSC:
-        vmode = &TVNtsc480IntDf;
-        break;
+            vmode = &TVNtsc480IntDf;
+            break;
         case VI_PAL:
-        case VI_MPAL:
-        vmode = &TVMpal480IntDf;
-        break;
+            vmode = &TVPal574IntDfScale;
+            break;
+#ifdef FORCE_EURGB60
         default:
-        vmode = &TVNtsc480IntDf;
-        break;
-        }*/
+            vmode = &TVEurgb60Hz480IntDf;
+            break;
+#else
+        case VI_MPAL:
+            vmode = &TVMpal480IntDf;
+            break;
+        default:
+            vmode = &TVNtsc480IntDf;
+            break;
+#endif
+    }
     //vmode = &TVPal528IntDf;
 
     // works for NTSC and PAL on GC and Wii :)
-    vmode = &TVNtsc480IntDf;
+    //vmode = &TVNtsc480IntDf;
 
     xfb[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
     xfb[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
