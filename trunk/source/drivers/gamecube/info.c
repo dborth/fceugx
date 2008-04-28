@@ -13,7 +13,7 @@
 #define MARGIN 0
 //#define PSOSDLOADID 0x7c6000a6
 
-#define JOY_UP  		0x10
+#define JOY_UP  	0x10
 #define JOY_DOWN        0x20
 
 static int currpal = 0;
@@ -52,10 +52,20 @@ extern int UseSDCARD;
 extern unsigned char DecodeJoy( unsigned short pp );
 extern unsigned char GetAnalog(int Joy);
 
-#define MAXPAL 12
-
-#define SCROLLY 395
+void Reboot() {
+#ifdef HW_RVL
+    // Thanks to hell_hibou
+    int fd = IOS_Open("/dev/stm/immediate", 0);
+    IOS_Ioctl(fd, 0x2001, NULL, 0, NULL, 0);
+    IOS_Close(fd);
+#else
 #define SOFTRESET_ADR ((volatile u32*)0xCC003024)
+    *SOFTRESET_ADR = 0x00000000;
+#endif
+}
+    
+#define MAXPAL 12
+#define SCROLLY 395
 
 /* color palettes */
 struct
@@ -544,9 +554,17 @@ unsigned char sgmtext[][512] = {
 int slot = 0;
 int device = 0;
 
-int StateManager()
-{
+int SdSlotCount = 3;
+char SdSlots[3][10] = {
+    { "Slot A" }, { "Slot B" }, { "Wii SD"}
+};
+enum SLOTS {
+    SLOT_A, SLOT_B, SLOT_WIISD
+};
+int ChosenSlot = 0;
+int ChosenDevice = 1;
 
+int StateManager() {
     int menu = 0;
     int quit = 0;
     short j;
@@ -810,10 +828,11 @@ void ShowROMInfo()
  * Media Select Screen
  ****************************************************************************/
 
-int mediacount = 4;
-char mediamenu[4][30] = { 
-    { "Load from DVD" }, { "Load from SDCARD"}, 
-    { "SD Gecko: Slot A" }, { "Return to previous" } 
+int MediaMenuCount = 5;
+char MediaMenu[5][30] = { 
+    { "Load from SDCARD"}, { "SDCard: Slot A" },
+    { "Load from DVD" }, { "Stop DVD Motor" },
+    { "Return to previous" } 
 };
 
 unsigned char msstext[][512] = {
@@ -823,10 +842,14 @@ unsigned char msstext[][512] = {
     { "How can You wait this long?! The games are waiting for You!!" }
 };
 
-int choosenSDSlot = 0;
-
 int MediaSelect() {
-    int menu = 0;
+    enum MEDIA_MENU {
+        MEDIA_SDCARD, MEDIA_SLOT,
+        MEDIA_DVD, MEDIA_STOPDVD,
+        MEDIA_EXIT
+    };
+
+    int ChosenMenu = 0;
     int quit = 0;
     short j;
     int redraw = 1;
@@ -834,59 +857,100 @@ int MediaSelect() {
     line = 0;
     scrollerx = 320 - MARGIN;
 
-    while ( quit == 0 )
-    {
-        if ( redraw )
-            DrawMenu(&mediamenu[0], mediacount, menu );
+#ifdef HW_RVL
+    strcpy(MediaMenu[MEDIA_DVD], MediaMenu[MEDIA_EXIT]);
+    MediaMenuCount = 3;
+    ChosenSlot = SLOT_WIISD; // default to WiiSD
+#else
+    SdSlotCount = 2;
+#endif
 
-        redraw = 0;
+    while ( quit == 0 ) {
+        if ( redraw ) {
+            sprintf(MediaMenu[MEDIA_SLOT], "SDCard: %s", SdSlots[ChosenSlot]);
+            DrawMenu(MediaMenu, MediaMenuCount, ChosenMenu );
+            redraw = 0;
+        }
 
         j = PAD_ButtonsDown(0);
 
         if ( j & PAD_BUTTON_DOWN ) {
-            menu++;
+            ChosenMenu++;
             redraw = 1;
         }
 
         if ( j & PAD_BUTTON_UP ) {
-            menu--;
+            ChosenMenu--;
             redraw = 1;
         }
 
         if ( j & PAD_BUTTON_A ) {
             redraw = 1;
-            switch ( menu ) {
-                case 0:	UseSDCARD = 0; //DVD
+            switch ( ChosenMenu ) {
+                case MEDIA_SDCARD:
+#ifdef HW_RVL
+                        if (ChosenSlot == SLOT_WIISD) {
+                            OpenFrontSD();
+                        } else
+#endif
+                            OpenSD();
+                        return 1;
+                        break;
+                case MEDIA_SLOT:
+                        ChosenSlot++;
+                        if (ChosenSlot >= SdSlotCount)
+                            ChosenSlot = 0;
+                        redraw = 1;
+                        break;
+                case MEDIA_DVD:
+#ifdef HW_RVL
+                        // In Wii mode, this is just exit
+                        quit = 1;
+#else
+                        UseSDCARD = 0; //DVD
                         OpenDVD();
                         return 1;
+#endif
                         break;
-
-                case 1:	UseSDCARD = 1; //SDCard
-                        OpenSD();
-                        return 1;
+#ifndef HW_RVL
+                case MEDIA_STOPDVD:
+                        ShowAction((char*)"Stopping DVD Motor ... Wait");
+                        dvd_motor_off();
+                        WaitPrompt((char*)"Stopped DVD Motor");
+                case MEDIA_EXIT:
+                        quit = 1; //Previous
                         break;
-                case 2:	choosenSDSlot ^= 1; //Pick Slot
-                        sprintf(mediamenu[2], "SD Gecko: %s", (!choosenSDSlot) ? "Slot A" : "Slot B");
-                        break;
-                case 3: quit = 1; //Previous
-                        break;
+#endif
 
                 default: break ;
             }
         }
 
+        if ( (j & PAD_BUTTON_RIGHT) && (ChosenMenu == MEDIA_SLOT) ) {
+            ChosenSlot++;
+            if (ChosenSlot >= SdSlotCount)
+                ChosenSlot = SdSlotCount - 1;
+            redraw = 1;
+        }
+
+        if ( (j & PAD_BUTTON_LEFT) && (ChosenMenu == MEDIA_SLOT) ) {
+            ChosenSlot--;
+            if (ChosenSlot < 0)
+                ChosenSlot = 0;
+            redraw = 1;
+        }
+
         if ( j & PAD_BUTTON_B )
             quit = 1;
 
-        if ( menu == mediacount  )
-            menu = 0;		
+        if ( ChosenMenu == MediaMenuCount  )
+            ChosenMenu = 0;		
 
-        if ( menu < 0 )
-            menu = mediacount - 1;
+        if ( ChosenMenu < 0 )
+            ChosenMenu = MediaMenuCount - 1;
 
         scroller(SCROLLY, &msstext[0], 3);
         VIDEO_WaitVSync();
-
     }
 
     return 0;
@@ -952,9 +1016,13 @@ char configmenu[11][30] = {
     { "ROM Information" }, 
     { "Configure Joypads" }, 
     { "Video Options" }, 
-    { "Stop DVD Motor" }, 
+#ifdef HW_RVL
+    { "TP Reload" },
+    { "Reboot Wii" },
+#else
     { "PSO/SD Reload" } ,
     { "Reboot Gamecube" },	
+#endif
     { "Credits" } 
 };
 
@@ -969,15 +1037,17 @@ unsigned char cstext[][512] = {
     { "Official Homepage: http://www.tehskeen.net" }
 };
 
-int ConfigScreen()
-{
+int ConfigScreen() {
     int menu = 0;
     int quit = 0;
     short j;
     int redraw = 1;
 
-    //int *psoid = (int *) 0x80001800;
-    void (*PSOReload) () = (void (*)()) 0x80001800;
+#ifdef HW_RVL
+    void (*PSOReload)() = (void(*)())0x90000020;
+#else
+    void (*PSOReload)() = (void(*)())0x80001800;
+#endif
 
     /*** Stop any running Audio ***/
     AUDIO_StopDMA();
@@ -1060,21 +1130,15 @@ int ConfigScreen()
                     scrollerx = 320 - MARGIN;
                     break;
 
-                case 7:	// Stop DVD Motor
-                    ShowAction("Stopping Motor");
-                    dvd_motor_off();
-                    WaitPrompt("DVD Motor Stopped"); 
+                case 7:	// PSO/SD Reload
+                    PSOReload();
                     break;
 
-                case 8:	// PSO/SD Reload
-                    PSOReload ();
+                case 8: // Reboot
+                    Reboot();
                     break;
 
-                case 9: // Reboot
-                    *SOFTRESET_ADR = 0x00000000;
-                    break;
-
-                case 10: // Credits 
+                case 9: // Credits 
                     ShowCredits();
                     break;
 

@@ -161,3 +161,4 @@ tags:
 	    /opt/devkitpro/libjpeg/include/jpeg/*.h \
 	    /opt/devkitpro/libfreetype/include/*.h \
 	    /opt/devkitpro/libfreetype/include/freetype/*.h )
+

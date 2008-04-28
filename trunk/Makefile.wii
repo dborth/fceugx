@@ -21,9 +21,9 @@ BUILD		:=	build
 SOURCES		:=	source source/boards source/mappers source/input \
 			source/mbshare source/drivers/common \
 			source/drivers/gamecube source/roms \
-			source/iplfont source/sz
+			source/iplfont source/sz source/drivers/gamecube/wiisd
 DATA		:=	data  
-INCLUDES	:=	source/sz
+INCLUDES	:=	source/sz source/drivers/gamecube/wiisd
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -144,3 +144,23 @@ $(OUTPUT).elf: $(OFILES)
 #---------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------
+tags:
+	@( cd source; ctags *.c *.h \
+	    boards/*.c boards/*.h \
+	    mappers/*.c mappers/*.h \
+	    input/*.c input/*.h \
+	    mbshare/*.c mbshare/*.h \
+	    drivers/common/*.c drivers/common/*.h \
+	    drivers/gamecube/*.c drivers/gamecube/*.h \
+	    drivers/gamecube/wiisd/*.h drivers/gamecube/wiisd/*.c \
+	    iplfont/*.c iplfont/*.h \
+	    sz/*.c sz/*.h \
+	    /opt/devkitpro/libogc/include/*.h \
+	    /opt/devkitpro/libogc/include/mad/*.h \
+	    /opt/devkitpro/libogc/include/ogc/*.h \
+	    /opt/devkitpro/libogc/include/modplay/*.h \
+	    /opt/devkitpro/libogc/include/sdcard/*.h \
+	    /opt/devkitpro/libjpeg/include/jpeg/*.h \
+	    /opt/devkitpro/libfreetype/include/*.h \
+	    /opt/devkitpro/libfreetype/include/freetype/*.h )
+
