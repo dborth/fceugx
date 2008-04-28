@@ -537,22 +537,11 @@ void ConfigPAD()
 /****************************************************************************
  * Save Game Manager
  ****************************************************************************/
-
-int mccount = 5;
-char mcmenu[5][30] = { 
-    { "Use: SLOT A" }, { "Device:  MCARD" },
-    { "Save Game State" }, { "Load Game State" },
-    { "Return to Main Menu" } 
-};
-
 unsigned char sgmtext[][512] = {
     //Save game
     { "From where do you wish to load/save your game?" },
     { "Hard time making up your mind?" }
 };
-
-int slot = 0;
-int device = 0;
 
 int SdSlotCount = 3;
 char SdSlots[3][10] = {
@@ -564,55 +553,67 @@ enum SLOTS {
 int ChosenSlot = 0;
 int ChosenDevice = 1;
 
+int mccount = 5;
+char mcmenu[5][30] = { 
+    { "Save State" }, { "Load State" },
+    { "Device" }, { "Slot" },
+    //{ "Use: SLOT A" }, { "Device:  MCARD" },
+    //{ "Save Game State" }, { "Load Game State" },
+    { "Return to Main Menu" } 
+};
+
 int StateManager() {
-    int menu = 0;
+    enum SAVE_MENU {
+        SAVE_SAVE, SAVE_LOAD,
+        SAVE_DEVICE, SAVE_SLOT,
+        SAVE_EXIT
+    };
+    int ChosenMenu = 0;
     int quit = 0;
     short j;
     int redraw = 1;
-    //int i;
 
     line = 0;
     scrollerx = 320 - MARGIN;
 
-    while ( quit == 0 )
-    {
-
-        if ( redraw ){
-            sprintf(mcmenu[0], (slot == 0) ? "Use: SLOT A" : "Use: SLOT B");
-            sprintf(mcmenu[1], (device == 0) ? "Device:  MCARD" : "Device: SDCARD");
-            DrawMenu(&mcmenu[0], mccount, menu);
+    while ( quit == 0 ) {
+        if ( redraw ) {
+            sprintf(mcmenu[SAVE_SLOT], "%s: %s", ChosenDevice ? "SDCard" : "MemCard",
+                SdSlots[ChosenSlot]);
+            sprintf(mcmenu[SAVE_DEVICE], "Device: %s", ChosenDevice ? "SDCard" : "MemCard");
+            DrawMenu(mcmenu, mccount, ChosenMenu);
+            redraw = 0;
         } 
 
-        redraw = 0;
-
         j = PAD_ButtonsDown(0);
-
         if ( j & PAD_BUTTON_DOWN ) {
-            menu++;
+            ChosenMenu++;
             redraw = 1;
         }
 
         if ( j & PAD_BUTTON_UP ) {
-            menu--;
+            ChosenMenu--;
             redraw = 1;
         }
 
         if ( j & PAD_BUTTON_A ) {
             redraw = 1;
-            switch( menu ) {
-                case 0 :
-                    slot ^= 1;
+            switch( ChosenMenu ) {
+                case SAVE_SAVE: 
+                    ManageState(0, ChosenSlot, ChosenDevice); //Save
                     break;
-                case 1 : 
-                    device ^= 1;
+                case SAVE_LOAD:
+                    ManageState(1, ChosenSlot, ChosenDevice); //Load
                     break;
-                case 2 : 
-                    ManageState(0, slot, device); //Save
+                case SAVE_DEVICE: 
+                    ChosenDevice ^= 1;
                     break;
-                case 3 :
-                    ManageState(1, slot, device); //Load
+                case SAVE_SLOT:
+                    ChosenSlot++;
+                    if (ChosenSlot >= SdSlotCount)
+                        ChosenSlot = 0;
                     break;
-                case 4 : 
+                case SAVE_EXIT: 
                     quit = 1;//return 0 ; 
                     break;
                 default: 
@@ -620,13 +621,37 @@ int StateManager() {
             }
         }
 
+        if (j & PAD_BUTTON_RIGHT) {
+            if (ChosenMenu == SAVE_SLOT) {
+                ChosenSlot++;
+                if (ChosenSlot >= SdSlotCount)
+                    ChosenSlot = SdSlotCount - 1;
+                redraw = 1;
+            } else if (ChosenMenu == SAVE_DEVICE) {
+                ChosenDevice ^= 1;
+                redraw = 1;
+            }
+        }
+
+        if (j & PAD_BUTTON_LEFT) {
+            if (ChosenMenu == SAVE_SLOT) {
+                ChosenSlot--;
+                if (ChosenSlot < 0)
+                    ChosenSlot = 0;
+                redraw = 1;
+            } else if (ChosenMenu == SAVE_DEVICE) {
+                ChosenDevice ^= 1;
+                redraw = 1;
+            }
+        }
+
         if ( j & PAD_BUTTON_B ) quit = 1;
 
-        if ( menu < 0 )
-            menu = mccount - 1;
+        if ( ChosenMenu < 0 )
+            ChosenMenu = mccount - 1;
 
-        if ( menu == mccount )
-            menu = 0;
+        if ( ChosenMenu == mccount )
+            ChosenMenu = 0;
 
         scroller(SCROLLY, &sgmtext[0], 2);
         VIDEO_WaitVSync();
@@ -908,6 +933,7 @@ int MediaSelect() {
                         quit = 1;
 #else
                         UseSDCARD = 0; //DVD
+                        UseFrontSDCARD = 0;
                         OpenDVD();
                         return 1;
 #endif

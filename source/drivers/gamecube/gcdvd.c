@@ -16,8 +16,14 @@
 #include "sz.h"
 #include "gcdvd.h"
 
+#ifdef HW_RVL
 #include "wiisd/sdio.h"
 #include "wiisd/tff.h"
+
+/*Front SCARD*/
+FATFS frontfs;
+FILINFO finfo;
+#endif
 
 /*** Simplified Directory Entry Record 
   I only care about a couple of values ***/
@@ -28,15 +34,11 @@
 #define FILENAME_LENGTH 32
 #define FILENAME 33
 
-#define PAGESIZE 10
+#define PAGESIZE 11
 
 #define FCEUDIR "fceu"
 #define SAVEDIR "saves"
 #define ROMSDIR "roms"
-
-/*Front SCARD*/
-FATFS frontfs;
-FILINFO finfo;
 
 FILEENTRIES filelist[MAXFILES];
 int maxfiles = 0;
@@ -605,11 +607,11 @@ void ShowFiles( int offset, int selection ) {
         else
             dir[0] = 0;
 
-        writex(CentreTextPosition(dir), 32, GetTextWidth(dir), font_height, dir, 0);
+        writex(CentreTextPosition(dir), 22, GetTextWidth(dir), font_height, dir, 0);
         while (GetTextWidth(text) > 620)
             text[strlen(text)-2] = 0;
 
-        writex( CentreTextPosition(text), ( j * font_height ) + 130, GetTextWidth(text), font_height, text, j == ( selection - offset ) );
+        writex( CentreTextPosition(text), ( j * font_height ) + 110, GetTextWidth(text), font_height, text, j == ( selection - offset ) );
 
         j++;		
     }
@@ -732,6 +734,7 @@ void FileSelector() {
                     maxfiles = parsedir();
                 }
             } else {
+#ifdef HW_RVL
                 if (UseFrontSDCARD) {
                     strncpy(finfo.fname, filelist[selection].filename, 12);
                     int l = strlen(finfo.fname);
@@ -740,6 +743,7 @@ void FileSelector() {
                     finfo.fsize = filelist[selection].length;
                     finfo.fattrib = filelist[selection].flags ? AM_DIR : 0;
                 }
+#endif
                 rootdir = filelist[selection].offset;
                 rootdirlength = filelist[selection].length;
                 // Now load the DVD file to it's offset 
@@ -766,7 +770,6 @@ int LoadDVDFile( unsigned char *buffer ) {
     u32 bytes_read_total;
 
     if(UseFrontSDCARD) {
-    WaitPrompt("WiiSD Read");
         ShowAction((char*)"Loading ... Wait");	
         char filename[1024];
         sprintf(filename, "%s/%s", rootWiiSDdir, finfo.fname);
@@ -824,7 +827,6 @@ int LoadDVDFile( unsigned char *buffer ) {
     }
 #endif
 
-    WaitPrompt("Not WiiSD");
     /*** SDCard Addition ***/
     if (UseSDCARD) GetSDInfo();
     if (rootdirlength == 0) return 0;
@@ -955,6 +957,7 @@ int OpenFrontSD () {
 
 int OpenSD () {
     UseSDCARD = 1;
+    UseFrontSDCARD = 0;
     char msg[128];
 
     if (ChosenSlot != sdslot) haveSDdir = 0;

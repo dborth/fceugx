@@ -11,8 +11,12 @@
 #include "../../types.h"
 #include "../../state.h"
 #include "saveicon.h"
-
-#define SAVEDIR "fceu\\saves"
+#ifdef HW_RVL
+#include "wiisd/tff.h"
+#include "wiisd/integer.h"
+#endif
+#define FCEUDIR "fceu"
+#define SAVEDIR "saves"
 
 /*** External functions ***/
 extern void FCEUPPU_SaveState(void);
@@ -39,7 +43,9 @@ int sboffset;				/*** Used as a basic fileptr  ***/
 int mcversion = 0x981211;
 
 static u8 SysArea[CARD_WORKAREA] ATTRIBUTE_ALIGN(32);
-
+extern FILINFO finfo;
+extern int ChosenSlot;
+extern int ChosenDevice;
 /****************************************************************************
  * Memory based file functions
  ****************************************************************************/
@@ -478,63 +484,167 @@ void MCManage(int mode, int slot) {
     } 
 }
 
-void SD_Manage(int mode, int slot){
-
-    sd_file *handle;
+void SD_Manage(int mode, int slot) {
     char path[1024];
     char msg[128];
     int offset = 0;
     int filesize = 0;
     int len = 0;
 
-    sprintf (path, "dev%d:\\%s\\%08x.fcs", slot, SAVEDIR, iNESGameCRC32);
+    if (slot < 2) {
+        sd_file *handle;
+        sprintf (path, "dev%d:\\%s\\%s\\%08x.fcs", ChosenSlot, FCEUDIR, SAVEDIR, iNESGameCRC32);
 
-    if (mode == 0) ShowAction ("Saving STATE to SD...");
-    else ShowAction ("Loading STATE from SD...");
+        if (mode == 0) ShowAction ("Saving STATE to SD...");
+        else ShowAction ("Loading STATE from SD...");
 
-    handle = SDCARD_OpenFile(path, (mode == 0) ? "wb" : "rb");
+        handle = SDCARD_OpenFile(path, (mode == 0) ? "wb" : "rb");
 
-    if (handle == NULL){        
-        sprintf(msg, "Couldn't open %s", path);
-        WaitPrompt(msg);
-        return;
-    }
-
-    if (mode == 0){ //Save
-        filesize = GCFCEUSS_Save();
-
-        len = SDCARD_WriteFile (handle, statebuffer, filesize);
-        SDCARD_CloseFile (handle);
-
-        if (len != filesize){
-            sprintf (msg, "Error writing %s", path);
-            WaitPrompt (msg);
-            return;			
+        if (handle == NULL){        
+            sprintf(msg, "Couldn't open %s", path);
+            WaitPrompt(msg);
+            return;
         }
 
-        sprintf (msg, "Saved %d bytes successfully", filesize);
-        WaitPrompt (msg);
-    }
-    else{ //Load
+        if (mode == 0){ //Save
+            filesize = GCFCEUSS_Save();
 
-        memopen();
-        while ((len = SDCARD_ReadFile (handle, &statebuffer[offset], 1024)) > 0) offset += len;
-        SDCARD_CloseFile (handle);
+            len = SDCARD_WriteFile (handle, statebuffer, filesize);
+            SDCARD_CloseFile (handle);
 
-        sprintf (msg, "Loaded %d bytes successfully", offset);
-        ShowAction(msg);
+            if (len != filesize){
+                sprintf (msg, "Error writing %s", path);
+                WaitPrompt (msg);
+                return;			
+            }
 
-        GCFCEUSS_Load();
-        return ;
+            sprintf (msg, "Saved %d bytes successfully", filesize);
+            WaitPrompt (msg);
+        }
+        else{ //Load
+
+            memopen();
+            while ((len = SDCARD_ReadFile (handle, &statebuffer[offset], 1024)) > 0) offset += len;
+            SDCARD_CloseFile (handle);
+
+            sprintf (msg, "Loaded %d bytes successfully", offset);
+            ShowAction(msg);
+
+            GCFCEUSS_Load();
+            return ;
+        }
+    } else { // WiiSD
+#ifdef HW_RVL
+        if (mode == 0) ShowAction ("Saving State to WiiSD...");
+        else ShowAction ("Loading State from WiiSD...");
+
+        sprintf(path, "/%s/%s/%08X.fcs", FCEUDIR, SAVEDIR, iNESGameCRC32);
+        FIL fp;
+        int res;
+        u32 offset = 0;
+
+        if (mode == 0)
+            res = f_open(&fp, path, FA_CREATE_ALWAYS | FA_WRITE);
+        else {
+            if ((res=f_stat(path, &finfo)) != FR_OK) {
+                if (res == FR_NO_FILE) {
+                    sprintf(msg, "Unable to find %s.", path);
+                }
+                else {
+                    sprintf(msg, "f_stat failed, error %d", res);
+                }
+                WaitPrompt(msg);
+                return;
+            }
+            res = f_open(&fp, path, FA_READ);
+        }
+
+        if (res != FR_OK) {
+            sprintf(msg, "Failed to open %s, error %d.", path, res);
+            WaitPrompt(msg);
+            return;
+        }
+
+        if (mode == 0) { // Save
+            WORD written = 0;
+            u32 total_written = 0;
+
+            filesize = GCFCEUSS_Save();
+            sprintf(msg, "Writing %d bytes..", filesize);
+            ShowAction(msg);
+
+            offset = filesize;
+            // Can only write 64k at a time
+            while (offset > 65000) {
+                if ((res = f_write(&fp, &statebuffer[total_written], 65000, &written)) != FR_OK) {
+                    sprintf(msg, "f_write failed, error %d", res);
+                    WaitPrompt(msg);
+                    f_close(&fp);
+                    return;
+                }
+                offset -= written;
+                total_written += written;
+            }
+            // Write last 64k
+            if ((res = f_write(&fp, statebuffer+total_written, offset, &written)) != FR_OK) {
+                sprintf(msg, "f_write failed, error %d", res);
+                WaitPrompt(msg);
+                f_close(&fp);
+                return;
+            }
+            offset -= written;
+            total_written += written;
+            if (total_written == filesize) {
+                sprintf(msg, "Wrote %d bytes.", total_written);
+                ShowAction(msg);
+                f_close(&fp);
+                return;
+            }
+
+            sprintf(msg, "Write size mismatch, %d of %d bytes", written, filesize);
+            WaitPrompt(msg);
+            sprintf(msg, "Unable to save %s", path);
+            WaitPrompt(msg);
+            f_close(&fp);
+            return;
+        } else { // Load
+            WORD bytes_read = 0;
+            u32 bytes_read_total = 0;
+
+            memopen();
+            while(bytes_read_total < finfo.fsize) {
+                if (f_read(&fp, &statebuffer[bytes_read_total], 0x200, &bytes_read) != FR_OK) {
+                    WaitPrompt((char*)"f_read failed");
+                    f_close(&fp);
+                    return;
+                }
+
+                if (bytes_read == 0)
+                    break;
+                bytes_read_total += bytes_read;
+            }
+
+            if (bytes_read_total < finfo.fsize) {
+                WaitPrompt((char*)"read failed");
+                f_close(&fp);
+                return;
+            }
+            sprintf(msg, "Read %d of %ld bytes.", bytes_read_total, finfo.fsize);
+            ShowAction(msg);
+            f_close(&fp);
+            offset = bytes_read_total;
+            GCFCEUSS_Load();
+            return;
+        }
+#endif
     }
 }
 
-void ManageState(int mode, int slot, int device){
-
-    if (device == 0){
+void ManageState(int mode, int slot, int device) {
+    if (device == 0) {
         MCManage(mode, slot);
     }
-    else{
+    else {
         SD_Manage(mode, slot);
     }
 }
