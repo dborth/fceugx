@@ -67,7 +67,7 @@ extern int ChosenSlot;
 extern bool isWii;
 
 int UseSDCARD = 0;
-int UseFrontSDCARD = 0;
+int UseWiiSDCARD = 0;
 sd_file * filehandle = NULL;
 char rootSDdir[SDCARD_MAX_PATH_LEN];
 char rootWiiSDdir[SDCARD_MAX_PATH_LEN];
@@ -426,23 +426,21 @@ int parsedir() {
 /***************************************************************************
  * Update SDCARD curent directory name 
  ***************************************************************************/ 
-int updateSDdirname()
-{
+int updateSDdirname() {
     int size=0;
     char *test;
     char temp[1024];
 
     /* current directory doesn't change */
-    if (strcmp(filelist[selection].filename,".") == 0) return 0; 
+    if (strcmp(filelist[selection].filename,".") == 0)
+        return 0; 
 
     /* go up to parent directory */
-    else if (strcmp(filelist[selection].filename,"..") == 0) 
-    {
+    if (strcmp(filelist[selection].filename,"..") == 0) {
         /* determine last subdirectory namelength */
         sprintf(temp,"%s",rootSDdir);
-        test= strtok(temp,"\\");
-        while (test != NULL)
-        { 
+        test = strtok(temp,"\\");
+        while (test != NULL) { 
             size = strlen(test);
             test = strtok(NULL,"\\");
         }
@@ -453,31 +451,69 @@ int updateSDdirname()
 
         /* handles root name */
         //sprintf(tmpCompare, "dev%d:",ChosenSlot);
-        if (strcmp(rootSDdir, sdslot ? "dev1:":"dev0:") == 0)sprintf(rootSDdir,"dev%d:\\fceu\\..", sdslot); 
+        if (strcmp(rootSDdir, sdslot ? "dev1:":"dev0:") == 0)
+            sprintf(rootSDdir,"dev%d:\\%s\\..", sdslot, FCEUDIR); 
 
         return 1;
-    }
-    else
-    {
+    } else {
         /* test new directory namelength */
-        if ((strlen(rootSDdir)+1+strlen(filelist[selection].filename)) < SDCARD_MAX_PATH_LEN) 
-        {
+        if ((strlen(rootSDdir)+1+strlen(filelist[selection].filename)) < SDCARD_MAX_PATH_LEN) {
             /* handles root name */
-            //sprintf(tmpCompare, "dev%d:\\fceu\\..",ChosenSlot);
-            //if (strcmp(rootSDdir, tmpCompare) == 0) sprintf(rootSDdir,"dev%d:",ChosenSlot);
-            if (strcmp(rootSDdir, sdslot ? "dev1:\\fceu\\.." : "dev0:\\fceu\\..") == 0) sprintf(rootSDdir,"dev%d:",sdslot);
+            sprintf(temp, "dev%d:\\%s\\..", sdslot, FCEUDIR);
+            if (strcmp(rootSDdir, temp) == 0)
+                sprintf(rootSDdir,"dev%d:",sdslot);
 
             /* update current directory name */
             sprintf(rootSDdir, "%s\\%s",rootSDdir, filelist[selection].filename);
             return 1;
-        }
-        else
-        {
+        } else {
             WaitPrompt ("Dirname is too long !"); 
             return -1;
         }
     } 
 }
+
+#ifdef HW_RVL
+/***************************************************************************
+ *  * Update WiiSDCARD curent directory name
+ *   ***************************************************************************/
+int updateWiiSDdirname() {
+    int size=0;
+    char *test;
+    char temp[1024];
+
+    /* current directory doesn't change */
+    if (strcmp(filelist[selection].filename,".") == 0)
+        return 0;
+
+    /* go up to parent directory */
+    else if (strcmp(filelist[selection].filename,"..") == 0) {
+        /* determine last subdirectory namelength */
+        sprintf(temp,"%s",rootWiiSDdir);
+        test = strtok(temp,"/");
+        while (test != NULL) {
+            size = strlen(test);
+            test = strtok(NULL,"/");
+        }
+
+        /* remove last subdirectory name */
+        size = strlen(rootWiiSDdir) - size - 1;
+        rootWiiSDdir[size] = 0;
+
+        return 1;
+    } else {
+        /* test new directory namelength */
+        if ((strlen(rootWiiSDdir)+1+strlen(filelist[selection].filename)) < SDCARD_MAX_PATH_LEN) {
+            /* update current directory name */
+            sprintf(rootWiiSDdir, "%s/%s",rootWiiSDdir, filelist[selection].filename);
+            return 1;
+        } else {
+            WaitPrompt ((char*)"Dirname is too long !");
+            return -1;
+        }
+    }
+}
+#endif
 
 /***************************************************************************
  * Browse SDCARD subdirectories 
@@ -602,7 +638,7 @@ void ShowFiles( int offset, int selection ) {
         char dir[1024];
         if (UseSDCARD)
             strcpy(dir, rootSDdir);
-        else if (UseFrontSDCARD)
+        else if (UseWiiSDCARD)
             strcpy(dir, rootWiiSDdir);
         else
             dir[0] = 0;
@@ -698,6 +734,22 @@ void FileSelector() {
                         haverom   = 1; // quit SD menu
                         haveSDdir = 0; // reset everything at next access
                     }
+#ifdef HW_RVL
+                } else if (UseWiiSDCARD) {
+                    /* update current directory and set new entry list if directory has changed */
+                    int status = updateWiiSDdirname();
+                    if (status == 1) {
+                        maxfiles = parseWiiSDdirectory();
+                        if (!maxfiles) {
+                            WaitPrompt ((char*)"Error reading directory !");
+                            haverom   = 1; // quit SD menu
+                            haveWiiSDdir = 0; // reset everything at next access
+                        }
+                    } else if (status == -1) {
+                        haverom   = 1; // quit SD menu
+                        haveWiiSDdir = 0; // reset everything at next access
+                    }
+#endif
                 } else {
                     rootdir = filelist[selection].offset;
                     rootdirlength = filelist[selection].length;
@@ -735,7 +787,7 @@ void FileSelector() {
                 }
             } else {
 #ifdef HW_RVL
-                if (UseFrontSDCARD) {
+                if (UseWiiSDCARD) {
                     strncpy(finfo.fname, filelist[selection].filename, 12);
                     int l = strlen(finfo.fname);
                     if (l > 12) l = 12;
@@ -768,7 +820,7 @@ int LoadDVDFile( unsigned char *buffer ) {
     FIL fp;
     u32 bytes_read = 0, bytes_read_total = 0;
 
-    if(UseFrontSDCARD) {
+    if(UseWiiSDCARD) {
         ShowAction((char*)"Loading ... Wait");	
         char filename[1024];
         sprintf(filename, "%s/%s", rootWiiSDdir, finfo.fname);
@@ -907,8 +959,8 @@ int OpenDVD() {
 }
 
 #ifdef HW_RVL
-int OpenFrontSD () {
-    UseFrontSDCARD = 1;
+int OpenWiiSD () {
+    UseWiiSDCARD = 1;
     UseSDCARD = 0;
     haveSDdir = 0;
     char msg[128];
@@ -954,7 +1006,7 @@ int OpenFrontSD () {
 
 int OpenSD () {
     UseSDCARD = 1;
-    UseFrontSDCARD = 0;
+    UseWiiSDCARD = 0;
     haveWiiSDdir = 0;
     char msg[128];
 
@@ -965,7 +1017,7 @@ int OpenSD () {
         havedir = 0;
 
         /* Reset SDCARD root directory */
-        sprintf(rootSDdir,"dev%d:\\fceu\\roms",ChosenSlot);
+        sprintf(rootSDdir,"dev%d:\\%s\\%s", FCEUDIR, SAVEDIR, ChosenSlot);
         sdslot = ChosenSlot;
 
         /* Parse initial root directory and get entries list */
@@ -980,7 +1032,7 @@ int OpenSD () {
             haveSDdir = 1;
         } else {
             /* no entries found */
-            sprintf (msg, "Error reading dev%d:\\fceu\\roms", ChosenSlot);
+            sprintf (msg, "Error reading %s", rootSDdir);
             WaitPrompt (msg);
             return 0;
         }
