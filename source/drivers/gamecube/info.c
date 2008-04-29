@@ -913,7 +913,7 @@ int MediaSelect() {
                 case MEDIA_SDCARD:
 #ifdef HW_RVL
                         if (ChosenSlot == SLOT_WIISD) {
-                            OpenFrontSD();
+                            OpenWiiSD();
                         } else
 #endif
                             OpenSD();

@@ -10,7 +10,7 @@
 #include "sz.h"
 
 extern int UseSDCARD;
-extern int UseFrontSDCARD;
+extern int UseWiiSDCARD;
 extern sd_file *filehandle;
 
 // 7zip error list
@@ -70,7 +70,7 @@ int dvd_buffered_read(void *dst, u32 len, u64 offset) {
                 GetSDInfo();
             SDCARD_SeekFile(filehandle, offset, SDCARD_SEEK_SET);
             SDCARD_ReadFile(filehandle, &dvdsf_buffer, len);
-        } else if (!UseFrontSDCARD)
+        } else if (!UseWiiSDCARD)
             ret = dvd_read(&dvdsf_buffer, len, offset);
         dvdsf_last_offset = offset;
         dvdsf_last_length = len;
