@@ -1017,7 +1017,7 @@ int OpenSD () {
         havedir = 0;
 
         /* Reset SDCARD root directory */
-        sprintf(rootSDdir,"dev%d:\\%s\\%s", FCEUDIR, SAVEDIR, ChosenSlot);
+        sprintf(rootSDdir,"dev%d:\\%s\\%s", ChosenSlot, FCEUDIR, ROMSDIR);
         sdslot = ChosenSlot;
 
         /* Parse initial root directory and get entries list */

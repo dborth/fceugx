@@ -15,7 +15,7 @@ unsigned short skipb[4] = {0, 0, 0, 0};
 
 unsigned short op[4] = {0, 0, 0, 0};
 
-extern int ConfigScreen();
+extern int MainMenu();
 
 /****************************************************************************
  * Initialise Pads
@@ -139,7 +139,7 @@ int GetJoy()
     signed char px;
     px = PAD_SubStickX (0); 
     if (((px < -PADCAL)) || (PAD_ButtonsHeld(0) == ( PAD_TRIGGER_L | PAD_TRIGGER_R ))) {
-        t = ConfigScreen();
+        t = MainMenu();
         if (t == 1) {
             return 1;
         }

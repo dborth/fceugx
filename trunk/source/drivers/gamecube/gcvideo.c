@@ -75,7 +75,7 @@ void WaitPrompt( char *msg )
         ClearScreen();
 
         WriteCentre( 220, msg);
-        WriteCentre( 220 + font_height, "Press A to Continue");
+        WriteCentre( 220 + font_height, MENU_PRESS_A);
 
         if ( PAD_ButtonsDown(0) & PAD_BUTTON_A )
             quit = 1;
