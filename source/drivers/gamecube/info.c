@@ -8,7 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../../iplfont/iplfont.h"
+#include "iplfont/iplfont.h"
+#include "intl.h"
 
 #define MARGIN 0
 
@@ -65,13 +66,10 @@ void Reboot() {
 #define SCROLLY 395
 
 /* color palettes */
-struct
-{
+struct {
     char *name, *desc;
     unsigned int data[64];
-}
-palettes[] =
-{
+} palettes[] = {
     /* The default NES palette must be the first entry in the array */
     { "loopy", "Loopy's NES palette",
         { 0x757575, 0x271b8f, 0x0000ab, 0x47009f,
@@ -298,24 +296,17 @@ extern GXRModeObj *vmode;
 extern int font_size[256];
 extern int font_height;
 extern int screenscaler;
-/*extern long blit_lookup[4];
-  extern long blit_lookup_inv[4];*/
 
 /****************************************************************************
  * SetScreen
  ****************************************************************************/
-
-void SetScreen()
-{
-
+void SetScreen() {
     VIDEO_SetNextFramebuffer( xfb[whichfb] );
     VIDEO_Flush();
     VIDEO_WaitVSync();
-
 }
 
-void ClearScreen()
-{
+void ClearScreen() {
     whichfb ^= 1;
     /*VIDEO_ClearFrameBuffer(vmode, xfb[whichfb], 0x258e2573);*/
     memcpy (xfb[whichfb], &backdrop, 1280 * 480);
@@ -345,29 +336,23 @@ void ClearScreen()
  *	4. Load ROM
  *		4.1 Load ROM from DVD-R
  ***************************************************************************/
-
-void DrawMenu(char items[][30], int maxitems, int select)
-{
+void DrawMenu(char *title, char items[][MENU_STRING_LENGTH], int maxitems, int select) {
     int i,w,p,h;
 
     ClearScreen();
 
     /*** Draw Title Centred ***/
+    //h = (480 - ((maxitems + 3) * font_height)) / 2;
+    write_font(CentreTextPosition(title), 22, title);
 
     p = (480 - (maxitems * font_height)) / 2 + 10;
+    //p = h + (font_height << 1);
 
-    for( i = 0; i < maxitems; i++ )
-    {
+    for( i = 0; i < maxitems; i++ ) {
         w = CentreTextPosition(items[i]);
         h = GetTextWidth(items[i]);
 
-        /*		if ( i == select )
-                        writex( w, p, h, font_height, items[i], blit_lookup_inv );
-                        else
-                        writex( w, p, h, font_height, items[i], blit_lookup );*/
-
         writex( w, p, h, font_height, items[i], i == select );
-
         p += font_height;
     }
 
@@ -379,13 +364,11 @@ void DrawMenu(char items[][30], int maxitems, int select)
  *
  * Remap a pad to the correct key
  ****************************************************************************/
-extern unsigned short gcpadmap[12];
-char PADMap( int padvalue, int padnum )
-{
+extern unsigned short gcpadmap[10];
+char PADMap( int padvalue, int padnum ) {
     char padkey;
 
-    switch( padvalue )
-    {
+    switch( padvalue ) {
         default:
         case 0: gcpadmap[padnum] = PAD_BUTTON_A; padkey = 'A'; break;
         case 1: gcpadmap[padnum] = PAD_BUTTON_B; padkey = 'B'; break;
@@ -394,7 +377,6 @@ char PADMap( int padvalue, int padnum )
         case 4: gcpadmap[padnum] = PAD_BUTTON_START; padkey = 'S'; break;
         case 5: gcpadmap[padnum] = PAD_TRIGGER_Z; padkey = 'Z'; break;
     }
-
     return padkey;
 }
 
@@ -403,51 +385,48 @@ char PADMap( int padvalue, int padnum )
  *
  * This screen simply let's the user swap A/B/X/Y around.
  ****************************************************************************/
-
-int configpadcount = 10;
-char padmenu[10][30] = { 
-    { "NES BUTTON A - A" }, { "    BUTTON B - B" }, { "    START    - S" }, 
-    { "    SELECT   - Z" }, { "    TURBO A  - X" }, { "    TURBO B  - Y" },
-    { "    FOUR SCORE - OFF" }, { "  ANALOG CLIP - 40"}, { " TURBO SPEED - 30.00 pps" }, 
-    { "Return to previous" } 
-};
-
-unsigned char text[][512] = {
-    //PAD Configuration
-    { "Configure Your Gamepad" },
-    { "Up, up, down, down, left, right, left, right, B, A, start" }
-};
-
-
-char mpads[2];
-
+char mpads[6] = { 0, 1, 2, 3, 4, 5 };
 int PADCON = 0;
 
-void ConfigPAD()
-{
+void ConfigPAD() {
+    int PadMenuCount = 10;
+    char PadMenu[10][MENU_STRING_LENGTH] = { 
+        { MENU_CONFIG_A }, { MENU_CONFIG_B }, { MENU_CONFIG_TURBO_A },
+        { MENU_CONFIG_TURBO_B }, { MENU_CONFIG_START }, { MENU_CONFIG_SELECT },
+        { MENU_CONFIG_FOUR_SCORE }, { MENU_CONFIG_CLIP }, { MENU_CONFIG_SPEED },
+        { MENU_EXIT }
+    };
+    enum PAD_MENU {
+        PAD_A, PAD_B, PAD_TURBO_A, PAD_TURBO_B,
+        PAD_START, PAD_SELECT, PAD_FOUR_SCORE,
+        PAD_CLIP, PAD_SPEED, PAD_EXIT
+    };
+    unsigned char PadMenuText[][512] = {
+        { MENU_CONFIG_TEXT1 }, { MENU_CONFIG_TEXT2 }
+    };
 
     int menu = 0;
     int quit = 0;
     short j;
     int redraw = 1;
-    int i;
-
-    for ( i = 0; i < 6; i++ )
-    {
-        mpads[i] = padmenu[i][15] == 'A' ? 0 :
-            padmenu[i][15] == 'B' ? 1 :
-            padmenu[i][15] == 'X' ? 2 :
-            padmenu[i][15] == 'Y' ? 3 :
-            padmenu[i][15] == 'S' ? 4 :
-            padmenu[i][15] == 'Z' ? 5 : 0;
-    }
+    int i = 0;
 
     line = 0;
     scrollerx = 320 - MARGIN;
 
-    while ( quit == 0 )
-    {
-        if ( redraw ) DrawMenu(&padmenu[0], configpadcount, menu);
+    while ( quit == 0 ) {
+        if ( redraw ) {
+            sprintf(PadMenu[PAD_A], MENU_CONFIG_A " - %c", PADMap(mpads[0], 0));
+            sprintf(PadMenu[PAD_B], MENU_CONFIG_B " - %c", PADMap(mpads[1], 1));
+            sprintf(PadMenu[PAD_TURBO_A], MENU_CONFIG_TURBO_A " - %c", PADMap(mpads[4], 4));
+            sprintf(PadMenu[PAD_TURBO_B], MENU_CONFIG_TURBO_B " - %c", PADMap(mpads[5], 5));
+            sprintf(PadMenu[PAD_START], MENU_CONFIG_START " - %c", PADMap(mpads[2], 2));
+            sprintf(PadMenu[PAD_SELECT], MENU_CONFIG_SELECT " - %c", PADMap(mpads[3], 3));
+            sprintf(PadMenu[PAD_FOUR_SCORE], MENU_CONFIG_FOUR_SCORE " - %s", FSDisable ? "OFF" : "ON");
+            sprintf(PadMenu[PAD_CLIP], MENU_CONFIG_CLIP " - %d", PADCAL);
+            sprintf(PadMenu[PAD_SPEED], MENU_CONFIG_SPEED " - %.2f pps", (float)60/PADTUR);
+            DrawMenu(MENU_CONFIG_TITLE, PadMenu, PadMenuCount, menu);
+        }
 
         redraw = 0;
         j = PAD_ButtonsDown(0);
@@ -465,67 +444,50 @@ void ConfigPAD()
         if ( j & PAD_BUTTON_A ) {
             redraw = 1;
             switch( menu ) {
-
-                case 0: i = 0; break;
-
-                case 1: i = 1; break;
-
-                case 2: i = 2; break;
-
-                case 3: i = 3; break;
-
-                case 4: i = 4; break;
-
-                case 5: i = 5; break;
-
-                case 6: i = -1;
+                case PAD_A: i = 0; break;
+                case PAD_B: i = 1; break;
+                case PAD_TURBO_A: i = 4; break;
+                case PAD_TURBO_B: i = 5; break;
+                case PAD_START: i = 2; break;
+                case PAD_SELECT: i = 3; break;
+                case PAD_FOUR_SCORE: i = -1;
                         FSDisable ^= 1;
-                        if ( FSDisable )
-                            strcpy(padmenu[6], "    FOUR SCORE - OFF");
-                        else
-                            strcpy(padmenu[6], "    FOUR SCORE - ON ");
-
                         FCEUI_DisableFourScore(FSDisable);
                         break;
 
-                case 7: i = -1;
+                case PAD_CLIP: i = -1;
                         PADCAL += 5;
-                        if ( PADCAL > 90 )
-                            PADCAL = 40;
-
-                        sprintf(padmenu[7],"  ANALOG CLIP - %d", PADCAL);
+                        if ( PADCAL > 70 )
+                            PADCAL = 30;
                         break;
 
-                case 8: i = -1;
+                case PAD_SPEED:i = -1;
                         PADTUR += 1;
                         if ( PADTUR > 10 ) PADTUR += 4;
                         if ( PADTUR > 30 )
                             PADTUR = 2;
-
-                        sprintf(padmenu[8]," TURBO SPEED - %.2f pps", (float)60/PADTUR);
                         break;
 
-                case 9: quit=1; return; break;
+                case PAD_EXIT:
+                    quit = 1;
+                    break;
                 default: break;
             }
 
-            if ( i >= 0 ) {
+            if ( (quit == 0) && (i >= 0) ) {
                 mpads[i]++;
                 if ( mpads[i] == 6 ) mpads[i] = 0;
-
-                padmenu[i][15] = PADMap( mpads[i], i );
             }
         }
 
         if ( j & PAD_BUTTON_B ) {
-            quit=1; return;
+            quit = 1;
         }
 
-        if ( menu < 0 ) menu = configpadcount - 1;
+        if ( menu < 0 ) menu = PadMenuCount - 1;
+        if ( menu == PadMenuCount ) menu = 0;
 
-        if ( menu == configpadcount ) menu = 0;
-
-        scroller(SCROLLY, &text[0], 2);
+        scroller(SCROLLY, PadMenuText, 2);
         VIDEO_WaitVSync();
     }
 
@@ -535,12 +497,6 @@ void ConfigPAD()
 /****************************************************************************
  * Save Game Manager
  ****************************************************************************/
-unsigned char sgmtext[][512] = {
-    //Save game
-    { "From where do you wish to load/save your game?" },
-    { "Hard time making up your mind?" }
-};
-
 int SdSlotCount = 3;
 char SdSlots[3][10] = {
     { "Slot A" }, { "Slot B" }, { "Wii SD"}
@@ -551,21 +507,25 @@ enum SLOTS {
 int ChosenSlot = 0;
 int ChosenDevice = 1;
 
-int mccount = 5;
-char mcmenu[5][30] = { 
-    { "Save State" }, { "Load State" },
-    { "Device" }, { "Slot" },
-    //{ "Use: SLOT A" }, { "Device:  MCARD" },
-    //{ "Save Game State" }, { "Load Game State" },
-    { "Return to Main Menu" } 
-};
-
 int StateManager() {
+    int SaveMenuCount = 5;
+    char SaveMenu[5][MENU_STRING_LENGTH] = { 
+        { MENU_SAVE_SAVE }, { MENU_SAVE_LOAD },
+        { MENU_SAVE_DEVICE }, { "Slot" },
+        { MENU_EXIT }
+    };
     enum SAVE_MENU {
         SAVE_SAVE, SAVE_LOAD,
         SAVE_DEVICE, SAVE_SLOT,
         SAVE_EXIT
     };
+    unsigned char SaveMenuText[][512] = {
+        //Save game
+        { MENU_SAVE_TEXT1 },
+        { MENU_SAVE_TEXT2 }
+    };
+
+
     int ChosenMenu = 0;
     int quit = 0;
     short j;
@@ -576,10 +536,10 @@ int StateManager() {
 
     while ( quit == 0 ) {
         if ( redraw ) {
-            sprintf(mcmenu[SAVE_SLOT], "%s: %s", ChosenDevice ? "SDCard" : "MemCard",
+            sprintf(SaveMenu[SAVE_SLOT], "%s: %s", ChosenDevice ? "SDCard" : "MemCard",
                 SdSlots[ChosenSlot]);
-            sprintf(mcmenu[SAVE_DEVICE], "Device: %s", ChosenDevice ? "SDCard" : "MemCard");
-            DrawMenu(mcmenu, mccount, ChosenMenu);
+            sprintf(SaveMenu[SAVE_DEVICE], MENU_SAVE_DEVICE ": %s", ChosenDevice ? "SDCard" : "MemCard");
+            DrawMenu(MENU_SAVE_TITLE, SaveMenu, SaveMenuCount, ChosenMenu);
             redraw = 0;
         } 
 
@@ -612,7 +572,7 @@ int StateManager() {
                         ChosenSlot = 0;
                     break;
                 case SAVE_EXIT: 
-                    quit = 1;//return 0 ; 
+                    quit = 1;
                     break;
                 default: 
                     break;
@@ -646,12 +606,12 @@ int StateManager() {
         if ( j & PAD_BUTTON_B ) quit = 1;
 
         if ( ChosenMenu < 0 )
-            ChosenMenu = mccount - 1;
+            ChosenMenu = SaveMenuCount - 1;
 
-        if ( ChosenMenu == mccount )
+        if ( ChosenMenu == SaveMenuCount )
             ChosenMenu = 0;
 
-        scroller(SCROLLY, &sgmtext[0], 2);
+        scroller(SCROLLY, SaveMenuText, 2);
         VIDEO_WaitVSync();
 
     }
@@ -662,22 +622,24 @@ int StateManager() {
 /****************************************************************************
  * Video Enhancement Screen
  ****************************************************************************/
+int VideoEnhancements() {	
+    int VideoMenuCount = 5;
+    char VideoMenu[5][MENU_STRING_LENGTH] = { 
+        { MENU_VIDEO_SCALER }, { MENU_VIDEO_PALETTE },
+        { MENU_VIDEO_SPRITE }, { MENU_VIDEO_TIMING },
+        { MENU_EXIT }
+    };
+    enum VIDEO_MENU {
+        VIDEO_SCALER, VIDEO_PALETTE,
+        VIDEO_SPRITE, VIDEO_TIMING,
+        VIDEO_EXIT
+    };
+    unsigned char VideoMenuText[][512] = {
+        //Screen Configurator
+        { MENU_VIDEO_TEXT1 },
+        { MENU_VIDEO_TEXT2 }
+    };
 
-int vecount = 5;
-char vemenu[5][30] = { 
-    { "Screen Scaler - GX" }, { "Palette - Default" }, 
-    { "8 Sprite Limit - ON " },{ "Timing - NTSC" }, 
-    { "Return to Main Menu" } 
-};
-
-unsigned char vestext[][512] = {
-    //Screen Configurator
-    { "Wow, these colors and shapes sure are beautiful, brings back the memories." },
-    { "Be sure not to mess these settings up, You don't want to ruin the experience! :D" }
-};
-
-int VideoEnhancements()
-{	
     int menu = 0;
     int quit = 0;
     short j;
@@ -690,13 +652,18 @@ int VideoEnhancements()
 
     while ( quit == 0)
     {
-        if ( redraw )
-            DrawMenu(&vemenu[0], vecount, menu );
+        if ( redraw ) {
+            sprintf(VideoMenu[VIDEO_SCALER], MENU_VIDEO_SCALER " - %s",
+                (screenscaler == 0) ? "2x" : (screenscaler == 1) ? "Cheesy" : "GX");
+            sprintf(VideoMenu[VIDEO_PALETTE], MENU_VIDEO_PALETTE " - %s",
+                currpal ? palettes[currpal-1].name : MENU_VIDEO_DEFAULT);
+            sprintf(VideoMenu[VIDEO_SPRITE], MENU_VIDEO_SPRITE " - %s", slimit ? MENU_ON : MENU_OFF);
+            sprintf(VideoMenu[VIDEO_TIMING], MENU_VIDEO_TIMING " - %s", timing ? "PAL " : "NTSC");
+            DrawMenu(MENU_VIDEO_TITLE, VideoMenu, VideoMenuCount, menu );
+        }
 
         redraw = 0;
-
         j = PAD_ButtonsDown(0);
-
         if ( j & PAD_BUTTON_DOWN ) {
             menu++;
             redraw = 1;
@@ -710,33 +677,20 @@ int VideoEnhancements()
         if ( j & PAD_BUTTON_A ) {
             redraw = 1;
             switch ( menu ) {
-                case 0:	/*** Scaler ***/
-                    screenscaler++;
-                    screenscaler = ( screenscaler > 2 ) ? 0 : screenscaler;
-
-                    switch ( screenscaler )
-                    {
-                        case 2: strcpy(vemenu[0], "Screen Scaler - GX"); break;
-                        case 1: strcpy(vemenu[0], "Screen Scaler - Cheesy"); break;
-                        case 0:	strcpy(vemenu[0], "Screen Scaler - 2x"); break;
-                    }
+                case VIDEO_SCALER:
+                    if (++screenscaler > 2)
+                        screenscaler = 0;
                     break;
-                case 1: /*** Palette ***/
-                    currpal++;
-                    if ( currpal > MAXPAL )
+                case VIDEO_PALETTE:
+                    if ( ++currpal > MAXPAL )
                         currpal = 0;
 
                     if ( currpal == 0 ) {
-                        strcpy(vemenu[1],"Palette - Default");
                         /*** Do palette reset ***/
                         FCEU_ResetPalette();
                     } else {
-                        strcpy(vemenu[1],"Palette - ");
-                        strcat(vemenu[1], palettes[currpal-1].name);
-
                         /*** Now setup this palette ***/
-                        for ( i = 0; i < 64; i++ )
-                        {
+                        for ( i = 0; i < 64; i++ ) {
                             r = palettes[currpal-1].data[i] >> 16;
                             g = ( palettes[currpal-1].data[i] & 0xff00 ) >> 8;
                             b = ( palettes[currpal-1].data[i] & 0xff );
@@ -747,28 +701,21 @@ int VideoEnhancements()
 
                         }
                     }
-
                     break;
 
-                case 2: slimit ^=1;
-                        if ( slimit )
-                            strcpy(vemenu[2], "8 Sprite Limit - ON ");
-                        else
-                            strcpy(vemenu[2], "8 Sprite Limit - OFF");
+                case VIDEO_SPRITE:
+                        slimit ^=1;
                         FCEUI_DisableSpriteLimitation( slimit );
                         break;
 
-                case 3: timing ^= 1;
-                        if ( timing )
-                            strcpy(vemenu[3], "Timing - PAL ");
-                        else
-                            strcpy(vemenu[3], "Timing - NTSC");
-
+                case VIDEO_TIMING:
+                        timing ^= 1;
                         FCEUI_SetVidSystem( timing );
-
                         break;
 
-                case 4: quit = 1; break;
+                case VIDEO_EXIT:
+                        quit = 1;
+                        break;
 
                 default: break;
 
@@ -777,24 +724,21 @@ int VideoEnhancements()
 
         if ( j & PAD_BUTTON_B ) quit = 1;
         if ( menu < 0 )
-            menu = vecount - 1;
+            menu = VideoMenuCount - 1;
 
-        if ( menu == vecount )
+        if ( menu == VideoMenuCount )
             menu = 0;
 
-        scroller(SCROLLY, &vestext[0], 2);	
+        scroller(SCROLLY, VideoMenuText, 2);	
         VIDEO_WaitVSync();
-
     }
 
     return 0;
-
 }
 
 /****************************************************************************
  * ROM Information
  ****************************************************************************/
-
 typedef struct {
     char ID[4]; /*NES^Z*/
     u8 ROM_size;
@@ -811,11 +755,9 @@ extern u32 VROM_size;
 extern u32 iNESGameCRC32;
 extern u8 iNESMirroring;
 
-void ShowROMInfo()
-{
-
+void ShowROMInfo() {
     int i,p;
-    char *title = "ROM Information";
+    char *title = MENU_INFO_TITLE;
     char info[128];
 
     ClearScreen();
@@ -825,14 +767,13 @@ void ShowROMInfo()
     write_font( CentreTextPosition( title ), p, title );
     p += ( font_height << 1 );
 
-    for ( i = 0; i < 5; i++ )
-    {
+    for ( i = 0; i < 5; i++ ) {
         switch (i) {
-            case 0: sprintf(info, "ROM Size : %d", head.ROM_size ); break;
-            case 1: sprintf(info, "VROM Size : %d", head.VROM_size ); break;
-            case 2: sprintf(info, "iNES CRC : %08x", iNESGameCRC32 ); break;
-            case 3: sprintf(info, "Mapper : %d", MapperNo ); break;
-            case 4: sprintf(info, "Mirroring : %d", iNESMirroring );break;
+            case 0: sprintf(info, MENU_INFO_ROM " : %d", head.ROM_size ); break;
+            case 1: sprintf(info, MENU_INFO_VROM " : %d", head.VROM_size ); break;
+            case 2: sprintf(info, MENU_INFO_CRC " : %08x", iNESGameCRC32 ); break;
+            case 3: sprintf(info, MENU_INFO_MAPPER " : %d", MapperNo ); break;
+            case 4: sprintf(info, MENU_INFO_MIRROR " : %d", iNESMirroring );break;
         }
 
         write_font( CentreTextPosition( info ), p, info );
@@ -842,30 +783,28 @@ void ShowROMInfo()
 
     SetScreen();
 
-    while ( !(PAD_ButtonsDown(0) & (PAD_BUTTON_A | PAD_BUTTON_B)) )
+    while ( !(PAD_Bu/ttonsDown(0) & (PAD_BUTTON_A | PAD_BUTTON_B)) )
     { VIDEO_WaitVSync(); }
-
 }
 
 /****************************************************************************
  * Media Select Screen
  ****************************************************************************/
-
-int MediaMenuCount = 5;
-char MediaMenu[5][30] = { 
-    { "Load from SDCARD"}, { "SDCard: Slot A" },
-    { "Load from DVD" }, { "Stop DVD Motor" },
-    { "Return to previous" } 
-};
-
-unsigned char msstext[][512] = {
-    //Screen Configurator
-    { "What are You waiting for? Load some games!" },
-    { "Still here?" },
-    { "How can You wait this long?! The games are waiting for You!!" }
-};
-
 int MediaSelect() {
+    int MediaMenuCount = 5;
+    char MediaMenu[5][MENU_STRING_LENGTH] = { 
+        { MENU_MEDIA_SDCARD }, { "SDCard: Slot A" },
+        { MENU_MEDIA_DVD }, { MENU_MEDIA_STOPDVD },
+        { MENU_EXIT }
+    };
+
+    unsigned char MediaMenuText[][512] = {
+        //Screen Configurator
+        { MENU_MEDIA_TEXT1 },
+        { MENU_MEDIA_TEXT2 },
+        { MENU_MEDIA_TEXT3 }
+    };
+
     enum MEDIA_MENU {
         MEDIA_SDCARD, MEDIA_SLOT,
         MEDIA_DVD, MEDIA_STOPDVD,
@@ -891,12 +830,11 @@ int MediaSelect() {
     while ( quit == 0 ) {
         if ( redraw ) {
             sprintf(MediaMenu[MEDIA_SLOT], "SDCard: %s", SdSlots[ChosenSlot]);
-            DrawMenu(MediaMenu, MediaMenuCount, ChosenMenu );
+            DrawMenu(MENU_MEDIA_TITLE, MediaMenu, MediaMenuCount, ChosenMenu );
             redraw = 0;
         }
 
         j = PAD_ButtonsDown(0);
-
         if ( j & PAD_BUTTON_DOWN ) {
             ChosenMenu++;
             redraw = 1;
@@ -937,11 +875,11 @@ int MediaSelect() {
                         break;
 #ifndef HW_RVL
                 case MEDIA_STOPDVD:
-                        ShowAction((char*)"Stopping DVD Motor ... Wait");
+                        ShowAction((char*)MENU_MEDIA_STOPPING);
                         dvd_motor_off();
-                        WaitPrompt((char*)"Stopped DVD Motor");
+                        WaitPrompt((char*)MENU_MEDIA_STOPPED);
                 case MEDIA_EXIT:
-                        quit = 1; //Previous
+                        quit = 1;
                         break;
 #endif
 
@@ -972,7 +910,7 @@ int MediaSelect() {
         if ( ChosenMenu < 0 )
             ChosenMenu = MediaMenuCount - 1;
 
-        scroller(SCROLLY, &msstext[0], 3);
+        scroller(SCROLLY, &MediaMenuText[0], 3);
         VIDEO_WaitVSync();
     }
 
@@ -982,40 +920,38 @@ int MediaSelect() {
 /****************************************************************************
  * Credits screen
  *****************************************************************************/
-char credits[12][512] = {
-    //{ "Technical" },
-    { "Gamecube port by softdev" },
-    { "Original FCE by BERO" },
-    { "FCE Ultra by Xodnizel" },
-    { "DevkitPPC/libogc by wntrmute and shagkur" },
-    { "IPLFont by Qoob" },
-    { "DVD Codes Courtesy of Ninjamod" },
-    { "Zlib by Jean-loup Gailly" },
-    { "Misc. addons by KruLLo" },
-    { "Extras features Askot" },
-    { "Thank you to" },
-    { "brakken, mithos, luciddream, HonkeyKong," },
-    { "dsbomb for bringing it to the Wii" },
-};
-
 void ShowCredits(){
+    char CreditsText[12][512] = {
+        //{ "Technical" },
+        { MENU_CREDITS_GCPORT " " MENU_CREDITS_BY " softdev" },
+        { MENU_CREDITS_ORIG " " MENU_CREDITS_BY " BERO" },
+        { MENU_CREDITS_FCEU " " MENU_CREDITS_BY " Xodnizel" },
+        { "DevkitPPC/libogc " MENU_CREDITS_BY " wntrmute, shagkur" },
+        { "IPLFont " MENU_CREDITS_BY " Qoob" },
+        { MENU_CREDITS_DVD " Ninjamod" },
+        { "Zlib " MENU_CREDITS_BY " Jean-loup Gailly" },
+        { MENU_CREDITS_MISC " " MENU_CREDITS_BY " KruLLo" },
+        { MENU_CREDITS_EXTRAS " " MENU_CREDITS_BY " Askot" },
+        { MENU_CREDITS_THANK },
+        { "brakken, mithos, luciddream, HonkeyKong," },
+        { "dsbomb " MENU_CREDITS_WII },
+    };
 
     int i,p;
-    char *title = "Credits";
+    char *title = MENU_CREDITS_TITLE;
     char info[128];
 
     ClearScreen();
 
     //p = (480 - (7 * font_height)) / 2 + 5; //150
-    p = 105;
+    //p = 105;
 
-    write_font( CentreTextPosition( title ), p, title );
+    write_font( CentreTextPosition( title ), 22, title );
     //p += ( font_height << 1 );
 
-    p = 133;
-    for ( i = 0; i < 12; i++ )
-    {
-        sprintf(info, credits[i]);
+    p = 109;
+    for ( i = 0; i < 12; i++ ) {
+        sprintf(info, CreditsText[i]);
         write_font( CentreTextPosition( info ), p, info );
         p+=24;
         //p+=font_height;
@@ -1025,42 +961,42 @@ void ShowCredits(){
 
     while ( !(PAD_ButtonsDown(0) & (PAD_BUTTON_A | PAD_BUTTON_B)) )
     { VIDEO_WaitVSync(); }
-
 }
+
 /****************************************************************************
- * Configuration Screen
+ * Main Menu
  ****************************************************************************/
-int configmenucount = 11;
-char configmenu[11][30] = { 
-    { "Play Game" }, 
-    { "Reset NES" }, 
-    { "Load New Game" }, 
-    { "State Manager" }, 
-    { "ROM Information" }, 
-    { "Configure Joypads" }, 
-    { "Video Options" }, 
-#ifdef HW_RVL
-    { "TP Reload" },
-    { "Reboot Wii" },
-#else
-    { "PSO/SD Reload" } ,
-    { "Reboot Gamecube" },	
-#endif
-    { "Credits" } 
-};
+int MainMenu() {
+    int MainMenuCount = 10;
+    char MainMenu[10][MENU_STRING_LENGTH] = { 
+        { MENU_MAIN_PLAY },
+        { MENU_MAIN_RESET },
+        { MENU_MAIN_LOAD },
+        { MENU_MAIN_SAVE },
+        { MENU_MAIN_INFO },
+        { MENU_MAIN_JOYPADS },
+        { MENU_MAIN_OPTIONS },
+        { MENU_MAIN_RELOAD },
+        { MENU_MAIN_REBOOT },
+        { MENU_MAIN_CREDITS }
+    };
+    enum MAIN_MENU {
+        MAIN_PLAY, MAIN_RESET, MAIN_LOAD,
+        MAIN_SAVE, MAIN_INFO, MAIN_JOYPADS,
+        MAIN_VIDEO, MAIN_RELOAD, MAIN_REBOOT,
+        MAIN_CREDITS
+    };
+    unsigned char MainMenuText[][512] = {
+        //Main Menu
+        { MENU_MAIN_TEXT1 },
+        { MENU_MAIN_TEXT2 },
+        { MENU_MAIN_TEXT3 },
+        { "* * *" },
+        { MENU_MAIN_TEXT4 },
+        { MENU_MAIN_TEXT5 },
+        { MENU_MAIN_TEXT6 }
+    };
 
-unsigned char cstext[][512] = {
-    //ConfigScreen
-    { "FCE Ultra GameCube Edition - Version 1.0.9 \"SUPER-DELUXE\" ;)" },
-    { "Press L + R anytime to return to this menu!" },
-    { "Press START + B + X anytime for PSO/SD-reload" },
-    { "* * *" },
-    { "FCE Ultra GC is a modified port of the FCE Ultra 0.98.12 Nintendo Entertainment system for x86 (Windows/Linux) PC's. In English you can play NES games on your GameCube using either a softmod and/or modchip from a DVD or via a networked connection to your PC." },
-    { "Disclaimer - Use at your own RISK!" },
-    { "Official Homepage: http://www.tehskeen.net" }
-};
-
-int ConfigScreen() {
     int menu = 0;
     int quit = 0;
     short j;
@@ -1078,31 +1014,16 @@ int ConfigScreen() {
     line = 0;
     scrollerx = 320 - MARGIN;
 
-    while ( quit == 0 )
-    {
+    while ( quit == 0 ) {
         if ( redraw )
-            /*DrawMenu("FCEU GC Configuration", &configmenu[0], configmenucount, menu );*/
-            DrawMenu(&configmenu[0], configmenucount, menu );
+            DrawMenu(MENU_CREDITS_TITLE, MainMenu, MainMenuCount, menu );
 
         redraw = 0;
 
-        //while (menu == 9 && !(PAD_ButtonsDown(0) & PAD_BUTTON_UP) && !(PAD_ButtonsDown(0) & PAD_BUTTON_DOWN))
-        //	{ scroller(SCROLLY, &credits[0], 12);VIDEO_WaitVSync(); }
-
-        /*if (menu == 9) {
-          scrollerx = 320 - MARGIN;
-          line = 0;
-          }*/
-
         j = PAD_ButtonsDown(0);
-
         if (j & PAD_BUTTON_DOWN) {
             menu++;
             redraw = 1;
-            /*if (menu == 9) {
-              scrollerx = 320 - MARGIN;
-              line = 0;
-              }*/
         }
 
         if (j & PAD_BUTTON_UP) {
@@ -1117,51 +1038,51 @@ int ConfigScreen() {
         if (j & PAD_BUTTON_A ) {
             redraw = 1;
             switch ( menu ) {
-                case 0:	// Play Game		
+                case MAIN_PLAY:
                     quit = 1; 
                     break;
 
-                case 1:	// Reset NES
+                case MAIN_RESET:
                     ResetNES();
-                    return 1;
+                    quit = 1;
                     break;
 
-                case 2:	// Load new Game
+                case MAIN_LOAD:
                     if (MediaSelect()) {
                     	if (GCMemROM() >= 0)
-                            return 1;/* Fix by Garglub. Thanks! */
+                            return 1; /* Fix by Garglub. Thanks! */
                     }
                     scrollerx = 320 - MARGIN; 
                     break;
 
-                case 3: // State Manager
+                case MAIN_SAVE:
                     if (StateManager()) return 2;
                     scrollerx = 320 - MARGIN;
                     break;
 
-                case 4:	// Game Information
+                case MAIN_INFO:
                     ShowROMInfo(); 
                     break;
 
-                case 5: // COnfigure Joypads
+                case MAIN_JOYPADS:
                     ConfigPAD(); 
                     scrollerx = 320 - MARGIN; 
                     break;
 
-                case 6: // Video Options
+                case MAIN_VIDEO:
                     if (VideoEnhancements()) return 2; 
                     scrollerx = 320 - MARGIN;
                     break;
 
-                case 7:	// PSO/SD Reload
+                case MAIN_RELOAD:
                     PSOReload();
                     break;
 
-                case 8: // Reboot
+                case MAIN_REBOOT:
                     Reboot();
                     break;
 
-                case 9: // Credits 
+                case MAIN_CREDITS:
                     ShowCredits();
                     break;
 
@@ -1172,13 +1093,13 @@ int ConfigScreen() {
         if (j & PAD_BUTTON_B ) {
             quit = 1;
         }
-        if ( menu == configmenucount  )
+        if ( menu == MainMenuCount  )
             menu = 0;		
 
         if ( menu < 0 )
-            menu = configmenucount - 1;
+            menu = MainMenuCount - 1;
 
-        scroller(SCROLLY, &cstext[0], 7);
+        scroller(SCROLLY, MainMenuText, 7);
         VIDEO_WaitVSync();
 
     }

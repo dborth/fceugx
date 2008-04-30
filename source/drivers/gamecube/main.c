@@ -33,7 +33,7 @@ int eoptions=EO_BGRUN | EO_FORCEISCALE;
 
 extern int RenderFrame( char *XBuf , int style);
 
-extern int ConfigScreen();
+extern int MainMenu();
 
 extern void InitialiseSound();
 extern void initDisplay();
@@ -93,7 +93,7 @@ int main(int argc, char *argv[]) {
 
     cleanSFMDATA();
     GCMemROM();
-    ConfigScreen(); 
+    MainMenu(); 
 
     while (1) {
         uint8 *gfx;
