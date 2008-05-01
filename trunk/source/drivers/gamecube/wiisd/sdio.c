@@ -29,6 +29,8 @@ static s32 sd_fd = -1;
 
 static u32 status __attribute__((aligned(32)));
 
+s32 sd_deinit();
+
 s32 sd_send_cmd(u32 cmd, u32 type, u32 resp, u32 arg, u32 blocks, u32 bsize, u32 addr)
 {
 	static u32 request[9] __attribute__((aligned(32)));
@@ -45,12 +47,12 @@ s32 sd_send_cmd(u32 cmd, u32 type, u32 resp, u32 arg, u32 blocks, u32 bsize, u32
 	request[4] = blocks;
 	request[5] = bsize;
 	request[6] = addr;
-	request[7] = 0;
-	request[8] = 0;
+	//request[7] = 0;
+	//request[8] = 0;
 
 	r = IOS_Ioctl(sd_fd, 7, (u8 *)request, 36, (u8 *)reply, 0x10);
-	printf("sd_send_cmd(%x, %x, %x, %x, %x, %x, %x) = %d", cmd, type, resp, arg, blocks, bsize, addr, r);
-	printf("  -> %x %x %x %x\n", reply[0], reply[1], reply[2], reply[3]); // TODO: add some argument for this reply
+	//printf("sd_send_cmd(%x, %x, %x, %x, %x, %x, %x) = %d", cmd, type, resp, arg, blocks, bsize, addr, r);
+	//printf("  -> %x %x %x %x\n", reply[0], reply[1], reply[2], reply[3]); // TODO: add some argument for this reply
 
 	return r;
 }
@@ -60,7 +62,7 @@ s32 sd_reset()
 	s32 r;
 	
 	r = IOS_Ioctl(sd_fd, 4, 0, 0, (u8 *)&status, 4);
-	printf("sd_reset(): r = %d; status = %d\n", r, status);
+	//printf("sd_reset(): r = %d; status = %d\n", r, status);
 	return r;
 }
 
@@ -69,15 +71,7 @@ s32 sd_select()
 	s32 r;
 
 	r = sd_send_cmd(7, 3, 2, status & 0xFFFF0000, 0, 0, 0);
-	printf("sd_select(): r = %d\n", r);
-	return r;
-}
-
-s32 sd_deselect()
-{
-	s32 r;
-	r = sd_send_cmd(7, 3, 2, 0, 0, 0, 0);
-	printf("sd_deselect(): r = %d\n", r);
+	//printf("sd_select(): r = %d\n", r);
 	return r;
 }
 
@@ -86,7 +80,7 @@ s32 sd_set_blocklen(u32 len)
 	s32 r;
 
 	r = sd_send_cmd(0x10, 3, 1, len, 0, 0, 0);
-	printf("sd_set_blocklen(%x) = %d\n", len, r);
+	//printf("sd_set_blocklen(%x) = %d\n", len, r);
 	return r;
 }
 
@@ -101,10 +95,10 @@ u8 sd_get_hcreg()
 
 	query[0] = 0x28;
 	query[3] = 1;
-	query[4] = 0;
+	//query[4] = 0;
 	
 	r = IOS_Ioctl(sd_fd, 2, (u8 *)query, 0x18, (u8 *)&data, 4);
-	printf("sd_get_hcreg() = %d; r = %d\n", data & 0xFF, r);
+	//printf("sd_get_hcreg() = %d; r = %d\n", data & 0xFF, r);
 	return data & 0xFF;
 }
 
@@ -120,7 +114,7 @@ s32 sd_set_hcreg(u8 value)
 	query[4] = value;
 	
 	r = IOS_Ioctl(sd_fd, 1, (u8 *)query, 0x18, 0, 0);
-	printf("sd_set_hcreg(%d) = %d\n", value, r);
+	//printf("sd_set_hcreg(%d) = %d\n", value, r);
 	return r;
 }
 
@@ -151,7 +145,7 @@ s32 sd_clock()
 
 	c = 1;
 	r = IOS_Ioctl(sd_fd, 6, &c, 4, 0, 0);
-	printf("sd_clock() = %d\n", r);
+	//printf("sd_clock() = %d\n", r);
 	return r;
 }
 
@@ -195,8 +189,8 @@ s32 sd_read(u32 n, u8 *buf)
 
 	if(r != 0)
 	{
-		printf("sd_read() = %d\n", r);
-		printf("  %x %x %x %x\n", res[0], res[1], res[2], res[3]);
+		//printf("sd_read() = %d\n", r);
+		//printf("  %x %x %x %x\n", res[0], res[1], res[2], res[3]);
 		return r;
 	}
 
@@ -241,8 +235,8 @@ s32 sd_write(u32 n, const u8 *buf)
 
        if(r != 0)
        {
-               printf("sd_write() = %d\n", r);
-               printf("  %x %x %x %x\n", res[0], res[1], res[2], res[3]);
+               //printf("sd_write() = %d\n", r);
+               //printf("  %x %x %x %x\n", res[0], res[1], res[2], res[3]);
                return r;
        }
 
@@ -255,12 +249,13 @@ s32 sd_init()
 
 	if(sd_fd > 0)
 	{
-		printf("sd_init() called more than once. using old sd_fd: %d\n", sd_fd);
-		return 0;
+		//printf("sd_init() called more than once. using old sd_fd: %d\n", sd_fd);
+		//return 0;
+                sd_deinit();
 	}
 
 	sd_fd = IOS_Open("/dev/sdio/slot0", 0);
-	printf("sd_fd = %d\n", sd_fd);
+	//printf("sd_fd = %d\n", sd_fd);
 	if(sd_fd < 0)
 		return sd_fd;
 	
@@ -287,7 +282,7 @@ s32 sd_init()
 
 s32 sd_deinit()
 {
-	sd_deselect();
+        sd_reset();
 	return IOS_Close(sd_fd);
 }
 
