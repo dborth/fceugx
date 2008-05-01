@@ -9,6 +9,7 @@
 #include <string.h>
 #include "../../iplfont/iplfont.h"
 #include "nesback.h"
+#include "intl.h"
 
 //#define FORCE_PAL50 1
 
