@@ -783,7 +783,7 @@ void ShowROMInfo() {
 
     SetScreen();
 
-    while ( !(PAD_Bu/ttonsDown(0) & (PAD_BUTTON_A | PAD_BUTTON_B)) )
+    while ( !(PAD_ButtonsDown(0) & (PAD_BUTTON_A | PAD_BUTTON_B)) )
     { VIDEO_WaitVSync(); }
 }
 
