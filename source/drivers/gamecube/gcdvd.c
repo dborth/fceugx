@@ -17,12 +17,11 @@
 #include "gcdvd.h"
 
 #ifdef HW_RVL
-#include "wiisd/sdio.h"
-#include "wiisd/tff.h"
+#include "wiisd/vfat.h"
 
 /*Front SCARD*/
-FATFS frontfs;
-FILINFO finfo;
+VFATFS vfs;
+FSDIRENTRY vfsfile;
 #endif
 
 /*** Simplified Directory Entry Record 
@@ -37,7 +36,6 @@ FILINFO finfo;
 #define PAGESIZE 11
 
 #define FCEUDIR "fceu"
-#define SAVEDIR "saves"
 #define ROMSDIR "roms"
 
 FILEENTRIES filelist[MAXFILES];
@@ -561,51 +559,33 @@ int parseWiiSDdirectory() {
     int entries = 0;
     int nbfiles = 0;
     int numstored = 0;
-    DIRECTORY sddir;
-    s32 result;
     char msg[1024];
 
     /* initialize selection */
     selection = offset = 0;
 
     /* Get a list of files from the actual root directory */ 
-    result = f_opendir(&sddir, rootWiiSDdir);
-    if(result != FR_OK) {
-        sprintf(msg, "f_opendir(%s) failed with %d.", rootWiiSDdir, result);
+    FSDIRENTRY vfsdir;
+    int result = VFAT_opendir(0, &vfsdir, rootWiiSDdir);
+    if(result != FS_SUCCESS) {
+        sprintf(msg, "Opendir(%s) failed with %d.", rootWiiSDdir, result);
         WaitPrompt(msg);
         return 0;
     }
 
-    memset(&finfo, 0, sizeof(finfo));
-
-    // f_readdir doesn't seem to find ".." dir, manually add it.
-    if (strlen(rootWiiSDdir) > 0) {
-        strcpy(filelist[numstored].filename, "..");
-        filelist[numstored].length = 0;
-        filelist[numstored].flags = 1;
+    while (VFAT_readdir(&vfsdir) == FS_SUCCESS) {
+        sprintf(msg, "VFAT Adding %s", vfsdir.longname);
+        ShowAction(msg);
+        memset (&filelist[numstored], 0, sizeof (FILEENTRIES));
+        strncpy(filelist[numstored].filename,(char *)(vfsdir.longname), MAX_LONG_NAME);
+        filelist[numstored].filename[MAX_LONG_NAME-1] = 0;
+        filelist[numstored].length = vfsdir.fsize;
+        filelist[numstored].flags = (char)(vfsdir.dirent.attribute & ATTR_DIRECTORY);
         numstored++;
+        nbfiles++;
     }
-    f_readdir(&sddir, &finfo);
-    finfo.fname[12] = 0;
-    while(strlen(finfo.fname) != 0) {
-        finfo.fname[12] = 0;
-        //if(!(finfo.fattrib & AM_DIR))
-        //{
-            if (strcmp((const char*)finfo.fname, ".") != 0) { // Skip "." directory
-                sprintf(msg, "Adding %s", finfo.fname);
-                //ShowAction(msg);
-                memset(&filelist[numstored], 0, sizeof (FILEENTRIES));
-                strncpy(filelist[numstored].filename,(const char*)finfo.fname,MAXJOLIET);
-                filelist[numstored].filename[MAXJOLIET-1] = 0;
-                filelist[numstored].length = finfo.fsize;
-                filelist[numstored].flags = (char)(finfo.fattrib & AM_DIR);
-                numstored++;
-            }
-            nbfiles++;
-        //}
-        memset(&finfo, 0, sizeof(finfo));
-        f_readdir(&sddir, &finfo);
-    }
+    VFAT_closedir(&vfsdir);
+
     entries = nbfiles;
     if (entries < 0) entries = 0;   
     if (entries > MAXFILES) entries = MAXFILES;
@@ -786,16 +766,6 @@ void FileSelector() {
                     maxfiles = parsedir();
                 }
             } else {
-#ifdef HW_RVL
-                if (UseWiiSDCARD) {
-                    strncpy(finfo.fname, filelist[selection].filename, 12);
-                    int l = strlen(finfo.fname);
-                    if (l > 12) l = 12;
-                    finfo.fname[l] = 0;
-                    finfo.fsize = filelist[selection].length;
-                    finfo.fattrib = filelist[selection].flags ? AM_DIR : 0;
-                }
-#endif
                 rootdir = filelist[selection].offset;
                 rootdirlength = filelist[selection].length;
                 // Now load the DVD file to it's offset 
@@ -817,62 +787,18 @@ int LoadDVDFile( unsigned char *buffer ) {
     u64 discoffset;
 
 #ifdef HW_RVL
-    FIL fp;
-    u32 bytes_read = 0, bytes_read_total = 0;
-
     if(UseWiiSDCARD) {
         ShowAction((char*)"Loading ... Wait");	
         char filename[1024];
-        sprintf(filename, "%s/%s", rootWiiSDdir, finfo.fname);
+        sprintf(filename, "%s/%s", rootWiiSDdir, filelist[selection].filename);
 
-        /*if(f_mount(0, &frontfs) != FR_OK) {
-            WaitPrompt("f_mount failed");
-            return 0;
-        }*/
-
-        int res = f_stat(filename, &finfo);
-        if(res != FR_OK) {
+        int res = VFAT_fopen(0, &vfsfile, filename, FS_READ);
+        if (res != FS_SUCCESS) {
             char msg[1024];
-            sprintf(msg, "f_stat %s failed, error %d", filename, res);
+            sprintf(msg, "Open %s failed, error %d", filename, res);
             WaitPrompt(msg);
-            //f_mount(0, NULL);
             return 0;
         }
-
-        res = f_open(&fp, filename, FA_READ);
-        if (res != FR_OK) {
-            char msg[1024];
-            sprintf(msg, "f_open failed, error %d", res);
-            WaitPrompt(msg);
-            //f_mount(0, NULL);
-            return 0;
-        }
-
-        while(bytes_read_total < finfo.fsize) {
-            if(f_read(&fp, buffer + bytes_read_total, 0x200, &bytes_read) != FR_OK) {
-                WaitPrompt((char*)"f_read failed");
-                f_close(&fp);
-                //f_mount(0, NULL);
-                return 0;
-            }
-
-            if(bytes_read == 0)
-                break;
-            bytes_read_total += bytes_read;
-        }
-
-        if(bytes_read_total < finfo.fsize) {
-            //printf("error: read %u of %u bytes.\n", bytes_read_total, (unsigned int)finfo.fsize);
-            WaitPrompt((char*)"read failed : over read!");
-            f_close(&fp);
-            //f_mount(0, NULL);
-            return 0;
-        }
-
-        ShowAction((char*)"Loading Rom Succeeded");
-        f_close(&fp);
-        //f_mount(0, NULL);
-        return bytes_read_total;
     }
 #endif
 
@@ -887,12 +813,21 @@ int LoadDVDFile( unsigned char *buffer ) {
 
     ShowAction("Loading ... Wait");
     if (UseSDCARD) SDCARD_ReadFile (filehandle, &readbuffer, 2048);
+#ifdef HW_RVL
+    else if (UseWiiSDCARD) VFAT_fread(&vfsfile, &readbuffer, 2048);
+#endif
     else dvd_read(&readbuffer, 2048, discoffset);
 
     if ( isZipFile() == false ) {
         if (UseSDCARD) SDCARD_SeekFile (filehandle, 0, SDCARD_SEEK_SET);
+#ifdef HW_RVL
+        else if (UseWiiSDCARD) VFAT_fseek(&vfsfile, 0, SEEK_SET);
+#endif
         for ( i = 0; i < blocks; i++ ) {
             if (UseSDCARD) SDCARD_ReadFile (filehandle, &readbuffer, 2048);
+#ifdef HW_RVL
+            else if (UseWiiSDCARD) VFAT_fread(&vfsfile, &readbuffer, 2048);
+#endif
             else dvd_read(&readbuffer, 2048, discoffset);
             memcpy(&buffer[offset], &readbuffer, 2048);
             offset += 2048;
@@ -903,6 +838,9 @@ int LoadDVDFile( unsigned char *buffer ) {
         if( rootdirlength % 2048 ) {
             i = rootdirlength % 2048;
             if (UseSDCARD) SDCARD_ReadFile (filehandle, &readbuffer, i);
+#ifdef HW_RVL
+            else if (UseWiiSDCARD) VFAT_fread(&vfsfile, &readbuffer, i);
+#endif
             else dvd_read(&readbuffer, 2048, discoffset);
             memcpy(&buffer[offset], &readbuffer, i);
         }
@@ -910,6 +848,9 @@ int LoadDVDFile( unsigned char *buffer ) {
         return unzipDVDFile( buffer, (u32)discoffset, rootdirlength);
     }
     if (UseSDCARD) SDCARD_CloseFile (filehandle);
+#ifdef HW_RVL
+    else if (UseWiiSDCARD) VFAT_fclose(&vfsfile);
+#endif
 
     return rootdirlength;
 }
@@ -965,13 +906,17 @@ int OpenWiiSD () {
     haveSDdir = 0;
     char msg[128];
 
+    memset(&vfs, 0, sizeof(VFATFS));
     if (haveWiiSDdir == 0) {
         /* don't mess with DVD entries */
         havedir = 0;
 
-        /* Mount WiiSD */
-        if(f_mount(0, &frontfs) != FR_OK) {
-            WaitPrompt((char*)"f_mount failed");
+        /* Mount WiiSD with VFAT */
+        VFAT_unmount(0, &vfs);
+        int res = VFAT_mount(FS_SLOTA, &vfs);
+        if (res != FS_TYPE_FAT16) {
+            sprintf(msg, "Error mounting WiiSD: %d", res);
+            WaitPrompt(msg);
             return 0;
         }
 
@@ -992,13 +937,11 @@ int OpenWiiSD () {
             /* no entries found */
             sprintf (msg, "Error reading %s", rootWiiSDdir);
             WaitPrompt (msg);
-            //f_mount(0, NULL);
             return 0;
         }
     }
     /* Retrieve previous entries list and made a new selection */
     else  FileSelector ();
-    //f_mount(0, NULL);
 
     return 1;
 }

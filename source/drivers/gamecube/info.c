@@ -52,9 +52,15 @@ extern int UseSDCARD;
 extern unsigned char DecodeJoy( unsigned short pp );
 extern unsigned char GetAnalog(int Joy);
 
+#ifdef HW_RVL
+void (*PSOReload)() = (void(*)())0x90000020;
+#else
+void (*PSOReload)() = (void(*)())0x80001800;
+#endif
+
 void Reboot() {
 #ifdef HW_RVL
-    // Thanks to hell_hibou
+    // Thanks to eke-eke
     SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 #else
 #define SOFTRESET_ADR ((volatile u32*)0xCC003024)
@@ -1001,12 +1007,6 @@ int MainMenu() {
     int quit = 0;
     short j;
     int redraw = 1;
-
-#ifdef HW_RVL
-    void (*PSOReload)() = (void(*)())0x90000020;
-#else
-    void (*PSOReload)() = (void(*)())0x80001800;
-#endif
 
     /*** Stop any running Audio ***/
     AUDIO_StopDMA();

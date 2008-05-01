@@ -44,7 +44,8 @@ int mcversion = 0x981211;
 
 static u8 SysArea[CARD_WORKAREA] ATTRIBUTE_ALIGN(32);
 #ifdef HW_RVL
-extern FILINFO finfo;
+FATFS frontfs;
+FILINFO finfo;
 #endif
 extern int ChosenSlot;
 extern int ChosenDevice;
@@ -544,6 +545,13 @@ void SD_Manage(int mode, int slot) {
         FIL fp;
         int res;
         u32 offset = 0;
+
+        /* Mount WiiSD with TinyFatFS*/
+        if(f_mount(0, &frontfs) != FR_OK) {
+            WaitPrompt((char*)"f_mount failed");
+            return 0;
+        }
+        memset(&finfo, 0, sizeof(finfo));
 
         if (mode == 0)
             res = f_open(&fp, path, FA_CREATE_ALWAYS | FA_WRITE);
