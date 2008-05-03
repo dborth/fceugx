@@ -574,8 +574,6 @@ int parseWiiSDdirectory() {
     }
 
     while (VFAT_readdir(&vfsdir) == FS_SUCCESS) {
-        sprintf(msg, "VFAT Adding %s", vfsdir.longname);
-        ShowAction(msg);
         memset (&filelist[numstored], 0, sizeof (FILEENTRIES));
         strncpy(filelist[numstored].filename,(char *)(vfsdir.longname), MAX_LONG_NAME);
         filelist[numstored].filename[MAX_LONG_NAME-1] = 0;
@@ -585,10 +583,6 @@ int parseWiiSDdirectory() {
         nbfiles++;
     }
     VFAT_closedir(&vfsdir);
-
-    entries = nbfiles;
-    if (entries < 0) entries = 0;   
-    if (entries > MAXFILES) entries = MAXFILES;
 
     return numstored;
 }
