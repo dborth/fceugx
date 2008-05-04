@@ -25,7 +25,7 @@ SOURCES		:=	source source/boards source/mappers source/input \
 DATA		:=	data  
 INCLUDES	:=	source source/sz
 # Specify language in all capitals
-# Supported languages: ENGLISH
+# Supported languages: ENGLISH DUTCH
 LANG		:=	ENGLISH
 
 #---------------------------------------------------------------------------------

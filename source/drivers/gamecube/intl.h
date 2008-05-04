@@ -9,7 +9,7 @@
 #elif defined INTL_GERMAN
 //#include "intl/german.h"
 #elif defined INTL_DUTCH
-//#include "intl/dutch.h"
+#include "intl/dutch.h"
 #else
 #include "intl/english.h"
 #endif
