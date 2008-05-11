@@ -80,6 +80,8 @@
 #define MENU_VIDEO_PALETTE      "Palette"
 #define MENU_VIDEO_SPRITE       "8 Sprite Maximum"
 #define MENU_VIDEO_TIMING       "Timing"
+#define MENU_VIDEO_SAVE         "Save Settings"
+#define MENU_VIDEO_LOAD         "Load Settings"
 #define MENU_VIDEO_DEFAULT      "Normaal"
 #define MENU_VIDEO_TEXT1        "Wow, deze kleuren en vormen zijn zeker mooi, Brengt terug de herideringen."
 #define MENU_VIDEO_TEXT2        "Wees zeker niet met deze instellingen kloten, Je wilt niet deze ervaringen verkloten! :D"

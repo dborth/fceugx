@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <gctypes.h>
+#include <ogc/system.h>
 #include "../../types.h"
 #include "common.h"
 
@@ -25,8 +26,7 @@ static volatile int userpause=0;
 static int soundvolume=100;
 static int soundquality=0;
 static int soundo;
-
-int screenscaler = 2;
+u8 screenscaler = 2;
 
 uint8 *xbsave=NULL;
 int eoptions=EO_BGRUN | EO_FORCEISCALE;
@@ -44,11 +44,22 @@ extern void PlaySound( void *Buf, int samples );
 long long basetime;
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
+extern void ManageSettings(int mode, int slot, int device, int quiet);
+extern u8 ChosenSlot;
+extern u8 ChosenDevice;
 
-extern void *PSOReload();
+extern void *Reload();
+extern void Reboot();
 static void reset_cb() {
-    PSOReload();
+    Reload();
 }
+
+/*static int power_hit = 0;
+static void power_cb() {
+    //Reboot();
+    //SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+    power_hit = 1;
+}*/
 
 extern int WaitPromptChoice (char *msg, char *bmsg, char *amsg);
 bool isWii = false;
@@ -56,7 +67,8 @@ static unsigned char *inquiry=(unsigned char *)0x80000004;
 
 int main(int argc, char *argv[]) {
     initDisplay();
-    SYS_SetResetCallback (reset_cb);
+    SYS_SetResetCallback(reset_cb);
+    //SYS_SetPowerCallback(power_cb);
     InitialiseSound();
     SDCARD_Init ();
 
@@ -88,6 +100,8 @@ int main(int argc, char *argv[]) {
 
     cleanSFMDATA();
     GCMemROM();
+    // Load settings
+    ManageSettings(1, ChosenSlot, ChosenDevice, 1);
     MainMenu(); 
 
     while (1) {
@@ -98,6 +112,9 @@ int main(int argc, char *argv[]) {
         FCEUI_Emulate(&gfx, &sound, &ssize, 0);
         xbsave = gfx;
         FCEUD_Update(gfx, sound, ssize);              
+        /*if (power_hit)
+            //SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+            Reboot();*/
     }
 
     return 0;

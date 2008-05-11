@@ -18,14 +18,14 @@
 #include <sdcard.h>
 
 #ifdef HW_RVL
-#include "wiisd/tff.h"
+#include "wiisd/vfat.h"
 
 extern VFATFS vfs;
 extern FSDIRENTRY vfsfile;
-extern int UseWiiSDCARD;
+extern u8 UseWiiSDCARD;
 #endif
 extern sd_file *filehandle;
-extern int UseSDCARD;
+extern u8 UseSDCARD;
 
 extern void ShowAction( char *msg );
 extern void WaitPrompt( char *msg );

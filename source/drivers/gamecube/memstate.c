@@ -8,12 +8,17 @@
 #include <gccore.h>
 #include <string.h>
 #include <sdcard.h>
+#include <malloc.h>
 #include "../../types.h"
 #include "../../state.h"
 #include "saveicon.h"
+#include "intl.h"
+
 #ifdef HW_RVL
 #include "wiisd/tff.h"
 #include "wiisd/integer.h"
+FATFS frontfs;
+FILINFO finfo;
 #endif
 #define FCEUDIR "fceu"
 #define SAVEDIR "saves"
@@ -24,6 +29,9 @@ extern void FCEUSND_SaveState(void);
 extern void WaitPrompt( char *text );
 extern void FlipByteOrder(uint8 *src, uint32 count);
 extern void ShowAction( char *text );
+extern void FCEUD_SetPalette(unsigned char index, unsigned char r, unsigned char g, unsigned char b);
+extern void FCEU_ResetPalette(void);
+extern void FCEUI_DisableSpriteLimitation( int a );
 
 /*** External save structures ***/
 extern SFORMAT SFCPU[];
@@ -43,12 +51,23 @@ int sboffset;				/*** Used as a basic fileptr  ***/
 int mcversion = 0x981211;
 
 static u8 SysArea[CARD_WORKAREA] ATTRIBUTE_ALIGN(32);
-#ifdef HW_RVL
-FATFS frontfs;
-FILINFO finfo;
-#endif
-extern int ChosenSlot;
-extern int ChosenDevice;
+extern u8 ChosenSlot;
+extern u8 ChosenDevice;
+extern u8 screenscaler;
+extern u8 currpal;
+extern u8 slimit;
+extern u8 timing;
+extern u8 mpads[6];
+extern u8 FSDisable;
+extern u8 PADCAL;
+extern u8 PADTUR;
+extern u8 UseSDCARD;
+extern u8 UseWiiSDCARD;
+
+extern struct st_palettes {
+    char *name, *desc;
+    unsigned int data[64];
+} *palettes;
 /****************************************************************************
  * Memory based file functions
  ****************************************************************************/
@@ -248,7 +267,7 @@ int GCFCEUSS_Save()
     static unsigned char header[16] = "FCS\xff";
     char chunk[] = "CHKE";
     int zero = 0;
-    char Comment[2][32] = { { "FCEU GC Version 1.0.9" }, { "A GAME" } };
+    char Comment[2][100] = { { MENU_CREDITS_TITLE }, { "A GAME" } };
 
     memopen();	/*** Reset Memory File ***/
 
@@ -347,8 +366,7 @@ int MountTheCard()
  *
  * This is based on the code from libogc
  ****************************************************************************/
-
-void MCManage(int mode, int slot) {
+void MC_ManageState(int mode, int slot) {
     char mcFilename[80];
     int CardError;
     card_dir CardDir;
@@ -370,115 +388,108 @@ void MCManage(int mode, int slot) {
     /*** Try for memory card in slot A ***/
     CardError = MountTheCard();
 
-    if ( CardError >= 0 )
-    {
+    if ( CardError >= 0 ) {
         /*** Get card sector size ***/
         CardError = CARD_GetSectorSize(CARDSLOT, &SectorSize);				
 
         switch ( mode ) {
-
             case 0 : {	/*** Save Game ***/
-                         /*** Look for this file ***/
-                         CardError = CARD_FindFirst(CARDSLOT, &CardDir, true);
+                 /*** Look for this file ***/
+                 CardError = CARD_FindFirst(CARDSLOT, &CardDir, true);
 
-                         found = 0;
+                 found = 0;
+                 card_stat CardStatus;
+                 while ( CardError != CARD_ERROR_NOFILE ) {
+                     CardError = CARD_FindNext(&CardDir);
+                     if ( strcmp(CardDir.filename, mcFilename) == 0 )
+                         found = 1;
+                 }
 
-                         card_stat CardStatus;
-                         while ( CardError != CARD_ERROR_NOFILE )
-                         {
-                             CardError = CARD_FindNext(&CardDir);
-                             if ( strcmp(CardDir.filename, mcFilename) == 0 )
-                                 found = 1;
-                         }
+                 /*** Determine number of sectors required ***/
+                 savedBytes = actualSize = GCFCEUSS_Save();
+                 sprintf(debug, "Saving in MC ...");
+                 ShowAction(debug);
 
-                         /*** Determine number of sectors required ***/
-                         savedBytes = actualSize = GCFCEUSS_Save();
-                         sprintf(debug, "Saving in MC ...");
-                         ShowAction(debug);
+                 FileSize = ( actualSize / SectorSize ) * SectorSize;
+                 if ( actualSize % SectorSize )
+                     FileSize += SectorSize;
 
-                         FileSize = ( actualSize / SectorSize ) * SectorSize;
-                         if ( actualSize % SectorSize )
-                             FileSize += SectorSize;
+                 /*** Now write the file out ***/
+                 if ( !found )
+                     CardError = CARD_Create(CARDSLOT, mcFilename, FileSize, &CardFile);
+                 else
+                     CardError = CARD_Open(CARDSLOT, mcFilename, &CardFile);
 
-                         /*** Now write the file out ***/
-                         if ( !found )
-                             CardError = CARD_Create(CARDSLOT, mcFilename, FileSize, &CardFile);
-                         else
-                             CardError = CARD_Open(CARDSLOT, mcFilename, &CardFile);
+                 CARD_GetStatus( CARDSLOT, CardFile.filenum, &CardStatus);
+                 CardStatus.icon_addr = 0;
+                 CardStatus.icon_fmt = 2;
+                 CardStatus.icon_speed = 1;
+                 CardStatus.comment_addr = sizeof(saveicon);
+                 CARD_SetStatus( CARDSLOT, CardFile.filenum, &CardStatus);
 
-                         CARD_GetStatus( CARDSLOT, CardFile.filenum, &CardStatus);
-                         CardStatus.icon_addr = 0;
-                         CardStatus.icon_fmt = 2;
-                         CardStatus.icon_speed = 1;
-                         CardStatus.comment_addr = sizeof(saveicon);
-                         CARD_SetStatus( CARDSLOT, CardFile.filenum, &CardStatus);
+                 /*** Haha! libogc only write one block at a time! ***/	
+                 if ( CardError == 0 ) {
+                     int sbo = 0;
+                     while ( actualSize > 0 ) {
+                         CardError = CARD_Write(&CardFile, &statebuffer[sbo], SectorSize, sbo );
+                         actualSize -= SectorSize;
+                         sbo += SectorSize;
+                     }
 
-                         /*** Haha! libogc only write one block at a time! ***/	
-                         if ( CardError == 0 )
-                         {
-                             int sbo = 0;
-                             while ( actualSize > 0 )
-                             {
-                                 CardError = CARD_Write(&CardFile, &statebuffer[sbo], SectorSize, sbo );
-                                 actualSize -= SectorSize;
-                                 sbo += SectorSize;
-                             }
+                     CardError = CARD_Close(&CardFile);
+                     sprintf(debug, "Saved %d bytes successfully!", savedBytes);
+                     ShowAction(debug);
+                 } 
+                 else {
+                    WaitPrompt("Save Failed");
+                 }
 
-                             CardError = CARD_Close(&CardFile);
-                             sprintf(debug, "Saved %d bytes successfully!", savedBytes);
-                             ShowAction(debug);
-                         } 
-                         else WaitPrompt("Save Failed!");
-
-                         CARD_Unmount(CARDSLOT);
-
-                     } 
-                     break;	/*** End save ***/
+                 CARD_Unmount(CARDSLOT);
+             } 
+             break;	/*** End save ***/
 
             case 1: {	/*** Load state ***/
-                        /*** Look for this file ***/
-                        CardError = CARD_FindFirst(CARDSLOT, &CardDir, true);
-                        memopen();	/*** Clear the buffer ***/
-                        found = 0;
+                /*** Look for this file ***/
+                CardError = CARD_FindFirst(CARDSLOT, &CardDir, true);
+                memopen();	/*** Clear the buffer ***/
+                found = 0;
+                while ( CardError != CARD_ERROR_NOFILE ) {
+                    CardError = CARD_FindNext(&CardDir);
+                    if ( strcmp(CardDir.filename, mcFilename) == 0 )
+                        found = 1;
+                }
 
-                        while ( CardError != CARD_ERROR_NOFILE ) {
-                            CardError = CARD_FindNext(&CardDir);
-                            if ( strcmp(CardDir.filename, mcFilename) == 0 )
-                                found = 1;
-                        }
+                if ( found == 0 ) {
+                    WaitPrompt("No Save Game Found");
+                    CARD_Unmount(CARDSLOT);
+                    return;
+                }
 
-                        if ( found == 0 ) {
-                            WaitPrompt("No Save Game Found");
-                            CARD_Unmount(CARDSLOT);
-                            return;
-                        }
+                /*** Load the file into memory ***/
+                CardError = CARD_Open(CARDSLOT, mcFilename, &CardFile);
+                CardError = CARD_Read(&CardFile, &statebuffer, SectorSize, 0);
 
-                        /*** Load the file into memory ***/
-                        CardError = CARD_Open(CARDSLOT, mcFilename, &CardFile);
-                        CardError = CARD_Read(&CardFile, &statebuffer, SectorSize, 0);
+                /*** Get actual size of the file ***/
+                memcpy(&actualSize, &statebuffer[FILESIZEOFFSET], 4);
+                savedBytes = actualSize;
 
-                        /*** Get actual size of the file ***/
-                        memcpy(&actualSize, &statebuffer[FILESIZEOFFSET], 4);
-                        savedBytes = actualSize;
+                int sbo = SectorSize;
+                actualSize -= SectorSize;	
+                while( actualSize > 0 ) {
+                    CARD_Read(&CardFile, &statebuffer[sbo], SectorSize, sbo);
+                    actualSize -= SectorSize;
+                    sbo += SectorSize;
+                }
+                CARD_Close(&CardFile);
 
-                        int sbo = SectorSize;
-                        actualSize -= SectorSize;	
-                        while( actualSize > 0 ) {
-                            CARD_Read(&CardFile, &statebuffer[sbo], SectorSize, sbo);
-                            actualSize -= SectorSize;
-                            sbo += SectorSize;
-                        }
-                        CARD_Close(&CardFile);
+                /*** Finally, do load ***/
+                GCFCEUSS_Load();
 
-                        /*** Finally, do load ***/
-                        GCFCEUSS_Load();
-
-                        CARD_Unmount(CARDSLOT);
-                        sprintf(debug, "Loaded %d bytes successfully!", savedBytes);
-                        ShowAction(debug);
-
-                    } 
-                    break;	/*** End load ***/
+                CARD_Unmount(CARDSLOT);
+                sprintf(debug, "Loaded %d bytes successfully!", savedBytes);
+                ShowAction(debug);
+            } 
+            break;	/*** End load ***/
 
             default: break;	
         }
@@ -487,7 +498,7 @@ void MCManage(int mode, int slot) {
     } 
 }
 
-void SD_Manage(int mode, int slot) {
+void SD_ManageState(int mode, int slot) {
     char path[1024];
     char msg[128];
     int offset = 0;
@@ -650,9 +661,356 @@ void SD_Manage(int mode, int slot) {
 
 void ManageState(int mode, int slot, int device) {
     if (device == 0) {
-        MCManage(mode, slot);
+        MC_ManageState(mode, slot);
     }
     else {
-        SD_Manage(mode, slot);
+        SD_ManageState(mode, slot);
+    }
+}
+
+/* u8 screenscaler
+ * u8 currpal
+ * u8 slimit
+ * u8 timing
+ * u8 mpads[6]
+ * int FSDisable (int is u32, 4 bytes)
+ * u8 PADCAL
+ * u8 PADTUR
+ * u8 ChosenSlot
+ * u8 ChosenDevice
+ * u8 UseSDCARD
+ * u8 UseWiiSDCARD
+ */
+int SaveSettings(u8 *buffer) {
+    int filesize = 0;
+    buffer[filesize++] = screenscaler;
+    buffer[filesize++] = currpal;
+    buffer[filesize++] = slimit;
+    buffer[filesize++] = timing;
+    buffer[filesize++] = mpads[0];
+    buffer[filesize++] = mpads[1];
+    buffer[filesize++] = mpads[2];
+    buffer[filesize++] = mpads[3];
+    buffer[filesize++] = mpads[4];
+    buffer[filesize++] = mpads[5];
+    buffer[filesize++] = FSDisable;
+    buffer[filesize++] = PADCAL;
+    buffer[filesize++] = PADTUR;
+    buffer[filesize++] = ChosenSlot;
+    buffer[filesize++] = ChosenDevice;
+    buffer[filesize++] = UseSDCARD;
+    buffer[filesize++] = UseWiiSDCARD;
+    return filesize+1;
+}
+
+int LoadSettings(u8 *buffer) {
+    int filesize = 0;
+    screenscaler = buffer[filesize++];
+    currpal = buffer[filesize++];
+    if (currpal == 0)
+        FCEU_ResetPalette();
+    else {
+        u8 r, g, b, i;
+        /*** Now setup this palette ***/
+        for ( i = 0; i < 64; i++ ) {
+            r = palettes[currpal-1].data[i] >> 16;
+            g = ( palettes[currpal-1].data[i] & 0xff00 ) >> 8;
+            b = ( palettes[currpal-1].data[i] & 0xff );
+            FCEUD_SetPalette( i, r, g, b);
+            FCEUD_SetPalette( i+64, r, g, b);
+            FCEUD_SetPalette( i+128, r, g, b);
+            FCEUD_SetPalette( i+192, r, g, b);
+        }
+    }
+    slimit = buffer[filesize++];
+    FCEUI_DisableSpriteLimitation(slimit);
+    timing = buffer[filesize++];
+    FCEUI_SetVidSystem(timing);
+    mpads[0] = buffer[filesize++];
+    mpads[1] = buffer[filesize++];
+    mpads[2] = buffer[filesize++];
+    mpads[3] = buffer[filesize++];
+    mpads[4] = buffer[filesize++];
+    mpads[5] = buffer[filesize++];
+    FSDisable = buffer[filesize++];
+    FCEUI_DisableFourScore(FSDisable);
+    PADCAL = buffer[filesize++];
+    PADTUR = buffer[filesize++];
+    ChosenSlot = buffer[filesize++];
+    ChosenDevice = buffer[filesize++];
+    UseSDCARD = buffer[filesize++];
+    UseWiiSDCARD = buffer[filesize++];
+    return filesize+1;
+}
+
+/****************************************************************************
+ * Save Settings to MemCard
+ ****************************************************************************/
+void MC_ManageSettings(int mode, int slot, int quiet) {
+    char mcFilename[80];
+    int CardError;
+    card_dir CardDir;
+    card_file CardFile;
+    int SectorSize;
+    int found = 0;
+    int FileSize;
+    int actualSize;
+    int savedBytes=0;
+    char msg[128];
+
+    /*** Build the file name ***/
+    strcpy(mcFilename, "FCEU-Settings.fcs");
+
+    /*** Mount the Card ***/
+    CARD_Init("FCEU", "00");
+
+    /*** Try for memory card in slot A ***/
+    CardError = MountTheCard();
+
+    if ( CardError >= 0 ) {
+        /*** Get card sector size ***/
+        CardError = CARD_GetSectorSize(slot, &SectorSize);				
+
+        switch ( mode ) {
+            case 0 : {	/*** Save Game ***/
+                /*** Look for this file ***/
+                CardError = CARD_FindFirst(slot, &CardDir, true);
+
+                found = 0;
+                card_stat CardStatus;
+                while ( CardError != CARD_ERROR_NOFILE ) {
+                    CardError = CARD_FindNext(&CardDir);
+                    if ( strcmp(CardDir.filename, mcFilename) == 0 )
+                        found = 1;
+                }
+
+                /*** Determine number of bytes required ***/
+                u8 buffer[SectorSize];
+                memset(buffer, 0, SectorSize);
+                actualSize = SaveSettings(buffer);
+                savedBytes = actualSize;
+
+                sprintf(msg, "Saving Settings to MC ...");
+                ShowAction(msg);
+
+                FileSize = ( actualSize / SectorSize ) * SectorSize;
+                if ( (actualSize % SectorSize) || (FileSize == 0) )
+                    FileSize += SectorSize;
+
+                /*** Now write the file out ***/
+                if ( !found )
+                    CardError = CARD_Create(CARDSLOT, mcFilename, FileSize, &CardFile);
+                else
+                    CardError = CARD_Open(CARDSLOT, mcFilename, &CardFile);
+
+                CARD_GetStatus( CARDSLOT, CardFile.filenum, &CardStatus);
+                CardStatus.icon_addr = 0;
+                CardStatus.icon_fmt = 2;
+                CardStatus.icon_speed = 1;
+                CardStatus.comment_addr = sizeof(saveicon);
+                CARD_SetStatus( CARDSLOT, CardFile.filenum, &CardStatus);
+
+                /*** Haha! libogc only write one block at a time! ***/	
+                if ( CardError == 0 ) {
+                    int sbo = 0;
+                    while ( actualSize > 0 ) {
+                        CardError = CARD_Write(&CardFile, &buffer[sbo], SectorSize, sbo );
+                        actualSize -= SectorSize;
+                        sbo += SectorSize;
+                    }
+
+                    CardError = CARD_Close(&CardFile);
+                    strcpy(msg, "Saved settings successfully");
+                    if (quiet) ShowAction(msg);
+                    else WaitPrompt(msg);
+                } 
+                else {
+                    strcpy(msg, "Save Settings Failed!");
+                    if (quiet) ShowAction(msg);
+                    else WaitPrompt(msg);
+                }
+
+                CARD_Unmount(CARDSLOT);
+             } 
+             break;	/*** End save ***/
+
+            case 1: {	/*** Load state ***/
+                /*** Look for this file ***/
+                CardError = CARD_FindFirst(CARDSLOT, &CardDir, true);
+                found = 0;
+
+                while ( CardError != CARD_ERROR_NOFILE ) {
+                    CardError = CARD_FindNext(&CardDir);
+                    if ( strcmp(CardDir.filename, mcFilename) == 0 )
+                        found = 1;
+                }
+
+                if ( found == 0 ) {
+                    strcpy(msg, "No Settings Found");
+                    if (quiet) ShowAction(msg);
+                    else WaitPrompt(msg);
+                    CARD_Unmount(CARDSLOT);
+                    return;
+                }
+
+                u8 buffer[SectorSize];
+                /*** Load the file into memory ***/
+                CardError = CARD_Open(CARDSLOT, mcFilename, &CardFile);
+                CardError = CARD_Read(&CardFile, &buffer, SectorSize, 0);
+
+                CARD_Close(&CardFile);
+
+                /*** Finally, do load ***/
+                savedBytes = LoadSettings(buffer);
+                sprintf(msg, "Loaded settings successfully!");
+                ShowAction(msg);
+                CARD_Unmount(CARDSLOT);
+            } 
+            break;	/*** End load ***/
+
+            default: break;	
+        }
+    } else {
+        strcpy(msg, "Cannot mount Memory Card!");
+        if (quiet) ShowAction(msg);
+        else WaitPrompt(msg);
+    } 
+}
+
+void SD_ManageSettings(int mode, int slot, int quiet) {
+    char path[1024];
+    char msg[128];
+    int filesize = 0;
+    int len = 0;
+    u8 buffer[128];
+
+    if (slot < 2) {
+        sd_file *handle;
+        sprintf (path, "dev%d:\\%s\\%s\\Settings.fcs", ChosenSlot, FCEUDIR, SAVEDIR);
+
+        if (mode == 0) ShowAction ("Saving Settings to SD...");
+        else ShowAction ("Loading Settings from SD...");
+
+        handle = SDCARD_OpenFile(path, (mode == 0) ? "wb" : "rb");
+
+        if (handle == NULL) {        
+            sprintf(msg, "Couldn't open %s", path);
+            if (quiet) ShowAction(msg);
+            else WaitPrompt(msg);
+            return;
+        }
+
+        if (mode == 0) { // Save
+            filesize = SaveSettings(buffer);
+
+            len = SDCARD_WriteFile(handle, buffer, filesize);
+            SDCARD_CloseFile(handle);
+
+            if (len != filesize) {
+                sprintf (msg, "Error writing %s", path);
+                if (quiet) ShowAction(msg);
+                else WaitPrompt(msg);
+                return;			
+            }
+
+            sprintf(msg, "Saved settings successfully");
+            if (quiet) ShowAction(msg);
+            else WaitPrompt(msg);
+        } else { // Load
+            len = SDCARD_ReadFile(handle, buffer, 128);
+            SDCARD_CloseFile (handle);
+
+            /*** Finally, do load ***/
+            filesize = LoadSettings(buffer);
+
+            sprintf (msg, "Loaded settings successfully");
+            ShowAction(msg);
+            return;
+        }
+    } else { // WiiSD
+#ifdef HW_RVL
+        if (mode == 0) ShowAction ("Saving Settings to WiiSD...");
+        else ShowAction ("Loading Settings from WiiSD...");
+
+        sprintf(path, "/%s/%s/Settings.fcs", FCEUDIR, SAVEDIR);
+        FIL fp;
+        int res;
+
+        /* Mount WiiSD with TinyFatFS*/
+        if(f_mount(0, &frontfs) != FR_OK) {
+            strcpy(msg, "f_mount failed");
+            if (quiet) ShowAction(msg);
+            else WaitPrompt(msg);
+            return 0;
+        }
+        if (mode == 0)
+            res = f_open(&fp, path, FA_CREATE_ALWAYS | FA_WRITE);
+        else {
+            if ((res=f_stat(path, &finfo)) != FR_OK) {
+                if (res == FR_NO_FILE) {
+                    sprintf(msg, "Unable to find %s.", path);
+                }
+                else {
+                    sprintf(msg, "f_stat failed, error %d", res);
+                }
+                if (quiet) ShowAction(msg);
+                else WaitPrompt(msg);
+                return;
+            }
+            res = f_open(&fp, path, FA_READ);
+        }
+
+        if (res != FR_OK) {
+            sprintf(msg, "Failed to open %s, error %d.", path, res);
+            if (quiet) ShowAction(msg);
+            else WaitPrompt(msg);
+            return;
+        }
+
+        if (mode == 0) { // Save
+            u32 written = 0;
+            filesize = SaveSettings(buffer);
+
+            if ((res = f_write(&fp, buffer, filesize, &written)) != FR_OK) {
+                sprintf(msg, "f_write failed, error %d", res);
+                if (quiet) ShowAction(msg);
+                else WaitPrompt(msg);
+                f_close(&fp);
+                return;
+            }
+            sprintf(msg, "Wrote %d bytes.", filesize);
+            ShowAction(msg);
+            f_close(&fp);
+            return;
+        } else { // Load
+            u32 bytes_read = 0;
+            filesize = 0;
+
+            if (f_read(&fp, &buffer, 128, &bytes_read) != FR_OK) {
+                strcpy(msg, "f_read failed");
+                if (quiet) ShowAction(msg);
+                else WaitPrompt(msg);
+                f_close(&fp);
+                return;
+            }
+
+            /*** Finally, do load ***/
+            filesize = LoadSettings(buffer);
+
+            sprintf(msg, "Read %d bytes.", bytes_read);
+            ShowAction(msg);
+            f_close(&fp);
+            return;
+        }
+#endif
+    }
+}
+
+void ManageSettings(int mode, int slot, int device, int quiet) {
+    if (device == 0) {
+        MC_ManageSettings(mode, slot, quiet);
+    }
+    else {
+        SD_ManageSettings(mode, slot, quiet);
     }
 }
