@@ -80,6 +80,8 @@
 #define MENU_VIDEO_PALETTE      "Palette"
 #define MENU_VIDEO_SPRITE       "8 Sprite Limit"
 #define MENU_VIDEO_TIMING       "Timing"
+#define MENU_VIDEO_SAVE         "Save Settings"
+#define MENU_VIDEO_LOAD         "Load Settings"
 #define MENU_VIDEO_DEFAULT      "Default"
 #define MENU_VIDEO_TEXT1        "Wow, these colors and shapes sure are beautiful, brings back the memories."
 #define MENU_VIDEO_TEXT2        "Be sure not to mess these settings up, You don't want to ruin the experience! :D"

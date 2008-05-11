@@ -55,17 +55,13 @@ extern unsigned char *nesromptr;
 extern int IsXenoGCImage( char *buffer );
 
 void GetSDInfo ();
-extern int ChosenSlot;
-/*extern void ClearScreen();
-  int LoadDVDFile( unsigned char *buffer );
-  extern int unzipDVDFile( unsigned char *outbuffer, unsigned int discoffset, unsigned int length);
-  extern int CentreTextPosition( char *text );*/
+extern u8 ChosenSlot;
 
 /** true if we the emulator is running on a wii **/
 extern bool isWii;
-
-int UseSDCARD = 0;
-int UseWiiSDCARD = 0;
+extern int WiiSD_Available;
+u8 UseSDCARD = 0;
+u8 UseWiiSDCARD = 0;
 sd_file * filehandle = NULL;
 char rootSDdir[SDCARD_MAX_PATH_LEN];
 char rootWiiSDdir[SDCARD_MAX_PATH_LEN];
@@ -635,7 +631,7 @@ void ShowFiles( int offset, int selection ) {
  * Let user select another ROM to load
  ****************************************************************************/
 bool inSz = false;
-extern int PADCAL;
+extern u8 PADCAL;
 
 void FileSelector() {
     short p;
@@ -900,6 +896,12 @@ int OpenWiiSD () {
     haveSDdir = 0;
     char msg[128];
 
+    /*if (WiiSD_Available == 0) {
+        sprintf(msg, "Insert SD card: %d\n", WiiSD_Available);
+        WaitPrompt(msg);
+        //return 0;
+    }*/
+
     memset(&vfs, 0, sizeof(VFATFS));
     if (haveWiiSDdir == 0) {
         /* don't mess with DVD entries */
@@ -926,7 +928,8 @@ int OpenWiiSD () {
             FileSelector ();
 
             /* memorize last entries list, actual root directory and selection for next access */
-            haveWiiSDdir = 1;
+            /* TODO: Bugged, do not activate cached dir listing
+            haveWiiSDdir = 1;*/
         } else {
             /* no entries found */
             sprintf (msg, "Error reading %s", rootWiiSDdir);

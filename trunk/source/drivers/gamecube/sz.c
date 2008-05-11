@@ -9,8 +9,8 @@
 #include "gcdvd.h" 
 #include "sz.h"
 
-extern int UseSDCARD;
-extern int UseWiiSDCARD;
+extern u8 UseSDCARD;
+extern u8 UseWiiSDCARD;
 extern sd_file *filehandle;
 
 // 7zip error list

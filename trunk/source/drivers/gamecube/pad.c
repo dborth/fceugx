@@ -41,7 +41,7 @@ unsigned int nespadmap[] = { JOY_A, JOY_B, JOY_START, JOY_SELECT, JOY_A, JOY_B,
 /****************************************************************************
  * Convert GC Joystick Readings to JOY
  ****************************************************************************/
-int PADTUR = 2;
+u8 PADTUR = 2;
 
 unsigned char DecodeJoy( unsigned short pp )
 {
@@ -86,7 +86,7 @@ unsigned char DecodeJoy( unsigned short pp )
  * 
  * Additional check for Analog X/Y
  ****************************************************************************/
-int PADCAL = 40;
+u8 PADCAL = 40;
 
 unsigned char GetAnalog(int Joy)
 {

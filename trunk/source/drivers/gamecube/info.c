@@ -16,46 +16,35 @@
 #define JOY_UP  	0x10
 #define JOY_DOWN        0x20
 
-static int currpal = 0;
-static int timing = 0;
-
-static int FSDisable = 1;
-
-static int slimit = 1;
-
-extern int scrollerx;
+u8 currpal = 0;
+u8 timing = 0;
+u8 FSDisable = 1;
+u8 slimit = 1;
 
 extern void FCEUI_DisableSpriteLimitation( int a );
-
 extern void FCEUD_SetPalette(unsigned char index, unsigned char r, unsigned char g, unsigned char b);
 extern void FCEU_ResetPalette(void);
 extern void WaitPrompt( char *text );
-//extern void MCManage( int mode );
 extern void ManageState(int mode, int slot, int device);
-
+extern void ManageSettings(int mode, int slot, int device, int quiet);
 extern void StartGX();
-
-extern signed int CARDSLOT;
-extern int PADCAL;
-extern int PADTUR;
-
 extern void scroller(int y, unsigned char text[][512], int nlines);
-
 extern void FCEUI_DisableFourScore(int a);
-
-extern int line;
-
-extern char backdrop[640 * 480 * 2];
-
-extern int UseSDCARD;
-
 extern unsigned char DecodeJoy( unsigned short pp );
 extern unsigned char GetAnalog(int Joy);
 
+extern signed int CARDSLOT;
+extern u8 PADCAL;
+extern u8 PADTUR;
+extern int line;
+extern char backdrop[640 * 480 * 2];
+extern u8 UseSDCARD;
+extern int scrollerx;
+
 #ifdef HW_RVL
-void (*PSOReload)() = (void(*)())0x90000020;
+void (*Reload)() = (void(*)())0x90000020;
 #else
-void (*PSOReload)() = (void(*)())0x80001800;
+void (*Reload)() = (void(*)())0x80001800;
 #endif
 
 void Reboot() {
@@ -72,7 +61,7 @@ void Reboot() {
 #define SCROLLY 395
 
 /* color palettes */
-struct {
+struct st_palettes {
     char *name, *desc;
     unsigned int data[64];
 } palettes[] = {
@@ -301,7 +290,7 @@ extern unsigned int *xfb[2];
 extern GXRModeObj *vmode; 
 extern int font_size[256];
 extern int font_height;
-extern int screenscaler;
+extern u8 screenscaler;
 
 /****************************************************************************
  * SetScreen
@@ -391,9 +380,7 @@ char PADMap( int padvalue, int padnum ) {
  *
  * This screen simply let's the user swap A/B/X/Y around.
  ****************************************************************************/
-char mpads[6] = { 0, 1, 2, 3, 4, 5 };
-int PADCON = 0;
-
+u8 mpads[6] = { 0, 1, 4, 5, 2, 3 };
 void ConfigPAD() {
     int PadMenuCount = 10;
     char PadMenu[10][MENU_STRING_LENGTH] = { 
@@ -510,8 +497,16 @@ char SdSlots[3][10] = {
 enum SLOTS {
     SLOT_A, SLOT_B, SLOT_WIISD
 };
-int ChosenSlot = 0;
-int ChosenDevice = 1;
+enum DEVICES {
+    MEMCARD, SDCARD
+};
+
+#ifdef HW_RVL
+u8 ChosenSlot = SLOT_WIISD;
+#else
+u8 ChosenSlot = SLOT_A;
+#endif
+u8 ChosenDevice = SDCARD;
 
 int StateManager() {
     int SaveMenuCount = 5;
@@ -542,9 +537,9 @@ int StateManager() {
 
     while ( quit == 0 ) {
         if ( redraw ) {
-            sprintf(SaveMenu[SAVE_SLOT], "%s: %s", ChosenDevice ? "SDCard" : "MemCard",
+            sprintf(SaveMenu[SAVE_SLOT], "%s: %s", (ChosenDevice == SDCARD) ? "SDCard" : "MemCard",
                 SdSlots[ChosenSlot]);
-            sprintf(SaveMenu[SAVE_DEVICE], MENU_SAVE_DEVICE ": %s", ChosenDevice ? "SDCard" : "MemCard");
+            sprintf(SaveMenu[SAVE_DEVICE], MENU_SAVE_DEVICE ": %s", (ChosenDevice == SDCARD) ? "SDCard" : "MemCard");
             DrawMenu(MENU_SAVE_TITLE, SaveMenu, SaveMenuCount, ChosenMenu);
             redraw = 0;
         } 
@@ -629,15 +624,17 @@ int StateManager() {
  * Video Enhancement Screen
  ****************************************************************************/
 int VideoEnhancements() {	
-    int VideoMenuCount = 5;
-    char VideoMenu[5][MENU_STRING_LENGTH] = { 
+    int VideoMenuCount = 7;
+    char VideoMenu[7][MENU_STRING_LENGTH] = { 
         { MENU_VIDEO_SCALER }, { MENU_VIDEO_PALETTE },
         { MENU_VIDEO_SPRITE }, { MENU_VIDEO_TIMING },
+        { MENU_VIDEO_SAVE }, { MENU_VIDEO_LOAD },
         { MENU_EXIT }
     };
     enum VIDEO_MENU {
         VIDEO_SCALER, VIDEO_PALETTE,
         VIDEO_SPRITE, VIDEO_TIMING,
+        VIDEO_SAVE, VIDEO_LOAD,
         VIDEO_EXIT
     };
     unsigned char VideoMenuText[][512] = {
@@ -704,7 +701,6 @@ int VideoEnhancements() {
                             FCEUD_SetPalette( i+64, r, g, b);
                             FCEUD_SetPalette( i+128, r, g, b);
                             FCEUD_SetPalette( i+192, r, g, b);
-
                         }
                     }
                     break;
@@ -717,6 +713,14 @@ int VideoEnhancements() {
                 case VIDEO_TIMING:
                         timing ^= 1;
                         FCEUI_SetVidSystem( timing );
+                        break;
+
+                case VIDEO_SAVE:
+                        ManageSettings(0, ChosenSlot, ChosenDevice, 0);
+                        break;
+
+                case VIDEO_LOAD:
+                        ManageSettings(1, ChosenSlot, ChosenDevice, 0);
                         break;
 
                 case VIDEO_EXIT:
@@ -828,7 +832,6 @@ int MediaSelect() {
 #ifdef HW_RVL
     strcpy(MediaMenu[MEDIA_DVD], MediaMenu[MEDIA_EXIT]);
     MediaMenuCount = 3;
-    ChosenSlot = SLOT_WIISD; // default to WiiSD
 #else
     SdSlotCount = 2;
 #endif
@@ -876,6 +879,7 @@ int MediaSelect() {
 #else
                         UseSDCARD = 0; //DVD
                         OpenDVD();
+                        ChosenDevice = 1; // Memcard
                         return 1;
 #endif
                         break;
@@ -1075,7 +1079,7 @@ int MainMenu() {
                     break;
 
                 case MAIN_RELOAD:
-                    PSOReload();
+                    Reload();
                     break;
 
                 case MAIN_REBOOT:
@@ -1101,7 +1105,6 @@ int MainMenu() {
 
         scroller(SCROLLY, MainMenuText, 7);
         VIDEO_WaitVSync();
-
     }
 
     /*** Remove any still held buttons ***/
