@@ -407,6 +407,14 @@ void ConfigPAD() {
     line = 0;
     scrollerx = 320 - MARGIN;
 
+    int TurboSpeedsCount = 8;
+    u8 TurboSpeeds[8] = { 2, 4, 8, 10, 15, 20, 25, 30 };
+    // Default to 30 pps
+    int TurboNumber = TurboSpeedsCount;
+    for (i=0; i<TurboSpeedsCount; i++) {
+        if ( (60/PADTUR) == TurboSpeeds[i] )
+            TurboNumber = i;
+    }
     while ( quit == 0 ) {
         if ( redraw ) {
             sprintf(PadMenu[PAD_A], MENU_CONFIG_A " - %c", PADMap(mpads[0], 0));
@@ -417,7 +425,7 @@ void ConfigPAD() {
             sprintf(PadMenu[PAD_SELECT], MENU_CONFIG_SELECT " - %c", PADMap(mpads[3], 3));
             sprintf(PadMenu[PAD_FOUR_SCORE], MENU_CONFIG_FOUR_SCORE " - %s", FSDisable ? "OFF" : "ON");
             sprintf(PadMenu[PAD_CLIP], MENU_CONFIG_CLIP " - %d", PADCAL);
-            sprintf(PadMenu[PAD_SPEED], MENU_CONFIG_SPEED " - %.2f pps", (float)60/PADTUR);
+            sprintf(PadMenu[PAD_SPEED], MENU_CONFIG_SPEED " - %d pps", TurboSpeeds[TurboNumber]);
             DrawMenu(MENU_CONFIG_TITLE, PadMenu, PadMenuCount, menu);
         }
 
@@ -447,20 +455,17 @@ void ConfigPAD() {
                         FSDisable ^= 1;
                         FCEUI_DisableFourScore(FSDisable);
                         break;
-
                 case PAD_CLIP: i = -1;
                         PADCAL += 5;
                         if ( PADCAL > 70 )
                             PADCAL = 30;
                         break;
-
                 case PAD_SPEED:i = -1;
-                        PADTUR += 1;
-                        if ( PADTUR > 10 ) PADTUR += 4;
-                        if ( PADTUR > 30 )
-                            PADTUR = 2;
+                        TurboNumber++;
+                        if (TurboNumber >= TurboSpeedsCount)
+                            TurboNumber = 0;
+                        PADTUR = TurboSpeeds[TurboNumber];
                         break;
-
                 case PAD_EXIT:
                     quit = 1;
                     break;
@@ -475,6 +480,66 @@ void ConfigPAD() {
 
         if ( j & PAD_BUTTON_B ) {
             quit = 1;
+        }
+
+        if (j & PAD_BUTTON_LEFT) {
+            i = -1;
+            redraw = 1;
+            switch(menu) {
+                case PAD_A: i = 0; break;
+                case PAD_B: i = 1; break;
+                case PAD_TURBO_A: i = 4; break;
+                case PAD_TURBO_B: i = 5; break;
+                case PAD_START: i = 2; break;
+                case PAD_SELECT: i = 3; break;
+                case PAD_FOUR_SCORE: i = -1;
+                    FSDisable = 1;
+                    FCEUI_DisableFourScore(FSDisable);
+                    break;
+                case PAD_CLIP: i = -1;
+                    PADCAL -= 5;
+                    if (PADCAL < 30)
+                        PADCAL = 30;
+                    break;
+                case PAD_SPEED: i = -1;
+                    TurboNumber--;
+                    if (TurboNumber < 0) TurboNumber = 0;
+                    PADTUR = TurboSpeeds[TurboNumber];
+                    break;
+                default: break;
+            }
+            if ( (quit == 0) && (i >= 0) && (mpads[i] > 0) )
+                mpads[i]--;
+        }
+
+        if (j & PAD_BUTTON_RIGHT) {
+            i = -1;
+            redraw = 1;
+            switch(menu) {
+                case PAD_A: i = 0; break;
+                case PAD_B: i = 1; break;
+                case PAD_TURBO_A: i = 4; break;
+                case PAD_TURBO_B: i = 5; break;
+                case PAD_START: i = 2; break;
+                case PAD_SELECT: i = 3; break;
+                case PAD_FOUR_SCORE: i = -1;
+                    FSDisable = 0;
+                    FCEUI_DisableFourScore(FSDisable);
+                    break;
+                case PAD_CLIP: i = -1;
+                    PADCAL += 5;
+                    if (PADCAL > 70)
+                        PADCAL = 70;
+                    break;
+                case PAD_SPEED: i = -1;
+                    TurboNumber++;
+                    if (TurboNumber > TurboSpeedsCount) TurboNumber = TurboSpeedsCount;
+                    PADTUR = TurboSpeeds[TurboNumber];
+                    break;
+                default: break;
+            }
+            if ( (quit == 0) && (i >= 0) && (mpads[i] < 5) )
+                mpads[i]++;
         }
 
         if ( menu < 0 ) menu = PadMenuCount - 1;
@@ -587,19 +652,18 @@ int StateManager() {
                     ChosenSlot = SdSlotCount - 1;
                 redraw = 1;
             } else if (ChosenMenu == SAVE_DEVICE) {
-                ChosenDevice ^= 1;
+                if (ChosenDevice == 0) ChosenDevice = 1;
                 redraw = 1;
             }
         }
 
         if (j & PAD_BUTTON_LEFT) {
             if (ChosenMenu == SAVE_SLOT) {
-                ChosenSlot--;
-                if (ChosenSlot < 0)
-                    ChosenSlot = 0;
+                if (ChosenSlot)
+                    ChosenSlot--;
                 redraw = 1;
             } else if (ChosenMenu == SAVE_DEVICE) {
-                ChosenDevice ^= 1;
+                if (ChosenDevice) ChosenDevice = 0;
                 redraw = 1;
             }
         }
@@ -704,31 +768,97 @@ int VideoEnhancements() {
                         }
                     }
                     break;
-
                 case VIDEO_SPRITE:
                         slimit ^=1;
                         FCEUI_DisableSpriteLimitation( slimit );
                         break;
-
                 case VIDEO_TIMING:
                         timing ^= 1;
                         FCEUI_SetVidSystem( timing );
                         break;
-
                 case VIDEO_SAVE:
                         ManageSettings(0, ChosenSlot, ChosenDevice, 0);
                         break;
-
                 case VIDEO_LOAD:
                         ManageSettings(1, ChosenSlot, ChosenDevice, 0);
                         break;
-
                 case VIDEO_EXIT:
                         quit = 1;
                         break;
-
                 default: break;
 
+            }
+        }
+
+        if ( j & PAD_BUTTON_LEFT ) {
+            redraw = 1;
+            switch (menu) {
+                case VIDEO_SCALER:
+                    if (screenscaler) screenscaler--;
+                    break;
+                case VIDEO_PALETTE:
+                    if (currpal) currpal--;
+                    if ( currpal == 0 ) {
+                        /*** Do palette reset ***/
+                        FCEU_ResetPalette();
+                    } else {
+                        /*** Now setup this palette ***/
+                        for ( i = 0; i < 64; i++ ) {
+                            r = palettes[currpal-1].data[i] >> 16;
+                            g = ( palettes[currpal-1].data[i] & 0xff00 ) >> 8;
+                            b = ( palettes[currpal-1].data[i] & 0xff );
+                            FCEUD_SetPalette( i, r, g, b);
+                            FCEUD_SetPalette( i+64, r, g, b);
+                            FCEUD_SetPalette( i+128, r, g, b);
+                            FCEUD_SetPalette( i+192, r, g, b);
+                        }
+                    }
+                    break;
+                case VIDEO_SPRITE:
+                    if (slimit) slimit = 0;
+                    FCEUI_DisableSpriteLimitation(slimit);
+                    break;
+                case VIDEO_TIMING:
+                    if (timing) timing = 0;
+                    FCEUI_SetVidSystem(timing);
+                    break;
+                default: break;
+            }
+        }
+
+        if ( j & PAD_BUTTON_RIGHT ) {
+            redraw = 1;
+            switch (menu) {
+                case VIDEO_SCALER:
+                    if (screenscaler < 2) screenscaler++;
+                    break;
+                case VIDEO_PALETTE:
+                    if (currpal < MAXPAL) currpal++;
+                    if ( currpal == 0 ) {
+                        /*** Do palette reset ***/
+                        FCEU_ResetPalette();
+                    } else {
+                        /*** Now setup this palette ***/
+                        for ( i = 0; i < 64; i++ ) {
+                            r = palettes[currpal-1].data[i] >> 16;
+                            g = ( palettes[currpal-1].data[i] & 0xff00 ) >> 8;
+                            b = ( palettes[currpal-1].data[i] & 0xff );
+                            FCEUD_SetPalette( i, r, g, b);
+                            FCEUD_SetPalette( i+64, r, g, b);
+                            FCEUD_SetPalette( i+128, r, g, b);
+                            FCEUD_SetPalette( i+192, r, g, b);
+                        }
+                    }
+                    break;
+                case VIDEO_SPRITE:
+                    if (slimit == 0) slimit = 1;
+                    FCEUI_DisableSpriteLimitation(slimit);
+                    break;
+                case VIDEO_TIMING:
+                    if (timing == 0) timing = 1;
+                    FCEUI_SetVidSystem(timing);
+                    break;
+                default: break;
             }
         }
 
@@ -905,9 +1035,8 @@ int MediaSelect() {
         }
 
         if ( (j & PAD_BUTTON_LEFT) && (ChosenMenu == MEDIA_SLOT) ) {
-            ChosenSlot--;
-            if (ChosenSlot < 0)
-                ChosenSlot = 0;
+            if (ChosenSlot)
+                ChosenSlot--;
             redraw = 1;
         }
 
