@@ -15,23 +15,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <zlib.h>
-#include <sdcard.h>
 
-#ifdef HW_RVL
-#include "wiisd/vfat.h"
-
-extern VFATFS vfs;
-extern FSDIRENTRY vfsfile;
-extern u8 UseWiiSDCARD;
-#endif
-extern sd_file *filehandle;
+extern unsigned int dvd_read(void *dst, unsigned int len, u64 offset);
+extern FILE *filehandle;
 extern u8 UseSDCARD;
 
 extern void ShowAction( char *msg );
 extern void WaitPrompt( char *msg );
 
 extern unsigned char readbuffer[2048];
-extern unsigned int dvd_read(void *dst, unsigned int len, u64 offset);
 
 #define ZIPCHUNK 2048
 
@@ -51,8 +43,7 @@ typedef struct {
     unsigned short extraDataLength __attribute__ ((__packed__));
 } PKZIPHEADER;
 
-static inline u32 FLIP32(u32 b)
-{
+static inline u32 FLIP32(u32 b) {
     unsigned int c;
 
     c = ( b & 0xff000000 ) >> 24;
@@ -63,8 +54,7 @@ static inline u32 FLIP32(u32 b)
     return c;
 }
 
-static inline u16 FLIP16(u16 b)
-{
+static inline u16 FLIP16(u16 b) {
     u16 c;
 
     c = ( b & 0xff00 ) >> 8;
@@ -83,12 +73,11 @@ static inline u16 FLIP16(u16 b)
  * it is populated before calling.
  ****************************************************************************/
 
-bool isZipFile()
-{
+bool isZipFile() {
     u32 check;
 
     memcpy(&check, &readbuffer, 4);
-    return ( check == PKZIPID ) ? true : false;
+    return (check == PKZIPID) ? true : false;
 }
 
 /****************************************************************************
@@ -99,9 +88,8 @@ bool isZipFile()
  *
  * Unzip terminates on Z_END_STREAM.
  ***************************************************************************/
-int unzipDVDFile( unsigned char *outbuffer, 
-        unsigned int discoffset, unsigned int length)
-{
+int unzipDVDFile(unsigned char *outbuffer, 
+        unsigned int discoffset, unsigned int length) {
     PKZIPHEADER pkzip;
     int zipoffset = 0;
     int zipchunk = 0;
@@ -134,14 +122,12 @@ int unzipDVDFile( unsigned char *outbuffer,
     zipchunk = ZIPCHUNK - zipoffset;
 
     /*** No do it! ***/
-    do
-    {
+    do {
         zs.avail_in = zipchunk;
         zs.next_in = (Bytef *)&readbuffer[zipoffset];
 
         /*** Now inflate until input buffer is exhausted ***/
-        do
-        {
+        do {
             zs.avail_out = ZIPCHUNK;
             zs.next_out = (Bytef *)&out;
 
@@ -153,7 +139,7 @@ int unzipDVDFile( unsigned char *outbuffer,
             }
 
             have = ZIPCHUNK - zs.avail_out;
-            if ( have ) {
+            if (have) {
                 /*** Copy to normal block buffer ***/
                 memcpy(&outbuffer[bufferoffset], &out, have);
                 bufferoffset += have;
@@ -165,23 +151,13 @@ int unzipDVDFile( unsigned char *outbuffer,
         zipoffset = 0;
         zipchunk = ZIPCHUNK;
         discoffset += 2048;
-        if ( UseSDCARD )
-            SDCARD_ReadFile(filehandle, &readbuffer, 2048);
-#ifdef HW_RVL
-            else if (UseWiiSDCARD) VFAT_fread(&vfsfile, &readbuffer, 2048);
-#endif
-        else
-            dvd_read(&readbuffer, 2048, discoffset);
-
+        if (UseSDCARD) fread(&readbuffer, 2048, 1, filehandle);
+        else dvd_read(&readbuffer, 2048, discoffset);
     } while ( res != Z_STREAM_END );
 
     inflateEnd(&zs);
 
-    if ( UseSDCARD )
-        SDCARD_CloseFile(filehandle);
-#ifdef HW_RVL
-    else if (UseWiiSDCARD) VFAT_fclose(&vfsfile);
-#endif
+    if (UseSDCARD) fclose(filehandle);
 
     if ( res == Z_STREAM_END ) {
         if ( FLIP32(pkzip.uncompressedSize == (u32)bufferoffset ) )

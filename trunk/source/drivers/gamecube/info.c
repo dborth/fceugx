@@ -41,14 +41,11 @@ extern char backdrop[640 * 480 * 2];
 extern u8 UseSDCARD;
 extern int scrollerx;
 
-#ifdef HW_RVL
-void (*Reload)() = (void(*)())0x90000020;
-#else
-void (*Reload)() = (void(*)())0x80001800;
-#endif
+//void (*Reload)() = (void(*)())0x80001800;
+void Reload() { exit(0); }
 
 void Reboot() {
-#ifdef HW_RVL
+#ifdef __wii__
     // Thanks to eke-eke
     SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 #else
@@ -555,22 +552,18 @@ void ConfigPAD() {
 /****************************************************************************
  * Save Game Manager
  ****************************************************************************/
-int SdSlotCount = 3;
-char SdSlots[3][10] = {
-    { "Slot A" }, { "Slot B" }, { "Wii SD"}
+int SdSlotCount = 2;
+char SdSlots[2][10] = {
+    { "Slot A" }, { "Slot B" }
 };
 enum SLOTS {
-    SLOT_A, SLOT_B, SLOT_WIISD
+    SLOT_A, SLOT_B
 };
 enum DEVICES {
     MEMCARD, SDCARD
 };
 
-#ifdef HW_RVL
-u8 ChosenSlot = SLOT_WIISD;
-#else
 u8 ChosenSlot = SLOT_A;
-#endif
 u8 ChosenDevice = SDCARD;
 
 int StateManager() {
@@ -591,7 +584,10 @@ int StateManager() {
         { MENU_SAVE_TEXT2 }
     };
 
-
+#ifdef __wii__
+    strcpy(SaveMenu[SAVE_SLOT], SaveMenu[SAVE_EXIT]);
+    SaveMenuCount--;
+#endif
     int ChosenMenu = 0;
     int quit = 0;
     short j;
@@ -602,8 +598,10 @@ int StateManager() {
 
     while ( quit == 0 ) {
         if ( redraw ) {
+#ifdef __gamecube__
             sprintf(SaveMenu[SAVE_SLOT], "%s: %s", (ChosenDevice == SDCARD) ? "SDCard" : "MemCard",
                 SdSlots[ChosenSlot]);
+#endif
             sprintf(SaveMenu[SAVE_DEVICE], MENU_SAVE_DEVICE ": %s", (ChosenDevice == SDCARD) ? "SDCard" : "MemCard");
             DrawMenu(MENU_SAVE_TITLE, SaveMenu, SaveMenuCount, ChosenMenu);
             redraw = 0;
@@ -633,10 +631,12 @@ int StateManager() {
                     ChosenDevice ^= 1;
                     break;
                 case SAVE_SLOT:
+#ifdef __gamecube__
                     ChosenSlot++;
                     if (ChosenSlot >= SdSlotCount)
                         ChosenSlot = 0;
                     break;
+#endif
                 case SAVE_EXIT: 
                     quit = 1;
                     break;
@@ -646,23 +646,29 @@ int StateManager() {
         }
 
         if (j & PAD_BUTTON_RIGHT) {
+#ifdef __gamecube__
             if (ChosenMenu == SAVE_SLOT) {
                 ChosenSlot++;
                 if (ChosenSlot >= SdSlotCount)
                     ChosenSlot = SdSlotCount - 1;
                 redraw = 1;
-            } else if (ChosenMenu == SAVE_DEVICE) {
+            }
+#endif
+            if (ChosenMenu == SAVE_DEVICE) {
                 if (ChosenDevice == 0) ChosenDevice = 1;
                 redraw = 1;
             }
         }
 
         if (j & PAD_BUTTON_LEFT) {
+#ifdef __gamecube__
             if (ChosenMenu == SAVE_SLOT) {
                 if (ChosenSlot)
                     ChosenSlot--;
                 redraw = 1;
-            } else if (ChosenMenu == SAVE_DEVICE) {
+            }
+#endif
+            if (ChosenMenu == SAVE_DEVICE) {
                 if (ChosenDevice) ChosenDevice = 0;
                 redraw = 1;
             }
@@ -959,11 +965,10 @@ int MediaSelect() {
     line = 0;
     scrollerx = 320 - MARGIN;
 
-#ifdef HW_RVL
-    strcpy(MediaMenu[MEDIA_DVD], MediaMenu[MEDIA_EXIT]);
-    MediaMenuCount = 3;
-#else
-    SdSlotCount = 2;
+#ifdef __wii__
+    // bypass all this in Wii mode
+    OpenSD();
+    return 1;
 #endif
 
     while ( quit == 0 ) {
@@ -988,41 +993,27 @@ int MediaSelect() {
             redraw = 1;
             switch ( ChosenMenu ) {
                 case MEDIA_SDCARD:
-#ifdef HW_RVL
-                        if (ChosenSlot == SLOT_WIISD) {
-                            OpenWiiSD();
-                        } else
-#endif
-                            OpenSD();
-                        return 1;
-                        break;
+                    OpenSD();
+                    return 1;
+                    break;
                 case MEDIA_SLOT:
-                        ChosenSlot++;
-                        if (ChosenSlot >= SdSlotCount)
-                            ChosenSlot = 0;
-                        redraw = 1;
-                        break;
+                    ChosenSlot ^= 1;
+                    redraw = 1;
+                    break;
                 case MEDIA_DVD:
-#ifdef HW_RVL
-                        // In Wii mode, this is just exit
-                        quit = 1;
-#else
-                        UseSDCARD = 0; //DVD
-                        OpenDVD();
-                        ChosenDevice = 1; // Memcard
-                        return 1;
-#endif
-                        break;
-#ifndef HW_RVL
+                    UseSDCARD = 0; //DVD
+                    OpenDVD();
+                    ChosenDevice = 1; // Memcard
+                    return 1;
+                    break;
                 case MEDIA_STOPDVD:
-                        ShowAction((char*)MENU_MEDIA_STOPPING);
-                        dvd_motor_off();
-                        WaitPrompt((char*)MENU_MEDIA_STOPPED);
+                    ShowAction((char*)MENU_MEDIA_STOPPING);
+                    dvd_motor_off();
+                    WaitPrompt((char*)MENU_MEDIA_STOPPED);
+                    break;
                 case MEDIA_EXIT:
-                        quit = 1;
-                        break;
-#endif
-
+                    quit = 1;
+                    break;
                 default: break ;
             }
         }

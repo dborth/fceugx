@@ -34,51 +34,43 @@ struct pcpal {
 unsigned int gcpalette[256];	/*** Much simpler GC palette ***/
 unsigned short rgb565[256];	/*** Texture map palette ***/
 static unsigned char gp_fifo[DEFAULT_FIFO_SIZE] __attribute__((__aligned__(32)));
-static unsigned char texturemem[ TEX_WIDTH * TEX_HEIGHT * 2 ] __attribute__((__aligned__(32)));
+static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 2] __attribute__((__aligned__(32)));
 GXTexObj texobj;
 GXColor background = {0, 0, 0, 0xff};
 static Mtx projectionMatrix,modelViewMatrix;
-void CheesyScale( unsigned char *XBuf );
+void CheesyScale(unsigned char *XBuf);
 int whichfb = 0;
 extern int font_height;
 int copynow = GX_FALSE;
 
 extern int font_width;
 
-int GetTextWidth( char *text )
-{
+int GetTextWidth(char *text) {
     unsigned int i, w = 0;
 
-    for ( i = 0; i < strlen(text); i++ )
+    for (i = 0; i < strlen(text); i++)
         w += font_width;
-
     return w;
 }
 
-int CentreTextPosition( char *text )
-{
-    return ( ( 640 - GetTextWidth(text) ) >> 1 );
+int CentreTextPosition(char *text) {
+    return ((640 - GetTextWidth(text)) >> 1);
 }
 
-void WriteCentre( int y, char *text )
-{
-    write_font( CentreTextPosition(text), y, text);
+void WriteCentre(int y, char *text) {
+    write_font(CentreTextPosition(text), y, text);
 }
 
-void WaitPrompt( char *msg )
-{
+void WaitPrompt(char *msg) {
     int quit = 0;
 
-    while ( PAD_ButtonsDown(0) & PAD_BUTTON_A ) {} ;
-
-    while( !(PAD_ButtonsDown(0) & PAD_BUTTON_A ) && (quit == 0 ))
-    {
+    while (PAD_ButtonsDown(0) & PAD_BUTTON_A) {} ;
+    while(!(PAD_ButtonsDown(0) & PAD_BUTTON_A) && (quit == 0)) {
         ClearScreen();
+        WriteCentre(220, msg);
+        WriteCentre(220 + font_height, MENU_PRESS_A);
 
-        WriteCentre( 220, msg);
-        WriteCentre( 220 + font_height, MENU_PRESS_A);
-
-        if ( PAD_ButtonsDown(0) & PAD_BUTTON_A )
+        if (PAD_ButtonsDown(0) & PAD_BUTTON_A)
             quit = 1;
 
         SetScreen();
@@ -88,18 +80,15 @@ void WaitPrompt( char *msg )
 /**
  * Wait for user to press A or B. Returns 0 = B; 1 = A
  */
-int WaitButtonAB ()
-{
+int WaitButtonAB() {
     int btns;
 
-    while ( (PAD_ButtonsDown (0) & (PAD_BUTTON_A | PAD_BUTTON_B)) );
-
-    while ( TRUE )
-    {
+    while ((PAD_ButtonsDown (0) & (PAD_BUTTON_A | PAD_BUTTON_B)));
+    while (1) {
         btns = PAD_ButtonsDown (0);
-        if ( btns & PAD_BUTTON_A )
+        if (btns & PAD_BUTTON_A)
             return 1;
-        else if ( btns & PAD_BUTTON_B )
+        else if (btns & PAD_BUTTON_B)
             return 0;
     }
 }
@@ -108,8 +97,7 @@ int WaitButtonAB ()
  * Show a prompt with choice of two options. Returns 1 if A button was pressed
  and 0 if B button was pressed.
  */
-int WaitPromptChoice (char *msg, char *bmsg, char *amsg)
-{
+int WaitPromptChoice(char *msg, char *bmsg, char *amsg) {
     char choiceOption[80];  
     sprintf (choiceOption, "B = %s   :   A = %s", bmsg, amsg);
 
@@ -121,20 +109,18 @@ int WaitPromptChoice (char *msg, char *bmsg, char *amsg)
     return WaitButtonAB ();
 }
 
-void ShowAction( char *msg )
-{
+void ShowAction(char *msg) {
     memcpy (xfb[whichfb], &backdrop, 1280 * 480);
     /*ClearScreen();*/
-    WriteCentre( 220 + ( font_height >> 1), msg);
+    WriteCentre(220 + (font_height >> 1), msg);
     SetScreen();
 }
 
 /****************************************************************************
  * GX Chip Copy to XFB
  ****************************************************************************/
-static void copy_to_xfb()
-{
-    if ( copynow == GX_TRUE ) {
+static void copy_to_xfb() {
+    if (copynow == GX_TRUE) {
         GX_CopyDisp(xfb[whichfb],GX_TRUE);
         GX_Flush();
         copynow = GX_FALSE;
@@ -144,9 +130,7 @@ static void copy_to_xfb()
 /****************************************************************************
  * Initialise the GX
  ****************************************************************************/
-
-void StartGX()
-{
+void StartGX() {
     /*** Clear out FIFO area ***/
     memset(&gp_fifo, 0, DEFAULT_FIFO_SIZE);
 
@@ -205,24 +189,20 @@ void StartGX()
  *
  * Using the texture map draw with quads 
  ****************************************************************************/
-void GXDraw( unsigned char *XBuf )
-{
-
+void GXDraw(unsigned char *XBuf) {
     float gs = 1.0;
     float gt = 1.0;
     int width, height,t,xb;
     unsigned short *texture;
 
     memset(&texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2);
-    texture = ( unsigned short *)&texturemem[ 16 * TEX_WIDTH ];
+    texture = (unsigned short *)&texturemem[16 * TEX_WIDTH];
 
     /*** Now draw the texture ***/
     t = 0;
-    for ( height = 0; height < 120; height++ )
-    {
+    for(height = 0; height < 120; height++) {
         xb = height * 512;
-        for( width = 256; width > 0; width -= 4 )
-        {
+        for(width = 256; width > 0; width -= 4) {
             /*** Row one ***/
             texture[t++] = rgb565[XBuf[xb + width-1]];
             texture[t++] = rgb565[XBuf[xb + width-2]];
@@ -246,9 +226,7 @@ void GXDraw( unsigned char *XBuf )
             texture[t++] = rgb565[XBuf[xb + 256 + width-2]];
             texture[t++] = rgb565[XBuf[xb + 256 + width-3]];
             texture[t++] = rgb565[XBuf[xb + 256 + width-4]];
-
         }
-
     }
 
     DCFlushRange(&texturemem, TEX_WIDTH * TEX_HEIGHT * 2);
@@ -274,7 +252,6 @@ void GXDraw( unsigned char *XBuf )
     GX_End();
     GX_DrawDone();
     copynow = GX_TRUE;
-
 }
 
 /****************************************************************************
@@ -289,41 +266,13 @@ void initDisplay() {
     /*** Start VIDEO Subsystem ***/
     VIDEO_Init();
 
-    extern GXRModeObj TVEurgb60Hz480IntDf;
-    /*** Determine display mode
-NOTE: Force 60Hz 640x480 for PAL or NTSC ***/
-
-    switch(VIDEO_GetCurrentTvMode())
-    {
-        case VI_NTSC:
-            vmode = &TVNtsc480IntDf;
-            break;
-        case VI_PAL:
-            vmode = &TVPal574IntDfScale;
-            break;
-#ifdef FORCE_EURGB60
-        default:
-            vmode = &TVEurgb60Hz480IntDf;
-            break;
-#else
-        case VI_MPAL:
-            vmode = &TVMpal480IntDf;
-            break;
-        default:
-            vmode = &TVNtsc480IntDf;
-            break;
-#endif
-    }
-    //vmode = &TVPal528IntDf;
-
-    // works for NTSC and PAL on GC and Wii :)
-    //vmode = &TVNtsc480IntDf;
+    vmode = VIDEO_GetPreferredMode(NULL);
+    VIDEO_Configure(vmode);
 
     xfb[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
     xfb[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(vmode));
     /*init_font();*/
 
-    VIDEO_Configure(vmode);
     VIDEO_SetNextFramebuffer(xfb[0]);
     VIDEO_SetBlack(FALSE);
     VIDEO_Flush();
@@ -337,7 +286,6 @@ NOTE: Force 60Hz 640x480 for PAL or NTSC ***/
 
     PAD_Init();
     StartGX();
-    DVD_Init();
 }
 
 /****************************************************************************
@@ -347,43 +295,37 @@ NOTE: Force 60Hz 640x480 for PAL or NTSC ***/
  ****************************************************************************/
 #define NESWIDTH 256
 #define NESHEIGHT 240
-void RenderFrame( char *XBuf, int style )
-{
-
+void RenderFrame(char *XBuf, int style) {
     int gcdispOffset = 32;	/*** Offset to centre on screen ***/
     int w,h;
     int c,i;
 
     whichfb ^= 1;
-
-    switch( style ) {
-
+    switch(style) {
         case 0 :
-            VIDEO_ClearFrameBuffer( vmode, xfb[whichfb], COLOR_BLACK);
+            VIDEO_ClearFrameBuffer(vmode, xfb[whichfb], COLOR_BLACK);
 
             /*** Simply go through each row ***/
-            for( h = 0; h < NESHEIGHT; h++ )
-            {
-                for( w = 0; w < NESWIDTH; w++ )
-                {
-                    c = ( h << 8 ) + w;
+            for(h = 0; h < NESHEIGHT; h++) {
+                for(w = 0; w < NESWIDTH; w++) {
+                    c = (h << 8) + w;
                     i = gcdispOffset + w;
                     /*** Fast Zoom - Repeat each row, use 1 Xbuf == 2 GC
                       To speed up more, use indexed palette array ***/
 
-                    xfb[whichfb][i] = gcpalette[ (unsigned char)XBuf[ c ] ];
-                    xfb[whichfb][i + 320] = gcpalette[ (unsigned char)XBuf[ c ] ];
+                    xfb[whichfb][i] = gcpalette[(unsigned char)XBuf[c]];
+                    xfb[whichfb][i + 320] = gcpalette[(unsigned char)XBuf[c]];
                 }
                 gcdispOffset += 640;
             }
             break;
 
         case 1:
-            CheesyScale( XBuf );
+            CheesyScale(XBuf);
             break;
 
         case 2:
-            GXDraw( XBuf );
+            GXDraw(XBuf);
             break;
     }
 
@@ -399,9 +341,8 @@ void RenderFrame( char *XBuf, int style )
  * Support routine for gcpalette
  ****************************************************************************/
 
-unsigned int rgbcolor( unsigned char r1, unsigned char g1, unsigned char b1,
-        unsigned char r2, unsigned char g2, unsigned char b2)
-{
+unsigned int rgbcolor(unsigned char r1, unsigned char g1, unsigned char b1,
+        unsigned char r2, unsigned char g2, unsigned char b2) {
     int y1,cb1,cr1,y2,cb2,cr2,cb,cr;
 
     y1=(299*r1+587*g1+114*b1)/1000;
@@ -415,7 +356,7 @@ unsigned int rgbcolor( unsigned char r1, unsigned char g1, unsigned char b1,
     cb=(cb1+cb2) >> 1;
     cr=(cr1+cr2) >> 1;
 
-    return ( (y1 << 24) | (cb << 16) | (y2 << 8) | cr );
+    return ((y1 << 24) | (cb << 16) | (y2 << 8) | cr);
 }
 
 /****************************************************************************
@@ -424,8 +365,8 @@ unsigned int rgbcolor( unsigned char r1, unsigned char g1, unsigned char b1,
  * A shadow copy of the palette is maintained, in case the NES Emu kernel
  * requests a copy.
  ****************************************************************************/
-void FCEUD_SetPalette(unsigned char index, unsigned char r, unsigned char g, unsigned char b)
-{
+void FCEUD_SetPalette(unsigned char index, unsigned char r, unsigned char g,
+        unsigned char b) {
     /*** Make PC compatible copy ***/
     pcpalette[index].r = r;
     pcpalette[index].g = g;
@@ -435,16 +376,16 @@ void FCEUD_SetPalette(unsigned char index, unsigned char r, unsigned char g, uns
     gcpalette[index] = rgbcolor(r,g,b,r,g,b);
 
     /*** Generate RGB565 texture palette ***/
-    rgb565[index] = ( ( r & 0xf8 ) << 8 ) |
-        ( ( g & 0xfc ) << 3 ) |
-        ( ( b & 0xf8 ) >> 3 );
+    rgb565[index] = ((r & 0xf8) << 8) |
+        ((g & 0xfc) << 3) |
+        ((b & 0xf8) >> 3);
 }
 
 /****************************************************************************
  * GetPalette
  ****************************************************************************/
-void FCEUD_GetPalette(unsigned char i, unsigned char *r, unsigned char *g, unsigned char *b)
-{
+void FCEUD_GetPalette(unsigned char i, unsigned char *r, unsigned char *g,
+        unsigned char *b) {
     *r = pcpalette[i].r;
     *g = pcpalette[i].g;
     *b = pcpalette[i].b;
@@ -457,9 +398,7 @@ void FCEUD_GetPalette(unsigned char i, unsigned char *r, unsigned char *g, unsig
  * stretching the initial 256 pixels to 320.
  * The standard 2x2 scaler can then be applied
  ****************************************************************************/
-void CheesyScale( unsigned char *XBuf )
-{
-
+void CheesyScale(unsigned char *XBuf) {
     static int newrow[320];		/*** New cheesy row ***/
     unsigned int cheesypal[256];	/*** Enhanced Cheesy Palette ***/
     int i,j,c,p = 0;
@@ -468,23 +407,20 @@ void CheesyScale( unsigned char *XBuf )
     int h, n, nw;
 
     /*** Stretch ***/
-    for ( h = 0; h < NESHEIGHT; h++ )
-    {
+    for (h = 0; h < NESHEIGHT; h++) {
         j = c = p = 0;
-        for ( i = 0; i < NESWIDTH; i++ )
-        {
-
+        for (i = 0; i < NESWIDTH; i++) {
             /*** Every fifth pixel is stretched by adding 
               the mid colour range ***/
-            n = ( h << 8 ) + i;
-            newrow[j++] = XBuf[ n ];
+            n = (h << 8) + i;
+            newrow[j++] = XBuf[n];
             c++;
-            if ( c == 4 )
-            {	/*** Done 4 pixels, so add the fifth ***/
+            if (c == 4) {  /*** Done 4 pixels, so add the fifth ***/
                 p1 = XBuf[n];
                 p2 = XBuf[n+1];
-                cheesypal[p] = rgbcolor( pcpalette[p1].r, pcpalette[p1].g, pcpalette[p1].b,
-                        pcpalette[p2].r, pcpalette[p2].g, pcpalette[p2].b );
+                cheesypal[p] = rgbcolor(pcpalette[p1].r, pcpalette[p1].g,
+                    pcpalette[p1].b, pcpalette[p2].r, pcpalette[p2].g,
+                    pcpalette[p2].b);
                 newrow[j++] = 0x8000 + p;
                 p++;
                 c = 0;
@@ -494,22 +430,17 @@ void CheesyScale( unsigned char *XBuf )
 
         /*** Now update the screen display with the new colours ***/
         ofs = gcdispOffset;
-        for ( nw = 0; nw < 320; nw++ )
-        {
-            if ( newrow[nw] & 0x8000 ) {
+        for (nw = 0; nw < 320; nw++) {
+            if (newrow[nw] & 0x8000) {
                 xfb[whichfb][ofs + nw] = cheesypal[newrow[nw] & 0xff ];
                 xfb[whichfb][ofs + 320 + nw] = cheesypal[newrow[nw] & 0xff];
-            }
-            else
-            {
-                xfb[whichfb][ofs + nw] = gcpalette[ newrow[nw] ]; 
-                xfb[whichfb][ofs + nw + 320] = gcpalette[ newrow[nw] ];
+            } else {
+                xfb[whichfb][ofs + nw] = gcpalette[newrow[nw]]; 
+                xfb[whichfb][ofs + nw + 320] = gcpalette[newrow[nw]];
             }
         }
 
         gcdispOffset += 640;
-
     }
-
 }
 

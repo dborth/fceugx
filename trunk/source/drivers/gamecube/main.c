@@ -70,18 +70,12 @@ int main(int argc, char *argv[]) {
     SYS_SetResetCallback(reset_cb);
     //SYS_SetPowerCallback(power_cb);
     InitialiseSound();
-    SDCARD_Init ();
-
-    int driveid = -1;
-
-    /*** Get Drive Type ***/
+    fatInitDefault();
+#ifdef __gamecube__
+    DVD_Init();
     dvd_inquiry();
-    driveid = (int)inquiry[2];
-
-    /*** Make sure it's one I now about ***/
-    if ( ( driveid != 4 ) && ( driveid != 6 ) && ( driveid != 8 ) ) {
-        isWii = true;
-    }
+#endif
+    DEBUG_Init(0, 1);
 
     /*** Minimal Emulation Loop ***/
     if ( !FCEUI_Initialize() ) {

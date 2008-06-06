@@ -21,9 +21,9 @@ BUILD		:=	build
 SOURCES		:=	source source/boards source/mappers source/input \
 			source/mbshare source/drivers/common \
 			source/drivers/gamecube source/roms \
-			source/iplfont source/sz source/drivers/gamecube/wiisd
+			source/iplfont source/sz
 DATA		:=	data  
-INCLUDES	:=	source source/sz source/drivers/gamecube/wiisd
+INCLUDES	:=	source source/sz
 # Specify language in all capitals
 # Supported languages: ENGLISH DUTCH
 LANG		:=	ENGLISH
@@ -44,7 +44,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-logc -lm -lz -lsdcard
+LIBS	:=	-ldb -lfat -logc -lm -lz
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -156,15 +156,12 @@ tags:
 	    mbshare/*.c mbshare/*.h \
 	    drivers/common/*.c drivers/common/*.h \
 	    drivers/gamecube/*.c drivers/gamecube/*.h \
-	    drivers/gamecube/wiisd/*.h drivers/gamecube/wiisd/*.c \
+	    drivers/gamecube/intl/english.h \
 	    iplfont/*.c iplfont/*.h \
 	    sz/*.c sz/*.h \
 	    /opt/devkitpro/libogc/include/*.h \
 	    /opt/devkitpro/libogc/include/mad/*.h \
 	    /opt/devkitpro/libogc/include/ogc/*.h \
 	    /opt/devkitpro/libogc/include/modplay/*.h \
-	    /opt/devkitpro/libogc/include/sdcard/*.h \
-	    /opt/devkitpro/libjpeg/include/jpeg/*.h \
-	    /opt/devkitpro/libfreetype/include/*.h \
-	    /opt/devkitpro/libfreetype/include/freetype/*.h )
+	    /opt/devkitpro/libogc/include/sdcard/*.h )
 
