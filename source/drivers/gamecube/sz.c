@@ -5,8 +5,8 @@
  * This file manages the 7zip support for this emulator.
  * Currently it only provides functions for loading a 7zip file from a DVD.
  ****************************************************************************/
+#ifdef HW_DOL // only do 7zip in Gamecube mode for now...
 
-#include "gcdvd.h" 
 #include "sz.h"
 
 extern u8 UseSDCARD;
@@ -225,7 +225,7 @@ SZ_RESULT SzDvdIsArchive(u64 dvd_offset) {
             Candidate[3],
             Candidate[4],
             Candidate[5]);
-    //WaitPrompt(msg);
+    WaitPrompt(msg);
 
     size_t i;
     for(i = 0; i < 6; i++) {
@@ -364,3 +364,4 @@ bool SzExtractROM(int i, unsigned char *buffer)
         return true;
     }
 }
+#endif
