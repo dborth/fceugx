@@ -7,7 +7,7 @@
 #include <gccore.h>
 #include <string.h>
 #include "sfont.h"
-
+#include "intl.h"
 
 #define MARGIN 0 //42
 
@@ -88,7 +88,7 @@ int scrollerx = 320 - MARGIN;
 void scroller(int y, unsigned char text[][512], int nlines)
 {
 int a;
-int b;
+int b=0;
 int f;
 int l;
 int s = 0;
@@ -144,5 +144,58 @@ memcpy (&xfb[whichfb][y*320], &backdrop[y*1280], 1280 * SFONTHEIGHT);
 		line++;
 		if (line >= nlines)  line = 0;
 	}
+}
 
+/****************************************************************************
+ * SetScreen
+ ****************************************************************************/
+void SetScreen() {
+    VIDEO_SetNextFramebuffer( xfb[whichfb] );
+    VIDEO_Flush();
+    VIDEO_WaitVSync();
+}
+
+void ClearScreen() {
+    whichfb ^= 1;
+    /*VIDEO_ClearFrameBuffer(vmode, xfb[whichfb], 0x258e2573);*/
+    memcpy (xfb[whichfb], &backdrop, 1280 * 480);
+}
+
+int GetTextWidth(char *text) {
+    unsigned int i, w = 0;
+
+    for (i = 0; i < strlen(text); i++)
+        w += font_width;
+    return w;
+}
+
+int CentreTextPosition(char *text) {
+    return ((640 - GetTextWidth(text)) >> 1);
+}
+
+void WriteCentre(int y, char *text) {
+    write_font(CentreTextPosition(text), y, text);
+}
+
+void WaitPrompt(char *msg) {
+    int quit = 0;
+
+    while (PAD_ButtonsDown(0) & PAD_BUTTON_A) {} ;
+    while(!(PAD_ButtonsDown(0) & PAD_BUTTON_A) && (quit == 0)) {
+        ClearScreen();
+        WriteCentre(220, msg);
+        WriteCentre(220 + font_height, MENU_PRESS_A);
+
+        if (PAD_ButtonsDown(0) & PAD_BUTTON_A)
+            quit = 1;
+
+        SetScreen();
+    }
+}
+
+void ShowAction(char *msg) {
+    memcpy (xfb[whichfb], &backdrop, 1280 * 480);
+    /*ClearScreen();*/
+    WriteCentre(220 + (font_height >> 1), msg);
+    SetScreen();
 }

@@ -12,6 +12,7 @@
 #include "../../types.h"
 #include "../../state.h"
 #include "saveicon.h"
+#include "iplfont.h"
 #include "intl.h"
 
 #define FCEUDIR "fceu"
@@ -403,7 +404,7 @@ void MC_ManageState(int mode, int slot) {
 
                      CardError = CARD_Close(&CardFile);
                      sprintf(debug, "Saved %d bytes successfully!", savedBytes);
-                     ShowAction(debug);
+                     WaitPrompt(debug);
                  } else {
                     WaitPrompt("Save Failed");
                  }
@@ -451,7 +452,7 @@ void MC_ManageState(int mode, int slot) {
 
                 CARD_Unmount(CARDSLOT);
                 sprintf(debug, "Loaded %d bytes successfully!", savedBytes);
-                ShowAction(debug);
+                WaitPrompt(debug);
             } 
             break;	/*** End load ***/
 
@@ -488,11 +489,11 @@ void SD_ManageState(int mode, int slot) {
         len = fwrite(statebuffer, filesize, 1, handle);
         fclose(handle);
 
-        if (len != filesize){
+        /*if (len != filesize){
             sprintf (msg, "Error writing %s", path);
             WaitPrompt (msg);
             return;			
-        }
+        }*/
 
         sprintf (msg, "Saved %d bytes successfully", filesize);
         WaitPrompt (msg);
@@ -503,7 +504,7 @@ void SD_ManageState(int mode, int slot) {
         fclose(handle);
 
         sprintf (msg, "Loaded %d bytes successfully", offset);
-        ShowAction(msg);
+        WaitPrompt(msg);
 
         GCFCEUSS_Load();
         return;

@@ -7,20 +7,24 @@
  ****************************************************************************/
 #ifdef HW_DOL // only do 7zip in Gamecube mode for now...
 
+#include "iplfont.h"
 #include "sz.h"
+#include "gcdvd.h"
 
 extern u8 UseSDCARD;
 extern u8 UseWiiSDCARD;
-extern sd_file *filehandle;
+extern FILE *filehandle;
+extern void GetSDInfo();
 
 // 7zip error list
-char szerrormsg[][30] = {"7z: Data error",
+char szerrormsg[][30] = {
+    "7z: Data error",
     "7z: Out of memory", 
     "7z: CRC Error", 
     "7z: Not implemented", 
     "7z: Fail", 
-    "7z: Archive error"};
-
+    "7z: Archive error"
+};
 
 SZ_RESULT SzRes;
 
@@ -36,7 +40,7 @@ CFileItem *SzF;
 char sz_buffer[2048];
 
 // needed because there are no header files -.-
-#include <sdcard.h>
+//#include <sdcard.h>
 #define MAXFILES 1000
 #define MAXJOLIET 256
 
@@ -68,8 +72,9 @@ int dvd_buffered_read(void *dst, u32 len, u64 offset) {
         if (UseSDCARD) {
             if (filehandle == NULL)
                 GetSDInfo();
-            SDCARD_SeekFile(filehandle, offset, SDCARD_SEEK_SET);
-            SDCARD_ReadFile(filehandle, &dvdsf_buffer, len);
+
+            fseek(filehandle, offset, SEEK_SET);
+            fread(&dvdsf_buffer, len, 1, filehandle);
         } else if (!UseWiiSDCARD)
             ret = dvd_read(&dvdsf_buffer, len, offset);
         dvdsf_last_offset = offset;
@@ -218,14 +223,14 @@ SZ_RESULT SzDvdIsArchive(u64 dvd_offset) {
     //  read the data from the DVD
     int res = dvd_safe_read (&Candidate, 6, dvd_offset);
     char msg[1024];
-    sprintf(msg, "7zSig: %02X %02X %02X %02X %02X %02X",
+    /*sprintf(msg, "7zSig: %02X %02X %02X %02X %02X %02X",
             Candidate[0],
             Candidate[1],
             Candidate[2],
             Candidate[3],
             Candidate[4],
             Candidate[5]);
-    WaitPrompt(msg);
+    WaitPrompt(msg);*/
 
     size_t i;
     for(i = 0; i < 6; i++) {
@@ -336,7 +341,7 @@ bool SzExtractROM(int i, unsigned char *buffer)
     SzOffset = 0;
 
     // Unzip the file
-    ShowAction("Un7zipping file. Please wait...");
+    //ShowAction("Un7zipping file. Please wait...");
     WaitPrompt("Un7zipping file. Please wait...");
     SzRes = SzExtract2(
             &SzArchiveStream.InStream, 

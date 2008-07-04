@@ -88,8 +88,7 @@ bool isZipFile() {
  *
  * Unzip terminates on Z_END_STREAM.
  ***************************************************************************/
-int unzipDVDFile(unsigned char *outbuffer, 
-        unsigned int discoffset, unsigned int length) {
+int unzipDVDFile(unsigned char *outbuffer, unsigned int discoffset, unsigned int length) {
     PKZIPHEADER pkzip;
     int zipoffset = 0;
     int zipchunk = 0;

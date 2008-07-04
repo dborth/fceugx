@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <gctypes.h>
 #include <ogc/system.h>
+#include <fat.h>
 #include "../../types.h"
 #include "common.h"
 
@@ -75,7 +76,6 @@ int main(int argc, char *argv[]) {
     DVD_Init();
     dvd_inquiry();
 #endif
-    DEBUG_Init(0, 1);
 
     /*** Minimal Emulation Loop ***/
     if ( !FCEUI_Initialize() ) {
