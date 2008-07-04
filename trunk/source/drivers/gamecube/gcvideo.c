@@ -6,8 +6,10 @@
 
 #include <gccore.h>
 #include <ogcsys.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include "../../iplfont/iplfont.h"
+#include "iplfont.h"
 #include "nesback.h"
 #include "intl.h"
 
@@ -42,79 +44,6 @@ void CheesyScale(unsigned char *XBuf);
 int whichfb = 0;
 extern int font_height;
 int copynow = GX_FALSE;
-
-extern int font_width;
-
-int GetTextWidth(char *text) {
-    unsigned int i, w = 0;
-
-    for (i = 0; i < strlen(text); i++)
-        w += font_width;
-    return w;
-}
-
-int CentreTextPosition(char *text) {
-    return ((640 - GetTextWidth(text)) >> 1);
-}
-
-void WriteCentre(int y, char *text) {
-    write_font(CentreTextPosition(text), y, text);
-}
-
-void WaitPrompt(char *msg) {
-    int quit = 0;
-
-    while (PAD_ButtonsDown(0) & PAD_BUTTON_A) {} ;
-    while(!(PAD_ButtonsDown(0) & PAD_BUTTON_A) && (quit == 0)) {
-        ClearScreen();
-        WriteCentre(220, msg);
-        WriteCentre(220 + font_height, MENU_PRESS_A);
-
-        if (PAD_ButtonsDown(0) & PAD_BUTTON_A)
-            quit = 1;
-
-        SetScreen();
-    }
-}
-
-/**
- * Wait for user to press A or B. Returns 0 = B; 1 = A
- */
-int WaitButtonAB() {
-    int btns;
-
-    while ((PAD_ButtonsDown (0) & (PAD_BUTTON_A | PAD_BUTTON_B)));
-    while (1) {
-        btns = PAD_ButtonsDown (0);
-        if (btns & PAD_BUTTON_A)
-            return 1;
-        else if (btns & PAD_BUTTON_B)
-            return 0;
-    }
-}
-
-/**
- * Show a prompt with choice of two options. Returns 1 if A button was pressed
- and 0 if B button was pressed.
- */
-int WaitPromptChoice(char *msg, char *bmsg, char *amsg) {
-    char choiceOption[80];  
-    sprintf (choiceOption, "B = %s   :   A = %s", bmsg, amsg);
-
-    ClearScreen ();  
-    WriteCentre(220, msg);
-    WriteCentre(220 + font_height, choiceOption);  
-    SetScreen ();
-
-    return WaitButtonAB ();
-}
-
-void ShowAction(char *msg) {
-    memcpy (xfb[whichfb], &backdrop, 1280 * 480);
-    /*ClearScreen();*/
-    WriteCentre(220 + (font_height >> 1), msg);
-    SetScreen();
-}
 
 /****************************************************************************
  * GX Chip Copy to XFB

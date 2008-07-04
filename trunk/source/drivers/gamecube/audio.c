@@ -19,7 +19,6 @@ static int whichab = 0;		/*** Which Audio Buffer is in use ***/
 static int isPlaying;		/*** Is Playing ***/
 static void AudioSwitchBuffers()
 {
-
     if ( buffSize[whichab] ) {
         AUDIO_StopDMA();
         AUDIO_InitDMA((u32)audiobuffer[whichab], buffSize[whichab]);
@@ -34,13 +33,8 @@ static void AudioSwitchBuffers()
 
 void InitialiseSound()
 {
-
     AUDIO_Init(NULL);	/*** Start audio subsystem ***/
-
-    /*** Set default samplerate to 48khz ***/
     AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
-
-    /*** and the DMA Callback ***/
     AUDIO_RegisterDMACallback( AudioSwitchBuffers );
 
     buffSize[0] = buffSize[1] = 0;	

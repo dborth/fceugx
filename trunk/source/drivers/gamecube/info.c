@@ -8,13 +8,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "iplfont/iplfont.h"
+#include "iplfont.h"
 #include "intl.h"
 
 #define MARGIN 0
 
-#define JOY_UP  	0x10
-#define JOY_DOWN        0x20
+#define JOY_UP      0x10
+#define JOY_DOWN    0x20
 
 u8 currpal = 0;
 u8 timing = 0;
@@ -30,8 +30,17 @@ extern void ManageSettings(int mode, int slot, int device, int quiet);
 extern void StartGX();
 extern void scroller(int y, unsigned char text[][512], int nlines);
 extern void FCEUI_DisableFourScore(int a);
+extern void FCEUI_SetVidSystem(int a);
 extern unsigned char DecodeJoy( unsigned short pp );
 extern unsigned char GetAnalog(int Joy);
+
+extern void dvd_motor_off();
+extern void uselessinquiry();
+extern int OpenDVD();
+extern int OpenSD();
+
+extern void ResetNES(void);
+extern int GCMemROM();
 
 extern signed int CARDSLOT;
 extern u8 PADCAL;
@@ -288,21 +297,6 @@ extern GXRModeObj *vmode;
 extern int font_size[256];
 extern int font_height;
 extern u8 screenscaler;
-
-/****************************************************************************
- * SetScreen
- ****************************************************************************/
-void SetScreen() {
-    VIDEO_SetNextFramebuffer( xfb[whichfb] );
-    VIDEO_Flush();
-    VIDEO_WaitVSync();
-}
-
-void ClearScreen() {
-    whichfb ^= 1;
-    /*VIDEO_ClearFrameBuffer(vmode, xfb[whichfb], 0x258e2573);*/
-    memcpy (xfb[whichfb], &backdrop, 1280 * 480);
-}
 
 /***************************************************************************
  * Configuration Menu
