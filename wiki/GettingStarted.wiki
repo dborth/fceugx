@@ -3,14 +3,14 @@
 
 Unzip the archive. You will find the following folders inside:
 
-apps			Contains Homebrew Channel ready files
-				(see Homebrew Channel instructions below)
+apps 
+ * Contains Homebrew Channel ready files (see Homebrew Channel instructions below)
 				
-executables		Contains Gamecube / Wii DOL files
-				(for loading from other methods)
+executables
+ * Contains Gamecube / Wii DOL files (for loading from other methods)
 				
-fceu			Contains the directory structure required for storing
-				roms and saves (see below)
+fceu
+ * Contains the directory structure required for storing roms and saves (see below)
 
 = Directory Structure Setup =
 
@@ -19,10 +19,9 @@ stored in "fceugx/saves/".
 Therefore you should have the following folder structure at the root
 of your load device (SD/USB/SMB):
 
-  fceugx/
-       roms/
-       saves/
-       cheats/
+fceugx/roms/
+
+fceugx/saves/
 
 = ROMS, Preferences, and Saves =
 
