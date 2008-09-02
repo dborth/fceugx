@@ -15,8 +15,8 @@
 
 void DefaultSettings ();
 
-#define VERSIONNUM "001"
-#define VERSIONSTR "FCEUGX 001"
+#define VERSIONNUM "2.0.0"
+#define VERSIONSTR "FCEUGX 2.0.0"
 
 #define NOTSILENT 0
 #define SILENT 1
