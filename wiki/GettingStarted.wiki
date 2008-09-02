@@ -59,7 +59,6 @@ http://hbc.hackmii.com/
 
 You can load FCEUGX via sdload and an SD card in slot A, or by streaming 
 it to your Gamecube, or by booting a bootable DVD with FCEUGX on it. 
-This document doesn't cover how to do any of that. A good source for information 
-on these topics is the tehskeen forums: http://www.tehskeen.com/forums/
+This document doesn't cover how to do any of that. You can find out how to run homebrew on your gamecube here: http://www.gc-linux.org/wiki/SDload
 
 If this doesn't help you, check out the tehskeen forums: http://www.tehskeen.com/forums/
