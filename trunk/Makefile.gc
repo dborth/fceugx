@@ -15,17 +15,17 @@ include $(DEVKITPPC)/gamecube_rules
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 #---------------------------------------------------------------------------------
-TARGET		:=	fceu_gc
-BUILD		:=	build
-#SOURCES		:=	source source/sz source/boards source/linux source/linux/bits source/linux/gnu source/palettes source/fir source/input source/rom source/mappers source/mbshare source/drivers source/drivers/common source/drivers/gamecube source/iplfont 
-SOURCES		:=	source source/boards source/mappers source/input \
-			source/mbshare source/drivers/common \
-			source/drivers/gamecube source/roms \
-			source/iplfont source/sz
+TARGET		:=	fceugx_gc
+TARGETDIR   :=  executables
+BUILD		:=	build_gc
+SOURCES		:=	source/fceultra \
+				source/fceultra/boards source/fceultra/mappers source/fceultra/input \
+				source/fceultra/mbshare source/fceultra/drivers/common source/fceultra/roms \
+				source/ngc
 DATA		:=	data  
-INCLUDES	:=	source source/sz
+INCLUDES	:=	source/fceultra source/ngc
 # Specify language in all capitals
-# Supported languages: ENGLISH DUTCH
+# Supported languages: ENGLISH
 LANG		:=	ENGLISH
 
 #---------------------------------------------------------------------------------
@@ -42,7 +42,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-logc -lm -lz
+LIBS	:=	-lpng -lmxml -lbba -ltinysmb -lfat -lz -logc -lm -lfreetype
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -57,7 +57,7 @@ LIBDIRS	:=
 ifneq ($(BUILD),$(notdir $(CURDIR)))
 #---------------------------------------------------------------------------------
 
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
@@ -100,18 +100,20 @@ export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
 					-L$(LIBOGC_LIB)
 
-export OUTPUT	:=	$(CURDIR)/$(TARGET)
+export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
 .PHONY: $(BUILD) clean
 
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile
+	@[ -d $(TARGETDIR) ] || mkdir -p $(TARGETDIR)
+	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.gc
+	@rm -fr $(OUTPUT).elf
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol source/tags
+	@rm -fr $(BUILD) $(OUTPUT).dol source/tags
 
 #---------------------------------------------------------------------------------
 run:
