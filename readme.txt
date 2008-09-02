@@ -41,7 +41,7 @@ SNES9x GX and Genesis Plus GX projects.
   fceuconfig.cpp from the source code and compile.
 * 'Auto' settings for save/load - attempts to automatically determine
   your load/save device(s) - SD, USB, Memory Card, DVD, SMB
-* Preferences are now loaded and saved in XML format. You can open
+* Preferences are loaded and saved in XML format. You can open
   FCEUGX.xml edit all settings, including some not available within
   the program
 * One makefile to make all versions
@@ -58,7 +58,7 @@ apps			Contains Homebrew Channel ready files
 executables		Contains Gamecube / Wii DOL files
 				(for loading from other methods)
 				
-fceu			Contains the directory structure required for storing
+fceugx			Contains the directory structure required for storing
 				roms and saves (see below)
 
 ----------------------------
@@ -73,7 +73,6 @@ of your load device (SD/USB/SMB):
   fceugx/
        roms/
        saves/
-       cheats/
        
 ----------------------------
 ROMS, Preferences, and Saves:
