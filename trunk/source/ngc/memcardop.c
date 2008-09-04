@@ -68,7 +68,7 @@ bool TestCard(int slot, bool silent)
 
 	/*** Initialize Card System ***/
 	memset (SysArea, 0, CARD_WORKAREA);
-	CARD_Init ("SNES", "00");
+	CARD_Init ("FCEU", "00");
 
 	/*** Try to mount the card ***/
 	if (MountCard(slot, silent) == 0)
@@ -136,7 +136,7 @@ VerifyMCFile (unsigned char *buf, int slot, char *filename, int datasize)
 
 	/*** Initialize Card System ***/
 	memset (SysArea, 0, CARD_WORKAREA);
-	CARD_Init ("SNES", "00");
+	CARD_Init ("FCEU", "00");
 
 	/*** Try to mount the card ***/
 	CardError = MountCard(slot, NOTSILENT);
@@ -216,7 +216,7 @@ LoadBufferFromMC (unsigned char *buf, int slot, char *filename, bool silent)
 
 	/*** Initialize Card System ***/
 	memset (SysArea, 0, CARD_WORKAREA);
-	CARD_Init ("SNES", "00");
+	CARD_Init ("FCEU", "00");
 
 	/*** Try to mount the card ***/
 	CardError = MountCard(slot, NOTSILENT);
@@ -280,7 +280,7 @@ SaveBufferToMC (unsigned char *buf, int slot, char *filename, int datasize, bool
 
 	/*** Initialize Card System ***/
 	memset (SysArea, 0, CARD_WORKAREA);
-	CARD_Init ("SNES", "00");
+	CARD_Init ("FCEU", "00");
 
 	/*** Try to mount the card ***/
 	CardError = MountCard(slot, NOTSILENT);
@@ -405,7 +405,7 @@ SaveBufferToMC (unsigned char *buf, int slot, char *filename, int datasize, bool
 		}
 		else
 			if ( !silent )
-				WaitPrompt((char*) "This game does not appear to use SRAM");
+				WaitPrompt((char*) "No to data to save!");
 	}
 	else
 		if (slot == CARD_SLOTA)

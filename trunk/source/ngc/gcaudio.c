@@ -10,8 +10,9 @@
  ****************************************************************************/
 
 #include <gccore.h>
+
 #define SAMPLERATE 48000
-static unsigned char audiobuffer[2][64 * 1024] __attribute__((__aligned__(32)));
+unsigned char audiobuffer[2][64 * 1024] ATTRIBUTE_ALIGN(32);
 /*** Allow for up to 1 full second ***/
 
 /****************************************************************************
@@ -28,7 +29,7 @@ static void AudioSwitchBuffers()
     if ( buffSize[whichab] ) {
         AUDIO_StopDMA();
         AUDIO_InitDMA((u32)audiobuffer[whichab], buffSize[whichab]);
-        DCFlushRange(&audiobuffer[whichab], buffSize[whichab]);
+        DCFlushRange(audiobuffer[whichab], buffSize[whichab]);
         AUDIO_StartDMA();
         isPlaying = 0;
     }
@@ -54,6 +55,7 @@ void StartAudio()
 void StopAudio()
 {
     AUDIO_StopDMA();
+    buffSize[0] = buffSize[1] = 0;
 }
 
 static inline unsigned short FLIP16(unsigned short b)

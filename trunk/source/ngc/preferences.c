@@ -164,18 +164,18 @@ preparePrefsData (int method)
 
 	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
 	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
-	createXMLSetting("FSDisable", "Four Score", toStr(GCSettings.FSDisable));
 	createXMLSetting("slimit", "8 Sprite Limit", toStr(GCSettings.slimit));
 	createXMLSetting("screenscaler", "Screen Scaler", toStr(GCSettings.screenscaler));
 
 	createXMLSection("Controller", "Controller Settings");
 
+	createXMLSetting("FSDisable", "Four Score", toStr(GCSettings.FSDisable));
+	createXMLSetting("zapper", "Zapper", toStr(GCSettings.zapper));
 	createXMLController(gcpadmap, "gcpadmap", "GameCube Pad");
 	createXMLController(wmpadmap, "wmpadmap", "Wiimote");
 	createXMLController(ccpadmap, "ccpadmap", "Classic Controller");
 	createXMLController(ncpadmap, "ncpadmap", "Nunchuk");
 
-	memset (savebuffer + offset, 0, SAVEBUFFERSIZE);
 	int datasize = mxmlSaveString(xml, (char *)savebuffer, SAVEBUFFERSIZE, XMLSaveCallback);
 
 	mxmlDelete(xml);
@@ -207,6 +207,7 @@ void loadXMLSettingBool(bool * var, const char * name)
 }
 
 void loadXMLController(unsigned int controller[], const char * name)
+
 {
 	item = mxmlFindElement(xml, xml, "controller", "name", name, MXML_DESCEND);
 
@@ -271,7 +272,7 @@ decodePrefsData (int method)
 	loadXMLSettingInt(&GCSettings.FSDisable, "FSDisable");
 	loadXMLSettingInt(&GCSettings.slimit, "slimit");
 	loadXMLSettingInt(&GCSettings.screenscaler, "screenscaler");
-
+	loadXMLSettingInt(&GCSettings.zapper, "zapper");
 	// Controller Settings
 
 	loadXMLController(gcpadmap, "gcpadmap");
@@ -334,48 +335,62 @@ SavePrefs (int method, bool silent)
 }
 
 /****************************************************************************
- * Load Preferences
+ * Load Preferences from specified method
  ****************************************************************************/
-bool
-LoadPrefs (int method, bool silent)
-{
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(); // we use 'Save' folder because preferences need R/W
 
+bool
+LoadPrefsFromMethod (int method)
+{
 	bool retval = false;
 	char filepath[1024];
 	int offset = 0;
-
-	if ( !silent )
-		ShowAction ((char*) "Loading preferences...");
 
 	if(method == METHOD_SD || method == METHOD_USB)
 	{
 		if(ChangeFATInterface(method, NOTSILENT))
 		{
 			sprintf (filepath, "%s/%s/%s", ROOTFATDIR, GCSettings.SaveFolder, PREFS_FILE_NAME);
-			offset = LoadBufferFromFAT (filepath, silent);
+			offset = LoadBufferFromFAT (filepath, SILENT);
 		}
 	}
 	else if(method == METHOD_SMB)
 	{
 		sprintf (filepath, "%s/%s", GCSettings.SaveFolder, PREFS_FILE_NAME);
-		offset = LoadSaveBufferFromSMB (filepath, silent);
+		offset = LoadSaveBufferFromSMB (filepath, SILENT);
 	}
 	else if(method == METHOD_MC_SLOTA)
 	{
-		offset = LoadBufferFromMC (savebuffer, CARD_SLOTA, (char *)PREFS_FILE_NAME, silent);
+		offset = LoadBufferFromMC (savebuffer, CARD_SLOTA, (char *)PREFS_FILE_NAME, SILENT);
 	}
 	else if(method == METHOD_MC_SLOTB)
 	{
-		offset = LoadBufferFromMC (savebuffer, CARD_SLOTB, (char *)PREFS_FILE_NAME, silent);
+		offset = LoadBufferFromMC (savebuffer, CARD_SLOTB, (char *)PREFS_FILE_NAME, SILENT);
 	}
 
 	if (offset > 0)
-	{
 		retval = decodePrefsData (method);
-		if ( !silent )
-			WaitPrompt((char *)"Preferences loaded");
-	}
+
 	return retval;
+}
+
+/****************************************************************************
+ * Load Preferences
+ * Checks sources consecutively until we find a preference file
+ ****************************************************************************/
+
+bool LoadPrefs()
+{
+	bool prefFound = false;
+	if(ChangeFATInterface(METHOD_SD, SILENT))
+		prefFound = LoadPrefsFromMethod(METHOD_SD);
+	if(!prefFound && ChangeFATInterface(METHOD_USB, SILENT))
+		prefFound = LoadPrefsFromMethod(METHOD_USB);
+	if(!prefFound && TestCard(CARD_SLOTA, SILENT))
+		prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTA);
+	if(!prefFound && TestCard(CARD_SLOTB, SILENT))
+		prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTB);
+	if(!prefFound && ConnectShare (SILENT))
+		prefFound = LoadPrefsFromMethod(METHOD_SMB);
+
+	return prefFound;
 }
