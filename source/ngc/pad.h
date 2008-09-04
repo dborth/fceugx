@@ -27,6 +27,9 @@ s8 WPAD_StickX(u8 chan,u8 right);
 s8 WPAD_StickY(u8 chan, u8 right);
 void InitialisePads();
 void GetJoy();
+void ToggleFourScore(int set);
+void ToggleZapper(int set);
+void DrawCursor();
 
 #endif
 

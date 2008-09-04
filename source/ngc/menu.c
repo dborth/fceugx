@@ -89,14 +89,13 @@ LoadManager ()
 /****************************************************************************
  * Emulator Menu
  ****************************************************************************/
-static int emulatormenuCount = 7;
+static int emulatormenuCount = 6;
 static char emulatormenu[][50] = {
 
 	"Screen Scaler",
 	"Palette",
 	"8 Sprite Limit",
 	"Timing",
-	"Four Score",
 
 	"Save Preferences",
 	"Back to Main Menu"
@@ -122,9 +121,6 @@ EmulatorMenu ()
 
 		sprintf (emulatormenu[3], "Timing - %s",
 			GCSettings.timing == true ? " PAL" : "NTSC");
-
-		sprintf (emulatormenu[4], "Four Score - %s",
-			GCSettings.FSDisable == true ? " ON" : "OFF");
 
 		ret = RunMenu (emulatormenu, emulatormenuCount, (char*)"Emulator Options", 16, -1);
 
@@ -172,17 +168,12 @@ EmulatorMenu ()
 				FCEUI_SetVidSystem(GCSettings.timing);
 				break;
 
-			case 4: // four score
-				GCSettings.FSDisable ^= 1;
-				FCEUI_DisableFourScore(GCSettings.FSDisable);
-				break;
-
-			case 5:
+			case 4:
 				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
 			case -1: // Button B
-			case 6:
+			case 5:
 				quit = 1;
 				break;
 
@@ -366,9 +357,9 @@ GameMenu ()
 	{
 		// disable state saving/loading if AUTO is on
 
-		if (GCSettings.AutoLoad == 1) // Auto Load SRAM
+		if (GCSettings.AutoLoad == 1) // Auto Load State
 			gamemenu[3][0] = '\0';
-		if (GCSettings.AutoSave == 1) // Auto Save SRAM
+		if (GCSettings.AutoSave == 1) // Auto Save State
 			gamemenu[4][0] = '\0';
 
 		ret = RunMenu (gamemenu, gamemenuCount, (char*)"Game Menu", 20, -1);
@@ -625,8 +616,10 @@ ConfigureButtons (u16 ctrlr_type)
 	menu = oldmenu;
 }	// end configurebuttons()
 
-int ctlrmenucount = 6;
+int ctlrmenucount = 8;
 char ctlrmenu[][50] = {
+	"Four Score",
+	"Zapper",
 	"Nunchuk",
 	"Classic Controller",
 	"Wiimote",
@@ -645,45 +638,64 @@ ConfigureControllers ()
 
 	// disable unavailable controller options if in GC mode
 	#ifndef HW_RVL
+		ctlrmenu[2][0] = '\0';
+		ctlrmenu[3][0] = '\0';
 		ctlrmenu[4][0] = '\0';
-		ctlrmenu[5][0] = '\0';
-		ctlrmenu[6][0] = '\0';
 	#endif
 
 	while (quit == 0)
 	{
+		sprintf (ctlrmenu[0], "Four Score - %s",
+			GCSettings.FSDisable == true ? " ON" : "OFF");
+
+		if (GCSettings.zapper == 0) sprintf (ctlrmenu[1],"Zapper - Disabled");
+		else if (GCSettings.zapper == 1) sprintf (ctlrmenu[1],"Zapper - Port 1");
+		else if (GCSettings.zapper == 2) sprintf (ctlrmenu[1],"Zapper - Port 2");
+
 		/*** Controller Config Menu ***/
         ret = RunMenu (ctlrmenu, ctlrmenucount, (char*)"Configure Controllers", 20, -1);
 
 		switch (ret)
 		{
-			case 0:
+			case 0: // four score
+				GCSettings.FSDisable ^= 1;
+				ToggleFourScore(GCSettings.FSDisable);
+				break;
+
+			case 1: // zapper
+				GCSettings.zapper -= 1; // we do this so Port 2 is first option shown
+				if(GCSettings.zapper < 0)
+					GCSettings.zapper = 2;
+				ToggleZapper(GCSettings.zapper);
+				break;
+
+			case 2:
 				/*** Configure Nunchuk ***/
 				ConfigureButtons (CTRLR_NUNCHUK);
 				break;
 
-			case 1:
+			case 3:
 				/*** Configure Classic ***/
 				ConfigureButtons (CTRLR_CLASSIC);
 				break;
 
-			case 2:
+			case 4:
 				/*** Configure Wiimote ***/
 				ConfigureButtons (CTRLR_WIIMOTE);
 				break;
 
-			case 3:
+			case 5:
 				/*** Configure GC Pad ***/
 				ConfigureButtons (CTRLR_GCPAD);
 				break;
 
-			case 4:
+			case 6:
 				/*** Save Preferences Now ***/
 				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
 			case -1: /*** Button B ***/
-			case 5:
+			case 7:
 				/*** Return ***/
 				quit = 1;
 				break;

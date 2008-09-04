@@ -52,6 +52,7 @@ struct SGCSettings{
 	int		currpal;
 	int		timing;
 	int		FSDisable;
+	int		zapper;
 	int		slimit;
 	int		screenscaler;
 };

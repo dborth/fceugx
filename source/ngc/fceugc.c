@@ -27,6 +27,7 @@
 #include "menu.h"
 #include "fceuconfig.h"
 #include "preferences.h"
+#include "gcaudio.h"
 
 #ifdef WII_DVD
 #include <di/di.h>
@@ -38,7 +39,6 @@ bool isWii;
 /* Some timing-related variables. */
 static int fullscreen=0;
 static int genie=0;
-static int palyo=0;
 
 static volatile int nofocus=0;
 static volatile int userpause=0;
@@ -61,8 +61,6 @@ int eoptions=EO_BGRUN | EO_FORCEISCALE;
 
 extern int cleanSFMDATA();
 extern void ResetNES(void);
-extern void InitialiseSound();
-extern void PlaySound( void *Buf, int samples );
 long long basetime;
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
@@ -104,8 +102,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    palyo=0;
-    FCEUI_SetVidSystem(palyo);
+    FCEUI_SetVidSystem(0); // 0 - NTSC, 1 - PAL
     genie&=1;
     FCEUI_SetGameGenie(genie);
     fullscreen&=1;
@@ -121,7 +118,8 @@ int main(int argc, char *argv[])
 	DefaultSettings();
 
 	// Load preferences
-	if(!LoadPrefs(GCSettings.SaveMethod, SILENT))
+
+	if(!LoadPrefs())
 	{
 		WaitPrompt((char*) "Preferences reset - check settings!");
 		selectedMenu = 3; // change to preferences menu
