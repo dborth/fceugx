@@ -17,6 +17,7 @@ SNES9x GX and Genesis Plus GX projects.
 
 * Wiimote, Nunchuk, Classic, and Gamecube controller support
 * 1-2 Player Support
+* Zapper support
 * RAM and State saving
 * Custom controller configurations
 * SD, USB, DVD, SMB, GC Memory Card, and Zip support
@@ -72,40 +73,6 @@ executables		Contains Gamecube / Wii DOL files
 fceugx			Contains the directory structure required for storing
 				roms and saves (see below)
 
-----------------------------
-Directory Structure Setup
-----------------------------
-
-By default, roms are loaded from "fceugx/roms/" and saves / preferences are 
-stored in "fceugx/saves/".
-Therefore you should have the following folder structure at the root
-of your load device (SD/USB/SMB):
-
-  fceugx/
-       roms/
-       saves/
-       
-----------------------------
-ROMS, Preferences, and Saves:
-----------------------------
-
-Wii
-----------
-On the Wii, you can load roms from SD card (Front SD or SD Gecko), USB, DVD,
-or SMB share. Note that if you are using the Homebrew Channel, to load from 
-USB, DVD, or SMB you will first have to load FCEUGX from SD, and then set 
-your load method preference. To load roms from a Windows network share (SMB) 
-you will have to edit FCEUGX.xml on your SD card with your network settings, 
-or edit fceuconfig.cpp from the source code and compile. If you edit and compile 
-the source, you can use wiiload and the Homebrew Channel to load and play 
-FCEUGX completely over the network, without needing an SD card.
-
-Gamecube
-------------
-You can load roms from DVD or SD card. If you create a bootable 
-DVD of FCEUGX you can put roms on the same DVD. You may save preferences and
-game data to SD or Memory Card.
-
 ------------------------------
 Loading / Running the Emulator:
 ------------------------------
@@ -127,6 +94,30 @@ You can load FCEUGX via sdload and an SD card in slot A, or by streaming
 it to your Gamecube, or by booting a bootable DVD with FCEUGX on it. 
 This document doesn't cover how to do any of that. A good source for information 
 on these topics is the tehskeen forums: http://www.tehskeen.com/forums/
+
+----------------------------
+ROMS, Preferences, and Saves:
+----------------------------
+
+By default, roms are loaded from "fceugx/roms/" and saves / preferences are 
+stored in "fceugx/saves/".
+
+Wii
+----------
+On the Wii, you can load roms from SD card (Front SD or SD Gecko), USB, DVD,
+or SMB share. Note that if you are using the Homebrew Channel, to load from 
+USB, DVD, or SMB you will first have to load FCEUGX from SD, and then set 
+your load method preference. To load roms from a Windows network share (SMB) 
+you will have to edit FCEUGX.xml on your SD card with your network settings, 
+or edit fceuconfig.cpp from the source code and compile. If you edit and compile 
+the source, you can use wiiload and the Homebrew Channel to load and play 
+FCEUGX completely over the network, without needing an SD card.
+
+Gamecube
+------------
+You can load roms from DVD or SD card. If you create a bootable 
+DVD of FCEUGX you can put roms on the same DVD. You may save preferences and
+game data to SD or Memory Card.
 
 -=[ Supported Mappers ]=-
  
