@@ -34,6 +34,7 @@
 #include "fceustate.h"
 #include "gcvideo.h"
 #include "preferences.h"
+#include "fceuram.h"
 
 extern int GCMemROM();
 extern void ResetNES(void);
@@ -78,9 +79,13 @@ LoadManager ()
 		if(!GCMemROM()) // ROM was not valid
 			return 0;
 
-		// load the state
+		// load the RAM
 		if (GCSettings.AutoLoad == 1)
+			LoadRAM(GCSettings.SaveMethod, SILENT);
+		else
 			LoadState(GCSettings.SaveMethod, SILENT);
+
+		ResetNES();
 	}
 
 	return loadROM;
@@ -276,10 +281,13 @@ PreferencesMenu ()
 		prefmenu[3][0] = '\0';
 
 		if (GCSettings.AutoLoad == 0) sprintf (prefmenu[4],"Auto Load OFF");
-		else if (GCSettings.AutoLoad == 1) sprintf (prefmenu[4],"Auto Load ON");
+		else if (GCSettings.AutoLoad == 1) sprintf (prefmenu[4],"Auto Load RAM");
+		else if (GCSettings.AutoLoad == 2) sprintf (prefmenu[4],"Auto Load STATE");
 
 		if (GCSettings.AutoSave == 0) sprintf (prefmenu[5],"Auto Save OFF");
-		else if (GCSettings.AutoSave == 1) sprintf (prefmenu[5],"Auto Save ON");
+		else if (GCSettings.AutoSave == 1) sprintf (prefmenu[5],"Auto Save RAM");
+		else if (GCSettings.AutoSave == 2) sprintf (prefmenu[5],"Auto Save STATE");
+		else if (GCSettings.AutoSave == 3) sprintf (prefmenu[5],"Auto Save BOTH");
 
 		sprintf (prefmenu[6], "Verify MC Saves %s",
 			GCSettings.VerifySaves == true ? " ON" : "OFF");
@@ -304,13 +312,13 @@ PreferencesMenu ()
 
 			case 4:
 				GCSettings.AutoLoad ++;
-				if (GCSettings.AutoLoad > 1)
+				if (GCSettings.AutoLoad > 2)
 					GCSettings.AutoLoad = 0;
 				break;
 
 			case 5:
 				GCSettings.AutoSave ++;
-				if (GCSettings.AutoSave > 1)
+				if (GCSettings.AutoSave > 3)
 					GCSettings.AutoSave = 0;
 				break;
 
@@ -339,11 +347,12 @@ PreferencesMenu ()
 int
 GameMenu ()
 {
-	int gamemenuCount = 6;
+	int gamemenuCount = 8;
 	char gamemenu[][50] = {
 	  "Return to Game",
 	  "Reset Game",
 	  "ROM Information",
+	  "Load RAM", "Save RAM",
 	  "Load State", "Save State",
 	  "Back to Main Menu"
 	};
@@ -355,12 +364,21 @@ GameMenu ()
 
 	while (quit == 0)
 	{
-		// disable state saving/loading if AUTO is on
-
-		if (GCSettings.AutoLoad == 1) // Auto Load State
+		// disable RAM/STATE saving/loading if AUTO is on
+		if (GCSettings.AutoLoad == 1) // Auto Load RAM
 			gamemenu[3][0] = '\0';
-		if (GCSettings.AutoSave == 1) // Auto Save State
+		else if (GCSettings.AutoLoad == 2) // Auto Load STATE
+			gamemenu[5][0] = '\0';
+
+		if (GCSettings.AutoSave == 1) // Auto Save RAM
 			gamemenu[4][0] = '\0';
+		else if (GCSettings.AutoSave == 2) // Auto Save STATE
+			gamemenu[6][0] = '\0';
+		else if (GCSettings.AutoSave == 3) // Auto Save BOTH
+		{
+			gamemenu[4][0] = '\0';
+			gamemenu[6][0] = '\0';
+		}
 
 		ret = RunMenu (gamemenu, gamemenuCount, (char*)"Game Menu", 20, -1);
 
@@ -380,16 +398,24 @@ GameMenu ()
 				WaitButtonA ();
 				break;
 
-			case 3: // Load State
+			case 3: // Load RAM
+				quit = retval = LoadRAM(GCSettings.SaveMethod, NOTSILENT);
+				break;
+
+			case 4: // Save RAM
+				SaveRAM(GCSettings.SaveMethod, NOTSILENT);
+				break;
+
+			case 5: // Load State
 				quit = retval = LoadState(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
-			case 4: // Save State
+			case 6: // Save State
 				SaveState(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
 			case -1: // Button B
-			case 5: // Return to previous menu
+			case 7: // Return to previous menu
 				retval = 0;
 				quit = 1;
 				break;

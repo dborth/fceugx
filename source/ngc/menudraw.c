@@ -20,6 +20,7 @@
 #include <zlib.h>
 #include FT_FREETYPE_H
 
+#include "fceuconfig.h"
 #include "gcvideo.h"
 #include "menudraw.h"
 #include "filesel.h"
@@ -421,7 +422,7 @@ DrawMenu (char items[][50], char *title, int maxitems, int selected, int fontsiz
 	}
 
 	setfontsize (12);
-	DrawText (510, screenheight - 40, (char *)"FCEUGX 2.0.0");
+	DrawText (510, screenheight - 40, VERSIONSTR);
 
 	// Draw menu items
 

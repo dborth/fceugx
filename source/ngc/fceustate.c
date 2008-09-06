@@ -325,7 +325,7 @@ bool LoadState (int method, bool silent)
 	ShowAction ((char*) "Loading...");
 
 	if(method == METHOD_AUTO)
-		method = autoSaveMethod(); // we use 'Save' because SRAM needs R/W
+		method = autoSaveMethod(); // we use 'Save' because we need R/W
 
 	char filepath[1024];
 	int offset = 0;

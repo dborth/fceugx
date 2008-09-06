@@ -17,6 +17,7 @@ SNES9x GX and Genesis Plus GX projects.
 
 * Wiimote, Nunchuk, Classic, and Gamecube controller support
 * 1-2 Player Support
+* RAM and State saving
 * Custom controller configurations
 * SD, USB, DVD, SMB, GC Memory Card, and Zip support
 * NES Compatibility Based on v0.98.12
@@ -26,6 +27,16 @@ SNES9x GX and Genesis Plus GX projects.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[What's New 2.0.1]
+* Zapper support! Turn this on in the Controller Settings - most games 
+  require you to have the Zapper on Port 2. Thanks go to aksommerville whose
+  previous work on the Zapper helped, and michniewski's cursor code
+* RAM game save support! Now you can save your games just like the NES did. 
+  By default game saves are saved/loaded automatically. This can be changed
+  in the Preferences menu
+* Start/Select reversed mapping fixed for Wii controllers
+* Small bug fixes / improvements / tweaks
 
 [What's New 2.0.0]
 
