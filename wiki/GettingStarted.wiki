@@ -3,7 +3,7 @@
 
 = Setup & Installation =
 
-Unzip the archive. You will find the following folders inside:
+Download the latest version from the [http://code.google.com/p/fceugc/downloads/list Downloads page]. Unzip the archive. You will find the following folders inside:
 
  * apps - Contains Homebrew Channel ready files (see Homebrew Channel instructions below)
  * executables - Contains Gamecube / Wii DOL files (for loading from other methods)
