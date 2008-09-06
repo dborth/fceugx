@@ -164,10 +164,3 @@ void FCEUD_NetworkClose(void)
 void FCEUD_NetplayText(uint8 *text)
 {
 }
-/*
-void FCEUI_SaveExtraDataUnderBase(int a);
-If "a" is nonzero, save extra non-volatile game data(battery-backed
-RAM) under FCE Ultra's base directory.  Otherwise, the behavior is
-to save it under the same directory the game is located in(this is
-the default behavior).
-*/
