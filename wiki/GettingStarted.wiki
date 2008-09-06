@@ -1,65 +1,32 @@
 #summary Instructions for loading and running the emulator.
 #labels Featured
 
+= Setup & Installation =
 
 Unzip the archive. You will find the following folders inside:
 
-apps 
- * Contains Homebrew Channel ready files (see Homebrew Channel instructions below)
-				
-executables
- * Contains Gamecube / Wii DOL files (for loading from other methods)
-				
-fceu
- * Contains the directory structure required for storing roms and saves (see below)
+* apps - Contains Homebrew Channel ready files (see Homebrew Channel instructions below)
+* executables - Contains Gamecube / Wii DOL files (for loading from other methods)
+* fceugx - Contains the directory structure required for storing roms and saves (see below)
 
-= Directory Structure Setup =
+== Wii - Via the Homebrew Channel ==
 
-By default, roms are loaded from "fceugx/roms/" and saves / preferences are 
-stored in "fceugx/saves/".
-Therefore you should have the following folder structure at the root
-of your load device (SD/USB/SMB):
-
-fceugx/roms/
-
-fceugx/saves/
-
-= ROMS, Preferences, and Saves =
-
-== Wii ==
-
-On the Wii, you can load roms from SD card (Front SD or SD Gecko), USB, DVD,
-or SMB share. Note that if you are using the Homebrew Channel, to load from 
-USB, DVD, or SMB you will first have to load FCEUGX from SD, and then set 
-your load method preference. To load roms from a Windows network share (SMB) 
-you will have to edit FCEUGX.xml on your SD card with your network settings, 
-or edit fceuconfig.cpp from the source code and compile. If you edit and compile 
-the source, you can use wiiload and the Homebrew Channel to load and play 
-FCEUGX completely over the network, without needing an SD card.
-
-== Gamecube ==
-
-You can load roms from DVD or SD card. If you create a bootable 
-DVD of FCEUGX you can put roms on the same DVD. You may save preferences and
-game data to SD or Memory Card.
-
-= Loading / Running the Emulator =
-
-== Wii - Via Homebrew Channel ==
-
-The most popular method of running homebrew on the Wii is through the Homebrew
-Channel. If you already have the channel installed, just copy over the apps folder
+The most popular method of running homebrew on the Wii is through the [http://hbc.hackmii.com/ Homebrew Channel]. If you already have the channel installed, just copy over the apps folder
 included in the archive into the root of your SD card.
 
-Remember to also create the fceugx directory structure required. See above.
+Remember to also create the fceugx directory structure required. See below.
 
-If you haven't installed the Homebrew Channel yet, read about how to here:
-http://hbc.hackmii.com/
-
-== Gamecube ==
+== GameCube == 
 
 You can load FCEUGX via sdload and an SD card in slot A, or by streaming 
 it to your Gamecube, or by booting a bootable DVD with FCEUGX on it. 
-This document doesn't cover how to do any of that. You can find out how to run homebrew on your gamecube here: http://www.gc-linux.org/wiki/SDload
+This document doesn't cover how to do any of that. A good source for information 
+on these topics is the [http://www.tehskeen.com/forums/ TehSkeen Forums]
 
-If this doesn't help you, check out the tehskeen forums: http://www.tehskeen.com/forums/
+= ROMs, Preferences, and Saves =
+
+* ROMs & saves files should be stored in '''fceugx/roms''' and '''fceugx/saves''' on the root of you SD card, USB flash drive, or SMB share. You can copy the fceugx directory from the archive to your support drive.
+
+== Loading From DVD or Windows Network Share (SMB) ==
+* ROMs can be burned to a DVD-/+R (4.7GB max size & ISO 9660 file format) but you need to install the [[DVDx]] on your Wii. More infos on [http://hackmii.com/2008/08/libdi-and-the-dvdx-installer/ HackMii].
+* To load roms from a Windows network share (SMB) you will have to edit FCEUGX.xml on your SD card with your network settings, or edit fceuconfig.cpp from the source code and compile. 
