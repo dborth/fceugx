@@ -35,8 +35,8 @@
 #include "gcvideo.h"
 #include "preferences.h"
 #include "fceuram.h"
+#include "fceuload.h"
 
-extern int GCMemROM();
 extern void ResetNES(void);
 extern void FCEU_ResetPalette(void);
 
@@ -82,7 +82,7 @@ LoadManager ()
 		// load the RAM
 		if (GCSettings.AutoLoad == 1)
 			LoadRAM(GCSettings.SaveMethod, SILENT);
-		else
+		else if (GCSettings.AutoLoad == 2)
 			LoadState(GCSettings.SaveMethod, SILENT);
 
 		ResetNES();

@@ -12,7 +12,7 @@
 #ifndef _NGCFILESEL_
 #define _NGCFILESEL_
 
-#define SAVEBUFFERSIZE ((512 * 1024) + 2048 + 64 + 4 + 4)
+#define SAVEBUFFERSIZE (64 * 1024)
 #define MAXJOLIET 255
 #define MAXDISPLAY 54
 
