@@ -81,13 +81,10 @@ int main(int argc, char *argv[])
     }
 
     FCEUI_SetVidSystem(0); // 0 - NTSC, 1 - PAL
-
     FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
-    FCEUI_SetSoundVolume(100); // 0-100
-    FCEUI_SetSoundQuality(1); // 0 - low, 1 - high
 
-    cleanSFMDATA();
-    GCMemROM();
+    cleanSFMDATA(); // clear state data
+    GCMemROM(); // load color test ROM
     romLoaded = false; // we start off with only the color test rom
 
     // Set Defaults
