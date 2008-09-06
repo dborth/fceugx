@@ -5,9 +5,9 @@
 
 Unzip the archive. You will find the following folders inside:
 
-* apps - Contains Homebrew Channel ready files (see Homebrew Channel instructions below)
-* executables - Contains Gamecube / Wii DOL files (for loading from other methods)
-* fceugx - Contains the directory structure required for storing roms and saves (see below)
+ * apps - Contains Homebrew Channel ready files (see Homebrew Channel instructions below)
+ * executables - Contains Gamecube / Wii DOL files (for loading from other methods)
+ * fceugx - Contains the directory structure required for storing roms and saves (see below)
 
 == Wii - Via the Homebrew Channel ==
 
@@ -25,8 +25,8 @@ on these topics is the [http://www.tehskeen.com/forums/ TehSkeen Forums]
 
 = ROMs, Preferences, and Saves =
 
-* ROMs & saves files should be stored in '''fceugx/roms''' and '''fceugx/saves''' on the root of you SD card, USB flash drive, or SMB share. You can copy the fceugx directory from the archive to your support drive.
+ * ROMs & saves files should be stored in '''fceugx/roms''' and '''fceugx/saves''' on the root of you SD card, USB flash drive, or SMB share. You can copy the fceugx directory from the archive to your support drive.
 
 == Loading From DVD or Windows Network Share (SMB) ==
-* ROMs can be burned to a DVD-/+R (4.7GB max size & ISO 9660 file format) but you need to install the [[DVDx]] on your Wii. More infos on [http://hackmii.com/2008/08/libdi-and-the-dvdx-installer/ HackMii].
-* To load roms from a Windows network share (SMB) you will have to edit FCEUGX.xml on your SD card with your network settings, or edit fceuconfig.cpp from the source code and compile. 
+ * ROMs can be burned to a DVD-/+R (4.7GB max size & ISO 9660 file format) but you need to install the [[DVDx]] on your Wii. More infos on [http://hackmii.com/2008/08/libdi-and-the-dvdx-installer/ HackMii].
+ * To load roms from a Windows network share (SMB) you will have to edit FCEUGX.xml on your SD card with your network settings, or edit fceuconfig.cpp from the source code and compile. 
