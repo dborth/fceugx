@@ -34,8 +34,8 @@ DefaultSettings ()
 	sprintf (GCSettings.LoadFolder,"fceugx/roms"); // Path to game files
 	sprintf (GCSettings.SaveFolder,"fceugx/saves"); // Path to save files
 	sprintf (GCSettings.CheatFolder,"fceugx/cheats"); // Path to cheat files
-	GCSettings.AutoLoad = 0;
-	GCSettings.AutoSave = 0;
+	GCSettings.AutoLoad = 1; // Auto Load RAM
+	GCSettings.AutoSave = 1; // Auto Save RAM
 
 	// default SMB settings
 	strncpy (GCSettings.smbip, "192.168.0.1", 15); // IP Address of share server

@@ -36,32 +36,10 @@
 extern bool romLoaded;
 bool isWii;
 
-/* Some timing-related variables. */
-static int fullscreen=0;
-static int genie=0;
-
-static volatile int nofocus=0;
-static volatile int userpause=0;
-
-#define SO_FORCE8BIT  1
-#define SO_SECONDARY  2
-#define SO_GFOCUS     4
-#define SO_D16VOL     8
-
-#define GOO_DISABLESS   1       /* Disable screen saver when game is loaded. */
-#define GOO_CONFIRMEXIT 2       /* Confirmation before exiting. */
-#define GOO_POWERRESET  4       /* Confirm on power/reset. */
-
-static int soundvolume=100;
-static int soundquality=0;
-static int soundo;
-
 uint8 *xbsave=NULL;
-int eoptions=EO_BGRUN | EO_FORCEISCALE;
 
 extern int cleanSFMDATA();
 extern void ResetNES(void);
-long long basetime;
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
@@ -103,12 +81,10 @@ int main(int argc, char *argv[])
     }
 
     FCEUI_SetVidSystem(0); // 0 - NTSC, 1 - PAL
-    genie&=1;
-    FCEUI_SetGameGenie(genie);
-    fullscreen&=1;
-    soundo&=1;
-    FCEUI_SetSoundVolume(soundvolume);
-    FCEUI_SetSoundQuality(soundquality);
+
+    FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
+    FCEUI_SetSoundVolume(100); // 0-100
+    FCEUI_SetSoundQuality(1); // 0 - low, 1 - high
 
     cleanSFMDATA();
     GCMemROM();
@@ -188,4 +164,10 @@ void FCEUD_NetworkClose(void)
 void FCEUD_NetplayText(uint8 *text)
 {
 }
-
+/*
+void FCEUI_SaveExtraDataUnderBase(int a);
+If "a" is nonzero, save extra non-volatile game data(battery-backed
+RAM) under FCE Ultra's base directory.  Otherwise, the behavior is
+to save it under the same directory the game is located in(this is
+the default behavior).
+*/
