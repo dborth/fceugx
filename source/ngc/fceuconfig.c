@@ -37,11 +37,16 @@ DefaultSettings ()
 	GCSettings.AutoLoad = 1; // Auto Load RAM
 	GCSettings.AutoSave = 1; // Auto Save RAM
 
-	// default SMB settings
-	strncpy (GCSettings.smbip, "192.168.0.1", 15); // IP Address of share server
-	strncpy (GCSettings.smbuser, "Wiiuser", 19); // Your share user
-	strncpy (GCSettings.smbpwd, "password", 19); // Your share user password
-	strncpy (GCSettings.smbshare, "NES", 19); // Share name on server
+	// custom SMB settings
+	strncpy (GCSettings.smbip, "", 15); // IP Address of share server
+	strncpy (GCSettings.smbuser, "", 19); // Your share user
+	strncpy (GCSettings.smbpwd, "", 19); // Your share user password
+	strncpy (GCSettings.smbshare, "", 19); // Share name on server
+
+	GCSettings.smbip[15] = 0;
+	GCSettings.smbuser[19] = 0;
+	GCSettings.smbpwd[19] = 0;
+	GCSettings.smbshare[19] = 0;
 
 	GCSettings.gcip[0] = 0;
 	GCSettings.gwip[0] = 0;

@@ -383,6 +383,7 @@ unsigned char DecodeJoy( unsigned short pad )
 		if ( (jp & PAD_BUTTON_A) // gamecube controller
 		#ifdef HW_RVL
 		|| (wp & WPAD_BUTTON_A)	// wiimote
+		|| (wp & WPAD_BUTTON_B)
 		#endif
 		)
 		{
