@@ -21,6 +21,7 @@
 #include "gcaudio.h"
 #include "menu.h"
 #include "fceustate.h"
+#include "fceuram.h"
 
 // Original NES controller buttons
 // All other pads are mapped to this
@@ -427,8 +428,19 @@ void GetJoy()
 	{
     	StopAudio();
 
-    	if (GCSettings.AutoLoad == 1)
+    	if (GCSettings.AutoSave == 1)
+    	{
+    		SaveRAM(GCSettings.SaveMethod, SILENT);
+    	}
+    	else if (GCSettings.AutoSave == 2)
+    	{
+			SaveState(GCSettings.SaveMethod, SILENT);
+    	}
+    	else if(GCSettings.AutoSave == 3)
+    	{
+    		SaveRAM(GCSettings.SaveMethod, SILENT);
     		SaveState(GCSettings.SaveMethod, SILENT);
+    	}
 
     	MainMenu(4);
 	}
