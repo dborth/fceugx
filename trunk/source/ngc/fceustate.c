@@ -335,6 +335,13 @@ bool LoadState (int method, bool silent)
 		ChangeFATInterface(method, NOTSILENT);
 		sprintf (filepath, "%s/%s/%s.fcs", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
 		offset = LoadBufferFromFAT (filepath, silent);
+
+		if(offset == 0) // file not found
+		{
+			// look for CRC save
+			sprintf (filepath, "%08x.fcs", iNESGameCRC32);
+			offset = LoadBufferFromFAT (filepath, silent);
+		}
 	}
 	else if(method == METHOD_SMB)
 	{
