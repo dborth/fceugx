@@ -325,10 +325,6 @@ int FileSelector (int method)
 
 				if (GCMemROM() >= 0)
 				{
-					//hasloaded = 1; // indicator for memmap.cpp
-					//Memory.LoadROM ("BLANK.SMC");
-					//Memory.LoadSRAM ("BLANK");
-					//haverom = 1;
 					return 1;
 				}
 				else
