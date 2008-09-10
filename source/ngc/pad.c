@@ -74,14 +74,11 @@ extern INPUTC *FCEU_InitZapper(int w);
  ****************************************************************************/
 void InitialisePads()
 {
-    int attrib = 0;
+	InputDPR = &JSReturn;
+	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
+	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
 
-    FCEUI_DisableFourScore(1);
-
-    InputDPR = &JSReturn;
-    FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, attrib);
-    FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, attrib);
-
+	ToggleFourScore(GCSettings.FSDisable);
 	ToggleZapper(GCSettings.zapper);
 }
 

@@ -672,7 +672,7 @@ ConfigureControllers ()
 	while (quit == 0)
 	{
 		sprintf (ctlrmenu[0], "Four Score - %s",
-			GCSettings.FSDisable == true ? " ON" : "OFF");
+			GCSettings.FSDisable == false ? " ON" : "OFF");
 
 		if (GCSettings.zapper == 0) sprintf (ctlrmenu[1],"Zapper - Disabled");
 		else if (GCSettings.zapper == 1) sprintf (ctlrmenu[1],"Zapper - Port 1");
