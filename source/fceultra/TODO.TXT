@@ -1,8 +1,0 @@
- FCEU-GC
----------
-
-TODO
-
-1. Remove ZLIB Dependencies
-2. Remove NetPlay Dependencies
-3. Remove all File I/O
