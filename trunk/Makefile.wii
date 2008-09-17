@@ -31,7 +31,7 @@ LANG		:=	ENGLISH
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS  = -g -Os -Wall $(MACHDEP) $(INCLUDE) -DFCEU_VERSION_NUMERIC=9812 -DNGC=1 \
+CFLAGS  = -g -O2 -Wall $(MACHDEP) $(INCLUDE) -DFCEU_VERSION_NUMERIC=9812 -DNGC=1 \
 		-DZLIB -DBIG_ENDIAN -DWORDS_BIGENDIAN -DHAVE_ASPRINTF=1 -DSTDC \
 	    -DWII_DVD -D_SZ_ONE_DIRECTORY=1 -D_LZMA_IN_CB=1 -D_LZMA_OUT_READ \
 	    -DINTL_$(LANG)
