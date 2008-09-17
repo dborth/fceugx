@@ -589,7 +589,7 @@ ConfigureButtons (u16 ctrlr_type)
 	while (quit == 0)
 	{
 		/*** Update Menu with Current ButtonMap ***/
-		for (i=0; i<8; i++) // nes pad has 12 buttons to config (go thru them)
+		for (i=0; i<8; i++) // nes pad has 8 buttons to config (go thru them)
 		{
 			// get current padmap button name to display
 			for ( j=0;
