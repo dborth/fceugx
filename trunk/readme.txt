@@ -33,7 +33,7 @@ SNES9x GX and Genesis Plus GX projects.
 * Fixed network freeze-up problem
 * Zapper now mapped to A and B
 * Fixed auto-save feature
-* Performance slowdowns should be fixed
+* Performance slowdowns on Gamecube should be fixed
 * Update core to 0.98.13pre
 * Will now attempt to load old save states with CRC filename
 
