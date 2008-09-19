@@ -285,17 +285,20 @@ static void M185Sync(int version)
 {
  int x;
 
-// DumpMem("out",0x8000,0xFFFF);
-// exit(1);
-// if(mapbyte1[0]==0x15)
- if(!(mapbyte1[0]&3))
-// if(!(mapbyte1[0]==0x21))
+ //printf("%02x\n",mapbyte1[0]);
+ //if((mapbyte1[0]&3)==3)
+ if(VROM_size == 1)
  {
-  for(x=0;x<8;x++)
-   setchr1r(0x10,x<<10,0);
-  }
- else
-  setchr8(0);
+  if((mapbyte1[0]&3) == 1)
+   setchr8(0);
+  else
+   setchr8r(0x10,0);
+ }
+ else if(VROM_size == 2)
+ {
+  if((mapbyte1[0]&2)) setchr8(mapbyte1[0]&1);
+  else setchr8r(0x10,0);
+ }
 }
 
 static DECLFW(Mapper185_write)
@@ -307,12 +310,15 @@ static DECLFW(Mapper185_write)
 
 void Mapper185_init(void)
 {
- memset(MapperExRAM,0xFF,1024);
+ int x;
+ for(x=0;x<8192;x++)
+  MapperExRAM[x]=0xFF;
+ //memset(MapperExRAM,0xFF,1024);
  MapStateRestore=M185Sync;
  mapbyte1[0]=0;
  M185Sync(0);
 
- SetupCartCHRMapping(0x10,MapperExRAM,1024,0);
+ SetupCartCHRMapping(0x10,MapperExRAM,8192,0);
  SetWriteHandler(0x8000,0xFFFF,Mapper185_write);
 }
 

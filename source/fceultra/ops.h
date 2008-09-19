@@ -350,22 +350,22 @@ case 0xAB: LD_IM(_A|=0xEE;AND;_X=_A);
 case 0xCB: LD_IM(AXS);
 
 /* DCP */
-case 0xC7: LD_ZP(DEC;CMP);
-case 0xD7: LD_ZPX(DEC;CMP);
-case 0xCF: LD_AB(DEC;CMP);
-case 0xDF: LD_ABX(DEC;CMP);
-case 0xDB: LD_ABY(DEC;CMP);
-case 0xC3: LD_IX(DEC;CMP);
-case 0xD3: LD_IY(DEC;CMP);
+case 0xC7: RMW_ZP(DEC;CMP);
+case 0xD7: RMW_ZPX(DEC;CMP);
+case 0xCF: RMW_AB(DEC;CMP);
+case 0xDF: RMW_ABX(DEC;CMP);
+case 0xDB: RMW_ABY(DEC;CMP);
+case 0xC3: RMW_IX(DEC;CMP);
+case 0xD3: RMW_IY(DEC;CMP);
 
-/* ISC */
-case 0xE7: LD_ZP(INC;SBC);
-case 0xF7: LD_ZPX(INC;SBC);
-case 0xEF: LD_AB(INC;SBC);
-case 0xFF: LD_ABX(INC;SBC);
-case 0xFB: LD_ABY(INC;SBC);
-case 0xE3: LD_IX(INC;SBC);
-case 0xF3: LD_IY(INC;SBC);
+/* ISB */
+case 0xE7: RMW_ZP(INC;SBC);
+case 0xF7: RMW_ZPX(INC;SBC);
+case 0xEF: RMW_AB(INC;SBC);
+case 0xFF: RMW_ABX(INC;SBC);
+case 0xFB: RMW_ABY(INC;SBC);
+case 0xE3: RMW_IX(INC;SBC);
+case 0xF3: RMW_IY(INC;SBC);
 
 /* DOP */
 

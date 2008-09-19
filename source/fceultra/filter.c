@@ -58,9 +58,8 @@ void SexyFilter(int32 *in, int32 *out, int32 count)
   int64 ino=(int64)*in*vmul;
   acc1+=((ino-acc1)*mul1)>>16;
   acc2+=((ino-acc1-acc2)*mul2)>>16;
-  //printf("%d ",*in);
   *in=0;  
-  {   
+  {
    int32 t=(acc1-ino+acc2)>>16;
    //if(t>32767 || t<-32768) printf("Flow: %d\n",t);
    if(t>32767) t=32767;
@@ -128,12 +127,13 @@ int32 NeoFilterSound(int32 *in, int32 *out, uint32 inlen, int32 *leftover)
  	   acc+=(S[c]**D)>>6;
  	   acc2+=(S[1+c]**D)>>6;
  	  }
- 
+
           acc=((int64)acc*(65536-(x&65535))+(int64)acc2*(x&65535))>>(16+11);  
           *out=acc;
           out++;
           count++;
          }
+
         mrindex=x-max;
 
 	if(FSettings.soundq==2)

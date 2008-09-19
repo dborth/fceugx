@@ -20,20 +20,26 @@
 
 #include "mapinc.h"
 
-static uint8 cmd;
-static uint8 DRegs[8];
-
+static uint8 DReg;
 static SFORMAT StateRegs[]=
 {
-	{&cmd, 1, "CMD"},
-	{DRegs, 8, "DREG"},
+	{&DReg, 1, "DREG"},
 	{0}
 };
 
 static void Sync(void)
 {
-
-
+ //if(!DReg)
+ //printf("%02x\n",DReg);
+ if(DReg)
+ {
+  if(DReg & 0x10)
+   setprg16(0x8000, (DReg & 0x7));
+  else
+   setprg16(0x8000, (DReg&0x7) | 0x8);
+ }
+ else
+  setprg16(0x8000, 0x7);
 }
 
 static void StateRestore(int version)
@@ -41,41 +47,32 @@ static void StateRestore(int version)
  Sync();
 }
 
-static DECLFW(Write)
+static DECLFW(M188Write)
 {
- if((A&0x7300)==0x5000)
-  setprg32(0x8000,V);
- //else
- //if(A==0x5200)
- // printf("$%04x:$%02x\n",A,V);
+ DReg = V;
+ Sync();
 }
 
-static uint8 WRAM[8192];
-static DECLFR(AWRAM)
+static DECLFR(testr)
 {
- return(WRAM[A-0x6000]);
+ return(3);
 }
 
-static DECLFW(BWRAM)
-{
- WRAM[A-0x6000]=V;
-}
 
 static void Power(void)
 {
  setchr8(0);
- setprg32(0x8000,~0);
- cmd=0;
- memset(DRegs,0,8);
+ setprg8(0xc000,0xE);
+ setprg8(0xe000,0xF);
+ DReg = 0;
  Sync();
+ SetReadHandler(0x6000,0x7FFF,testr);
  SetReadHandler(0x8000,0xFFFF,CartBR);
- SetWriteHandler(0x4020,0xFFFF,Write);
- SetReadHandler(0x6000,0x7FFF,AWRAM);
- SetWriteHandler(0x6000,0x7FFF,BWRAM);
+ SetWriteHandler(0x8000,0xFFFF,M188Write);
 }
 
 
-void Mapper164_Init(CartInfo *info)
+void Mapper188_Init(CartInfo *info)
 {
  info->Power=Power;
  GameStateRestore=StateRestore;

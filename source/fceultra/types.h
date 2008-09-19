@@ -41,7 +41,6 @@ typedef uint32_t uint32;
  typedef long long int64;
  #define INLINE inline
  #define GINLINE inline
- #define PSS_STYLE 3
 #elif MSVC
  typedef __int64 int64;
  typedef unsigned __int64 uint64;
