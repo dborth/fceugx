@@ -27,7 +27,9 @@
 
 X6502 X;
 
+#ifdef FCEUDEF_DEBUGGER
 void (*X6502_Run)(int32 cycles);
+#endif
 
 uint32 timestamp;
 void FP_FASTAPASS(1) (*MapIRQHook)(int a);
@@ -63,6 +65,7 @@ static INLINE void WrMemNorm(unsigned int A, uint8 V)
  BWrite[A](A,V);
 }
 
+#ifdef FCEUDEF_DEBUGGER
 X6502 XSave;     /* This is getting ugly. */
 //#define RdMemHook(A)	( X.ReadHook?(_DB=X.ReadHook(&X,A)):(_DB=ARead[A](A)) )
 //#define WrMemHook(A,V)	{ if(X.WriteHook) X.WriteHook(&X,A,V); else BWrite[A](A,V); }
@@ -82,6 +85,7 @@ static INLINE void WrMemHook(unsigned int A, uint8 V)
  else
   BWrite[A](A,V);
 }
+#endif
 
 //#define RdRAMFast(A) (_DB=RAM[(A)])
 //#define WrRAMFast(A,V) RAM[(A)]=(V)
@@ -129,17 +133,18 @@ static uint8 ZNTable[256];
  if(cond)	\
  {	\
   uint32 tmp;	\
-  int8 disp;	\
-  disp=RdMem(_PC);	\
+  int32 disp;	\
+  disp=(int8)RdMem(_PC);	\
   _PC++;	\
   ADDCYC(1);	\
   tmp=_PC;	\
   _PC+=disp;	\
-  if((tmp^_PC)&0x100)	\
-  ADDCYC(1);	\
+  if((tmp^_PC)&0x100)   \
+  ADDCYC(1);    \
  }	\
  else _PC++;	\
 }
+
 
 #define LDA	   _A=x;X_ZN(_A)
 #define LDX	   _X=x;X_ZN(_X)
@@ -393,6 +398,7 @@ void TriggerNMI2(void)
  _IRQlow|=FCEU_IQNMI2;
 }
 
+#ifdef FCEUDEF_DEBUGGER
 /* Called from debugger. */
 void FCEUI_NMI(void)
 {
@@ -404,11 +410,6 @@ void FCEUI_IRQ(void)
  _IRQlow|=FCEU_IQTEMP;
 }
 
-void X6502_Reset(void)
-{
- _IRQlow=FCEU_IQRESET;
-}
-  
 void FCEUI_GetIVectors(uint16 *reset, uint16 *irq, uint16 *nmi)
 {
  fceuindbg=1;
@@ -421,8 +422,14 @@ void FCEUI_GetIVectors(uint16 *reset, uint16 *irq, uint16 *nmi)
  *irq|=RdMemNorm(0xFFFF)<<8;
  fceuindbg=0;
 }
-
 static int debugmode;
+#endif
+
+void X6502_Reset(void)
+{
+ _IRQlow=FCEU_IQRESET;
+}
+  
 void X6502_Init(void)
 {
 	int x;
@@ -432,7 +439,9 @@ void X6502_Init(void)
 	 if(!x) ZNTable[x]=Z_FLAG;
 	 else if (x&0x80) ZNTable[x]=N_FLAG;
 	 else ZNTable[x]=0;
+	#ifdef FCEUDEF_DEBUGGER
 	X6502_Debug(0,0,0);
+	#endif
 }
 
 void X6502_Power(void)
@@ -442,6 +451,7 @@ void X6502_Power(void)
  X6502_Reset();
 }
 
+#ifdef FCEUDEF_DEBUGGER
 static void X6502_RunDebug(int32 cycles)
 {
 	#define RdRAM RdMemHook
@@ -565,6 +575,9 @@ static void X6502_RunDebug(int32 cycles)
 }
 
 static void X6502_RunNormal(int32 cycles)
+#else
+void X6502_Run(int32 cycles)
+#endif
 {
 	#define RdRAM RdRAMFast
 	#define WrRAM WrRAMFast
@@ -650,15 +663,13 @@ static void X6502_RunNormal(int32 cycles)
 
 	 _PI=_P;
 	 b1=RdMem(_PC);
-	 //printf("$%04x, $%02x\n",_PC,b1);
+
 	 ADDCYC(CycTable[b1]);
-	 //PPUHack();
+
 	 temp=_tcount;
 	 _tcount=0;
-
 	 if(MapIRQHook) MapIRQHook(temp);
          FCEU_SoundCPUHook(temp);
-
 	 //printf("%04x\n",X.PC);
 	 X.PC=pbackus;
 	 _PC++;
@@ -675,6 +686,7 @@ static void X6502_RunNormal(int32 cycles)
 	#undef WrRAM
 }
 
+#ifdef FCEUDEF_DEBUGGER
 void X6502_Debug(void (*CPUHook)(X6502 *),
 		uint8 (*ReadHook)(X6502 *, unsigned int),
 		void (*WriteHook)(X6502 *, unsigned int, uint8))
@@ -689,3 +701,5 @@ void X6502_Debug(void (*CPUHook)(X6502 *),
  else
   X6502_Run=X6502_RunDebug;
 }
+
+#endif

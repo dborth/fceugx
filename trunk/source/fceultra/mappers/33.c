@@ -24,8 +24,9 @@ static int is48;
 
 static DECLFW(Mapper33_write)
 {
-        A&=0xF003;
+        //printf("%04x:%02x, %d\n",A,V,scanline);
 
+        A&=0xF003;
         if(A>=0xA000 && A<=0xA003)
          VROM_BANK1(0x1000+((A&3)<<10),V);
         else switch(A)

@@ -20,331 +20,176 @@
 
 #include "mapinc.h"
 
-static uint8 latche, latcheinit;
-static uint16 addrreg0, addrreg1;
-static void(*WSync)(void);
+#define CHRRAM (GameMemBlock)
+static uint8 latche;
 
-static DECLFW(LatchWrite)
+DECLFW(CPROMWrite)
 {
-//  FCEU_printf("bs %04x %02x\n",A,V);
-  latche=V;
-  WSync();
+ latche=V&3;
+ setvram4(0x1000,CHRRAM+((V&3)<<12));
 }
 
-static void LatchPower(void)
+static void CPROMReset(void)
 {
-  latche=latcheinit;
-  WSync();
-  SetReadHandler(0x8000,0xFFFF,CartBR);
-  SetWriteHandler(addrreg0,addrreg1,LatchWrite);
+ setprg32(0x8000,0);
+ setvram8(0);
+ SetReadHandler(0x8000,0xFFFF,CartBR);
+ SetWriteHandler(0x8000,0xffff,CPROMWrite);
 }
 
-static void StateRestore(int version)
+static void CPROMRestore(int version)
 {
-  WSync();
-}
-
-static void Latch_Init(CartInfo *info, void (*proc)(void), uint8 init, uint16 adr0, uint16 adr1)
-{
-  latcheinit=init;
-  addrreg0=adr0;
-  addrreg1=adr1;
-  WSync=proc;
-  info->Power=LatchPower;
-  GameStateRestore=StateRestore;
-  AddExState(&latche, 1, 0, "LATC");
-}
-
-//------------------ CPROM ---------------------------
-
-static void CPROMSync(void)
-{
-  setchr4(0x0000,0);
-  setchr4(0x1000,latche&3);
-  setprg16(0x8000,0);
-  setprg16(0xC000,1);
+ setvram4(0x1000,CHRRAM+((latche)<<12));
 }
 
 void CPROM_Init(CartInfo *info)
 {
-  Latch_Init(info, CPROMSync, 0, 0x8000, 0xFFFF);
+ info->Power=CPROMReset;
+ GameStateRestore=CPROMRestore;
+ AddExState(&latche, 1, 0, "LATC");
 }
 
-//------------------ Map 184 ---------------------------
-
-static void M184Sync(void)
+DECLFW(CNROMWrite)
 {
-  setchr4(0x0000,latche);
-  setchr4(0x1000,latche>>4);
+ latche=V&3;
+ setchr8(V&3);
+}
+
+static void CNROMReset(void)
+{
   setprg16(0x8000,0);
   setprg16(0xC000,1);
+  SetReadHandler(0x8000,0xFFFF,CartBR);
+  SetWriteHandler(0x8000,0xffff,CNROMWrite);
 }
 
-void Mapper184_Init(CartInfo *info)
+static void CNROMRestore(int version)
 {
-  Latch_Init(info, M184Sync, 0, 0x6000, 0x7FFF);
-}
-
-//------------------ CNROM ---------------------------
-
-static void CNROMSync(void)
-{
-  setchr8(latche&3);
-  setprg16(0x8000,0);
-  setprg16(0xC000,1);
+ setchr8(latche);
 }
 
 void CNROM_Init(CartInfo *info)
 {
-  Latch_Init(info, CNROMSync, 0, 0x8000, 0xFFFF);
+ info->Power=CNROMReset;
+ GameStateRestore=CNROMRestore;
+ AddExState(&latche, 1, 0, "LATC");
 }
 
-//------------------ ANROM ---------------------------
-
-static void ANROMSync()
+static void NROM128Reset(void)
 {
-  setprg32(0x8000,latche&0xf);
-  setmirror(MI_0+((latche>>4)&1));
+  setprg16(0x8000,0);
+  setprg16(0xC000,0);
   setchr8(0);
+  SetReadHandler(0x8000,0xFFFF,CartBR);
 }
 
-void ANROM_Init(CartInfo *info)
+static void NROM256Reset(void)
 {
-  Latch_Init(info, ANROMSync, 0, 0x8000, 0xFFFF);
+  setprg16(0x8000,0);
+  setprg16(0xC000,1);
+  setchr8(0);
+  SetReadHandler(0x8000,0xFFFF,CartBR);
 }
 
-//------------------ Map 70 ---------------------------
-
-static void M70Sync()
+void NROM128_Init(CartInfo *info)
 {
-  setprg16(0x8000,latche>>4);
-  setprg16(0xc000,~0);
-  setchr8(latche&0xf);
+  info->Power=NROM128Reset;
 }
 
-void Mapper70_Init(CartInfo *info)
+void NROM256_Init(CartInfo *info)
 {
-  Latch_Init(info, M70Sync, 0, 0x8000, 0xFFFF);
+  info->Power=NROM256Reset;
 }
 
-//------------------ Map 152 ---------------------------
-
-static void M152Sync()
+static DECLFW(MHROMWrite)
 {
-  setprg16(0x8000,(latche>>4)&7);
-  setprg16(0xc000,~0);
-  setchr8(latche&0xf);
-  setmirror(MI_0+((latche>>7)&1));         /* Saint Seiya...hmm. */
+ setprg32(0x8000,V>>4);
+ setchr8(V);
+ latche=V;
 }
 
-void Mapper152_Init(CartInfo *info)
+static void MHROMReset(void)
 {
-  Latch_Init(info, M152Sync, 0, 0x8000, 0xFFFF);
+ setprg32(0x8000,0);
+ setchr8(0);
+ latche=0;
+ SetReadHandler(0x8000,0xFFFF,CartBR);
 }
 
-//------------------ Map 78 ---------------------------
-/* Should be two separate emulation functions for this "mapper".  Sigh.  URGE TO KILL RISING. */
-static void M78Sync()
+static void MHROMRestore(int version)
 {
-  setprg16(0x8000,(latche&7));
-  setprg16(0xc000,~0);
-  setchr8(latche>>4);
-  setmirror(MI_0+((latche>>3)&1));
-}
-
-void Mapper78_Init(CartInfo *info)
-{
-  Latch_Init(info, M78Sync, 0, 0x8000, 0xFFFF);
-}
-
-//------------------ MHROM ---------------------------
-
-static void MHROMSync(void)
-{
-  setprg32(0x8000,latche>>4);
-  setchr8(latche&0xf);
+ setprg32(0x8000,latche);
+ setchr8(latche);
+ SetWriteHandler(0x8000,0xffff,MHROMWrite);
 }
 
 void MHROM_Init(CartInfo *info)
 { 
-  Latch_Init(info, MHROMSync, 0, 0x8000, 0xFFFF);
+ info->Power=MHROMReset;
+ AddExState(&latche, 1, 0,"LATC");
+ PRGmask32[0]&=1;
+ CHRmask8[0]&=1;
+ GameStateRestore=MHROMRestore;
 }
 
-void Mapper140_Init(CartInfo *info)
-{ 
-  Latch_Init(info, MHROMSync, 0, 0x6000, 0x7FFF);
-}
-
-void Mapper240_Init(CartInfo *info)
-{ 
-  Latch_Init(info, MHROMSync, 0, 0x4020, 0x5FFF);
-  // need SRAM.
-}
-
-//------------------ Map 87 ---------------------------
-
-static void M87Sync(void)
+static void UNROMRestore(int version)
 {
-  setprg16(0x8000,0);
-  setprg16(0xC000,1);
-  setchr8(latche>>1);
+ setprg16(0x8000,latche);
 }
 
-void Mapper87_Init(CartInfo *info)
-{ 
-  Latch_Init(info, M87Sync, ~0, 0x6000, 0xFFFF);
-}
-
-//------------------ Map 11 ---------------------------
-
-static void M11Sync(void)
+static DECLFW(UNROMWrite)
 {
-  setprg32(0x8000,latche&0xf);
-  setchr8(latche>>4);
+ setprg16(0x8000,V);
+ latche=V;
 }
 
-void Mapper11_Init(CartInfo *info)
-{ 
-  Latch_Init(info, M11Sync, 0, 0x8000, 0xFFFF);
-}
-
-void Mapper144_Init(CartInfo *info)
-{ 
-  Latch_Init(info, M11Sync, 0, 0x8001, 0xFFFF);
-}
-
-//------------------ UNROM ---------------------------
-
-static void UNROMSync(void)
+static void UNROMReset(void)
 {
-  setprg16(0x8000,latche);
-  setprg16(0xc000,~0);
-  setchr8(0);
+ setprg16(0x8000,0);
+ setprg16(0xc000,~0);
+ setvram8(CHRRAM);
+ SetWriteHandler(0x8000,0xffff,UNROMWrite);
+ SetReadHandler(0x8000,0xFFFF,CartBR);
+ latche=0;
 }
 
 void UNROM_Init(CartInfo *info)
 {
-  Latch_Init(info, UNROMSync, 0, 0x8000, 0xFFFF);
+ info->Power=UNROMReset;
+ PRGmask16[0]&=7;
+ AddExState(&latche, 1, 0, "LATC");
+ AddExState(CHRRAM, 8192, 0, "CHRR");
+ GameStateRestore=UNROMRestore;
 }
 
-//------------------ Map 93 ---------------------------
-
-static void SSUNROMSync(void)
+static void GNROMSync()
 {
-  setprg16(0x8000,latche>>4);
-  setprg16(0xc000,~0);
-  setchr8(0);
+ setchr8(latche&3);
+ setprg32(0x8000,(latche>>4)&3);
 }
 
-void SUNSOFT_UNROM_Init(CartInfo *info)
+static DECLFW(GNROMWrite)
 {
-  Latch_Init(info, SSUNROMSync, 0, 0x8000, 0xFFFF);
+ latche=V&0x33;
+ GNROMSync();
 }
 
-//------------------ Map 94 ---------------------------
-
-static void M94Sync(void)
+static void GNROMStateRestore(int version)
 {
-  setprg16(0x8000,latche>>2);
-  setprg16(0xc000,~0);
-  setchr8(0);
+ GNROMSync();
 }
 
-void Mapper94_Init(CartInfo *info)
+static void GNROMReset(void)
 {
-  Latch_Init(info, M94Sync, 0, 0x8000, 0xFFFF);
+ latche=0;
+ GNROMSync(); 
+ SetWriteHandler(0x8000,0xffff,GNROMWrite);
+ SetReadHandler(0x8000,0xFFFF,CartBR);
 }
 
-//------------------ Map 180 ---------------------------
-
-static void M180Sync(void)
+void GNROM_Init(CartInfo *info)
 {
-  setprg16(0x8000,0);
-  setprg16(0xc000,latche);
-  setchr8(0);
-}
-
-void Mapper180_Init(CartInfo *info)
-{
-  Latch_Init(info, M180Sync, 0, 0x8000, 0xFFFF);
-}
-
-//------------------ Map 107 ---------------------------
-
-static void M107Sync(void)
-{
-  setprg32(0x8000,(latche>>1)&3);
-  setchr8(latche&7);
-}
-
-void Mapper107_Init(CartInfo *info)
-{
-  Latch_Init(info, M107Sync, ~0, 0x8000, 0xFFFF);
-}
-
-//------------------ Map 113 ---------------------------
-
-static void M113Sync(void)
-{
-  setprg32(0x8000,(latche>>3)&7);
-  setchr8(((latche>>3)&8)|(latche&7));
-//  setmirror(latche>>7); // only for HES 6in1
-}
-
-void Mapper113_Init(CartInfo *info)
-{
-  Latch_Init(info, M113Sync, 0, 0x4100, 0x7FFF);
-}
-
-//------------------ A65AS ---------------------------
-
-// actually, there is two cart in one... First have extra mirroring
-// mode (one screen) and 32K bankswitching, second one have only
-// 16 bankswitching mode and normal mirroring... But there is no any 
-// correlations between modes and they can be used in one mapper code.
-
-static void BMCA65ASSync(void)
-{
-  if(latche&0x40)
-    setprg32(0x8000,(latche>>1)&0x0F);
-  else
-  {
-    setprg16(0x8000,((latche&0x30)>>1)|(latche&7));
-    setprg16(0xC000,((latche&0x30)>>1)|7);
-  }
-  setchr8(0);
-  if(latche&0x80)
-    setmirror(MI_0+(((latche>>5)&1)));
-  else
-    setmirror(((latche>>3)&1)^1);
-}
-
-void BMCA65AS_Init(CartInfo *info)
-{
-  Latch_Init(info, BMCA65ASSync, 0, 0x8000, 0xFFFF);
-}
-
-//------------------ NROM ---------------------------
-
-#ifdef DEBUG_MAPPER
-static DECLFW(WriteHandler)
-{
- FCEU_printf("bs %04x %02x\n",A,V);
-}
-#endif
-
-static void NROMPower(void)
-{
-  setprg16(0x8000,0);
-  setprg16(0xC000,~0);
-  setchr8(0);
-  SetReadHandler(0x8000,0xFFFF,CartBR);
-  #ifdef DEBUG_MAPPER
-  SetWriteHandler(0x4020,0xFFFF,WriteHandler);
-  #endif
-}
-
-void NROM_Init(CartInfo *info)
-{
-  info->Power=NROMPower;
+ info->Power=GNROMReset;
+ AddExState(&latche, 1, 0, "LATC");
+ GameStateRestore=GNROMStateRestore;
 }

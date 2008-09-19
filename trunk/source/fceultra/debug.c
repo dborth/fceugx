@@ -60,6 +60,8 @@ void FCEUI_LoadMem(const char *fname, uint32 start, int hl)
  fclose(fp);
 }
 
+#ifdef FCEUDEF_DEBUGGER
+
 static char *fstrings[12]=
 { 
         "#$%02X",       // immediate
@@ -518,3 +520,4 @@ void FCEUI_SetCPUCallback(void (*callb)(X6502 *X))
  CPUHook=callb;
  X6502_Debug(CPUHook,BreakPoints?ReadHandler:0,BreakPoints?WriteHandler:0);
 }
+#endif
