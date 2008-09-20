@@ -191,21 +191,18 @@ void FCEUMOV_AddJoy(uint8 *js)
    tmp &= 0x3;
    ti=0;
 
-   {
-    int tmpfix = tmp;
-    while(tmp--) { nextts |= fgetc(slots[-1 - current]) << (ti * 8); ti++; }
+   int tmpfix = tmp;
+   while(tmp--) { nextts |= fgetc(slots[-1 - current]) << (ti * 8); ti++; }
 
-    // This fixes a bug in movies recorded before version 0.98.11
-    // It's probably not necessary, but it may keep away CRAZY PEOPLE who recorded
-    // movies on <= 0.98.10 and don't work on playback.
-    if(tmpfix == 1 && !nextts) 
-    {nextts |= fgetc(slots[-1 - current])<<8; }
-    else if(tmpfix == 2 && !nextts) {nextts |= fgetc(slots[-1 - current])<<16; }
+   // This fixes a bug in movies recorded before version 0.98.11
+   // It's probably not necessary, but it may keep away CRAZY PEOPLE who recorded
+   // movies on <= 0.98.10 and don't work on playback.
+   if(tmpfix == 1 && !nextts) 
+   {nextts |= fgetc(slots[-1 - current])<<8; }
+   else if(tmpfix == 2 && !nextts) {nextts |= fgetc(slots[-1 - current])<<16; }
 
-    framets = 0;
-    nextd = d;
-   }
-
+   framets = 0;
+   nextd = d;
   }
   memcpy(js,joop,4);
  }

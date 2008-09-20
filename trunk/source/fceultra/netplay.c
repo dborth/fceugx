@@ -173,7 +173,9 @@ static FILE *FetchFile(uint32 remlen)
                                  if(!FCEUD_RecvData(cbuf, clen))
 				 {
 				  NetError();
+			          /*** REMOVED GC V1.0
 				  unlink(fn);
+				  REMOVED GC V1.0 ***/
 				  fclose(fp);
 				  free(cbuf);
 				  free(fn);
@@ -184,7 +186,9 @@ static FILE *FetchFile(uint32 remlen)
 				 if(len > 500000)		// Another sanity check
 				 {
 				  NetError();
+				  /*** REMOVED GC V1.0
 				  unlink(fn);
+				  REMOVED GC V1.0 ***/
 				  fclose(fp);
 				  free(cbuf);
 				  free(fn);
@@ -196,7 +200,9 @@ static FILE *FetchFile(uint32 remlen)
                                  fwrite(buf, 1, len, fp);
                                  free(buf);
                                  fseek(fp, 0, SEEK_SET);
+				 /*** REMOVED GC V1.0
 				 unlink(fn);
+				 REMOVED GC V1.0 ***/
 				 free(fn);
 				 return(fp);
 				}
@@ -283,18 +289,24 @@ void NetplayUpdate(uint8 *joyp)
 			         fclose(fp);
 			         if(!FCEUNET_SendFile(FCEUNPCMD_LOADSTATE, fn))
 				 {
+				  /*** REMOVED GC V1.0
 				  unlink(fn);
+			   	  REMOVED GC V1.0 ***/
 				  free(fn);
 				  return;
 				 }
+				 /*** REMOVED GC V1.0
 			         unlink(fn);
+				 REMOVED GC V1.0 ***/
 			         free(fn);
 			        }
 			        else
 			        {
 			         fclose(fp);
 			         FCEUD_PrintError("File error.  (K)ill, (M)aim, (D)estroy?  Now!");
+				 /*** REMOVED GC V1.0
 			         unlink(fn);
+				 REMOVED GC V1.0 ***/
 			         free(fn);
 		        	 return;
 			        }

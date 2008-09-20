@@ -371,12 +371,14 @@ static BMAPPING bmap[] = {
 
  { "CPROM", CPROM_Init,0},
  { "CNROM", CNROM_Init,0},
- { "GNROM", GNROM_Init,0},
- { "NROM", NROM256_Init,0 },
- { "RROM", NROM128_Init,0 },
- { "RROM-128", NROM128_Init,0 },
- { "NROM-128", NROM128_Init,0 },
- { "NROM-256", NROM256_Init,0 },
+ 
+ //{ "GNROM", GNROM_Init,0},
+ //{ "NROM", NROM256_Init,0 },
+ //{ "RROM", NROM128_Init,0 },
+ //{ "RROM-128", NROM128_Init,0 },
+ //{ "NROM-128", NROM128_Init,0 },
+ //{ "NROM-256", NROM256_Init,0 },
+ 
  { "MHROM", MHROM_Init,0},
  { "UNROM", UNROM_Init,0},
  { "MARIO1-MALEE2", MALEE_Init,0},

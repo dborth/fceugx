@@ -186,8 +186,8 @@ static void CloseGame(void)
 {
  if(FCEUGameInfo)
  {
-  if(FCEUnetplay)
-   FCEUD_NetworkClose();
+  //if(FCEUnetplay)
+  // FCEUD_NetworkClose();
   if(FCEUGameInfo->name)
   {
    free(FCEUGameInfo->name);
@@ -197,7 +197,7 @@ static void CloseGame(void)
    FCEU_FlushGameCheats(0,0);
   GameInterface(GI_CLOSE);
   ResetExState(0,0);
-  CloseGenie();
+  //CloseGenie();
   free(FCEUGameInfo);
   FCEUGameInfo = 0;
  }
@@ -326,7 +326,6 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
  ssize=FlushEmulateSound();
 
  timestampbase += timestamp;
-
  timestamp = 0;
 
  *pXBuf=skip?0:XBuf;
