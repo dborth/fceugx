@@ -14,13 +14,9 @@ typedef struct __X6502 {
         uint8 DB;               /* Data bus "cache" for reads from certain areas */
 
         int preexec;            /* Pre-exec'ing for debug breakpoints. */
-
-	#ifdef FCEUDEF_DEBUGGER
         void (*CPUHook)(struct __X6502 *);
         uint8 (*ReadHook)(struct __X6502 *, unsigned int);
         void (*WriteHook)(struct __X6502 *, unsigned int, uint8);
-	#endif
-
 } X6502;
 #define _X6502STRUCTH
 #endif

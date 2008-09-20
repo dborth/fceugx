@@ -79,6 +79,11 @@ SFORMAT SFCPUC[]={
  { 0 }
 };
 
+void cleanSFMDATA()
+{
+	memset(&SFMDATA[0], 0, sizeof(SFMDATA) * 64 );
+}
+
 static int SubWrite(FILE *st, SFORMAT *sf)
 {
  uint32 acc=0;
@@ -446,7 +451,9 @@ void FCEUI_LoadState(char *fname)
      FCEUNET_SendFile(FCEUNPCMD_LOADSTATE, fn);    
     }
     else fclose(fp);
+    /*** REMOVED GC V1.0
     unlink(fn);
+    REMOVED GC V1.0 ***/
    }
    free(fn);
   }
@@ -461,7 +468,3 @@ void FCEU_DrawSaveStates(uint8 *XBuf)
  StateShow--;
 }
 
-void cleanSFMDATA()
-{
-	memset(&SFMDATA[0], 0, sizeof(SFMDATA) * 64 );
-}

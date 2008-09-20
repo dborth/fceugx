@@ -416,10 +416,7 @@ void FASTAPASS(1) setmirror(int t)
 void SetupCartMirroring(int m, int hard, uint8 *extra)
 {
  if(m<4)
- {
-  mirrorhard = 0;
   setmirror(m);
- }
  else
  {
   vnapage[0]=NTARAM;
@@ -428,7 +425,7 @@ void SetupCartMirroring(int m, int hard, uint8 *extra)
   vnapage[3]=extra+0x400;
   PPUNTARAM=0xF;
  }
- mirrorhard = hard;
+ mirrorhard=hard;
 }
 
 static uint8 *GENIEROM=0;

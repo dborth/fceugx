@@ -337,8 +337,8 @@ void FCEU_FlushGameCheats(FILE *override, int nosave)
     FCEUD_PrintError("Error saving cheats.");
    cheats=cheatsl=0;
   }
-  else if(!override)
-   remove(fn);
+  //else if(!override)
+  // remove(fn);
   if(!override)
    free(fn);
  }

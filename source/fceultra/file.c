@@ -286,8 +286,10 @@ FCEUFILE * FCEU_fopen(const char *path, const char *ipsfn, char *mode, char *ext
   else                  /* Probably gzip */
   {
    int fd;
-
+ 
+   /*** REMOVED GCV1.0
    fd = dup(fileno( (FILE *)t));
+   REMOVED GCV1.0 ***/
 
    fclose(t);
 

@@ -83,8 +83,8 @@ static int asprintf(char **strp, const char *fmt, ...)
 char *FCEU_MakeFName(int type, int id1, char *cd1)
 {
  char *ret=0;
- 
-#ifndef NGC
+
+/*** REMOVED GC V1.0
  struct stat tmpstat;
 
  switch(type)
@@ -164,7 +164,8 @@ char *FCEU_MakeFName(int type, int id1, char *cd1)
                         asprintf(&ret,"%s"PSS"gameinfo"PSS"%s.pal",BaseDirectory,FileBase);
                        break;
  }
-#endif
+
+ REMOVED GC V1.0 ***/
  return(ret);
 }
 

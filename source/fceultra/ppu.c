@@ -153,10 +153,7 @@ static DECLFR(A2002)
 			FCEUPPU_LineUpdate();
                         ret = PPU_status;
                         ret|=PPUGenLatch&0x1F;
-
-			#ifdef FCEUDEF_DEBUGGER
                         if(!fceuindbg)
-			#endif
                         {
                          vtoggle=0;
                          PPU_status&=0x7F;
@@ -205,9 +202,7 @@ static DECLFR(A2007)
                         
                         ret=VRAMBuffer;
 
-			#ifdef FCEUDEF_DEBUGGER
 			if(!fceuindbg)
-			#endif
 			{
                          if(PPU_hook) PPU_hook(tmp);
 			 PPUGenLatch=VRAMBuffer;
@@ -220,9 +215,7 @@ static DECLFR(A2007)
                           VRAMBuffer=vnapage[(tmp>>10)&0x3][tmp&0x3FF];
                          }
                         }
-			#ifdef FCEUDEF_DEBUGGER
                         if(!fceuindbg)
-			#endif
                         {
                          if (INC32) RefreshAddr+=32;
                          else RefreshAddr++;
@@ -381,7 +374,6 @@ static int tofix=0;
 
 static void ResetRL(uint8 *target)
 {
- memset(target,0xFF,256);
  if(InputScanlineHook)
   InputScanlineHook(0,0,0,0);
  Plinef=target;
@@ -396,14 +388,11 @@ static uint8 sprlinebuf[256+8];
 
 void FCEUPPU_LineUpdate(void)
 {
- #ifdef FCEUDEF_DEBUGGER
- if(!fceuindbg)
- #endif
-  if(Pline)
-  {
-   int l=GETLASTPIXEL;
-   RefreshLine(l);
-  }
+ if(Pline && !fceuindbg)
+ {
+  int l=GETLASTPIXEL;
+  RefreshLine(l);
+ }
 } 
   
 static int tileview=0;
@@ -473,20 +462,14 @@ static void CheckSpriteHit(int p)
  int x;
  
  if(sphitx==0x100) return;
-
  for(x=sphitx;x<(sphitx+8) && x<l;x++)
- {
    if((sphitdata&(0x80>>(x-sphitx))) && !(Plinef[x]&64))
    {
     PPU_status|=0x40;
     //printf("Ha:  %d, %d, Hita: %d, %d, %d, %d, %d\n",p,p&~7,scanline,GETLASTPIXEL-16,&Plinef[x],Pline,Pline-Plinef);
-    //printf("%d\n",GETLASTPIXEL-16);
-    //if(Plinef[x] == 0xFF)
-    //printf("PL: %d, %02x\n",scanline, Plinef[x]);
     sphitx=0x100;
     break;
    }
- }
 }   
 static int spork=0;     /* spork the world.  Any sprites on this line?
                            Then this will be set to 1.  Needed for zapper
@@ -513,16 +496,6 @@ static void FASTAPASS(1) RefreshLine(int lastpixel)
                                     which call FCEUPPU_LineUpdate, which call this
                                     function. */
         if(norecurse) return;
-
-	if(sphitx != 0x100 && !(PPU_status&0x40))
-        {
-	 if((sphitx < (lastpixel-16)) && !(sphitx < ((lasttile - 2)*8)))
-	 {
-	  //printf("OK: %d\n",scanline);
-	  lasttile++;
-	 }
-
-        }
 
         if(lasttile>34) lasttile=34;
         numtiles=lasttile-firsttile;
@@ -687,11 +660,7 @@ static void FASTAPASS(1) RefreshLine(int lastpixel)
           tofix=0;
         }
 
-        //CheckSpriteHit(lasttile*8); //lasttile*8); //lastpixel);
-	
-	CheckSpriteHit(lastpixel);	/* This only works right because
-					   of a hack earlier in this function.
-					*/
+        CheckSpriteHit(lasttile*8); //lasttile*8); //lastpixel);
         if(InputScanlineHook && (lastpixel-16)>=0)
         {
          InputScanlineHook(Plinef,spork?sprlinebuf:0,linestartts,lasttile*8-16);
@@ -995,25 +964,19 @@ static void RefreshSprites(void)
 
         FCEU_dwmemset(sprlinebuf,0x80808080,256);
         numsprites--;
-	spr = (SPRB*)SPRBUF+numsprites;
+        spr = (SPRB*)SPRBUF+numsprites;
 
-	for(n=numsprites;n>=0;n--,spr--)
-	{
-	 //#ifdef C80x86
-	 //register uint32 pixdata asm ("eax");
-	 //register uint8 J, atr;
-	 //#else
-	 register uint32 pixdata;
-	 register uint8 J,atr;
-	 //#endif
-
-	 int x=spr->x;
-         uint8 *C;
-         uint8 *VB;
+       for(n=numsprites;n>=0;n--,spr--)
+       {
+        register uint32 pixdata;
+        register uint8 J,atr;
+        int x=spr->x;
+        uint8 *C;
+        uint8 *VB;
                 
-         pixdata=ppulut1[spr->ca[0]]|ppulut2[spr->ca[1]];
-         J=spr->ca[0]|spr->ca[1];
-         atr=spr->atr;
+        pixdata=ppulut1[spr->ca[0]]|ppulut2[spr->ca[1]];
+        J=spr->ca[0]|spr->ca[1];
+        atr=spr->atr;
 
                        if(J)
                        {
@@ -1110,7 +1073,7 @@ static void RefreshSprites(void)
         }
       }
      SpriteBlurp=0;
-     spork=1;
+        spork=1;
 }
 
 static void CopySprites(uint8 *target)
@@ -1122,7 +1085,6 @@ static void CopySprites(uint8 *target)
       spork=0;
 
       if(rendis & 1) return;	/* User asked to not display sprites. */
-
       loopskie:
       {
        uint32 t=*(uint32 *)(sprlinebuf+n);
@@ -1132,25 +1094,25 @@ static void CopySprites(uint8 *target)
         #ifdef LSB_FIRST
         if(!(t&0x80))
         {
-         if(!(t&0x40) || (P[n]&0x40))       // Normal sprite || behind bg sprite
+         if(!(t&0x40) || (P[n]&64))       // Normal sprite || behind bg sprite
           P[n]=sprlinebuf[n];
         }
 
         if(!(t&0x8000))
         {
-         if(!(t&0x4000) || (P[n+1]&0x40))       // Normal sprite || behind bg sprite
+         if(!(t&0x4000) || (P[n+1]&64))       // Normal sprite || behind bg sprite
           P[n+1]=(sprlinebuf+1)[n];
         }
 
         if(!(t&0x800000))
         {
-         if(!(t&0x400000) || (P[n+2]&0x40))       // Normal sprite || behind bg sprite
+         if(!(t&0x400000) || (P[n+2]&64))       // Normal sprite || behind bg sprite
           P[n+2]=(sprlinebuf+2)[n];
         }
 
         if(!(t&0x80000000))
         {
-         if(!(t&0x40000000) || (P[n+3]&0x40))       // Normal sprite || behind bg sprite
+         if(!(t&0x40000000) || (P[n+3]&64))       // Normal sprite || behind bg sprite
           P[n+3]=(sprlinebuf+3)[n];
         }
         #else
