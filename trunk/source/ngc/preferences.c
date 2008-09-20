@@ -247,13 +247,15 @@ decodePrefsData (int method)
 	else // version # not found, must be invalid
 		return false;
 
-	int verMajor = (int)version[13];
-	int verMinor = (int)version[15];
-	int verPoint = (int)version[17];
+	// this code assumes version in format X.X.X
+	// XX.X.X, X.XX.X, or X.X.XX will NOT work
+	char verMajor = version[13];
+	char verMinor = version[15];
+	char verPoint = version[17];
 
-	if(verPoint < 2 && verMajor == 2) // less than version 2.0.2
+	if(verPoint < '2' && verMajor == '2') // less than version 2.0.2
 		return false; // reset settings
-	else if(verMajor > 2 || verMinor > 0 || verPoint > 2) // some future version
+	else if(verMajor > '2' || verMinor > '0' || verPoint > '2') // some future version
 		return false; // reset settings
 
 	// File Settings
