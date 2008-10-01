@@ -162,7 +162,7 @@ ParseFATdirectory(int method)
  * LoadFATFile
  ****************************************************************************/
 int
-LoadFATFile (char *filename, int length)
+LoadFATFile ()
 {
 	char zipbuffer[2048];
 	char filepath[MAXPATHLEN];
@@ -199,11 +199,10 @@ LoadFATFile (char *filename, int length)
 		{
 			// Just load the file up
 			fseek(handle, 0, SEEK_END);
-			length = ftell(handle);				// get filesize
+			size = ftell(handle);				// get filesize
 			fseek(handle, 2048, SEEK_SET);		// seek back to point where we left off
 			memcpy (nesrom, zipbuffer, 2048);	// copy what we already read
-			fread (nesrom + 2048, 1, length - 2048, handle);
-			size = length;
+			fread (nesrom + 2048, 1, size - 2048, handle);
 		}
 		fclose (handle);
 		return size;

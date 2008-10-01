@@ -171,6 +171,7 @@ preparePrefsData (int method)
 
 	createXMLSetting("FSDisable", "Four Score", toStr(GCSettings.FSDisable));
 	createXMLSetting("zapper", "Zapper", toStr(GCSettings.zapper));
+	createXMLSetting("crosshair", "Zapper Crosshair", toStr(GCSettings.crosshair));
 	createXMLController(gcpadmap, "gcpadmap", "GameCube Pad");
 	createXMLController(wmpadmap, "wmpadmap", "Wiimote");
 	createXMLController(ccpadmap, "ccpadmap", "Classic Controller");
@@ -253,9 +254,9 @@ decodePrefsData (int method)
 	char verMinor = version[15];
 	char verPoint = version[17];
 
-	if(verPoint < '2' && verMajor == '2') // less than version 2.0.2
+	if(verMajor == '2' && verPoint < '3') // less than version 2.0.3
 		return false; // reset settings
-	else if(verMajor > '2' || verMinor > '0' || verPoint > '2') // some future version
+	else if(verMajor > '2' || verMinor > '0' || verPoint > '3') // some future version
 		return false; // reset settings
 
 	// File Settings
@@ -284,6 +285,7 @@ decodePrefsData (int method)
 	loadXMLSettingInt(&GCSettings.slimit, "slimit");
 	loadXMLSettingInt(&GCSettings.screenscaler, "screenscaler");
 	loadXMLSettingInt(&GCSettings.zapper, "zapper");
+	loadXMLSettingInt(&GCSettings.crosshair, "crosshair");
 	// Controller Settings
 
 	loadXMLController(gcpadmap, "gcpadmap");

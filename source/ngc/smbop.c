@@ -79,12 +79,18 @@ ConnectShare (bool silent)
 	return false;
 	#endif
 
+	ShowAction ((char*) "Connecting...");
+
 	// check that all parameter have been set
 	if(strlen(GCSettings.smbuser) == 0 ||
 		strlen(GCSettings.smbpwd) == 0 ||
 		strlen(GCSettings.smbshare) == 0 ||
 		strlen(GCSettings.smbip) == 0)
+	{
+		if(!silent)
+			WaitPrompt((char*) "Invalid network settings. Check FCEUGX.xml.");
 		return false;
+	}
 
 	if(!networkInit)
 		networkInit = InitializeNetwork(silent);
@@ -212,7 +218,7 @@ ParseSMBdirectory ()
  * Load SMB file
  ****************************************************************************/
 int
-LoadSMBFile (char *filename, int length)
+LoadSMBFile ()
 {
 	char filepath[MAXPATHLEN];
 

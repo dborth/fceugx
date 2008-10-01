@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 2.0.2   
+                                  Version 2.0.3   
                                (Under GPL License)
  
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
@@ -29,11 +29,12 @@ SNES9x GX and Genesis Plus GX projects.
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
 
-[What's New 2.0.3]
-* VS game support (submitted by pakitovic)
-* Complete rewrite of loading code - UNIF / NSF support, FDS games
-  load but don't run
+[What's New 2.0.3 - October 1, 2008]
+* Complete rewrite of loading code - FDS / UNIF / NSF support added!
+* VS games work (coin insert submitted by pakitovic)
+* Mapping of 'Special' commands - VS coin insert, FDS switch disk (default A)
 * 480p and DVD now available for GameCube
+* Improved stability - less crashes!
 
 [What's New 2.0.2 - September 19, 2008]
 * Fixed network freeze-up problem
@@ -93,8 +94,8 @@ Loading / Running the Emulator:
 Wii - Via Homebrew Channel:
 --------------------
 The most popular method of running homebrew on the Wii is through the Homebrew
-Channel. If you already have the channel installed, just copy over the apps folder
-included in the archive into the root of your SD card.
+Channel. If you already have the channel installed, just copy over the apps 
+folder included in the archive into the root of your SD card.
 
 Remember to also create the fceugx directory structure required. See above.
 
@@ -131,6 +132,15 @@ Gamecube
 You can load roms from DVD or SD card. If you create a bootable 
 DVD of FCEUGX you can put roms on the same DVD. You may save preferences and
 game data to SD or Memory Card.
+
+-=[ Famicom Disk System (FDS) ]=-
+
+FCE Ultra GX supports loading FDS games. The FDS BIOS is required - put it 
+in your roms folder, and name it disksys.rom (should be 8 KB in size).
+You can switch disks using the A button (by default). The mapped button
+can be changed under Controller Configuration ('Special' button).
+Compatibility is limited, so check that the game in question works on 
+FCE Ultra 0.98.12 for Windows before asking for help. 
 
 -=[ Supported Mappers ]=-
  
