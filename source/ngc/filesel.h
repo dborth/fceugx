@@ -12,6 +12,8 @@
 #ifndef _NGCFILESEL_
 #define _NGCFILESEL_
 
+#include <unistd.h>
+
 #define SAVEBUFFERSIZE (64 * 1024)
 #define MAXJOLIET 255
 #define MAXDISPLAY 54
@@ -27,6 +29,14 @@ typedef struct
 
 #define MAXFILES 2000 // Restrict to 2000 files per dir
 extern FILEENTRIES filelist[MAXFILES];
+extern bool isWii;
+extern int offset;
+extern int selection;
+extern char currentdir[MAXPATHLEN];
+extern int maxfiles;
+extern unsigned char savebuffer[];
+extern char romFilename[];
+extern int nesGameType;
 
 void ClearSaveBuffer ();
 int OpenROM (int method);

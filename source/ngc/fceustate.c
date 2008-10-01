@@ -52,9 +52,6 @@ extern u32 iNESGameCRC32;
 int sboffset;				/*** Used as a basic fileptr  ***/
 int mcversion = 0x981211;
 
-extern unsigned char savebuffer[SAVEBUFFERSIZE];
-extern char romFilename[];
-
 /****************************************************************************
  * Memory based file functions
  ****************************************************************************/
@@ -62,7 +59,7 @@ extern char romFilename[];
 /*** Open a file ***/
 void memopen() {
     sboffset = 0;
-    memset(savebuffer, 0, sizeof(savebuffer));
+    memset(savebuffer, 0, SAVEBUFFERSIZE);
 }
 
 /*** Close a file ***/
@@ -72,7 +69,7 @@ void memclose() {
 
 /*** Write to the file ***/
 void memfwrite( void *buffer, int len ) {
-    if ( (sboffset + len ) > sizeof(savebuffer))
+    if ( (sboffset + len ) > SAVEBUFFERSIZE)
         WaitPrompt("Buffer Exceeded");
 
     if ( len > 0 ) {
@@ -84,7 +81,7 @@ void memfwrite( void *buffer, int len ) {
 /*** Read from a file ***/
 void memfread( void *buffer, int len ) {
 
-    if ( ( sboffset + len ) > sizeof(savebuffer))
+    if ( ( sboffset + len ) > SAVEBUFFERSIZE)
         WaitPrompt("Buffer exceeded");
 
     if ( len > 0 ) {
@@ -334,13 +331,13 @@ bool LoadState (int method, bool silent)
 	{
 		ChangeFATInterface(method, NOTSILENT);
 		sprintf (filepath, "%s/%s/%s.fcs", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
-		offset = LoadBufferFromFAT (filepath, silent);
+		offset = LoadSaveBufferFromFAT (filepath, silent);
 
 		if(offset == 0) // file not found
 		{
 			// look for CRC save
 			sprintf (filepath, "%08x.fcs", iNESGameCRC32);
-			offset = LoadBufferFromFAT (filepath, silent);
+			offset = LoadSaveBufferFromFAT (filepath, silent);
 		}
 	}
 	else if(method == METHOD_SMB)

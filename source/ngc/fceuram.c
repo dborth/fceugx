@@ -41,9 +41,7 @@
 
 extern u32 iNESGameCRC32;
 extern CartInfo iNESCart;
-
-extern unsigned char savebuffer[SAVEBUFFERSIZE];
-extern char romFilename[];
+extern CartInfo UNIFCart;
 
 int NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 {
@@ -80,10 +78,14 @@ bool SaveRAM (int method, bool silent)
 
 	bool retval = false;
 	char filepath[1024];
-	int datasize;
+	int datasize = 0;
 	int offset = 0;
 
-	datasize = NGCFCEU_GameSave(&iNESCart, 0); // save game save to savebuffer
+	// save game save to savebuffer
+	if(nesGameType == 1)
+		datasize = NGCFCEU_GameSave(&iNESCart, 0);
+	else if(nesGameType == 2)
+		datasize = NGCFCEU_GameSave(&UNIFCart, 0);
 
 	if ( datasize )
 	{
@@ -137,9 +139,11 @@ bool LoadRAM (int method, bool silent)
 
 	if(method == METHOD_SD || method == METHOD_USB)
 	{
-		ChangeFATInterface(method, NOTSILENT);
-		sprintf (filepath, "%s/%s/%s.sav", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
-		offset = LoadBufferFromFAT (filepath, silent);
+		if(ChangeFATInterface(method, NOTSILENT))
+		{
+			sprintf (filepath, "%s/%s/%s.sav", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
+			offset = LoadSaveBufferFromFAT (filepath, silent);
+		}
 	}
 	else if(method == METHOD_SMB)
 	{
@@ -158,7 +162,11 @@ bool LoadRAM (int method, bool silent)
 
 	if (offset > 0)
 	{
-		NGCFCEU_GameSave(&iNESCart, 1); // load game save from savebuffer
+		if(nesGameType == 1)
+			NGCFCEU_GameSave(&iNESCart, 1);
+		else if(nesGameType == 2)
+			NGCFCEU_GameSave(&UNIFCart, 1);
+
 		ResetNES();
 		return 1;
 	}

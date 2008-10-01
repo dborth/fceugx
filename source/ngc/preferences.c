@@ -361,7 +361,7 @@ LoadPrefsFromMethod (int method)
 		if(ChangeFATInterface(method, NOTSILENT))
 		{
 			sprintf (filepath, "%s/%s/%s", ROOTFATDIR, GCSettings.SaveFolder, PREFS_FILE_NAME);
-			offset = LoadBufferFromFAT (filepath, SILENT);
+			offset = LoadSaveBufferFromFAT (filepath, SILENT);
 		}
 	}
 	else if(method == METHOD_SMB)

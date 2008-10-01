@@ -34,6 +34,7 @@ int offset;
 int selection;
 char currentdir[MAXPATHLEN];
 char romFilename[200];
+int nesGameType;
 int maxfiles;
 extern int screenheight;
 
@@ -46,7 +47,7 @@ int hasloaded = 0;
 // Global file entry table
 FILEENTRIES filelist[MAXFILES];
 
-unsigned char savebuffer[SAVEBUFFERSIZE] ATTRIBUTE_ALIGN (32);
+unsigned char savebuffer[SAVEBUFFERSIZE];
 
 /****************************************************************************
  * Clear the savebuffer
@@ -323,13 +324,14 @@ int FileSelector (int method)
 					break;
 				}
 
-				if (GCMemROM() >= 0)
+				if (GCMemROM(method) > 0)
 				{
 					return 1;
 				}
 				else
 				{
 					WaitPrompt((char*) "Error loading ROM!");
+					return 0;
 				}
 			}
 			redraw = 1;
