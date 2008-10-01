@@ -126,7 +126,8 @@ int main(int argc, char *argv[])
 // File Control
 FILE *FCEUD_UTF8fopen(const char *n, const char *m)
 {
-    return(fopen(n,m));
+    return NULL;
+	//return(fopen(n,m));
 }
 
 // General Logging
