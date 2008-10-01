@@ -29,14 +29,20 @@ SNES9x GX and Genesis Plus GX projects.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[What's New 2.0.2]
+[What's New 2.0.3]
+* VS game support (submitted by pakitovic)
+* Complete rewrite of loading code - UNIF / NSF support, FDS games
+  load but don't run
+* 480p and DVD now available for GameCube
+
+[What's New 2.0.2 - September 19, 2008]
 * Fixed network freeze-up problem
 * Zapper now mapped to A and B
 * Fixed auto-save feature
 * Performance slowdowns on Gamecube should be fixed
 * Will now attempt to load old save states with CRC filename
 
-[What's New 2.0.1]
+[What's New 2.0.1 - September 6, 2008]
 * Zapper support! Turn this on in the Controller Settings - most games 
   require you to have the Zapper on Port 2. Thanks go to aksommerville whose
   previous work on the Zapper helped, and michniewski's cursor code
@@ -46,7 +52,7 @@ SNES9x GX and Genesis Plus GX projects.
 * Start/Select reversed mapping fixed for Wii controllers
 * Small bug fixes / improvements / tweaks
 
-[What's New 2.0.0]
+[What's New 2.0.0 - September 1, 2008]
 
 * Complete rewrite based on code from SNES9x GX and Genesis Plus GX
 * Wiimote, Nunchuk, and Classic controller support

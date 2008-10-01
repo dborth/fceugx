@@ -3,6 +3,12 @@ typedef struct {
         uint32 type;    // 0=normal file, 1=gzip, 2=zip
 } FCEUFILE;
 
+typedef struct {
+           uint8 *data;
+           uint32 size;
+           uint32 location;
+} MEMWRAP;
+
 FCEUFILE *FCEU_fopen(const char *path, const char *ipsfn, char *mode, char *ext);
 int FCEU_fclose(FCEUFILE*);
 uint64 FCEU_fread(void *ptr, size_t size, size_t nmemb, FCEUFILE*);

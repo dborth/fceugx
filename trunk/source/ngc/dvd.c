@@ -22,11 +22,6 @@
 #include "menudraw.h"
 #include "gcunzip.h"
 
-extern bool isWii;
-extern int offset;
-extern int selection;
-extern FILEENTRIES filelist[MAXFILES];
-extern int maxfiles;
 u64 dvddir = 0;
 u64 dvdrootdir = 0;
 int dvddirlength = 0;
@@ -451,7 +446,19 @@ LoadDVDFile (unsigned char *buffer)
 	ShowAction ((char*) "Loading...");
 	dvd_read (readbuffer, 2048, discoffset);
 
-	if (!IsZipFile (readbuffer))
+	int r = IsZipFile (readbuffer);
+
+	if(r == 2) // 7z
+	{
+		WaitPrompt ((char *)"7z files are not supported!");
+		return 0;
+	}
+
+	if (r)
+	{
+		return UnZipDVDFile (buffer, discoffset);	// unzip from dvd
+	}
+	else
 	{
 		for (i = 0; i < blocks; i++)
 		{
@@ -468,10 +475,6 @@ LoadDVDFile (unsigned char *buffer)
 			dvd_read (readbuffer, 2048, discoffset);
 			memcpy (buffer + offset, readbuffer, i);
 		}
-	}
-	else
-	{
-		return UnZipDVDFile (buffer, discoffset);	// unzip from dvd
 	}
 	return dvddirlength;
 }

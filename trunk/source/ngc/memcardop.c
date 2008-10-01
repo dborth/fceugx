@@ -22,10 +22,10 @@
 #include "menu.h"
 #include "memcardop.h"
 #include "fileop.h"
+#include "filesel.h"
 
 #define VERIFBUFFERSIZE 65536
 static u8 SysArea[CARD_WORKAREA] ATTRIBUTE_ALIGN (32);
-extern unsigned char savebuffer[];
 unsigned char verifbuffer[VERIFBUFFERSIZE] ATTRIBUTE_ALIGN (32);
 card_dir CardDir;
 card_file CardFile;

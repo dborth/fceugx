@@ -25,13 +25,6 @@
 
 FILE * filehandle;
 
-extern unsigned char savebuffer[];
-extern char output[16384];
-extern int offset;
-extern int selection;
-extern char currentdir[MAXPATHLEN];
-extern FILEENTRIES filelist[MAXFILES];
-
 /****************************************************************************
  * fat_is_mounted
  * to check whether FAT media are detected.
@@ -190,9 +183,17 @@ LoadFATFile (char *filename, int length)
 	{
 		fread (zipbuffer, 1, 2048, handle);
 
-		if (IsZipFile (zipbuffer))
+		int r = IsZipFile (zipbuffer);
+
+		if(r == 2) // 7z
 		{
-			size = UnZipFATFile (nesromptr, handle);	// unzip from FAT
+			WaitPrompt ((char *)"7z files are not supported!");
+			return 0;
+		}
+
+		if (r)
+		{
+			size = UnZipFATFile (nesromptr, handle); // unzip from FAT
 		}
 		else
 		{
@@ -218,15 +219,21 @@ LoadFATFile (char *filename, int length)
 
 /****************************************************************************
  * Load savebuffer from FAT file
- ****************************************************************************/
+ ***************************************************************************/
+
+// no buffer is specified - so use savebuffer
 int
-LoadBufferFromFAT (char *filepath, bool silent)
+LoadSaveBufferFromFAT (char *filepath, bool silent)
+{
+	return LoadBufferFromFAT((char *)savebuffer, filepath, silent);
+}
+
+int
+LoadBufferFromFAT (char * sbuffer, char *filepath, bool silent)
 {
 	FILE *handle;
     int boffset = 0;
     int read = 0;
-
-    ClearSaveBuffer ();
 
     handle = fopen (filepath, "rb");
 
@@ -275,7 +282,5 @@ SaveBufferToFAT (char *filepath, int datasize, bool silent)
         fwrite (savebuffer, 1, datasize, handle);
         fclose (handle);
     }
-
-    ClearSaveBuffer ();
     return datasize;
 }

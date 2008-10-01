@@ -21,7 +21,6 @@
 /*
   * PKWare Zip Header - adopted into zip standard
   */
-#define PKZIPID 0x504b0304
 #define MAXROM 0x500000
 #define ZIPCHUNK 2048
 
@@ -56,19 +55,27 @@ FLIP16 (u16 b)
 /****************************************************************************
  * IsZipFile
  *
- * Returns TRUE when PKZIPID is first four characters of buffer
+ * Returns 1 when Zip signature is found
+ * Returns 2 when 7z signature is found
  ****************************************************************************/
 int
 IsZipFile (char *buffer)
 {
 	unsigned int *check;
-
 	check = (unsigned int *) buffer;
 
-	if (check[0] == PKZIPID)
+	if (check[0] == 0x504b0304) // ZIP file
 		return 1;
 
-	return 0;
+	// 7z signature
+	static Byte Signature[6] = {'7', 'z', 0xBC, 0xAF, 0x27, 0x1C};
+
+	int i;
+	for(i = 0; i < 6; i++)
+		if(buffer[i] != Signature[i])
+			return 0;
+
+	return 2; // 7z archive found
 }
 
  /*****************************************************************************
@@ -228,7 +235,46 @@ UnZipSMBFile (unsigned char *outbuffer, SMBFILE infile)
 
 /*
  * 7-zip functions are below. Have to be written to work with above.
+ * 
+else if (selection == 0 && inSz == true) {
+	rootdir = filelist[1].offset;
+	rootdirlength = filelist[1].length;
+	offset = 0;
+	maxfiles = parsedir();
+	inSz = false;
+	SzClose();
+}
+else if (inSz == false && SzDvdIsArchive(filelist[selection].offset) == SZ_OK) {
+	// parse the 7zip file
+	ShowAction("Found 7z");
+	SzParse();
+	if(SzRes == SZ_OK) {
+		inSz = true;
+		offset = selection = 0;
+	} else {
+		SzDisplayError(SzRes);
+	}
+}
+else if (inSz == true) {
+	// extract the selected ROM from the 7zip file to the buffer
+	if(SzExtractROM(filelist[selection].offset, nesromptr) == true) {
+		haverom = 1;
+		inSz = false;
 
+		// go one directory up
+		rootdir = filelist[1].offset;
+		rootdirlength = filelist[1].length;
+		offset = selection = 0;
+		maxfiles = parsedir();
+	}
+}
+*/
+
+
+
+
+/*
+ * 7-zip functions are below. Have to be written to work with above.
 
 
 #include "7zCrc.h"
@@ -268,17 +314,6 @@ size_t SzOffset;
 size_t SzOutSizeProcessed;
 CFileItem *SzF;
 char sz_buffer[2048];
-
-// needed because there are no header files -.-
-//#include <sdcard.h>
-#define MAXFILES 1000
-#define MAXJOLIET 256
-
-extern FILEENTRIES filelist[MAXFILES];
-
-extern int selection;
-extern int maxfiles;
-extern int offset;
 
 // the GC's dvd drive only supports offsets and length which are a multiply of 32 bytes
 // additionally the max length of a read is 2048 bytes

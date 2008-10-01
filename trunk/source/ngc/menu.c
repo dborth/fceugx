@@ -76,9 +76,6 @@ LoadManager ()
 
 	if ( loadROM == 1 ) // if ROM was loaded
 	{
-		if(!GCMemROM()) // ROM was not valid
-			return 0;
-
 		// load the RAM
 		if (GCSettings.AutoLoad == 1)
 			LoadRAM(GCSettings.SaveMethod, SILENT);
@@ -87,7 +84,6 @@ LoadManager ()
 
 		ResetNES();
 	}
-
 	return loadROM;
 }
 
@@ -527,16 +523,17 @@ GetButtonMap(u16 ctrlr_type, char* btn_name)
 	return pressed;
 }	// end getButtonMap()
 
-int cfg_btns_count = 9;
+int cfg_btns_count = 10;
 char cfg_btns_menu[][50] = {
-	"B        -         ",
-	"A        -         ",
-	"SELECT   -         ",
-	"START    -         ",
-	"UP       -         ",
-	"DOWN     -         ",
-	"LEFT     -         ",
-	"RIGHT    -         ",
+	"B              -         ",
+	"A              -         ",
+	"SELECT         -         ",
+	"START          -         ",
+	"UP             -         ",
+	"DOWN           -         ",
+	"LEFT           -         ",
+	"RIGHT          -         ",
+	"VS INSERT COIN -         "
 	"Return to previous"
 };
 
@@ -583,7 +580,7 @@ ConfigureButtons (u16 ctrlr_type)
 	while (quit == 0)
 	{
 		/*** Update Menu with Current ButtonMap ***/
-		for (i=0; i<8; i++) // nes pad has 8 buttons to config (go thru them)
+		for (i=0; i<MAXJP; i++) // nes pad has 8 buttons to config (plus VS coin insert)
 		{
 			// get current padmap button name to display
 			for ( j=0;
@@ -616,6 +613,7 @@ ConfigureButtons (u16 ctrlr_type)
 			case 5:
 			case 6:
 			case 7:
+			case 8:
 				/*** Change button map ***/
 				// wait for input
 				memset (temp, 0, sizeof(temp));
@@ -627,7 +625,7 @@ ConfigureButtons (u16 ctrlr_type)
 				break;
 
 			case -1: /*** Button B ***/
-			case 8:
+			case 9:
 				/*** Return ***/
 				quit = 1;
 				break;

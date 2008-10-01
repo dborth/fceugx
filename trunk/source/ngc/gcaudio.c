@@ -44,7 +44,7 @@ void InitialiseSound()
 	AUDIO_Init(NULL);	/*** Start audio subsystem ***/
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 	AUDIO_RegisterDMACallback( AudioSwitchBuffers );
-
+	memset(audiobuffer, 0, (64 * 1024));
 	buffSize[0] = buffSize[1] = 0;
 }
 
