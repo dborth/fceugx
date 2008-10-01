@@ -26,6 +26,7 @@ DefaultSettings ()
 	GCSettings.timing = 0;
 	GCSettings.FSDisable = 1;
 	GCSettings.zapper = 0;
+	GCSettings.crosshair = 1;
 	GCSettings.slimit = 1;
 	GCSettings.screenscaler = 2;
 

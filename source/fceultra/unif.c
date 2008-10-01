@@ -484,7 +484,7 @@ static void UNIFGI(int h)
 		if(UNIFchrrama) memset(UNIFchrrama,0,8192);
 		break;
   case GI_CLOSE:
-                FCEU_SaveGameSave(&UNIFCart);
+                //FCEU_SaveGameSave(&UNIFCart);
 		if(UNIFCart.Close)
 		 UNIFCart.Close();
                 FreeUNIF();

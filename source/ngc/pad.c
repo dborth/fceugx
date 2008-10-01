@@ -33,7 +33,7 @@ unsigned int nespadmap[] = {
 	JOY_SELECT, JOY_START,
 	JOY_UP, JOY_DOWN,
 	JOY_LEFT, JOY_RIGHT,
-	0 // insert coin for VS games
+	0 // insert coin for VS games, insert/eject/select disk for FDS
 };
 
 /*** Gamecube controller Padmap ***/
@@ -383,7 +383,18 @@ unsigned char DecodeJoy( unsigned short pad )
 			if(nespadmap[i] > 0)
 				J |= nespadmap[i];
 			else
-				FCEU_DoSimpleCommand(0x07); // insert coin for VS Games
+			{
+				if(nesGameType == 4) // FDS
+				{
+					/* these commands shouldn't be issued in parallel but this
+					 * allows us to only map one button for both!
+					 * the gamer must just have to press the button twice */
+					FCEUI_FDSInsert(0); // eject / insert disk
+					FCEUI_FDSSelect(); // select other side
+				}
+				else
+					FCEU_DoSimpleCommand(0x07); // insert coin for VS Games
+			}
 		}
 	}
 
@@ -421,7 +432,8 @@ unsigned char DecodeJoy( unsigned short pad )
 
 void GetJoy()
 {
-    unsigned char pad[4];
+    JSReturn = 0; // reset buttons pressed
+	unsigned char pad[4];
     short i;
 
     s8 gc_px = PAD_SubStickX (0);

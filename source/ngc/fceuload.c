@@ -142,12 +142,9 @@ int GCMemROM(method)
 			}
 			free(tmpbuffer);
 		}
-		else
-		{
-			// load game
-			if(FDSLoad(NULL,fceufp))
-				nesGameType = 4;
-		}
+		// load game
+		if(FDSLoad(NULL,fceufp))
+			nesGameType = 4;
 	}
 
     if (nesGameType > 0)

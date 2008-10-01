@@ -747,14 +747,14 @@ static void PostSave(void)
 
 int FDSLoad(const char *name, FCEUFILE *fp)
 {
- //FILE *zp;
- int x;
-// char *fn;
+	//FILE *zp;
+	int x;
+	// char *fn;
 
- FCEU_fseek(fp,0,SEEK_SET);
+	FCEU_fseek(fp,0,SEEK_SET);
 
- if(!SubLoad(fp))
-  return(0);
+	if(!SubLoad(fp))
+		return(0);
 
 /*
  fn = FCEU_MakeFName(FCEUMKF_FDSROM,0,0);
@@ -778,10 +778,10 @@ int FDSLoad(const char *name, FCEUFILE *fp)
  }
 
  fclose(zp);
-
+*/
  {
-  FCEUFILE *tp;
-  char *fn=FCEU_MakeFName(FCEUMKF_FDS,0,0);
+  //FCEUFILE *tp;
+  //char *fn=FCEU_MakeFName(FCEUMKF_FDS,0,0);
 
   int x;
   for(x=0;x<TotalSides;x++)
@@ -789,7 +789,7 @@ int FDSLoad(const char *name, FCEUFILE *fp)
    diskdatao[x]=(uint8 *)FCEU_malloc(65500);
    memcpy(diskdatao[x],diskdata[x],65500);
   }
- if((tp=FCEU_fopen(fn,0,"rb",0)))
+/* if((tp=FCEU_fopen(fn,0,"rb",0)))
   {
    FreeFDSMemory();
    if(!SubLoad(tp))
@@ -801,8 +801,8 @@ int FDSLoad(const char *name, FCEUFILE *fp)
    FCEU_fclose(tp);
    DiskWritten=1;	// For save state handling.
   }
-  free(fn);
- }*/
+  free(fn);*/
+ }
 
  FCEUGameInfo->type=GIT_FDS;
  GameInterface=FDSGI;
@@ -845,7 +845,7 @@ int FDSLoad(const char *name, FCEUFILE *fp)
 
 void FDSClose(void)
 {
- FILE *fp;
+ /*FILE *fp;
  int x;
  char *fn=FCEU_MakeFName(FCEUMKF_FDS,0,0);
 
@@ -866,7 +866,7 @@ void FDSClose(void)
    fclose(fp);
    return;
   }
- }
+ }*/
  FreeFDSMemory();
- fclose(fp);
+ //fclose(fp);
 }

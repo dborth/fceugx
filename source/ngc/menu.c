@@ -533,7 +533,7 @@ char cfg_btns_menu[][50] = {
 	"DOWN        -         ",
 	"LEFT        -         ",
 	"RIGHT       -         ",
-	"INSERT COIN -         ",
+	"SPECIAL     -         ",
 	"Return to previous"
 };
 
@@ -634,10 +634,11 @@ ConfigureButtons (u16 ctrlr_type)
 	menu = oldmenu;
 }	// end configurebuttons()
 
-int ctlrmenucount = 8;
+int ctlrmenucount = 9;
 char ctlrmenu[][50] = {
 	"Four Score",
 	"Zapper",
+	"Zapper Crosshair",
 	"Nunchuk",
 	"Classic Controller",
 	"Wiimote",
@@ -670,6 +671,9 @@ ConfigureControllers ()
 		else if (GCSettings.zapper == 1) sprintf (ctlrmenu[1],"Zapper - Port 1");
 		else if (GCSettings.zapper == 2) sprintf (ctlrmenu[1],"Zapper - Port 2");
 
+		sprintf (ctlrmenu[2], "Zapper Crosshair - %s",
+			GCSettings.crosshair == true ? " ON" : "OFF");
+
 		/*** Controller Config Menu ***/
         ret = RunMenu (ctlrmenu, ctlrmenucount, (char*)"Configure Controllers", 20, -1);
 
@@ -687,33 +691,37 @@ ConfigureControllers ()
 				ToggleZapper(GCSettings.zapper);
 				break;
 
-			case 2:
+			case 2: // zapper crosshair
+				GCSettings.crosshair ^= 1;
+				break;
+				
+			case 3:
 				/*** Configure Nunchuk ***/
 				ConfigureButtons (CTRLR_NUNCHUK);
 				break;
 
-			case 3:
+			case 4:
 				/*** Configure Classic ***/
 				ConfigureButtons (CTRLR_CLASSIC);
 				break;
 
-			case 4:
+			case 5:
 				/*** Configure Wiimote ***/
 				ConfigureButtons (CTRLR_WIIMOTE);
 				break;
 
-			case 5:
+			case 6:
 				/*** Configure GC Pad ***/
 				ConfigureButtons (CTRLR_GCPAD);
 				break;
 
-			case 6:
+			case 7:
 				/*** Save Preferences Now ***/
 				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
 			case -1: /*** Button B ***/
-			case 7:
+			case 8:
 				/*** Return ***/
 				quit = 1;
 				break;
