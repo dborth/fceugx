@@ -29,7 +29,8 @@ unsigned int nespadmap[] = {
 	JOY_B, JOY_A,
 	JOY_SELECT, JOY_START,
 	JOY_UP, JOY_DOWN,
-	JOY_LEFT, JOY_RIGHT
+	JOY_LEFT, JOY_RIGHT,
+	0 // insert coin for VS games
 };
 
 /*** Gamecube controller Padmap ***/
@@ -37,28 +38,32 @@ unsigned int gcpadmap[] = {
 	PAD_BUTTON_B, PAD_BUTTON_A,
 	PAD_TRIGGER_L, PAD_TRIGGER_R,
 	PAD_BUTTON_UP, PAD_BUTTON_DOWN,
-	PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT
+	PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT,
+	PAD_TRIGGER_Z // insert coin for VS games
 };
 /*** Wiimote Padmap ***/
 unsigned int wmpadmap[] = {
 	WPAD_BUTTON_1, WPAD_BUTTON_2,
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_RIGHT, WPAD_BUTTON_LEFT,
-	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN
+	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
+	WPAD_BUTTON_A // insert coin for VS games
 };
 /*** Classic Controller Padmap ***/
 unsigned int ccpadmap[] = {
 	WPAD_CLASSIC_BUTTON_Y, WPAD_CLASSIC_BUTTON_B,
 	WPAD_CLASSIC_BUTTON_MINUS, WPAD_CLASSIC_BUTTON_PLUS,
 	WPAD_CLASSIC_BUTTON_UP, WPAD_CLASSIC_BUTTON_DOWN,
-	WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT
+	WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT,
+	WPAD_CLASSIC_BUTTON_FULL_R // insert coin for VS games
 };
 /*** Nunchuk + wiimote Padmap ***/
 unsigned int ncpadmap[] = {
 	WPAD_NUNCHUK_BUTTON_C, WPAD_NUNCHUK_BUTTON_Z,
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
-	WPAD_BUTTON_LEFT, WPAD_BUTTON_RIGHT
+	WPAD_BUTTON_LEFT, WPAD_BUTTON_RIGHT,
+	WPAD_BUTTON_A // insert coin for VS games
 };
 
 static uint32 JSReturn = 0;
@@ -367,7 +372,12 @@ unsigned char DecodeJoy( unsigned short pad )
 		|| ( (exp_type == WPAD_EXP_NUNCHUK) && (wp & ncpadmap[i]) )	// nunchuk + wiimote
 		#endif
 		)
-			J |= nespadmap[i];
+		{
+			if(nespadmap[i] > 0)
+				J |= nespadmap[i];
+			else
+				FCEU_DoSimpleCommand(0x07); // insert coin for VS Games
+		}
 	}
 
 	// zapper enabled
@@ -382,6 +392,7 @@ unsigned char DecodeJoy( unsigned short pad )
 		#ifdef HW_RVL
 		|| (wp & WPAD_BUTTON_A)	// wiimote
 		|| (wp & WPAD_BUTTON_B)
+		|| (wp & WPAD_CLASSIC_BUTTON_A) // classic controller
 		#endif
 		)
 		{
