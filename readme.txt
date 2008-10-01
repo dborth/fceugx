@@ -16,6 +16,7 @@ SNES9x GX and Genesis Plus GX projects.
 -=[ Features ]=-
 
 * Wiimote, Nunchuk, Classic, and Gamecube controller support
+* iNES, FDS, VS, UNIF, and NSF ROM support
 * 1-2 Player Support
 * Zapper support
 * RAM and State saving
