@@ -300,30 +300,33 @@ int FileSelector (int method)
 				StripExt(romFilename, filelist[selection].filename);
 
 				ShowAction ((char *)"Loading...");
+				
+				int size = 0;
 
 				switch (method)
 				{
-					case METHOD_SD:
-					case METHOD_USB:
-					LoadFATFile (filelist[selection].filename,
-					 filelist[selection].length);
+				case METHOD_SD:
+				case METHOD_USB:
+					size = LoadFATFile();
 					break;
 
-					case METHOD_DVD:
+				case METHOD_DVD:
 					dvddir = filelist[selection].offset;
 					dvddirlength = filelist[selection].length;
-					LoadDVDFile (nesrom);
+					size = LoadDVDFile(nesrom);
 					break;
 
-					case METHOD_SMB:
-					LoadSMBFile (filelist[selection].filename,
-					filelist[selection].length);
+				case METHOD_SMB:
+					size = LoadSMBFile();
 					break;
 				}
 
-				if (GCMemROM(method) > 0)
+				if (size > 0)
 				{
-					return 1;
+					if(GCMemROM(method) > 0)
+						return 1;
+					else
+						return 0;
 				}
 				else
 				{

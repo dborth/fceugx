@@ -58,7 +58,7 @@ unsigned int ccpadmap[] = {
 	WPAD_CLASSIC_BUTTON_MINUS, WPAD_CLASSIC_BUTTON_PLUS,
 	WPAD_CLASSIC_BUTTON_UP, WPAD_CLASSIC_BUTTON_DOWN,
 	WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT,
-	WPAD_CLASSIC_BUTTON_FULL_R // insert coin for VS games
+	WPAD_CLASSIC_BUTTON_A // insert coin for VS games
 };
 /*** Nunchuk + wiimote Padmap ***/
 unsigned int ncpadmap[] = {

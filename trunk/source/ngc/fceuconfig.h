@@ -15,8 +15,8 @@
 
 void DefaultSettings ();
 
-#define VERSIONNUM "2.0.2"
-#define VERSIONSTR "FCE Ultra GX 2.0.2"
+#define VERSIONNUM "2.0.3"
+#define VERSIONSTR "FCE Ultra GX 2.0.3"
 
 #define NOTSILENT 0
 #define SILENT 1
