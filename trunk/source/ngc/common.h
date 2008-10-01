@@ -35,4 +35,4 @@ extern int eoptions;
 #define EO_FORCEISCALE  16384
 #define EO_NOFOURSCORE  32768
 
-extern unsigned char * nesromptr;
+extern unsigned char * nesrom;

@@ -225,7 +225,7 @@ LoadSMBFile (char *filename, int length)
 		return -1;
 	}
 
-	return LoadBufferFromSMB((char *)nesromptr, SMBPath(filepath), NOTSILENT);
+	return LoadBufferFromSMB((char *)nesrom, SMBPath(filepath), NOTSILENT);
 }
 
 /****************************************************************************

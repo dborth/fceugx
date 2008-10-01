@@ -525,15 +525,15 @@ GetButtonMap(u16 ctrlr_type, char* btn_name)
 
 int cfg_btns_count = 10;
 char cfg_btns_menu[][50] = {
-	"B              -         ",
-	"A              -         ",
-	"SELECT         -         ",
-	"START          -         ",
-	"UP             -         ",
-	"DOWN           -         ",
-	"LEFT           -         ",
-	"RIGHT          -         ",
-	"VS INSERT COIN -         "
+	"B           -         ",
+	"A           -         ",
+	"SELECT      -         ",
+	"START       -         ",
+	"UP          -         ",
+	"DOWN        -         ",
+	"LEFT        -         ",
+	"RIGHT       -         ",
+	"INSERT COIN -         ",
 	"Return to previous"
 };
 

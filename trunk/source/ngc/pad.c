@@ -22,6 +22,9 @@
 #include "menu.h"
 #include "fceustate.h"
 #include "fceuram.h"
+#include "filesel.h"
+
+extern bool romLoaded;
 
 // Original NES controller buttons
 // All other pads are mapped to this
@@ -89,27 +92,31 @@ void InitialisePads()
 
 void ToggleFourScore(int set)
 {
-	FCEUI_DisableFourScore(set);
+	if(romLoaded)
+		FCEUI_DisableFourScore(set);
 }
 
 void ToggleZapper(int set)
 {
-	// set defaults
-	zapperdata[0]=NULL;
-	zapperdata[1]=NULL;
-	myzappers[0][0]=myzappers[1][0]=128;
-	myzappers[0][1]=myzappers[1][1]=120;
-	myzappers[0][2]=myzappers[1][2]=0;
-
-	// Default ports back to gamepad
-	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
-	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
-
-	if(set)
+	if(romLoaded)
 	{
-		// enable Zapper
-		zapperdata[set-1] = FCEU_InitZapper(set-1);
-		FCEUI_SetInput(set-1, SI_ZAPPER, myzappers[set-1], 1);
+		// set defaults
+		zapperdata[0]=NULL;
+		zapperdata[1]=NULL;
+		myzappers[0][0]=myzappers[1][0]=128;
+		myzappers[0][1]=myzappers[1][1]=120;
+		myzappers[0][2]=myzappers[1][2]=0;
+
+		// Default ports back to gamepad
+		FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
+		FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
+
+		if(set)
+		{
+			// enable Zapper
+			zapperdata[set-1] = FCEU_InitZapper(set-1);
+			FCEUI_SetInput(set-1, SI_ZAPPER, myzappers[set-1], 1);
+		}
 	}
 }
 

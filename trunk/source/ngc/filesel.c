@@ -38,11 +38,8 @@ int nesGameType;
 int maxfiles;
 extern int screenheight;
 
-int havedir = -1;
 extern u64 dvddir;
 extern int dvddirlength;
-
-int hasloaded = 0;
 
 // Global file entry table
 FILEENTRIES filelist[MAXFILES];
@@ -315,7 +312,7 @@ int FileSelector (int method)
 					case METHOD_DVD:
 					dvddir = filelist[selection].offset;
 					dvddirlength = filelist[selection].length;
-					LoadDVDFile (nesromptr);
+					LoadDVDFile (nesrom);
 					break;
 
 					case METHOD_SMB:

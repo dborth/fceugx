@@ -32,7 +32,7 @@
 #include "filesel.h"
 #include "smbop.h"
 
-unsigned char *nesromptr;
+unsigned char *nesrom;
 bool romLoaded = false;
 
 extern FCEUGI *FCEUGameInfo;
@@ -99,7 +99,7 @@ int GCMemROM(method)
 
     InitialisePads();
 
-    MakeFCEUFile((char *)nesromptr, filelist[selection].length);
+    MakeFCEUFile((char *)nesrom, filelist[selection].length);
 
     nesGameType = 0;
 
