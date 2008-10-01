@@ -193,7 +193,7 @@ LoadFATFile (char *filename, int length)
 
 		if (r)
 		{
-			size = UnZipFATFile (nesromptr, handle); // unzip from FAT
+			size = UnZipFATFile (nesrom, handle); // unzip from FAT
 		}
 		else
 		{
@@ -201,8 +201,8 @@ LoadFATFile (char *filename, int length)
 			fseek(handle, 0, SEEK_END);
 			length = ftell(handle);				// get filesize
 			fseek(handle, 2048, SEEK_SET);		// seek back to point where we left off
-			memcpy (nesromptr, zipbuffer, 2048);	// copy what we already read
-			fread (nesromptr + 2048, 1, length - 2048, handle);
+			memcpy (nesrom, zipbuffer, 2048);	// copy what we already read
+			fread (nesrom + 2048, 1, length - 2048, handle);
 			size = length;
 		}
 		fclose (handle);

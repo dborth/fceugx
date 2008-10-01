@@ -34,7 +34,7 @@
 #include <di/di.h>
 #endif
 
-extern unsigned char nesrom[];
+unsigned char * nesrom = NULL;
 extern bool romLoaded;
 bool isWii;
 
@@ -77,6 +77,9 @@ int main(int argc, char *argv[])
     DVD_Init();
 #endif
 
+    // allocate memory to store rom
+    nesrom = (unsigned char *)malloc(1024*1024*3); // 3 MB should be plenty
+
     /*** Minimal Emulation Loop ***/
     if ( !FCEUI_Initialize() ) {
         printf("Unable to initialize system\n");
@@ -88,7 +91,6 @@ int main(int argc, char *argv[])
 
     memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
     cleanSFMDATA(); // clear state data
-    nesromptr = &nesrom[0]; // address of embedded color test ROM
 
     // Set Defaults
 	DefaultSettings();

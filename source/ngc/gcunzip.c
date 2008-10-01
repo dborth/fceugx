@@ -257,7 +257,7 @@ else if (inSz == false && SzDvdIsArchive(filelist[selection].offset) == SZ_OK) {
 }
 else if (inSz == true) {
 	// extract the selected ROM from the 7zip file to the buffer
-	if(SzExtractROM(filelist[selection].offset, nesromptr) == true) {
+	if(SzExtractROM(filelist[selection].offset, nesrom) == true) {
 		haverom = 1;
 		inSz = false;
 
