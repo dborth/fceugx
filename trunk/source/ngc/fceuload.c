@@ -72,7 +72,7 @@ extern int UNIFLoad(const char *name, FCEUFILE *fp);
 extern int NSFLoad(FCEUFILE *fp);
 extern uint8 FDSBIOS[8192];
 
-int GCMemROM(method)
+int GCMemROM(int method, int size)
 {
     ResetGameLoaded();
 
@@ -99,7 +99,7 @@ int GCMemROM(method)
 
     InitialisePads();
 
-    MakeFCEUFile((char *)nesrom, filelist[selection].length);
+    MakeFCEUFile((char *)nesrom, size);
 
     nesGameType = 0;
 

@@ -9,4 +9,4 @@
  * NES Memory Load Game
  ****************************************************************************/
 
-int GCMemROM(int method);
+int GCMemROM(int method, int size);

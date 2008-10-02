@@ -300,7 +300,7 @@ int FileSelector (int method)
 				StripExt(romFilename, filelist[selection].filename);
 
 				ShowAction ((char *)"Loading...");
-				
+
 				int size = 0;
 
 				switch (method)
@@ -323,7 +323,7 @@ int FileSelector (int method)
 
 				if (size > 0)
 				{
-					if(GCMemROM(method) > 0)
+					if(GCMemROM(method, size) > 0)
 						return 1;
 					else
 						return 0;
