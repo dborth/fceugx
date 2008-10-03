@@ -681,20 +681,20 @@ ConfigureControllers ()
 		{
 			case 0: // four score
 				GCSettings.FSDisable ^= 1;
-				ToggleFourScore(GCSettings.FSDisable);
+				ToggleFourScore(GCSettings.FSDisable, romLoaded);
 				break;
 
 			case 1: // zapper
 				GCSettings.zapper -= 1; // we do this so Port 2 is first option shown
 				if(GCSettings.zapper < 0)
 					GCSettings.zapper = 2;
-				ToggleZapper(GCSettings.zapper);
+				ToggleZapper(GCSettings.zapper, romLoaded);
 				break;
 
 			case 2: // zapper crosshair
 				GCSettings.crosshair ^= 1;
 				break;
-				
+
 			case 3:
 				/*** Configure Nunchuk ***/
 				ConfigureButtons (CTRLR_NUNCHUK);

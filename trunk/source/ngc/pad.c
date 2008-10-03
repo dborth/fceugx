@@ -42,7 +42,7 @@ unsigned int gcpadmap[] = {
 	PAD_TRIGGER_L, PAD_TRIGGER_R,
 	PAD_BUTTON_UP, PAD_BUTTON_DOWN,
 	PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT,
-	PAD_TRIGGER_Z // insert coin for VS games
+	PAD_TRIGGER_Z
 };
 /*** Wiimote Padmap ***/
 unsigned int wmpadmap[] = {
@@ -50,7 +50,7 @@ unsigned int wmpadmap[] = {
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_RIGHT, WPAD_BUTTON_LEFT,
 	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
-	WPAD_BUTTON_A // insert coin for VS games
+	WPAD_BUTTON_A
 };
 /*** Classic Controller Padmap ***/
 unsigned int ccpadmap[] = {
@@ -58,7 +58,7 @@ unsigned int ccpadmap[] = {
 	WPAD_CLASSIC_BUTTON_MINUS, WPAD_CLASSIC_BUTTON_PLUS,
 	WPAD_CLASSIC_BUTTON_UP, WPAD_CLASSIC_BUTTON_DOWN,
 	WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT,
-	WPAD_CLASSIC_BUTTON_A // insert coin for VS games
+	WPAD_CLASSIC_BUTTON_A
 };
 /*** Nunchuk + wiimote Padmap ***/
 unsigned int ncpadmap[] = {
@@ -66,7 +66,7 @@ unsigned int ncpadmap[] = {
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
 	WPAD_BUTTON_LEFT, WPAD_BUTTON_RIGHT,
-	WPAD_BUTTON_A // insert coin for VS games
+	WPAD_BUTTON_A
 };
 
 static uint32 JSReturn = 0;
@@ -86,19 +86,19 @@ void InitialisePads()
 	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
 	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
 
-	ToggleFourScore(GCSettings.FSDisable);
-	ToggleZapper(GCSettings.zapper);
+	ToggleFourScore(GCSettings.FSDisable, true);
+	ToggleZapper(GCSettings.zapper, true);
 }
 
-void ToggleFourScore(int set)
+void ToggleFourScore(int set, bool loaded)
 {
-	if(romLoaded)
+	if(loaded)
 		FCEUI_DisableFourScore(set);
 }
 
-void ToggleZapper(int set)
+void ToggleZapper(int set, bool loaded)
 {
-	if(romLoaded)
+	if(loaded)
 	{
 		// set defaults
 		zapperdata[0]=NULL;
