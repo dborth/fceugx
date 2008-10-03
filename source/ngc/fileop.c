@@ -231,8 +231,7 @@ int
 LoadBufferFromFAT (char * sbuffer, char *filepath, bool silent)
 {
 	FILE *handle;
-    int boffset = 0;
-    int read = 0;
+    int size = 0;
 
     handle = fopen (filepath, "rb");
 
@@ -247,15 +246,14 @@ LoadBufferFromFAT (char * sbuffer, char *filepath, bool silent)
         return 0;
     }
 
-    /*** This is really nice, just load the file and decode it ***/
-    while ((read = fread (savebuffer + boffset, 1, 1024, handle)) > 0)
-    {
-        boffset += read;
-    }
-
+    // Just load the file up
+	fseek(handle, 0, SEEK_END); // go to end of file
+	size = ftell(handle); // get filesize
+	fseek(handle, 0, SEEK_SET); // go to start of file
+	fread (sbuffer, 1, size, handle);
     fclose (handle);
 
-    return boffset;
+    return size;
 }
 
 /****************************************************************************
