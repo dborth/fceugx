@@ -270,6 +270,13 @@ int GCFCEUSS_Save()
 
 bool SaveState (int method, bool silent)
 {
+	if(nesGameType == 4)
+	{
+		if(!silent)
+			WaitPrompt((char *)"Saving is not available for FDS games!");
+		return false;
+	}
+
 	ShowAction ((char*) "Saving...");
 
 	if(method == METHOD_AUTO)
@@ -319,6 +326,13 @@ bool SaveState (int method, bool silent)
 
 bool LoadState (int method, bool silent)
 {
+	if(nesGameType == 4)
+	{
+		if(!silent)
+			WaitPrompt((char *)"Saving is not available for FDS games!");
+		return false;
+	}
+
 	ShowAction ((char*) "Loading...");
 
 	if(method == METHOD_AUTO)
