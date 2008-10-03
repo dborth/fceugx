@@ -118,15 +118,16 @@ int GCMemROM(int method, int size)
 			char * tmpbuffer = (char *)malloc(64 * 1024);
 
 			char filepath[1024];
-			sprintf(filepath, "%s/disksys.rom", GCSettings.LoadFolder);
 
 			switch (method)
 			{
 				case METHOD_SD:
 				case METHOD_USB:
+					sprintf(filepath, "%s/%s/disksys.rom", ROOTFATDIR, GCSettings.LoadFolder);
 					biosSize = LoadBufferFromFAT(tmpbuffer, filepath, NOTSILENT);
 					break;
 				case METHOD_SMB:
+					sprintf(filepath, "%s/disksys.rom", GCSettings.LoadFolder);
 					biosSize = LoadBufferFromSMB(tmpbuffer, filepath, NOTSILENT);
 					break;
 			}
