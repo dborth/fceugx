@@ -139,6 +139,8 @@ int GCMemROM(int method, int size)
 			{
 				if(biosSize > 0)
 					WaitPrompt("FDS BIOS file is invalid!");
+
+				return 0; // BIOS not loaded, do not load game
 			}
 			free(tmpbuffer);
 		}
