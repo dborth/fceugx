@@ -25,6 +25,7 @@
 u64 dvddir = 0;
 u64 dvdrootdir = 0;
 int dvddirlength = 0;
+bool isWii = false;
 
 #ifdef HW_DOL
 /** DVD I/O Address base **/
@@ -36,52 +37,47 @@ unsigned char DVDreadbuffer[2048] ATTRIBUTE_ALIGN (32);
 unsigned char dvdbuffer[2048];
 
 
- /**
-  * dvd_read
-  *
-  * The only DVD function we need - you gotta luv gc-linux self-boots!
-  * returns: 1 - ok ; 0 - error
-  */
+/****************************************************************************
+ * dvd_read
+ *
+ * The only DVD function we need - you gotta luv gc-linux self-boots!
+ * returns: 1 - ok ; 0 - error
+ ***************************************************************************/
 int
 dvd_read (void *dst, unsigned int len, u64 offset)
 {
-
-	unsigned char *buffer = (unsigned char *) (unsigned int) DVDreadbuffer;
-
 	if (len > 2048)
 		return 0;				/*** We only allow 2k reads **/
 
-	DCInvalidateRange ((void *) buffer, len);
-
-	if(offset < 0x57057C00 || (isWii == true && offset < 0x118244F00LL)) // don't read past the end of the DVD
+	// don't read past the end of the DVD (1.5 GB for GC DVD, 4.7 GB for DVD)
+	if((offset < 0x57057C00) || (isWii && (offset < 0x118244F00LL)))
 	{
+		unsigned char *buffer = (unsigned char *) (unsigned int) DVDreadbuffer;
+		DCInvalidateRange ((void *) buffer, len);
 
-	#ifdef HW_DOL
+		#ifdef HW_DOL
+			dvd[0] = 0x2E;
+			dvd[1] = 0;
+			dvd[2] = 0xA8000000;
+			dvd[3] = (u32)(offset >> 2);
+			dvd[4] = len;
+			dvd[5] = (u32) buffer;
+			dvd[6] = len;
+			dvd[7] = 3;
 
-		dvd[0] = 0x2E;
-		dvd[1] = 0;
-		dvd[2] = 0xA8000000;
-		dvd[3] = (u32)(offset >> 2);
-		dvd[4] = len;
-		dvd[5] = (u32) buffer;
-		dvd[6] = len;
-		dvd[7] = 3;			/*** Enable reading with DMA ***/
-		while (dvd[7] & 1);
+			// Enable reading with DMA
+			while (dvd[7] & 1);
+
+			// Ensure it has completed
+			if (dvd[0] & 0x4)
+				return 0;
+		#else
+			if (DI_ReadDVD(buffer, len >> 11, (u32)(offset >> 11)))
+				return 0;
+		#endif
+
 		memcpy (dst, buffer, len);
-
-		if (dvd[0] & 0x4)		/* Ensure it has completed */
-			return 0;
-
 		return 1;
-
-	#elif WII_DVD
-		int ret = 1;
-		ret = DI_ReadDVD(dst, len >> 11, (u32)(offset >> 11));
-		if (ret==0)
-			return 1;
-		else
-			return 0;
-	#endif
 	}
 
 	return 0;
@@ -99,12 +95,12 @@ dvd_read (void *dst, unsigned int len, u64 offset)
 #define PVDROOT 0x9c
 static int IsJoliet = 0;
 
-/**
+/****************************************************************************
  * Primary Volume Descriptor
  *
  * The PVD should reside between sector 16 and 31.
  * This is for single session DVD only.
- */
+ ***************************************************************************/
 int
 getpvd ()
 {
@@ -167,7 +163,7 @@ getpvd ()
  * TestDVD()
  *
  * Tests if a ISO9660 DVD is inserted and available
- ****************************************************************************/
+ ***************************************************************************/
 bool TestDVD()
 {
 
@@ -186,12 +182,12 @@ bool TestDVD()
 	return true;
 }
 
-/**
+/****************************************************************************
  * getentry
  *
  * Support function to return the next file entry, if any
  * Declared static to avoid accidental external entry.
- */
+ ***************************************************************************/
 static int diroffset = 0;
 static int
 getentry (int entrycount)
@@ -297,7 +293,7 @@ getentry (int entrycount)
 	return 0;
 }
 
-/**
+/****************************************************************************
  * parseDVDdirectory
  *
  * This function will parse the directory tree.
@@ -305,7 +301,7 @@ getentry (int entrycount)
  * getpvd, a previous parse or a menu selection.
  *
  * The return value is number of files collected, or 0 on failure.
- */
+ ***************************************************************************/
 int
 ParseDVDdirectory ()
 {
@@ -349,29 +345,28 @@ ParseDVDdirectory ()
 	return filecount;
 }
 
-/**
-* DirectorySearch
-*
-* Searches for the directory name specified within the current directory
-* Returns the index of the directory, or -1 if not found
-*/
+/****************************************************************************
+ * DirectorySearch
+ *
+ * Searches for the directory name specified within the current directory
+ * Returns the index of the directory, or -1 if not found
+ ***************************************************************************/
 int DirectorySearch(char dir[512])
 {
-	int i;
-	for (i = 0; i < maxfiles; i++ )
+	for (int i = 0; i < maxfiles; i++ )
 		if (strcmp(filelist[i].filename, dir) == 0)
 			return i;
 	return -1;
 }
 
-/**
-* SwitchDVDFolder
-*
-* Recursively searches for any directory path 'dir' specified
-* Also loads the directory contents via ParseDVDdirectory()
-* It relies on dvddir, dvddirlength, and filelist being pre-populated
-*/
-bool DoSwitchDVDFolder(char * dir, int maxDepth)
+/****************************************************************************
+ * SwitchDVDFolder
+ *
+ * Recursively searches for any directory path 'dir' specified
+ * Also loads the directory contents via ParseDVDdirectory()
+ * It relies on dvddir, dvddirlength, and filelist being pre-populated
+ ***************************************************************************/
+bool SwitchDVDFolder(char * dir, int maxDepth)
 {
 	if(maxDepth > 8) // only search to a max depth of 8 levels
 		return false;
@@ -398,7 +393,7 @@ bool DoSwitchDVDFolder(char * dir, int maxDepth)
 		if(lastdir)
 			return true;
 		else
-			return DoSwitchDVDFolder(nextdir, maxDepth++);
+			return SwitchDVDFolder(nextdir, maxDepth++);
 	}
 	return false;
 }
@@ -418,17 +413,17 @@ bool SwitchDVDFolder(char origdir[])
 	if(dir[strlen(dir)-1] == '/')
 		dir[strlen(dir)-1] = 0;
 
-	return DoSwitchDVDFolder(dirptr, 0);
+	return SwitchDVDFolder(dirptr, 0);
 }
 
 /****************************************************************************
  * LoadDVDFile
- * This function will load a file from DVD, in BIN, SMD or ZIP format.
+ * This function will load a file from DVD.
  * The values for offset and length are inherited from dvddir and
  * dvddirlength.
  *
  * The buffer parameter should re-use the initial ROM buffer.
- ****************************************************************************/
+ ***************************************************************************/
 
 int
 LoadDVDFile (unsigned char *buffer)
@@ -487,7 +482,7 @@ LoadDVDFile (unsigned char *buffer)
  * memcard interface.
  *
  * libOGC tends to foul up if you don't, and sometimes does if you do!
- ****************************************************************************/
+ ***************************************************************************/
 #ifdef HW_DOL
 void uselessinquiry ()
 {
@@ -503,7 +498,11 @@ void uselessinquiry ()
 	while (dvd[7] & 1);
 }
 
-void dvd_motor_off( )
+/****************************************************************************
+ * dvd_motor_off( )
+ * Turns off DVD drive motor so it doesn't make noise (Gamecube only)
+ ***************************************************************************/
+void dvd_motor_off ()
 {
 	dvd[0] = 0x2e;
 	dvd[1] = 0;
@@ -520,11 +519,11 @@ void dvd_motor_off( )
 	dvd[1] = 0;
 }
 
-/**
-  * dvd_driveid
-  *
-  * Gets and returns the dvd driveid
-**/
+/****************************************************************************
+ * dvd_driveid
+ *
+ * Gets and returns the dvd driveid
+ ***************************************************************************/
 
 int dvd_driveid()
 {
@@ -548,3 +547,20 @@ int dvd_driveid()
 
 #endif
 
+/****************************************************************************
+ * SetDVDDriveType()
+ *
+ * Sets the DVD drive ID for use to determine disc size (1.5 GB or 4.7 GB)
+ ***************************************************************************/
+void SetDVDDriveType()
+{
+	#ifdef HW_RVL
+	isWii = true;
+	#else
+	int drvid = dvd_driveid ();
+	if ( drvid == 4 || drvid == 6 || drvid == 8 )
+		isWii = false;
+	else
+		isWii = true;
+	#endif
+}
