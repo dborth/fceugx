@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
 	}
 
     InitialiseSound();
-    fatInitDefault();
+    fatInit (8, false);
 #ifndef HW_RVL
     DVD_Init();
 #endif

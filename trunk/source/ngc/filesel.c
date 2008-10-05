@@ -353,6 +353,10 @@ int FileSelector (int method)
 			}
 			else	// this is a file
 			{
+				// check that this is a valid ROM
+				if(!IsValidROM(method))
+					return 0;
+
 				// store the filename (w/o ext) - used for state saving
 				StripExt(romFilename, filelist[selection].filename);
 
