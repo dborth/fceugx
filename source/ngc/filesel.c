@@ -29,6 +29,7 @@
 #include "memcardop.h"
 #include "pad.h"
 #include "fceuload.h"
+#include "gcunzip.h"
 
 int offset;
 int selection;
@@ -191,6 +192,62 @@ int FileSortCallback(const void *f1, const void *f2)
 }
 
 /****************************************************************************
+ * IsValidROM
+ *
+ * Checks if the specified file is a valid ROM
+ * For now we will just check the file extension and file size
+ * If the file is a zip, we will check the file extension / file size of the
+ * first file inside
+ ***************************************************************************/
+
+bool IsValidROM(int method)
+{
+	// file size should be between 10K and 3MB
+	if(filelist[selection].length < (1024*10) ||
+		filelist[selection].length > (1024*1024*3))
+	{
+		WaitPrompt((char *)"Invalid file size!");
+		return false;
+	}
+
+	if (strlen(filelist[selection].filename) > 4)
+	{
+		char * p = strrchr(filelist[selection].filename, '.');
+
+		if (p != NULL)
+		{
+			if(stricmp(p, ".zip") == 0)
+			{
+				// we need to check the file extension of the first file in the archive
+				char * zippedFilename = GetFirstZipFilename (method);
+
+				if(strlen(zippedFilename) > 4)
+					p = strrchr(zippedFilename, '.');
+				else
+					p = NULL;
+			}
+
+			if(p != NULL)
+			{
+				if (
+					stricmp(p, ".nes") == 0 ||
+					stricmp(p, ".fds") == 0 ||
+					stricmp(p, ".nsf") == 0 ||
+					stricmp(p, ".unf") == 0 ||
+					stricmp(p, ".nez") == 0 ||
+					stricmp(p, ".unif") == 0
+				)
+				{
+					return true;
+				}
+			}
+		}
+	}
+	WaitPrompt((char *)"Unknown file type!");
+	return false;
+}
+
+/****************************************************************************
  * StripExt
  *
  * Strips an extension from a filename
@@ -307,17 +364,17 @@ int FileSelector (int method)
 				{
 				case METHOD_SD:
 				case METHOD_USB:
-					size = LoadFATFile();
+					size = LoadFATFile((char *)nesrom, 0);
 					break;
 
 				case METHOD_DVD:
 					dvddir = filelist[selection].offset;
 					dvddirlength = filelist[selection].length;
-					size = LoadDVDFile(nesrom);
+					size = LoadDVDFile(nesrom, 0);
 					break;
 
 				case METHOD_SMB:
-					size = LoadSMBFile();
+					size = LoadSMBFile((char *)nesrom, 0);
 					break;
 				}
 
