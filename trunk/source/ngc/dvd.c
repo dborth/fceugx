@@ -353,7 +353,8 @@ ParseDVDdirectory ()
  ***************************************************************************/
 int DirectorySearch(char dir[512])
 {
-	for (int i = 0; i < maxfiles; i++ )
+	int i;
+	for (i = 0; i < maxfiles; i++ )
 		if (strcmp(filelist[i].filename, dir) == 0)
 			return i;
 	return -1;
@@ -366,7 +367,7 @@ int DirectorySearch(char dir[512])
  * Also loads the directory contents via ParseDVDdirectory()
  * It relies on dvddir, dvddirlength, and filelist being pre-populated
  ***************************************************************************/
-bool SwitchDVDFolder(char * dir, int maxDepth)
+bool SwitchDVDFolderR(char * dir, int maxDepth)
 {
 	if(maxDepth > 8) // only search to a max depth of 8 levels
 		return false;
@@ -393,7 +394,7 @@ bool SwitchDVDFolder(char * dir, int maxDepth)
 		if(lastdir)
 			return true;
 		else
-			return SwitchDVDFolder(nextdir, maxDepth++);
+			return SwitchDVDFolderR(nextdir, maxDepth++);
 	}
 	return false;
 }
@@ -413,20 +414,20 @@ bool SwitchDVDFolder(char origdir[])
 	if(dir[strlen(dir)-1] == '/')
 		dir[strlen(dir)-1] = 0;
 
-	return SwitchDVDFolder(dirptr, 0);
+	return SwitchDVDFolderR(dirptr, 0);
 }
 
 /****************************************************************************
  * LoadDVDFile
- * This function will load a file from DVD.
+ * This function will load a file from DVD
  * The values for offset and length are inherited from dvddir and
  * dvddirlength.
  *
- * The buffer parameter should re-use the initial ROM buffer.
+ * The buffer parameter should re-use the initial ROM buffer
  ***************************************************************************/
 
 int
-LoadDVDFile (unsigned char *buffer)
+LoadDVDFile (unsigned char *buffer, int length)
 {
 	int offset;
 	int blocks;
@@ -439,36 +440,36 @@ LoadDVDFile (unsigned char *buffer)
 	offset = 0;
 	discoffset = dvddir;
 	ShowAction ((char*) "Loading...");
-	dvd_read (readbuffer, 2048, discoffset);
 
-	int r = IsZipFile (readbuffer);
-
-	if(r == 2) // 7z
+	if(length > 0) // do a partial read (eg: to check file header)
 	{
-		WaitPrompt ((char *)"7z files are not supported!");
-		return 0;
+		dvd_read (buffer, length, discoffset);
 	}
+	else // load whole file
+	{
+		dvd_read (readbuffer, 2048, discoffset);
 
-	if (r)
-	{
-		return UnZipDVDFile (buffer, discoffset);	// unzip from dvd
-	}
-	else
-	{
-		for (i = 0; i < blocks; i++)
+		if (!IsZipFile (readbuffer))
 		{
-			dvd_read (readbuffer, 2048, discoffset);
-			memcpy (buffer + offset, readbuffer, 2048);
-			offset += 2048;
-			discoffset += 2048;
+			for (i = 0; i < blocks; i++)
+			{
+				dvd_read (readbuffer, 2048, discoffset);
+				memcpy (buffer + offset, readbuffer, 2048);
+				offset += 2048;
+				discoffset += 2048;
+			}
+
+			/*** And final cleanup ***/
+			if (dvddirlength % 2048)
+			{
+				i = dvddirlength % 2048;
+				dvd_read (readbuffer, 2048, discoffset);
+				memcpy (buffer + offset, readbuffer, i);
+			}
 		}
-
-		/*** And final cleanup ***/
-		if (dvddirlength % 2048)
+		else
 		{
-			i = dvddirlength % 2048;
-			dvd_read (readbuffer, 2048, discoffset);
-			memcpy (buffer + offset, readbuffer, i);
+			return UnZipDVDFile (buffer, discoffset);	// unzip from dvd
 		}
 	}
 	return dvddirlength;

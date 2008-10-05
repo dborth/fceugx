@@ -216,9 +216,11 @@ ParseSMBdirectory ()
 
 /****************************************************************************
  * Load SMB file
+ * rom - pointer to memory where ROM will be stored
+ * length - # bytes to read (0 for all)
  ****************************************************************************/
 int
-LoadSMBFile ()
+LoadSMBFile (char * rom, int length)
 {
 	char filepath[MAXPATHLEN];
 
@@ -230,8 +232,7 @@ LoadSMBFile ()
 		WaitPrompt((char*) "Maximum filepath length reached!");
 		return -1;
 	}
-
-	return LoadBufferFromSMB((char *)nesrom, SMBPath(filepath), NOTSILENT);
+	return LoadBufferFromSMB(rom, SMBPath(filepath), length, NOTSILENT);
 }
 
 /****************************************************************************
@@ -287,11 +288,11 @@ SaveBufferToSMB (char *filepath, int datasize, bool silent)
 int
 LoadSaveBufferFromSMB (char *filepath, bool silent)
 {
-	return LoadBufferFromSMB((char *)savebuffer, filepath, silent);
+	return LoadBufferFromSMB((char *)savebuffer, filepath, 0, silent);
 }
 
 int
-LoadBufferFromSMB (char * sbuffer, char *filepath, bool silent)
+LoadBufferFromSMB (char * sbuffer, char *filepath, int length, bool silent)
 {
 	if(!ConnectShare (NOTSILENT))
 		return 0;
@@ -314,25 +315,24 @@ LoadBufferFromSMB (char * sbuffer, char *filepath, bool silent)
 		return 0;
 	}
 
-	ret = SMB_ReadFile (sbuffer, 1024, boffset, smbfile);
-
-	int r = IsZipFile (sbuffer);
-
-	if(r == 2) // 7z
+	if(length > 0) // do a partial read (eg: to check file header)
 	{
-		WaitPrompt ((char *)"7z files are not supported!");
-		return 0;
+		boffset = SMB_ReadFile (sbuffer, length, 0, smbfile);
 	}
+	else // load whole file
+	{
+		ret = SMB_ReadFile (sbuffer, 1024, boffset, smbfile);
 
-	if (r)
-	{
-		boffset = UnZipSMBFile ((unsigned char *)sbuffer, smbfile); // unzip from SMB
-	}
-	else
-	{
-		// Just load the file up
-		while ((ret = SMB_ReadFile (sbuffer + boffset, 1024, boffset, smbfile)) > 0)
-			boffset += ret;
+		if (IsZipFile (sbuffer))
+		{
+			boffset = UnZipSMBFile ((unsigned char *)sbuffer, smbfile); // unzip from SMB
+		}
+		else
+		{
+			// Just load the file up
+			while ((ret = SMB_ReadFile (sbuffer + boffset, 1024, boffset, smbfile)) > 0)
+				boffset += ret;
+		}
 	}
 	SMB_CloseFile (smbfile);
 

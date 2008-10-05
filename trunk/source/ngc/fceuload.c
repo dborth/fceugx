@@ -128,7 +128,7 @@ int GCMemROM(int method, int size)
 					break;
 				case METHOD_SMB:
 					sprintf(filepath, "%s/disksys.rom", GCSettings.LoadFolder);
-					biosSize = LoadBufferFromSMB(tmpbuffer, filepath, NOTSILENT);
+					biosSize = LoadBufferFromSMB(tmpbuffer, filepath, 0, NOTSILENT);
 					break;
 			}
 
