@@ -393,7 +393,7 @@ unsigned char DecodeJoy( unsigned short pad )
 					FCEUI_FDSSelect(); // select other side
 				}
 				else
-					FCEU_DoSimpleCommand(0x07); // insert coin for VS Games
+					FCEUI_VSUniCoin(); // insert coin for VS Games
 			}
 		}
 	}
