@@ -22,6 +22,7 @@
 #include "menu.h"
 #include "fceustate.h"
 #include "fceuram.h"
+#include "gcvideo.h"
 #include "filesel.h"
 
 extern bool romLoaded;
@@ -367,9 +368,8 @@ unsigned char DecodeJoy( unsigned short pad )
 	}
 #endif
 
-	/*** Report pressed buttons (gamepads) ***/
+	// Report pressed buttons (gamepads)
 	int i;
-
 	for (i = 0; i < MAXJP; i++)
 	{
 		if ( (jp & gcpadmap[i])											// gamecube controller
@@ -380,24 +380,29 @@ unsigned char DecodeJoy( unsigned short pad )
 		#endif
 		)
 		{
-			if(nespadmap[i] > 0)
-				J |= nespadmap[i];
-			else
+			// if zapper is on, ignore all buttons except START and SELECT
+			if(!GCSettings.zapper || nespadmap[i] == JOY_START || nespadmap[i] == JOY_SELECT)
 			{
-				if(nesGameType == 4) // FDS
+				if(nespadmap[i] > 0)
 				{
-					/* these commands shouldn't be issued in parallel but this
-					 * allows us to only map one button for both!
-					 * the gamer must just have to press the button twice */
-					FCEUI_FDSInsert(0); // eject / insert disk
-					FCEUI_FDSSelect(); // select other side
+					J |= nespadmap[i];
 				}
 				else
-					FCEUI_VSUniCoin(); // insert coin for VS Games
+				{
+					if(nesGameType == 4) // FDS
+					{
+						/* the commands shouldn't be issued in parallel so
+						 * we'll delay them so the virtual FDS has a chance
+						 * to process them
+						 */
+						FDSSwitchRequested = 1;
+					}
+					else
+						FCEUI_VSUniCoin(); // insert coin for VS Games
+				}
 			}
 		}
 	}
-
 	// zapper enabled
 	if(GCSettings.zapper)
 	{
@@ -416,6 +421,16 @@ unsigned char DecodeJoy( unsigned short pad )
 		{
 			// report trigger press
 			myzappers[z][2] |= 2;
+		}
+
+		// VS zapper games
+		if ( (jp & PAD_BUTTON_B) // gamecube controller
+		#ifdef HW_RVL
+		|| (wp & WPAD_BUTTON_1)	// wiimote
+		#endif
+		)
+		{
+			FCEUI_VSUniCoin(); // insert coin for VS zapper games
 		}
 
 		// cursor position
