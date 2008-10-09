@@ -41,8 +41,8 @@
 #include "video.h"
 
 
-static void (*SPreSave)(void);
-static void (*SPostSave)(void);
+void (*SPreSave)(void);
+void (*SPostSave)(void);
 
 static int SaveStateStatus[10];
 static int StateShow;
@@ -113,15 +113,15 @@ static int SubWrite(FILE *st, SFORMAT *sf)
    if(sf->s&RLSB)
     FlipByteOrder(sf->v,sf->s&(~RLSB));
    #endif
- 
+
    fwrite((uint8 *)sf->v,1,sf->s&(~RLSB),st);
    /* Now restore the original byte order. */
    #ifndef LSB_FIRST
-   if(sf->s&RLSB)   
+   if(sf->s&RLSB)
     FlipByteOrder(sf->v,sf->s&(~RLSB));
    #endif
   }
-  sf++; 
+  sf++;
  }
 
  return(acc);
@@ -132,9 +132,9 @@ static int WriteStateChunk(FILE *st, int type, SFORMAT *sf)
  int bsize;
 
  fputc(type,st);
- 
+
  bsize=SubWrite(0,sf);
- write32le(bsize,st);		
+ write32le(bsize,st);
 
  if(!SubWrite(st,sf)) return(0);
  return (bsize+5);
@@ -235,11 +235,11 @@ int FCEUSS_SaveFP(FILE *st)
 {
         static uint32 totalsize;
         static uint8 header[16]="FCS";
-        
+
         memset(header+4,0,13);
         header[3]=0xFF;
 	FCEU_en32lsb(header + 8, FCEU_VERSION_NUMERIC);
-        fwrite(header,1,16,st);       
+        fwrite(header,1,16,st);
         FCEUPPU_SaveState();
         FCEUSND_SaveState();
         totalsize=WriteStateChunk(st,1,SFCPU);
@@ -305,12 +305,12 @@ int FCEUSS_LoadFP(FILE *st)
 
         x=ReadStateChunks(st,*(uint32*)(header+4));
         if(stateversion<9500) X.IRQlow=0;
-          
+
         if(GameStateRestore) GameStateRestore(stateversion);
         if(x)
         {
          FCEUPPU_LoadState(stateversion);
-         FCEUSND_LoadState(stateversion);  
+         FCEUSND_LoadState(stateversion);
         }
 	return(x);
 }
@@ -348,7 +348,7 @@ int FCEUSS_Load(char *fname)
          SaveStateStatus[CurrentState]=1;
 	 fclose(st);
          return(1);
-        }   
+        }
         else
         {
          SaveStateStatus[CurrentState]=1;
@@ -418,7 +418,7 @@ void FCEUI_SelectState(int w)
  CurrentState=w;
  StateShow=180;
  FCEU_DispMessage("-select state-");
-}  
+}
 
 void FCEUI_SaveState(char *fname)
 {
@@ -448,7 +448,7 @@ void FCEUI_LoadState(char *fname)
     if(FCEUSS_SaveFP(fp))
     {
      fclose(fp);
-     FCEUNET_SendFile(FCEUNPCMD_LOADSTATE, fn);    
+     FCEUNET_SendFile(FCEUNPCMD_LOADSTATE, fn);
     }
     else fclose(fp);
     /*** REMOVED GC V1.0

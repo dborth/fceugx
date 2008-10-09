@@ -241,6 +241,10 @@ PreferencesMenu ()
 			GCSettings.SaveMethod++;
 		if(GCSettings.SaveMethod == METHOD_MC_SLOTB)
 			GCSettings.SaveMethod++;
+		prefmenu[6][0] = '\0';
+		#else
+		sprintf (prefmenu[6], "Verify MC Saves %s",
+			GCSettings.VerifySaves == true ? " ON" : "OFF");
 		#endif
 
 		// correct load/save methods out of bounds
@@ -278,9 +282,6 @@ PreferencesMenu ()
 		else if (GCSettings.AutoSave == 1) sprintf (prefmenu[5],"Auto Save RAM");
 		else if (GCSettings.AutoSave == 2) sprintf (prefmenu[5],"Auto Save STATE");
 		else if (GCSettings.AutoSave == 3) sprintf (prefmenu[5],"Auto Save BOTH");
-
-		sprintf (prefmenu[6], "Verify MC Saves %s",
-			GCSettings.VerifySaves == true ? " ON" : "OFF");
 
 		ret = RunMenu (prefmenu, prefmenuCount, (char*)"Preferences", 16, -1);
 
@@ -354,6 +355,13 @@ GameMenu ()
 
 	while (quit == 0)
 	{
+		// disable RAM saving/loading for FDS games
+		if(nesGameType == 4)
+		{
+			gamemenu[3][0] = '\0';
+			gamemenu[4][0] = '\0';
+		}
+
 		// disable RAM/STATE saving/loading if AUTO is on
 		if (GCSettings.AutoLoad == 1) // Auto Load RAM
 			gamemenu[3][0] = '\0';
