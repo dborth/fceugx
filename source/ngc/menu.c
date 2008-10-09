@@ -355,11 +355,14 @@ GameMenu ()
 
 	while (quit == 0)
 	{
-		// disable RAM saving/loading for FDS games
-		if(nesGameType == 4)
+		if(nesGameType == 4) // FDS game
 		{
+			// disable RAM saving/loading
 			gamemenu[3][0] = '\0';
 			gamemenu[4][0] = '\0';
+
+			// disable ROM Information
+			gamemenu[2][0] = '\0';
 		}
 
 		// disable RAM/STATE saving/loading if AUTO is on
