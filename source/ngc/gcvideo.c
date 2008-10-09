@@ -74,7 +74,7 @@ static void copy_to_xfb() {
 				FDSSwitchRequested++;
 				break;
 			case 2:
-				if(FDSTimer > 30)
+				if(FDSTimer > 60)
 				{
 					FCEUI_FDSSelect(); // select other side
 					FCEUI_FDSInsert(0); // insert disk
