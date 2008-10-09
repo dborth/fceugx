@@ -14,7 +14,7 @@
 
 #include <unistd.h>
 
-#define SAVEBUFFERSIZE (64 * 1024)
+#define SAVEBUFFERSIZE (512 * 1024)
 #define MAXJOLIET 255
 #define MAXDISPLAY 54
 
