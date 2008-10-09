@@ -40,10 +40,10 @@ unsigned int nespadmap[] = {
 /*** Gamecube controller Padmap ***/
 unsigned int gcpadmap[] = {
 	PAD_BUTTON_B, PAD_BUTTON_A,
-	PAD_TRIGGER_L, PAD_TRIGGER_R,
+	PAD_TRIGGER_Z, PAD_BUTTON_START,
 	PAD_BUTTON_UP, PAD_BUTTON_DOWN,
 	PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT,
-	PAD_TRIGGER_Z
+	PAD_TRIGGER_L
 };
 /*** Wiimote Padmap ***/
 unsigned int wmpadmap[] = {
@@ -460,7 +460,7 @@ void GetJoy()
     #endif
 
     // request to go back to menu
-    if ((gc_px < -70) || (jp & PAD_BUTTON_START)
+    if ((gc_px < -70) || ((jp & PAD_BUTTON_START) && (jp & PAD_BUTTON_A))
     #ifdef HW_RVL
     		 || (wm_pb & WPAD_BUTTON_HOME)
     		 || (wm_pb & WPAD_CLASSIC_BUTTON_HOME)
