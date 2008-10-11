@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 2.0.3   
+                                  Version 2.0.4   
                                (Under GPL License)
  
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
@@ -29,6 +29,16 @@ SNES9x GX and Genesis Plus GX projects.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[What's New 2.0.4]
+* FDS BIOS loading works now
+* FDS disk switching now consistently works with one button press
+* FDS saving implemented
+* 7z support
+* Faster SD/USB (readahead cache enabled)
+* VS coin now mapped to 1 button for VS zapper games
+* Changed GC controller mappings - Select - Z, Start - Start, 
+  Home - Start+A, Special - L
 
 [What's New 2.0.3 - October 1, 2008]
 * Complete rewrite of loading code - FDS / UNIF / NSF support added!
