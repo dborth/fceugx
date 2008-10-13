@@ -10,15 +10,18 @@
  ****************************************************************************/
 
 #ifndef _SMBOP_H_
-
 #define _SMBOP_H_
+
+#include <smb.h>
 
 bool InitializeNetwork(bool silent);
 bool ConnectShare (bool silent);
 char * SMBPath(char * path);
 int UpdateSMBdirname();
 int ParseSMBdirectory ();
+SMBFILE OpenSMBFile();
 int LoadSMBFile (char * fbuffer, int length);
+int LoadSMBSzFile(char * filepath, unsigned char * rbuffer);
 int LoadSaveBufferFromSMB (char *filepath, bool silent);
 int LoadBufferFromSMB (char * sbuffer, char *filepath, int length, bool silent);
 int SaveBufferToSMB (char *filepath, int datasize, bool silent);
