@@ -21,7 +21,7 @@ BUILD		:=	build_gc
 SOURCES		:=	source/fceultra source/fceultra/boards \
 				source/fceultra/drivers/common source/fceultra/input \
 				source/fceultra/mappers source/fceultra/mbshare \
-				source/ngc
+				source/ngc source/sz
 DATA		:=	data
 INCLUDES	:=	source/fceultra source/ngc
 LANG		:=	ENGLISH # Supported languages: ENGLISH
