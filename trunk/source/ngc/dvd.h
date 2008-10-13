@@ -17,6 +17,7 @@ int ParseDVDdirectory ();
 int LoadDVDFile (unsigned char *buffer, int length);
 bool TestDVD();
 int dvd_read (void *dst, unsigned int len, u64 offset);
+int dvd_safe_read (void *dst, unsigned int len, u64 offset);
 bool SwitchDVDFolder(char dir[]);
 
 #endif

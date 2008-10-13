@@ -147,6 +147,7 @@ ParseFATdirectory(int method)
 			strncpy(filelist[nbfiles].displayname, filename, MAXDISPLAY+1);	// crop name for display
 			filelist[nbfiles].length = filestat.st_size;
 			filelist[nbfiles].flags = (filestat.st_mode & _IFDIR) == 0 ? 0 : 1; // flag this as a dir
+			filelist[nbfiles].offset = 0;
 			nbfiles++;
 		}
 	}
@@ -162,7 +163,9 @@ ParseFATdirectory(int method)
 
 /****************************************************************************
  * LoadFATFile
- ****************************************************************************/
+ * length > 0 - partial file read (starting from start)
+ * length = 0 - full read
+ ***************************************************************************/
 int
 LoadFATFile (char * rbuffer, int length)
 {
@@ -171,10 +174,7 @@ LoadFATFile (char * rbuffer, int length)
 	FILE *handle;
 	u32 size;
 
-	/* Check filename length */
-	if ((strlen(currentdir)+1+strlen(filelist[selection].filename)) < MAXPATHLEN)
-		sprintf(filepath, "%s/%s",currentdir,filelist[selection].filename);
-	else
+	if (!MakeROMPath(filepath, METHOD_SD))
 	{
 		WaitPrompt((char*) "Maximum filepath length reached!");
 		return -1;
@@ -194,7 +194,7 @@ LoadFATFile (char * rbuffer, int length)
 
 			if (IsZipFile (zipbuffer))
 			{
-				size = UnZipFATFile ((unsigned char *)rbuffer, handle);	// unzip from FAT
+				size = UnZipFATFile ((unsigned char *)rbuffer, handle); // unzip from FAT
 			}
 			else
 			{
@@ -206,6 +206,29 @@ LoadFATFile (char * rbuffer, int length)
 				fread (rbuffer + 2048, 1, size - 2048, handle);
 			}
 		}
+		fclose (handle);
+		return size;
+	}
+	else
+	{
+		WaitPrompt((char*) "Error opening file");
+		return 0;
+	}
+}
+
+/****************************************************************************
+ * LoadFATSzFile
+ * Loads the selected file # from the specified 7z into rbuffer
+ * Returns file size
+ ***************************************************************************/
+int
+LoadFATSzFile(char * filepath, unsigned char * rbuffer)
+{
+	u32 size;
+	FILE *handle = fopen (filepath, "rb");
+	if (handle > 0)
+	{
+		size = SzExtractFile(filelist[selection].offset, rbuffer);
 		fclose (handle);
 		return size;
 	}
