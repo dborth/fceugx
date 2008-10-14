@@ -21,10 +21,11 @@
 
 #include "menudraw.h"
 #include "gcunzip.h"
+#include "fceuconfig.h"
 
-u64 dvddir = 0;
-u64 dvdrootdir = 0;
-int dvddirlength = 0;
+u64 dvddir = 0; // offset of currently selected file or folder
+int dvddirlength = 0; // length of currently selected file or folder
+u64 dvdrootdir = 0; // offset of DVD root
 bool isWii = false;
 
 #ifdef HW_DOL
@@ -563,6 +564,9 @@ LoadDVDFile (unsigned char *buffer, int length)
 	u64 discoffset;
 	char readbuffer[2048];
 
+	dvddir = filelist[selection].offset;
+	dvddirlength = filelist[selection].length;
+
 	// How many 2k blocks to read
 	blocks = dvddirlength / 2048;
 	offset = 0;
@@ -579,7 +583,7 @@ LoadDVDFile (unsigned char *buffer, int length)
 
 		if (IsZipFile (readbuffer))
 		{
-			return UnZipDVDFile (buffer, discoffset);	// unzip from dvd
+			return UnZipBuffer (buffer, METHOD_DVD); // unzip from dvd
 		}
 		else
 		{

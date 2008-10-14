@@ -23,7 +23,8 @@
 #include "menudraw.h"
 #include "filesel.h"
 
-FILE * filehandle;
+// FAT file pointer - the only one we should ever use!
+FILE * fatfile;
 
 /****************************************************************************
  * fat_is_mounted
@@ -171,7 +172,6 @@ LoadFATFile (char * rbuffer, int length)
 {
 	char zipbuffer[2048];
 	char filepath[MAXPATHLEN];
-	FILE *handle;
 	u32 size;
 
 	if (!MakeROMPath(filepath, METHOD_SD))
@@ -180,33 +180,33 @@ LoadFATFile (char * rbuffer, int length)
 		return -1;
 	}
 
-	handle = fopen (filepath, "rb");
-	if (handle > 0)
+	fatfile = fopen (filepath, "rb");
+	if (fatfile > 0)
 	{
 		if(length > 0) // do a partial read (eg: to check file header)
 		{
-			fread (rbuffer, 1, length, handle);
+			fread (rbuffer, 1, length, fatfile);
 			size = length;
 		}
 		else // load whole file
 		{
-			fread (zipbuffer, 1, 2048, handle);
+			fread (zipbuffer, 1, 2048, fatfile);
 
 			if (IsZipFile (zipbuffer))
 			{
-				size = UnZipFATFile ((unsigned char *)rbuffer, handle); // unzip from FAT
+				size = UnZipBuffer ((unsigned char *)rbuffer, METHOD_SD); // unzip from FAT
 			}
 			else
 			{
 				// Just load the file up
-				fseek(handle, 0, SEEK_END);
-				size = ftell(handle);				// get filesize
-				fseek(handle, 2048, SEEK_SET);		// seek back to point where we left off
+				fseek(fatfile, 0, SEEK_END);
+				size = ftell(fatfile);				// get filesize
+				fseek(fatfile, 2048, SEEK_SET);		// seek back to point where we left off
 				memcpy (rbuffer, zipbuffer, 2048);	// copy what we already read
-				fread (rbuffer + 2048, 1, size - 2048, handle);
+				fread (rbuffer + 2048, 1, size - 2048, fatfile);
 			}
 		}
-		fclose (handle);
+		fclose (fatfile);
 		return size;
 	}
 	else
@@ -225,11 +225,11 @@ int
 LoadFATSzFile(char * filepath, unsigned char * rbuffer)
 {
 	u32 size;
-	FILE *handle = fopen (filepath, "rb");
-	if (handle > 0)
+	fatfile = fopen (filepath, "rb");
+	if (fatfile > 0)
 	{
 		size = SzExtractFile(filelist[selection].offset, rbuffer);
-		fclose (handle);
+		fclose (fatfile);
 		return size;
 	}
 	else
@@ -253,12 +253,11 @@ LoadSaveBufferFromFAT (char *filepath, bool silent)
 int
 LoadBufferFromFAT (char * sbuffer, char *filepath, bool silent)
 {
-	FILE *handle;
     int size = 0;
 
-    handle = fopen (filepath, "rb");
+    fatfile = fopen (filepath, "rb");
 
-    if (handle <= 0)
+    if (fatfile <= 0)
     {
         if ( !silent )
         {
@@ -270,11 +269,11 @@ LoadBufferFromFAT (char * sbuffer, char *filepath, bool silent)
     }
 
     // Just load the file up
-	fseek(handle, 0, SEEK_END); // go to end of file
-	size = ftell(handle); // get filesize
-	fseek(handle, 0, SEEK_SET); // go to start of file
-	fread (sbuffer, 1, size, handle);
-    fclose (handle);
+	fseek(fatfile, 0, SEEK_END); // go to end of file
+	size = ftell(fatfile); // get filesize
+	fseek(fatfile, 0, SEEK_SET); // go to start of file
+	fread (sbuffer, 1, size, fatfile);
+    fclose (fatfile);
 
     return size;
 }
@@ -285,13 +284,11 @@ LoadBufferFromFAT (char * sbuffer, char *filepath, bool silent)
 int
 SaveBufferToFAT (char *filepath, int datasize, bool silent)
 {
-	FILE *handle;
-
     if (datasize)
     {
-        handle = fopen (filepath, "wb");
+        fatfile = fopen (filepath, "wb");
 
-        if (handle <= 0)
+        if (fatfile <= 0)
         {
             char msg[100];
             sprintf(msg, "Couldn't save %s", filepath);
@@ -299,8 +296,8 @@ SaveBufferToFAT (char *filepath, int datasize, bool silent)
             return 0;
         }
 
-        fwrite (savebuffer, 1, datasize, handle);
-        fclose (handle);
+        fwrite (savebuffer, 1, datasize, fatfile);
+        fclose (fatfile);
     }
     return datasize;
 }

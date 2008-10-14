@@ -16,9 +16,7 @@
 
 extern int IsZipFile (char *buffer);
 char * GetFirstZipFilename(int method);
-int UnZipFATFile (unsigned char *outbuffer, FILE* infile); // Reading from FAT
-int UnZipDVDFile (unsigned char *outbuffer, u64 inoffset); // Reading from DVD
-int UnZipSMBFile (unsigned char *outbuffer, SMBFILE infile); // Reading from SMB
+int UnZipBuffer (unsigned char *outbuffer, int method);
 int SzParse(char * filepath, int method);
 int SzExtractFile(int i, unsigned char *buffer);
 void SzClose();

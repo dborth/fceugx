@@ -40,9 +40,6 @@ int nesGameType;
 int maxfiles;
 extern int screenheight;
 
-extern u64 dvddir;
-extern int dvddirlength;
-
 // Global file entry table
 FILEENTRIES filelist[MAXFILES];
 bool inSz = false;
@@ -457,11 +454,7 @@ int FileSelector (int method)
 							if(inSz)
 								size = SzExtractFile(filelist[selection].offset, nesrom);
 							else
-							{
-								dvddir = filelist[selection].offset;
-								dvddirlength = filelist[selection].length;
 								size = LoadDVDFile(nesrom, 0);
-							}
 							break;
 
 						case METHOD_SMB:
