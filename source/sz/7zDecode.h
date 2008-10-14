@@ -24,7 +24,7 @@ SZ_RESULT SzDecode(const CFileSize *packSizes, const CFolder *folder,
 
 #ifdef _LZMA_OUT_READ
 #ifndef _LZMA_TEMP_BUFFER_SIZE
-#define _LZMA_TEMP_BUFFER_SIZE (1024) // size of the temporary buffer in bytes
+#define _LZMA_TEMP_BUFFER_SIZE (2048) // size of the temporary buffer in bytes
 #endif
 
 SZ_RESULT SzDecode2(const CFileSize *packSizes, const CFolder *folder,

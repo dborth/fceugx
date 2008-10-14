@@ -26,10 +26,6 @@
 #include "menudraw.h"
 #include "gcunzip.h"
 
-FILE* fatfile; // FAT
-u64 discoffset; // DVD
-SMBFILE smbfile; // SMB
-
 /*
   * PKWare Zip Header - adopted into zip standard
   */
@@ -101,6 +97,7 @@ UnZipBuffer (unsigned char *outbuffer, int method)
 	int have = 0;
 	char readbuffer[ZIPCHUNK];
 	char msg[128];
+	u64 discoffset = 0;
 
 	// Read Zip Header
 	switch (method)
@@ -112,6 +109,7 @@ UnZipBuffer (unsigned char *outbuffer, int method)
 			break;
 
 		case METHOD_DVD:
+			discoffset = dvddir;
 			dvd_read (readbuffer, ZIPCHUNK, discoffset);
 			break;
 
@@ -213,27 +211,6 @@ UnZipBuffer (unsigned char *outbuffer, int method)
 
 	return 0;
 }
-// Reading from FAT
-int
-UnZipFATFile (unsigned char *outbuffer, FILE* infile)
-{
-	fatfile = infile;
-	return UnZipBuffer(outbuffer, METHOD_SD);
-}
-// Reading from DVD
-int
-UnZipDVDFile (unsigned char *outbuffer, u64 inoffset)
-{
-	discoffset = inoffset;
-	return UnZipBuffer(outbuffer, METHOD_DVD);
-}
-// Reading from SMB
-int
-UnZipSMBFile (unsigned char *outbuffer, SMBFILE infile)
-{
-	smbfile = infile;
-	return UnZipBuffer(outbuffer, METHOD_SMB);
-}
 
 /****************************************************************************
  * GetFirstZipFilename
@@ -293,7 +270,8 @@ char szerrormsg[][30] = {
     "7z: CRC Error",
     "7z: Not implemented",
     "7z: Fail",
-    "7z: Archive error"
+    "7z: Archive error",
+    "7z: Dictionary too large",
 };
 
 SZ_RESULT SzRes;
@@ -448,7 +426,7 @@ int SzParse(char * filepath, int method)
 
 	if (SzRes != SZ_OK)
 	{
-		WaitPrompt(szerrormsg[(SzRes - 1)]);
+		SzDisplayError(SzRes);
 		// free memory used by the 7z SDK
 		SzClose();
 	}
@@ -567,11 +545,11 @@ int SzExtractFile(int i, unsigned char *buffer)
     if(SzRes != SZ_OK)
     {
     	// display error message
-        WaitPrompt(szerrormsg[(SzRes - 1)]);
+    	SzDisplayError(SzRes);
         return 0;
     }
     else
     {
-        return SzOutSizeProcessed;
+    	return SzOutSizeProcessed;
     }
 }

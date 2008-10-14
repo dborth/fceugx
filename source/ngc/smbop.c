@@ -31,7 +31,10 @@ bool networkShareInit = false;
 unsigned int SMBTimer = 0;
 #define SMBTIMEOUT ( 3600 ) // Some implementations timeout in 10 minutes
 
+// SMB connection/file handles - the only ones we should ever use!
 SMBCONN smbconn;
+SMBFILE smbfile;
+
 #define ZIPCHUNK 16384
 
 /****************************************************************************
@@ -254,7 +257,7 @@ LoadSMBSzFile(char * filepath, unsigned char * rbuffer)
 	if(!ConnectShare (NOTSILENT))
 		return 0;
 
-	SMBFILE smbfile = OpenSMBFile(filepath);
+	smbfile = OpenSMBFile(filepath);
 
 	if (smbfile)
 	{
@@ -278,7 +281,6 @@ SaveBufferToSMB (char *filepath, int datasize, bool silent)
 	if(!ConnectShare (NOTSILENT))
 		return 0;
 
-	SMBFILE smbfile;
 	int dsize = datasize;
 	int wrote = 0;
 	int boffset = 0;
@@ -331,7 +333,7 @@ LoadBufferFromSMB (char * sbuffer, char *filepath, int length, bool silent)
 	if(!ConnectShare (NOTSILENT))
 		return 0;
 
-	SMBFILE smbfile = OpenSMBFile(filepath);
+	smbfile = OpenSMBFile(filepath);
 	int ret;
 	int boffset = 0;
 
@@ -356,7 +358,7 @@ LoadBufferFromSMB (char * sbuffer, char *filepath, int length, bool silent)
 
 		if (IsZipFile (sbuffer))
 		{
-			boffset = UnZipSMBFile ((unsigned char *)sbuffer, smbfile); // unzip from SMB
+			boffset = UnZipBuffer ((unsigned char *)sbuffer, METHOD_SMB); // unzip from SMB
 		}
 		else
 		{
