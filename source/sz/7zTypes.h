@@ -64,6 +64,8 @@ typedef UInt32 CFileSize;
 
 #define SZE_ARCHIVE_ERROR (6)
 
+#define SZE_OUTOFMEMORYDIC (7)
+
 #define RINOK(x) { int __result_ = (x); if(__result_ != 0) return __result_; }
 
 #endif
