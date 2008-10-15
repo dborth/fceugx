@@ -34,8 +34,6 @@ bool isWii = false;
 volatile unsigned long *dvd = (volatile unsigned long *) 0xCC006000;
 #endif
 
-unsigned char dvdbuffer[2048];
-
 /****************************************************************************
  * dvd_read
  *
@@ -76,16 +74,17 @@ dvd_read (void *dst, unsigned int len, u64 offset)
 			if (dvd[0] & 0x4)
 				return 0;
 		#else
-			off_size = (offset << 2) - ALIGN_BACKWARD((offset << 2),0x800);
+			off_size = offset - ALIGN_BACKWARD(offset,0x800);
 			if (DI_ReadDVD(
 				buffer,
-				(ALIGN_FORWARD((offset << 2) + len,0x800) - ALIGN_BACKWARD((offset << 2),0x800)) >> 11,
-				(u32)(ALIGN_BACKWARD(offset << 2, 0x800) >> 11)
+				(ALIGN_FORWARD(offset + len,0x800) - ALIGN_BACKWARD(offset,0x800)) >> 11,
+				(u32)(ALIGN_BACKWARD(offset, 0x800) >> 11)
 			))
 				return 0;
 		#endif
 
 		memcpy (dst, buffer+off_size, len);
+		free(buffer);
 		return 1;
 	}
 
@@ -244,6 +243,7 @@ getpvd ()
 {
 	int sector = 16;
 	u32 rootdir32;
+	unsigned char dvdbuffer[2048];
 
 	dvddir = dvddirlength = 0;
 	IsJoliet = -1;
@@ -328,7 +328,7 @@ bool TestDVD()
  ***************************************************************************/
 static int diroffset = 0;
 static int
-getentry (int entrycount)
+getentry (int entrycount, unsigned char dvdbuffer[])
 {
 	char fname[512];		/* Huge, but experience has determined this */
 	char *ptr;
@@ -448,6 +448,7 @@ ParseDVDdirectory ()
 	u64 rdoffset;
 	int len = 0;
 	int filecount = 0;
+	unsigned char dvdbuffer[2048];
 
 	// initialize selection
 	selection = offset = 0;
@@ -467,7 +468,7 @@ ParseDVDdirectory ()
 
 		diroffset = 0;
 
-		while (getentry (filecount))
+		while (getentry (filecount, dvdbuffer))
 		{
 			if(strlen(filelist[filecount].filename) > 0 && filecount < MAXFILES)
 				filecount++;
