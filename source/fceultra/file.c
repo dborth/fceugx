@@ -33,6 +33,12 @@
 #include "driver.h"
 #include "general.h"
 
+typedef struct {
+           uint8 *data;
+           uint32 size;
+           uint32 location;
+} MEMWRAP;
+
 void ApplyIPS(FILE *ips, MEMWRAP *dest)
 {
  uint8 header[5];

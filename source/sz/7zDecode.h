@@ -19,17 +19,17 @@ SZ_RESULT SzDecode(const CFileSize *packSizes, const CFolder *folder,
     #else
     const Byte *inBuffer,
     #endif
-    Byte *outBuffer, size_t outSize,
+    Byte *outBuffer, size_t outSize, 
     size_t *outSizeProcessed, ISzAlloc *allocMain);
 
 #ifdef _LZMA_OUT_READ
 #ifndef _LZMA_TEMP_BUFFER_SIZE
-#define _LZMA_TEMP_BUFFER_SIZE (2048) // size of the temporary buffer in bytes
+#define _LZMA_TEMP_BUFFER_SIZE (1 << 15) // size of the temporary buffer in bytes
 #endif
 
 SZ_RESULT SzDecode2(const CFileSize *packSizes, const CFolder *folder,
     ISzInStream *stream,
-    Byte *outBuffer, size_t outSize,
+    Byte *outBuffer, size_t outSize, 
     size_t *outSizeProcessed, ISzAlloc *allocMain,
 	size_t *fileOffset, size_t *fileSize);
 #endif // #ifdef _LZMA_OUT_READ

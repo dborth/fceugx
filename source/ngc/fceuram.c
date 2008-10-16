@@ -41,7 +41,9 @@
 
 extern u32 iNESGameCRC32;
 extern CartInfo iNESCart;
-extern CartInfo UNIFCart;
+
+extern unsigned char savebuffer[SAVEBUFFERSIZE];
+extern char romFilename[];
 
 int NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 {
@@ -71,13 +73,6 @@ int NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 
 bool SaveRAM (int method, bool silent)
 {
-	if(nesGameType == 4)
-	{
-		if(!silent)
-			WaitPrompt((char *)"Saving is not available for FDS games!");
-		return false;
-	}
-
 	ShowAction ((char*) "Saving...");
 
 	if(method == METHOD_AUTO)
@@ -85,14 +80,10 @@ bool SaveRAM (int method, bool silent)
 
 	bool retval = false;
 	char filepath[1024];
-	int datasize = 0;
+	int datasize;
 	int offset = 0;
 
-	// save game save to savebuffer
-	if(nesGameType == 1)
-		datasize = NGCFCEU_GameSave(&iNESCart, 0);
-	else if(nesGameType == 2)
-		datasize = NGCFCEU_GameSave(&UNIFCart, 0);
+	datasize = NGCFCEU_GameSave(&iNESCart, 0); // save game save to savebuffer
 
 	if ( datasize )
 	{
@@ -136,13 +127,6 @@ bool SaveRAM (int method, bool silent)
 
 bool LoadRAM (int method, bool silent)
 {
-	if(nesGameType == 4)
-	{
-		if(!silent)
-			WaitPrompt((char *)"Saving is not available for FDS games!");
-		return false;
-	}
-
 	ShowAction ((char*) "Loading...");
 
 	if(method == METHOD_AUTO)
@@ -153,11 +137,9 @@ bool LoadRAM (int method, bool silent)
 
 	if(method == METHOD_SD || method == METHOD_USB)
 	{
-		if(ChangeFATInterface(method, NOTSILENT))
-		{
-			sprintf (filepath, "%s/%s/%s.sav", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
-			offset = LoadSaveBufferFromFAT (filepath, silent);
-		}
+		ChangeFATInterface(method, NOTSILENT);
+		sprintf (filepath, "%s/%s/%s.sav", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
+		offset = LoadBufferFromFAT (filepath, silent);
 	}
 	else if(method == METHOD_SMB)
 	{
@@ -176,11 +158,7 @@ bool LoadRAM (int method, bool silent)
 
 	if (offset > 0)
 	{
-		if(nesGameType == 1)
-			NGCFCEU_GameSave(&iNESCart, 1);
-		else if(nesGameType == 2)
-			NGCFCEU_GameSave(&UNIFCart, 1);
-
+		NGCFCEU_GameSave(&iNESCart, 1); // load game save from savebuffer
 		ResetNES();
 		return 1;
 	}

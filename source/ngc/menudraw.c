@@ -439,7 +439,7 @@ DrawMenu (char items[][50], char *title, int maxitems, int selected, int fontsiz
 			else if (i == selected)
 			{
 				for( w = 0; w < line_height; w++ )
-					DrawLineFast( 30, 610, n * line_height + (ypos-line_height+6) + w, 0xBB, 0xBB, 0xBB );
+					DrawLineFast( 30, 610, n * line_height + (ypos-line_height+6) + w, 0x60, 0x60, 0x60 );
 
 				setfontcolour (0xff, 0xff, 0xff);
 				DrawText (x, n * line_height + ypos, items[i]);
@@ -605,7 +605,7 @@ ShowFiles (FILEENTRIES filelist[], int maxfiles, int offset, int selection)
 		{
 			/*** Highlighted text entry ***/
 			for ( w = 0; w < 20; w++ )
-				DrawLineFast( 30, 610, ( j * 20 ) + (ypos-16) + w, 0xCC, 0xCC, 0xCC );
+				DrawLineFast( 30, 610, ( j * 20 ) + (ypos-16) + w, 0x60, 0x60, 0x60 );
 
 			setfontcolour (0xFF, 0xFF, 0xFF);
 			DrawText (50, (j * 20) + ypos, text);

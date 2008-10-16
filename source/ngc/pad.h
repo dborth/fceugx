@@ -16,7 +16,7 @@
 
 #define PI 				3.14159265f
 #define PADCAL			50
-#define MAXJP 			9
+#define MAXJP 			8
 
 extern unsigned int gcpadmap[];
 extern unsigned int wmpadmap[];
@@ -27,8 +27,8 @@ s8 WPAD_StickX(u8 chan,u8 right);
 s8 WPAD_StickY(u8 chan, u8 right);
 void InitialisePads();
 void GetJoy();
-void ToggleFourScore(int set, bool loaded);
-void ToggleZapper(int set, bool loaded);
+void ToggleFourScore(int set);
+void ToggleZapper(int set);
 void DrawCursor();
 
 #endif
