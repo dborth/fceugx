@@ -74,7 +74,7 @@ static INLINE uint8 RdMemHook(unsigned int A)
  else
   return(_DB=ARead[A](A));
 }
- 
+
 static INLINE void WrMemHook(unsigned int A, uint8 V)
 {
  if(X.WriteHook)
@@ -113,7 +113,7 @@ void FASTAPASS(2) X6502_DMW(uint32 A, uint8 V)
  uint8 VTMP=V;  \
  WrRAM(0x100+_S,VTMP);  \
  _S--;  \
-}       
+}
 
 #define POP() RdRAM(0x100+(++_S))
 
@@ -215,7 +215,7 @@ static uint8 ZNTable[256];
 		 _P|=l;	\
 		 X_ZNT(x);	\
 		}
-		 
+
 /* Icky icky thing for some undocumented instructions.  Can easily be
    broken if names of local variables are changed.
 */
@@ -354,7 +354,7 @@ static uint8 ZNTable[256];
 #define ST_IY(r)	{unsigned int A; GetIYWR(A); WrMem(A,r); break; }
 
 static uint8 CycTable[256] =
-{                             
+{
 /*0x00*/ 7,6,2,8,3,3,5,5,3,2,2,2,4,4,6,6,
 /*0x10*/ 2,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,
 /*0x20*/ 6,6,2,8,3,3,5,5,4,2,2,2,4,4,6,6,
@@ -369,7 +369,7 @@ static uint8 CycTable[256] =
 /*0xB0*/ 2,5,2,5,4,4,4,4,2,4,2,4,4,4,4,4,
 /*0xC0*/ 2,6,2,8,3,3,5,5,2,2,2,2,4,4,6,6,
 /*0xD0*/ 2,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,
-/*0xE0*/ 2,6,3,8,3,3,5,5,2,2,2,2,4,4,6,6,
+/*0xE0*/ 2,6,2,8,3,3,5,5,2,2,2,2,4,4,6,6,
 /*0xF0*/ 2,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,
 };
 
@@ -389,7 +389,7 @@ void TriggerNMI(void)
 }
 
 void TriggerNMI2(void)
-{ 
+{
  _IRQlow|=FCEU_IQNMI2;
 }
 
@@ -408,7 +408,7 @@ void X6502_Reset(void)
 {
  _IRQlow=FCEU_IQRESET;
 }
-  
+
 void FCEUI_GetIVectors(uint16 *reset, uint16 *irq, uint16 *nmi)
 {
  fceuindbg=1;
@@ -453,16 +453,16 @@ static void X6502_RunDebug(int32 cycles)
          cycles*=15;          // 15*4=60
         else
          cycles*=16;          // 16*4=64
- 
+
         _count+=cycles;
- 
+
         while(_count>0)
         {
-         int32 temp;   
+         int32 temp;
          uint8 b1;
 
          if(_IRQlow)
-         { 
+         {
           if(_IRQlow&FCEU_IQRESET)
           {
            _PC=RdMem(0xFFFC);
@@ -473,7 +473,7 @@ static void X6502_RunDebug(int32 cycles)
           }
           else if(_IRQlow&FCEU_IQNMI2)
           {
-           _IRQlow&=~FCEU_IQNMI2; 
+           _IRQlow&=~FCEU_IQNMI2;
            _IRQlow|=FCEU_IQNMI;
           }
           else if(_IRQlow&FCEU_IQNMI)
@@ -484,14 +484,14 @@ static void X6502_RunDebug(int32 cycles)
             PUSH(_PC>>8);
             PUSH(_PC);
             PUSH((_P&~B_FLAG)|(U_FLAG));
-            _P|=I_FLAG; 
-            _PC=RdMem(0xFFFA); 
+            _P|=I_FLAG;
+            _PC=RdMem(0xFFFA);
             _PC|=RdMem(0xFFFB)<<8;
             _IRQlow&=~FCEU_IQNMI;
            }
           }
-          else 
-          { 
+          else
+          {
            if(!(_PI&I_FLAG) && !_jammed)
            {
             ADDCYC(7);
@@ -504,7 +504,7 @@ static void X6502_RunDebug(int32 cycles)
            }
           }
           _IRQlow&=~(FCEU_IQTEMP);
-          if(_count<=0) 
+          if(_count<=0)
           {
            _PI=_P;
            return;
@@ -525,9 +525,9 @@ static void X6502_RunDebug(int32 cycles)
           b1=RdMem(_PC);
           _PC++;
           switch(b1)
-          {   
+          {
            #include "ops.h"
-          }  
+          }
 
 	  timestamp=tsave;
 
@@ -555,7 +555,7 @@ static void X6502_RunDebug(int32 cycles)
          switch(b1)
          {
           #include "ops.h"
-         } 
+         }
         }
 	#undef RdRAM
 	#undef WrRAM
@@ -589,7 +589,7 @@ static void X6502_RunNormal(int32 cycles)
 	 cycles*=16;          // 16*4=64
 
 	_count+=cycles;
-	
+
 	while(_count>0)
 	{
 	 int32 temp;
@@ -608,7 +608,7 @@ static void X6502_RunNormal(int32 cycles)
 	  }
 	  else if(_IRQlow&FCEU_IQNMI2)
  	  {
-	   _IRQlow&=~FCEU_IQNMI2; 
+	   _IRQlow&=~FCEU_IQNMI2;
 	   _IRQlow|=FCEU_IQNMI;
 	  }
 	  else if(_IRQlow&FCEU_IQNMI)
@@ -619,14 +619,14 @@ static void X6502_RunNormal(int32 cycles)
 	    PUSH(_PC>>8);
 	    PUSH(_PC);
 	    PUSH((_P&~B_FLAG)|(U_FLAG));
-	    _P|=I_FLAG;		
-	    _PC=RdMem(0xFFFA); 
+	    _P|=I_FLAG;
+	    _PC=RdMem(0xFFFA);
 	    _PC|=RdMem(0xFFFB)<<8;
 	    _IRQlow&=~FCEU_IQNMI;
 	   }
 	  }
 	  else
-	  { 
+	  {
 	   if(!(_PI&I_FLAG) && !_jammed)
 	   {
 	    ADDCYC(7);
@@ -639,7 +639,7 @@ static void X6502_RunNormal(int32 cycles)
 	   }
 	  }
 	  _IRQlow&=~(FCEU_IQTEMP);
-	  if(_count<=0) 
+	  if(_count<=0)
 	  {
 	   _PI=_P;
 	   X.PC=pbackus;
@@ -665,7 +665,7 @@ static void X6502_RunNormal(int32 cycles)
          switch(b1)
          {
           #include "ops.h"
-         } 
+         }
 	}
 
 	#undef _PC
