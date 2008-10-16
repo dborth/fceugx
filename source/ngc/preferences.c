@@ -171,7 +171,6 @@ preparePrefsData (int method)
 
 	createXMLSetting("FSDisable", "Four Score", toStr(GCSettings.FSDisable));
 	createXMLSetting("zapper", "Zapper", toStr(GCSettings.zapper));
-	createXMLSetting("crosshair", "Zapper Crosshair", toStr(GCSettings.crosshair));
 	createXMLController(gcpadmap, "gcpadmap", "GameCube Pad");
 	createXMLController(wmpadmap, "wmpadmap", "Wiimote");
 	createXMLController(ccpadmap, "ccpadmap", "Classic Controller");
@@ -254,9 +253,9 @@ decodePrefsData (int method)
 	char verMinor = version[15];
 	char verPoint = version[17];
 
-	if(verMajor == '2' && verPoint < '3') // less than version 2.0.3
+	if(verPoint < '2' && verMajor == '2') // less than version 2.0.2
 		return false; // reset settings
-	else if(verMajor > '2' || verMinor > '0' || verPoint > '4') // some future version
+	else if(verMajor > '2' || verMinor > '0' || verPoint > '2') // some future version
 		return false; // reset settings
 
 	// File Settings
@@ -285,7 +284,6 @@ decodePrefsData (int method)
 	loadXMLSettingInt(&GCSettings.slimit, "slimit");
 	loadXMLSettingInt(&GCSettings.screenscaler, "screenscaler");
 	loadXMLSettingInt(&GCSettings.zapper, "zapper");
-	loadXMLSettingInt(&GCSettings.crosshair, "crosshair");
 	// Controller Settings
 
 	loadXMLController(gcpadmap, "gcpadmap");
@@ -304,9 +302,7 @@ decodePrefsData (int method)
 bool
 SavePrefs (int method, bool silent)
 {
-	// there's no point in saving SMB settings TO SMB, because then we'll have no way to load them the next time!
-	// so instead we'll save using whatever other method is available (eg: SD)
-	if(method == METHOD_AUTO || method == METHOD_SMB)
+	if(method == METHOD_AUTO)
 		method = autoSaveMethod();
 
 	char filepath[1024];
@@ -365,7 +361,7 @@ LoadPrefsFromMethod (int method)
 		if(ChangeFATInterface(method, NOTSILENT))
 		{
 			sprintf (filepath, "%s/%s/%s", ROOTFATDIR, GCSettings.SaveFolder, PREFS_FILE_NAME);
-			offset = LoadSaveBufferFromFAT (filepath, SILENT);
+			offset = LoadBufferFromFAT (filepath, SILENT);
 		}
 	}
 	else if(method == METHOD_SMB)

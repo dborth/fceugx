@@ -1,26 +1,26 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 2.0.4
-                         http://code.google.com/p/fceugc   
+                                  Version 2.0.2   
                                (Under GPL License)
  
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
-
+ 
+-=[ Explanation ]=-
+ 
 FCE Ultra GX is a modified port of the FCE Ultra 0.98.12 Nintendo Entertainment
 system for x86 (Windows/Linux) PC's. With it you can play NES games on your 
 Wii/GameCube.  Version 2 is a complete rewrite based on code from the 
-SNES9x GX project.
+SNES9x GX and Genesis Plus GX projects.
 
 -=[ Features ]=-
 
 * Wiimote, Nunchuk, Classic, and Gamecube controller support
-* iNES, FDS, VS, UNIF, and NSF ROM support
-* 1-4 Player Support
+* 1-2 Player Support
 * Zapper support
 * RAM and State saving
 * Custom controller configurations
-* SD, USB, DVD, SMB, GC Memory Card, Zip, and 7z support
+* SD, USB, DVD, SMB, GC Memory Card, and Zip support
 * NES Compatibility Based on v0.98.12
 * Sound Filters
 * Graphics Filters (GX Chipset, Cheesy and 2x)
@@ -29,32 +29,14 @@ SNES9x GX project.
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
 
-[What's New 2.0.4 - October 15, 2008]
-* Wii DVD fixed
-* FDS BIOS loading works now
-* FDS disk switching now consistently works with one button press
-* FDS saving implemented
-* 7z support
-* Faster SD/USB (readahead cache enabled)
-* VS coin now mapped to 1 button for VS zapper games
-* Changed GC controller mappings - Select - Z, Start - Start, 
-  Home - Start+A, Special - L
-
-[What's New 2.0.3 - October 1, 2008]
-* Complete rewrite of loading code - FDS / UNIF / NSF support added!
-* VS games work (coin insert submitted by pakitovic)
-* Mapping of 'Special' commands - VS coin insert, FDS switch disk (default A)
-* 480p and DVD now available for GameCube
-* Improved stability - less crashes!
-
-[What's New 2.0.2 - September 19, 2008]
+[What's New 2.0.2]
 * Fixed network freeze-up problem
 * Zapper now mapped to A and B
 * Fixed auto-save feature
 * Performance slowdowns on Gamecube should be fixed
 * Will now attempt to load old save states with CRC filename
 
-[What's New 2.0.1 - September 6, 2008]
+[What's New 2.0.1]
 * Zapper support! Turn this on in the Controller Settings - most games 
   require you to have the Zapper on Port 2. Thanks go to aksommerville whose
   previous work on the Zapper helped, and michniewski's cursor code
@@ -64,7 +46,7 @@ SNES9x GX project.
 * Start/Select reversed mapping fixed for Wii controllers
 * Small bug fixes / improvements / tweaks
 
-[What's New 2.0.0 - September 1, 2008]
+[What's New 2.0.0]
 
 * Complete rewrite based on code from SNES9x GX and Genesis Plus GX
 * Wiimote, Nunchuk, and Classic controller support
@@ -105,8 +87,8 @@ Loading / Running the Emulator:
 Wii - Via Homebrew Channel:
 --------------------
 The most popular method of running homebrew on the Wii is through the Homebrew
-Channel. If you already have the channel installed, just copy over the apps 
-folder included in the archive into the root of your SD card.
+Channel. If you already have the channel installed, just copy over the apps folder
+included in the archive into the root of your SD card.
 
 Remember to also create the fceugx directory structure required. See above.
 
@@ -144,15 +126,6 @@ You can load roms from DVD or SD card. If you create a bootable
 DVD of FCEUGX you can put roms on the same DVD. You may save preferences and
 game data to SD or Memory Card.
 
--=[ Famicom Disk System (FDS) ]=-
-
-FCE Ultra GX supports loading FDS games. The FDS BIOS is required - put it 
-in your roms folder, and name it disksys.rom (should be 8 KB in size).
-You can switch disks using the A button (by default). The mapped button
-can be changed under Controller Configuration ('Special' button).
-Compatibility is limited, so check that the game in question works on 
-FCE Ultra 0.98.12 for Windows before asking for help. 
-
 -=[ Supported Mappers ]=-
  
 Mappers are the way the Nintendo handles switching from ROM/VROM so the more
@@ -175,6 +148,59 @@ Palette - The colors used while viewing the game:
           zaphod-smb . vs-drmar . vs-cv . vs-smb
  
 Timing - NTSC or PAL (Depends if you're running a PAL or NTSC game)
+
+×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
+|0O×øo·                    UPDATE HISTORY (1.0.x)                     ·oø×O0|
+`¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+What's new [20080331]
+
++[Askot]
+- Fixed/changed SDCARD slot selection for searching roms, at 
+  start you will be prompted for this option.
+- Code cleanup.
+
++[dsbomb]
+- Added Wii mode support.
+- Give a "Bad cartridge" error instead of locking up.
+- Joystick fixes due to libogc r14's changed stick values
+- Rearranged menu to make more sense, and consistent with Snes9x
+- Add "Reboot" menu option
+- Removed "." directory from SD card listing, it's pointless
+- Expand DVD reading to DVD9 size (once DVDs are working again)
+- Added option to go back a menu by pressing B.
+
+What's new? Askot [20080326]
+- Added saving state in SD Card (State files will be saved in root of SDCARD).
+  *Note: I can't make it work to save in root:\fceu\saves, so help needed.
+- Added SDCARD slot selection for searching roms, meaning, you can search roms 
+  from SDCARD SLOT A & SLOT B (Beta, meaning, buggy, but works).
+- For standarization, you must create folders root:\fceu\roms to read NES 
+  roms files from SDCARD.
+- Added C-Left to call Menu.
+- Reading files from SD Card it's faster, now they're called from cache
+  after first reading.
+- Menu in saving STATE file changed to choose SLOT, DEVICE, Save STATE, 
+  Load STATE, Return to previous. 
+- Added option PSO/SD Reload to menu, still works (START+B+X)
+- Modified controls when going into the rom selection menu (DVD or 
+  SDCARD):
+  + Use B to quit selection list.
+  + Use L/R triggrers or Pad Left/Right to go down/up one full page.
+- Some menu rearrangment and a little of sourcecode cleanup: 
+  + Everytime you pressed B button on any option, playgame started, not anymore
+  until you select Play Game option.
+
+What's new? asako [20070831]
+- modify mmc3 code for Chinese pirated rom
+- add some Chinese pirated rom mappers
+
+What's new? _svpe_ [20070607]
+- Wii support (PAL50 fix, 1.35GiB restriction removed)
+- 7zip ROM loading support from the DVD (not from a SD card!!)
+- dvd_read fix (the read data was always copied to readbuffer instead of *dst)
+- slower file selection when using the D-Pad (I didn't like the selection to go 
+as fast as in the latest release)
  
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  

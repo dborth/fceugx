@@ -10,7 +10,6 @@
  ****************************************************************************/
 
 #include <gccore.h>
-#include <string.h>
 
 #define SAMPLERATE 48000
 unsigned char audiobuffer[2][64 * 1024] ATTRIBUTE_ALIGN(32);
@@ -45,7 +44,7 @@ void InitialiseSound()
 	AUDIO_Init(NULL);	/*** Start audio subsystem ***/
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 	AUDIO_RegisterDMACallback( AudioSwitchBuffers );
-	memset(audiobuffer, 0, (64 * 1024 * 2));
+
 	buffSize[0] = buffSize[1] = 0;
 }
 

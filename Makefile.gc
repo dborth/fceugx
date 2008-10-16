@@ -21,7 +21,7 @@ BUILD		:=	build_gc
 SOURCES		:=	source/fceultra source/fceultra/boards \
 				source/fceultra/drivers/common source/fceultra/input \
 				source/fceultra/mappers source/fceultra/mbshare \
-				source/ngc source/sz
+				source/ngc
 DATA		:=	data
 INCLUDES	:=	source/fceultra source/ngc
 LANG		:=	ENGLISH # Supported languages: ENGLISH
@@ -29,7 +29,7 @@ LANG		:=	ENGLISH # Supported languages: ENGLISH
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS  = -g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNGC \
+CFLAGS  = -g -O2 -Wall $(MACHDEP) $(INCLUDE) -DNGC \
 		-DHAVE_ASPRINTF -DSTDC -DFCEU_VERSION_NUMERIC=9812 \
 	    -D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 	    -DLANG_$(LANG)
@@ -40,7 +40,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lmxml -lbba -ltinysmb -lfat -lz -logc -lm -lfreetype
+LIBS	:=	-lpng -lmxml -lbba -ltinysmb -lfat -lz -logc -lm -lfreetype
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

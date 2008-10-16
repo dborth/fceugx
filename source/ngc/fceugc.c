@@ -11,7 +11,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/time.h>
 #include <gctypes.h>
 #include <ogc/system.h>
@@ -34,7 +33,6 @@
 #include <di/di.h>
 #endif
 
-unsigned char * nesrom = NULL;
 extern bool romLoaded;
 bool isWii;
 
@@ -42,7 +40,6 @@ uint8 *xbsave=NULL;
 
 extern int cleanSFMDATA();
 extern void ResetNES(void);
-extern uint8 FDSBIOS[8192];
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
@@ -72,13 +69,10 @@ int main(int argc, char *argv[])
 	}
 
     InitialiseSound();
-    fatInit (8, false);
+    fatInitDefault();
 #ifndef HW_RVL
     DVD_Init();
 #endif
-
-    // allocate memory to store rom
-    nesrom = (unsigned char *)malloc(1024*1024*3); // 3 MB should be plenty
 
     /*** Minimal Emulation Loop ***/
     if ( !FCEUI_Initialize() ) {
@@ -89,8 +83,9 @@ int main(int argc, char *argv[])
     FCEUI_SetVidSystem(0); // 0 - NTSC, 1 - PAL
     FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
 
-    memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
     cleanSFMDATA(); // clear state data
+    GCMemROM(); // load color test ROM
+    romLoaded = false; // we start off with only the color test rom
 
     // Set Defaults
 	DefaultSettings();
@@ -123,14 +118,15 @@ int main(int argc, char *argv[])
 /****************************************************************************
  * FCEU Support Functions to be written
  ****************************************************************************/
-// File Control
+/*** File Control ***/
+
+
 FILE *FCEUD_UTF8fopen(const char *n, const char *m)
 {
-    return NULL;
-	//return(fopen(n,m));
+    return(fopen(n,m));
 }
 
-// General Logging
+/*** General Logging ***/
 void FCEUD_PrintError(char *s)
 {
 }
@@ -139,15 +135,15 @@ void FCEUD_Message(char *text)
 {
 }
 
-// main interface to FCE Ultra
-void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count)
+/*** VIDEO ***/
+void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count)
 {
-    PlaySound(Buffer, Count); // play sound
-    RenderFrame( (char *)XBuf, GCSettings.screenscaler); // output video frame
-    GetJoy(); // check controller input
+    PlaySound(Buffer, Count);
+    RenderFrame( (char *)XBuf, GCSettings.screenscaler );
+    GetJoy();
 }
 
-// Netplay
+/*** Netplay ***/
 int FCEUD_SendData(void *data, uint32 len)
 {
     return 1;

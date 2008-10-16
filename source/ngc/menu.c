@@ -76,6 +76,9 @@ LoadManager ()
 
 	if ( loadROM == 1 ) // if ROM was loaded
 	{
+		if(!GCMemROM()) // ROM was not valid
+			return 0;
+
 		// load the RAM
 		if (GCSettings.AutoLoad == 1)
 			LoadRAM(GCSettings.SaveMethod, SILENT);
@@ -84,6 +87,7 @@ LoadManager ()
 
 		ResetNES();
 	}
+
 	return loadROM;
 }
 
@@ -223,6 +227,12 @@ PreferencesMenu ()
 			GCSettings.SaveMethod++;
 		#endif
 
+		// check if DVD access in Wii mode is disabled
+		#ifndef WII_DVD
+		if(GCSettings.LoadMethod == METHOD_DVD)
+			GCSettings.LoadMethod++;
+		#endif
+
 		// saving to DVD is impossible
 		if(GCSettings.SaveMethod == METHOD_DVD)
 			GCSettings.SaveMethod++;
@@ -241,10 +251,6 @@ PreferencesMenu ()
 			GCSettings.SaveMethod++;
 		if(GCSettings.SaveMethod == METHOD_MC_SLOTB)
 			GCSettings.SaveMethod++;
-		prefmenu[6][0] = '\0';
-		#else
-		sprintf (prefmenu[6], "Verify MC Saves %s",
-			GCSettings.VerifySaves == true ? " ON" : "OFF");
 		#endif
 
 		// correct load/save methods out of bounds
@@ -282,6 +288,9 @@ PreferencesMenu ()
 		else if (GCSettings.AutoSave == 1) sprintf (prefmenu[5],"Auto Save RAM");
 		else if (GCSettings.AutoSave == 2) sprintf (prefmenu[5],"Auto Save STATE");
 		else if (GCSettings.AutoSave == 3) sprintf (prefmenu[5],"Auto Save BOTH");
+
+		sprintf (prefmenu[6], "Verify MC Saves %s",
+			GCSettings.VerifySaves == true ? " ON" : "OFF");
 
 		ret = RunMenu (prefmenu, prefmenuCount, (char*)"Preferences", 16, -1);
 
@@ -355,16 +364,6 @@ GameMenu ()
 
 	while (quit == 0)
 	{
-		if(nesGameType == 4) // FDS game
-		{
-			// disable RAM saving/loading
-			gamemenu[3][0] = '\0';
-			gamemenu[4][0] = '\0';
-
-			// disable ROM Information
-			gamemenu[2][0] = '\0';
-		}
-
 		// disable RAM/STATE saving/loading if AUTO is on
 		if (GCSettings.AutoLoad == 1) // Auto Load RAM
 			gamemenu[3][0] = '\0';
@@ -534,17 +533,16 @@ GetButtonMap(u16 ctrlr_type, char* btn_name)
 	return pressed;
 }	// end getButtonMap()
 
-int cfg_btns_count = 10;
+int cfg_btns_count = 9;
 char cfg_btns_menu[][50] = {
-	"B           -         ",
-	"A           -         ",
-	"SELECT      -         ",
-	"START       -         ",
-	"UP          -         ",
-	"DOWN        -         ",
-	"LEFT        -         ",
-	"RIGHT       -         ",
-	"SPECIAL     -         ",
+	"B        -         ",
+	"A        -         ",
+	"SELECT   -         ",
+	"START    -         ",
+	"UP       -         ",
+	"DOWN     -         ",
+	"LEFT     -         ",
+	"RIGHT    -         ",
 	"Return to previous"
 };
 
@@ -591,7 +589,7 @@ ConfigureButtons (u16 ctrlr_type)
 	while (quit == 0)
 	{
 		/*** Update Menu with Current ButtonMap ***/
-		for (i=0; i<MAXJP; i++) // nes pad has 8 buttons to config (plus VS coin insert)
+		for (i=0; i<8; i++) // nes pad has 8 buttons to config (go thru them)
 		{
 			// get current padmap button name to display
 			for ( j=0;
@@ -624,7 +622,6 @@ ConfigureButtons (u16 ctrlr_type)
 			case 5:
 			case 6:
 			case 7:
-			case 8:
 				/*** Change button map ***/
 				// wait for input
 				memset (temp, 0, sizeof(temp));
@@ -636,7 +633,7 @@ ConfigureButtons (u16 ctrlr_type)
 				break;
 
 			case -1: /*** Button B ***/
-			case 9:
+			case 8:
 				/*** Return ***/
 				quit = 1;
 				break;
@@ -645,11 +642,10 @@ ConfigureButtons (u16 ctrlr_type)
 	menu = oldmenu;
 }	// end configurebuttons()
 
-int ctlrmenucount = 9;
+int ctlrmenucount = 8;
 char ctlrmenu[][50] = {
 	"Four Score",
 	"Zapper",
-	"Zapper Crosshair",
 	"Nunchuk",
 	"Classic Controller",
 	"Wiimote",
@@ -682,9 +678,6 @@ ConfigureControllers ()
 		else if (GCSettings.zapper == 1) sprintf (ctlrmenu[1],"Zapper - Port 1");
 		else if (GCSettings.zapper == 2) sprintf (ctlrmenu[1],"Zapper - Port 2");
 
-		sprintf (ctlrmenu[2], "Zapper Crosshair - %s",
-			GCSettings.crosshair == true ? " ON" : "OFF");
-
 		/*** Controller Config Menu ***/
         ret = RunMenu (ctlrmenu, ctlrmenucount, (char*)"Configure Controllers", 20, -1);
 
@@ -692,47 +685,43 @@ ConfigureControllers ()
 		{
 			case 0: // four score
 				GCSettings.FSDisable ^= 1;
-				ToggleFourScore(GCSettings.FSDisable, romLoaded);
+				ToggleFourScore(GCSettings.FSDisable);
 				break;
 
 			case 1: // zapper
 				GCSettings.zapper -= 1; // we do this so Port 2 is first option shown
 				if(GCSettings.zapper < 0)
 					GCSettings.zapper = 2;
-				ToggleZapper(GCSettings.zapper, romLoaded);
+				ToggleZapper(GCSettings.zapper);
 				break;
 
-			case 2: // zapper crosshair
-				GCSettings.crosshair ^= 1;
-				break;
-
-			case 3:
+			case 2:
 				/*** Configure Nunchuk ***/
 				ConfigureButtons (CTRLR_NUNCHUK);
 				break;
 
-			case 4:
+			case 3:
 				/*** Configure Classic ***/
 				ConfigureButtons (CTRLR_CLASSIC);
 				break;
 
-			case 5:
+			case 4:
 				/*** Configure Wiimote ***/
 				ConfigureButtons (CTRLR_WIIMOTE);
 				break;
 
-			case 6:
+			case 5:
 				/*** Configure GC Pad ***/
 				ConfigureButtons (CTRLR_GCPAD);
 				break;
 
-			case 7:
+			case 6:
 				/*** Save Preferences Now ***/
 				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
 			case -1: /*** Button B ***/
-			case 8:
+			case 7:
 				/*** Return ***/
 				quit = 1;
 				break;
@@ -837,16 +826,12 @@ MainMenu (int selectedMenu)
 		}
 	}
 
-	// Wait for buttons to be released
-	int count = 0; // how long we've been waiting for the user to release the button
-	while(count < 50 && (
-		PAD_ButtonsHeld(0)
-		#ifdef HW_RVL
-		|| WPAD_ButtonsHeld(0)
-		#endif
-	))
-	{
-		VIDEO_WaitVSync();
-		count++;
-	}
+	/*** Remove any still held buttons ***/
+	#ifdef HW_RVL
+		while( PAD_ButtonsHeld(0) || WPAD_ButtonsHeld(0) )
+		    VIDEO_WaitVSync();
+	#else
+		while( PAD_ButtonsHeld(0) )
+		    VIDEO_WaitVSync();
+	#endif
 }

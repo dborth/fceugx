@@ -424,7 +424,7 @@ FCEUS FSettings;
 
 void FCEU_printf(char *format, ...)
 {
- /*char temp[2048];
+ char temp[2048];
 
  va_list ap;
 
@@ -432,12 +432,12 @@ void FCEU_printf(char *format, ...)
  vsprintf(temp,format,ap);
  FCEUD_Message(temp);
 
- va_end(ap);*/
+ va_end(ap);
 }
 
 void FCEU_PrintError(char *format, ...)
 {
-/* char temp[2048];
+ char temp[2048];
 
  va_list ap;
 
@@ -445,7 +445,7 @@ void FCEU_PrintError(char *format, ...)
  vsprintf(temp,format,ap);
  FCEUD_PrintError(temp);
 
- va_end(ap);*/
+ va_end(ap);
 }
 
 void FCEUI_SetRenderedLines(int ntscf, int ntscl, int palf, int pall)

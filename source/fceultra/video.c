@@ -144,13 +144,13 @@ void FCEU_PutImage(void)
 
 void FCEU_DispMessage(char *format, ...)
 {
-/* va_list ap;
+ va_list ap;
 
  va_start(ap,format);
  vsprintf(errmsg,format,ap);
  va_end(ap);
 
- howlong=180;*/
+ howlong=180;
 }
 
 void FCEU_ResetMessages(void)
