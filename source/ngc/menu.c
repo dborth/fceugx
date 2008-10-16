@@ -241,10 +241,6 @@ PreferencesMenu ()
 			GCSettings.SaveMethod++;
 		if(GCSettings.SaveMethod == METHOD_MC_SLOTB)
 			GCSettings.SaveMethod++;
-		prefmenu[6][0] = '\0';
-		#else
-		sprintf (prefmenu[6], "Verify MC Saves %s",
-			GCSettings.VerifySaves == true ? " ON" : "OFF");
 		#endif
 
 		// correct load/save methods out of bounds
@@ -282,6 +278,9 @@ PreferencesMenu ()
 		else if (GCSettings.AutoSave == 1) sprintf (prefmenu[5],"Auto Save RAM");
 		else if (GCSettings.AutoSave == 2) sprintf (prefmenu[5],"Auto Save STATE");
 		else if (GCSettings.AutoSave == 3) sprintf (prefmenu[5],"Auto Save BOTH");
+
+		sprintf (prefmenu[6], "Verify MC Saves %s",
+			GCSettings.VerifySaves == true ? " ON" : "OFF");
 
 		ret = RunMenu (prefmenu, prefmenuCount, (char*)"Preferences", 16, -1);
 
@@ -355,16 +354,6 @@ GameMenu ()
 
 	while (quit == 0)
 	{
-		if(nesGameType == 4) // FDS game
-		{
-			// disable RAM saving/loading
-			gamemenu[3][0] = '\0';
-			gamemenu[4][0] = '\0';
-
-			// disable ROM Information
-			gamemenu[2][0] = '\0';
-		}
-
 		// disable RAM/STATE saving/loading if AUTO is on
 		if (GCSettings.AutoLoad == 1) // Auto Load RAM
 			gamemenu[3][0] = '\0';
@@ -692,20 +681,20 @@ ConfigureControllers ()
 		{
 			case 0: // four score
 				GCSettings.FSDisable ^= 1;
-				ToggleFourScore(GCSettings.FSDisable, romLoaded);
+				ToggleFourScore(GCSettings.FSDisable);
 				break;
 
 			case 1: // zapper
 				GCSettings.zapper -= 1; // we do this so Port 2 is first option shown
 				if(GCSettings.zapper < 0)
 					GCSettings.zapper = 2;
-				ToggleZapper(GCSettings.zapper, romLoaded);
+				ToggleZapper(GCSettings.zapper);
 				break;
 
 			case 2: // zapper crosshair
 				GCSettings.crosshair ^= 1;
 				break;
-
+				
 			case 3:
 				/*** Configure Nunchuk ***/
 				ConfigureButtons (CTRLR_NUNCHUK);
@@ -837,16 +826,12 @@ MainMenu (int selectedMenu)
 		}
 	}
 
-	// Wait for buttons to be released
-	int count = 0; // how long we've been waiting for the user to release the button
-	while(count < 50 && (
-		PAD_ButtonsHeld(0)
-		#ifdef HW_RVL
-		|| WPAD_ButtonsHeld(0)
-		#endif
-	))
-	{
-		VIDEO_WaitVSync();
-		count++;
-	}
+	/*** Remove any still held buttons ***/
+	#ifdef HW_RVL
+		while( PAD_ButtonsHeld(0) || WPAD_ButtonsHeld(0) )
+		    VIDEO_WaitVSync();
+	#else
+		while( PAD_ButtonsHeld(0) )
+		    VIDEO_WaitVSync();
+	#endif
 }

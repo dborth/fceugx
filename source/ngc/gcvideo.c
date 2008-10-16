@@ -16,14 +16,10 @@
 #include <string.h>
 #include <wiiuse/wpad.h>
 
-#include "driver.h"
-
 #include "gcvideo.h"
 #include "images/nesback.h"
 
 extern unsigned int SMBTimer;
-int FDSTimer = 0;
-int FDSSwitchRequested;
 
 #define TEX_WIDTH 256
 #define TEX_HEIGHT 512
@@ -62,29 +58,6 @@ static void copy_to_xfb() {
         copynow = GX_FALSE;
     }
     SMBTimer++;
-
-    // FDS switch disk requested - need to eject, select, and insert
-    // but not all at once!
-    if(FDSSwitchRequested)
-    {
-    	switch(FDSSwitchRequested)
-    	{
-			case 1:
-				FCEUI_FDSEject(); // eject disk
-				FDSSwitchRequested++;
-				break;
-			case 2:
-				if(FDSTimer > 60)
-				{
-					FCEUI_FDSSelect(); // select other side
-					FCEUI_FDSInsert(0); // insert disk
-					FDSSwitchRequested = 0;
-					FDSTimer = 0;
-				}
-				break;
-    	}
-    	FDSTimer++;
-    }
 }
 
 /****************************************************************************

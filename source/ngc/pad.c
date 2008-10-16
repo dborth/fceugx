@@ -22,7 +22,6 @@
 #include "menu.h"
 #include "fceustate.h"
 #include "fceuram.h"
-#include "gcvideo.h"
 #include "filesel.h"
 
 extern bool romLoaded;
@@ -40,10 +39,10 @@ unsigned int nespadmap[] = {
 /*** Gamecube controller Padmap ***/
 unsigned int gcpadmap[] = {
 	PAD_BUTTON_B, PAD_BUTTON_A,
-	PAD_TRIGGER_Z, PAD_BUTTON_START,
+	PAD_TRIGGER_L, PAD_TRIGGER_R,
 	PAD_BUTTON_UP, PAD_BUTTON_DOWN,
 	PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT,
-	PAD_TRIGGER_L
+	PAD_TRIGGER_Z // insert coin for VS games
 };
 /*** Wiimote Padmap ***/
 unsigned int wmpadmap[] = {
@@ -51,7 +50,7 @@ unsigned int wmpadmap[] = {
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_RIGHT, WPAD_BUTTON_LEFT,
 	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
-	WPAD_BUTTON_A
+	WPAD_BUTTON_A // insert coin for VS games
 };
 /*** Classic Controller Padmap ***/
 unsigned int ccpadmap[] = {
@@ -59,7 +58,7 @@ unsigned int ccpadmap[] = {
 	WPAD_CLASSIC_BUTTON_MINUS, WPAD_CLASSIC_BUTTON_PLUS,
 	WPAD_CLASSIC_BUTTON_UP, WPAD_CLASSIC_BUTTON_DOWN,
 	WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT,
-	WPAD_CLASSIC_BUTTON_A
+	WPAD_CLASSIC_BUTTON_A // insert coin for VS games
 };
 /*** Nunchuk + wiimote Padmap ***/
 unsigned int ncpadmap[] = {
@@ -67,7 +66,7 @@ unsigned int ncpadmap[] = {
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
 	WPAD_BUTTON_LEFT, WPAD_BUTTON_RIGHT,
-	WPAD_BUTTON_A
+	WPAD_BUTTON_A // insert coin for VS games
 };
 
 static uint32 JSReturn = 0;
@@ -87,19 +86,19 @@ void InitialisePads()
 	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
 	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
 
-	ToggleFourScore(GCSettings.FSDisable, true);
-	ToggleZapper(GCSettings.zapper, true);
+	ToggleFourScore(GCSettings.FSDisable);
+	ToggleZapper(GCSettings.zapper);
 }
 
-void ToggleFourScore(int set, bool loaded)
+void ToggleFourScore(int set)
 {
-	if(loaded)
+	if(romLoaded)
 		FCEUI_DisableFourScore(set);
 }
 
-void ToggleZapper(int set, bool loaded)
+void ToggleZapper(int set)
 {
-	if(loaded)
+	if(romLoaded)
 	{
 		// set defaults
 		zapperdata[0]=NULL;
@@ -368,8 +367,9 @@ unsigned char DecodeJoy( unsigned short pad )
 	}
 #endif
 
-	// Report pressed buttons (gamepads)
+	/*** Report pressed buttons (gamepads) ***/
 	int i;
+
 	for (i = 0; i < MAXJP; i++)
 	{
 		if ( (jp & gcpadmap[i])											// gamecube controller
@@ -380,29 +380,24 @@ unsigned char DecodeJoy( unsigned short pad )
 		#endif
 		)
 		{
-			// if zapper is on, ignore all buttons except START and SELECT
-			if(!GCSettings.zapper || nespadmap[i] == JOY_START || nespadmap[i] == JOY_SELECT)
+			if(nespadmap[i] > 0)
+				J |= nespadmap[i];
+			else
 			{
-				if(nespadmap[i] > 0)
+				if(nesGameType == 4) // FDS
 				{
-					J |= nespadmap[i];
+					/* these commands shouldn't be issued in parallel but this
+					 * allows us to only map one button for both!
+					 * the gamer must just have to press the button twice */
+					FCEUI_FDSInsert(0); // eject / insert disk
+					FCEUI_FDSSelect(); // select other side
 				}
 				else
-				{
-					if(nesGameType == 4) // FDS
-					{
-						/* the commands shouldn't be issued in parallel so
-						 * we'll delay them so the virtual FDS has a chance
-						 * to process them
-						 */
-						FDSSwitchRequested = 1;
-					}
-					else
-						FCEUI_VSUniCoin(); // insert coin for VS Games
-				}
+					FCEU_DoSimpleCommand(0x07); // insert coin for VS Games
 			}
 		}
 	}
+
 	// zapper enabled
 	if(GCSettings.zapper)
 	{
@@ -421,16 +416,6 @@ unsigned char DecodeJoy( unsigned short pad )
 		{
 			// report trigger press
 			myzappers[z][2] |= 2;
-		}
-
-		// VS zapper games
-		if ( (jp & PAD_BUTTON_B) // gamecube controller
-		#ifdef HW_RVL
-		|| (wp & WPAD_BUTTON_1)	// wiimote
-		#endif
-		)
-		{
-			FCEUI_VSUniCoin(); // insert coin for VS zapper games
 		}
 
 		// cursor position
@@ -460,7 +445,7 @@ void GetJoy()
     #endif
 
     // request to go back to menu
-    if ((gc_px < -70) || ((jp & PAD_BUTTON_START) && (jp & PAD_BUTTON_A))
+    if ((gc_px < -70) || (jp & PAD_BUTTON_START)
     #ifdef HW_RVL
     		 || (wm_pb & WPAD_BUTTON_HOME)
     		 || (wm_pb & WPAD_CLASSIC_BUTTON_HOME)

@@ -221,9 +221,6 @@ int GCSaveChunk(int chunkid, SFORMAT *sf) {
  * It uses memory for it's I/O and has an added CHNK block.
  * The file is terminated with CHNK length of 0.
  ****************************************************************************/
-extern void (*SPreSave)(void);
-extern void (*SPostSave)(void);
-
 int GCFCEUSS_Save()
 {
     int totalsize = 0;
@@ -247,7 +244,6 @@ int GCFCEUSS_Save()
 
     /*** And Comments ***/
     strncpy (Comment[1],romFilename,31); // we only have 32 chars to work with!
-    Comment[1][31] = 0;
     memfwrite(&Comment[0], 64);
     totalsize += 64;
 
@@ -259,14 +255,7 @@ int GCFCEUSS_Save()
     totalsize += GCSaveChunk(3, FCEUPPU_STATEINFO);
     totalsize += GCSaveChunk(4, FCEUCTRL_STATEINFO);
     totalsize += GCSaveChunk(5, FCEUSND_STATEINFO);
-
-    if(nesGameType == 4) // FDS
-    	SPreSave();
-
     totalsize += GCSaveChunk(0x10, SFMDATA);
-
-    if(nesGameType == 4) // FDS
-    	SPostSave();
 
     /*** Add terminating CHNK ***/
     memfwrite(&chunk,4);

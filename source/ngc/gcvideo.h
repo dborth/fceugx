@@ -26,6 +26,5 @@ struct st_palettes {
 };
 
 extern struct st_palettes palettes[];
-extern int FDSSwitchRequested;
 
 #endif

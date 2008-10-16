@@ -72,13 +72,13 @@ int main(int argc, char *argv[])
 	}
 
     InitialiseSound();
-    fatInit (8, false);
+    fatInitDefault();
 #ifndef HW_RVL
     DVD_Init();
 #endif
 
     // allocate memory to store rom
-    nesrom = (unsigned char *)malloc(1024*1024*3); // 3 MB should be plenty
+    nesrom = (unsigned char *)malloc(1024*1024*2); // 2 MB should be plenty
 
     /*** Minimal Emulation Loop ***/
     if ( !FCEUI_Initialize() ) {

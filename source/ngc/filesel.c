@@ -29,20 +29,20 @@
 #include "memcardop.h"
 #include "pad.h"
 #include "fceuload.h"
-#include "gcunzip.h"
 
 int offset;
 int selection;
 char currentdir[MAXPATHLEN];
-char szpath[MAXPATHLEN];
 char romFilename[200];
 int nesGameType;
 int maxfiles;
 extern int screenheight;
 
+extern u64 dvddir;
+extern int dvddirlength;
+
 // Global file entry table
 FILEENTRIES filelist[MAXFILES];
-bool inSz = false;
 
 unsigned char savebuffer[SAVEBUFFERSIZE];
 
@@ -163,28 +163,6 @@ int UpdateDirName(int method)
 	}
 }
 
-bool MakeROMPath(char filepath[], int method)
-{
-	char temppath[MAXPATHLEN];
-
-	// Check filename length
-	if ((strlen(currentdir)+1+strlen(filelist[selection].filename)) < MAXPATHLEN)
-	{
-		sprintf(temppath, "%s/%s",currentdir,filelist[selection].filename);
-
-		if(method == METHOD_SMB)
-			strcpy(filepath, SMBPath(temppath));
-		else
-			strcpy(filepath, temppath);
-		return true;
-	}
-	else
-	{
-		filepath[0] = 0;
-		return false;
-	}
-}
-
 /***************************************************************************
  * FileSortCallback
  *
@@ -210,83 +188,6 @@ int FileSortCallback(const void *f1, const void *f2)
 	if(!(((FILEENTRIES *)f1)->flags) && ((FILEENTRIES *)f2)->flags) return 1;
 
 	return stricmp(((FILEENTRIES *)f1)->filename, ((FILEENTRIES *)f2)->filename);
-}
-
-/****************************************************************************
- * IsValidROM
- *
- * Checks if the specified file is a valid ROM
- * For now we will just check the file extension and file size
- * If the file is a zip, we will check the file extension / file size of the
- * first file inside
- ***************************************************************************/
-
-bool IsValidROM(int method)
-{
-	// file size should be between 10K and 3MB
-	if(filelist[selection].length < (1024*10) ||
-		filelist[selection].length > (1024*1024*3))
-	{
-		WaitPrompt((char *)"Invalid file size!");
-		return false;
-	}
-
-	if (strlen(filelist[selection].filename) > 4)
-	{
-		char * p = strrchr(filelist[selection].filename, '.');
-
-		if (p != NULL)
-		{
-			if(stricmp(p, ".zip") == 0 && !inSz)
-			{
-				// we need to check the file extension of the first file in the archive
-				char * zippedFilename = GetFirstZipFilename (method);
-
-				if(zippedFilename == NULL) // we don't want to run strlen on NULL
-					p = NULL;
-				else if(strlen(zippedFilename) > 4)
-					p = strrchr(zippedFilename, '.');
-				else
-					p = NULL;
-			}
-
-			if(p != NULL)
-			{
-				if (
-					stricmp(p, ".nes") == 0 ||
-					stricmp(p, ".fds") == 0 ||
-					stricmp(p, ".nsf") == 0 ||
-					stricmp(p, ".unf") == 0 ||
-					stricmp(p, ".nez") == 0 ||
-					stricmp(p, ".unif") == 0
-				)
-				{
-					return true;
-				}
-			}
-		}
-	}
-	WaitPrompt((char *)"Unknown file type!");
-	return false;
-}
-
-/****************************************************************************
- * IsSz
- *
- * Checks if the specified file is a 7z
- ***************************************************************************/
-
-bool IsSz()
-{
-	if (strlen(filelist[selection].filename) > 4)
-	{
-		char * p = strrchr(filelist[selection].filename, '.');
-
-		if (p != NULL)
-			if(stricmp(p, ".7z") == 0)
-				return true;
-	}
-	return false;
 }
 
 /****************************************************************************
@@ -360,30 +261,10 @@ int FileSelector (int method)
 		{
 			if ( selectit )
 				selectit = 0;
-
 			if (filelist[selection].flags) // This is directory
 			{
 				/* update current directory and set new entry list if directory has changed */
-
-				int status;
-
-				if(inSz && selection == 0) // inside a 7z, requesting to leave
-				{
-					if(method == METHOD_DVD)
-					{
-						// go to directory the 7z was in
-						dvddir = filelist[0].offset;
-						dvddirlength = filelist[0].length;
-					}
-					inSz = false;
-					status = 1;
-					SzClose();
-				}
-				else
-				{
-					status = UpdateDirName(method);
-				}
-
+				int status = UpdateDirName(method);
 				if (status == 1) // ok, open directory
 				{
 					switch (method)
@@ -413,77 +294,44 @@ int FileSelector (int method)
 					haverom = 1; // quit menu
 				}
 			}
-			else // this is a file
+			else	// this is a file
 			{
-				// 7z file - let's open it up to select a file inside
-				if(IsSz())
+				// store the filename (w/o ext) - used for state saving
+				StripExt(romFilename, filelist[selection].filename);
+
+				ShowAction ((char *)"Loading...");
+
+				int size = 0;
+
+				switch (method)
 				{
-					// we'll store the 7z filepath for extraction later
-					if(!MakeROMPath(szpath, method))
-					{
-						WaitPrompt((char*) "Maximum filepath length reached!");
-						return -1;
-					}
-					int szfiles = SzParse(szpath, method);
-					if(szfiles)
-					{
-						maxfiles = szfiles;
-						inSz = true;
-					}
+				case METHOD_SD:
+				case METHOD_USB:
+					size = LoadFATFile();
+					break;
+
+				case METHOD_DVD:
+					dvddir = filelist[selection].offset;
+					dvddirlength = filelist[selection].length;
+					size = LoadDVDFile(nesrom);
+					break;
+
+				case METHOD_SMB:
+					size = LoadSMBFile();
+					break;
+				}
+
+				if (size > 0)
+				{
+					if(GCMemROM(method, size) > 0)
+						return 1;
 					else
-						WaitPrompt((char*) "Error opening archive!");
+						return 0;
 				}
 				else
 				{
-					// check that this is a valid ROM
-					if(!IsValidROM(method))
-						return 0;
-
-					// store the filename (w/o ext) - used for state saving
-					StripExt(romFilename, filelist[selection].filename);
-
-					ShowAction ((char *)"Loading...");
-
-					int size = 0;
-
-					switch (method)
-					{
-						case METHOD_SD:
-						case METHOD_USB:
-							if(inSz)
-								size = LoadFATSzFile(szpath, nesrom);
-							else
-								size = LoadFATFile((char *)nesrom, 0);
-							break;
-
-						case METHOD_DVD:
-							if(inSz)
-								size = SzExtractFile(filelist[selection].offset, nesrom);
-							else
-								size = LoadDVDFile(nesrom, 0);
-							break;
-
-						case METHOD_SMB:
-							if(inSz)
-								size = LoadSMBSzFile(szpath, nesrom);
-							else
-								size = LoadSMBFile((char *)nesrom, 0);
-							break;
-					}
-					inSz = false;
-
-					if (size > 0)
-					{
-						if(GCMemROM(method, size) > 0)
-							return 1;
-						else
-							return 0;
-					}
-					else
-					{
-						WaitPrompt((char*) "Error loading ROM!");
-						return 0;
-					}
+					WaitPrompt((char*) "Error loading ROM!");
+					return 0;
 				}
 			}
 			redraw = 1;
@@ -504,8 +352,7 @@ int FileSelector (int method)
 			else if ( strcmp(filelist[1].filename,"..") == 0 )
 			{
                 selection = selectit = 1;
-			} else
-			{
+			} else {
                 return 0;
 			}
         }	// End of B

@@ -14,15 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <zlib.h>
-
-#include "../sz/7zCrc.h"
-#include "../sz/7zIn.h"
-#include "../sz/7zExtract.h"
-
-#include "fceuconfig.h"
 #include "dvd.h"
-#include "smbop.h"
-#include "fileop.h"
 #include "menudraw.h"
 #include "gcunzip.h"
 
@@ -64,6 +56,7 @@ FLIP16 (u16 b)
  * IsZipFile
  *
  * Returns 1 when Zip signature is found
+ * Returns 2 when 7z signature is found
  ****************************************************************************/
 int
 IsZipFile (char *buffer)
@@ -74,17 +67,28 @@ IsZipFile (char *buffer)
 	if (check[0] == 0x504b0304) // ZIP file
 		return 1;
 
-	return 0;
+	// 7z signature
+	static Byte Signature[6] = {'7', 'z', 0xBC, 0xAF, 0x27, 0x1C};
+
+	int i;
+	for(i = 0; i < 6; i++)
+		if(buffer[i] != Signature[i])
+			return 0;
+
+	return 2; // 7z archive found
 }
 
  /*****************************************************************************
- * UnZipBuffer
+ * unzip
  *
  * It should be noted that there is a limit of 5MB total size for any ROM
  ******************************************************************************/
+FILE* fatfile; // FAT
+u64 discoffset; // DVD
+SMBFILE smbfile; // SMB
 
 int
-UnZipBuffer (unsigned char *outbuffer, int method)
+UnZipBuffer (unsigned char *outbuffer, short where)
 {
 	PKZIPHEADER pkzip;
 	int zipoffset = 0;
@@ -97,25 +101,22 @@ UnZipBuffer (unsigned char *outbuffer, int method)
 	int have = 0;
 	char readbuffer[ZIPCHUNK];
 	char msg[128];
-	u64 discoffset = 0;
 
-	// Read Zip Header
-	switch (method)
+	/*** Read Zip Header ***/
+	switch (where)
 	{
-		case METHOD_SD:
-		case METHOD_USB:
-			fseek(fatfile, 0, SEEK_SET);
-			fread (readbuffer, 1, ZIPCHUNK, fatfile);
-			break;
+		case 0:	// SD Card
+		fseek(fatfile, 0, SEEK_SET);
+		fread (readbuffer, 1, ZIPCHUNK, fatfile);
+		break;
 
-		case METHOD_DVD:
-			discoffset = dvddir;
-			dvd_read (readbuffer, ZIPCHUNK, discoffset);
-			break;
+		case 1: // DVD
+		dvd_read (readbuffer, ZIPCHUNK, discoffset);
+		break;
 
-		case METHOD_SMB:
-			SMB_ReadFile(readbuffer, ZIPCHUNK, 0, smbfile);
-			break;
+		case 2: // From SMB
+		SMB_ReadFile(readbuffer, ZIPCHUNK, 0, smbfile);
+		break;
 	}
 
 	/*** Copy PKZip header to local, used as info ***/
@@ -175,26 +176,25 @@ UnZipBuffer (unsigned char *outbuffer, int method)
 		}
 		while (zs.avail_out == 0);
 
-		// Readup the next 2k block
+		/*** Readup the next 2k block ***/
 		zipoffset = 0;
 		zipchunk = ZIPCHUNK;
 
-		switch (method)
+		switch (where)
 		{
-			case METHOD_SD:
-			case METHOD_USB:
-				fread (readbuffer, 1, ZIPCHUNK, fatfile);
-				break;
+			case 0:	// SD Card
+			fread (readbuffer, 1, ZIPCHUNK, fatfile);
+			break;
 
-			case METHOD_DVD:
-				readoffset += ZIPCHUNK;
-				dvd_read (readbuffer, ZIPCHUNK, discoffset+readoffset);
-				break;
+			case 1:	// DVD
+			readoffset += ZIPCHUNK;
+			dvd_read (readbuffer, ZIPCHUNK, discoffset+readoffset);
+			break;
 
-			case METHOD_SMB:
-				readoffset += ZIPCHUNK;
-				SMB_ReadFile(readbuffer, ZIPCHUNK, readoffset, smbfile);
-				break;
+			case 2: // From SMB
+			readoffset += ZIPCHUNK;
+			SMB_ReadFile(readbuffer, ZIPCHUNK, readoffset, smbfile);
+			break;
 		}
 	}
 	while (res != Z_STREAM_END);
@@ -211,49 +211,75 @@ UnZipBuffer (unsigned char *outbuffer, int method)
 
 	return 0;
 }
-
-/****************************************************************************
- * GetFirstZipFilename
- *
- * Returns the filename of the first file in the zipped archive
- * The idea here is to do the least amount of work required
- ***************************************************************************/
-
-char *
-GetFirstZipFilename (int method)
+// Reading from FAT
+int
+UnZipFATFile (unsigned char *outbuffer, FILE* infile)
 {
-	char * firstFilename = NULL;
-	char tempbuffer[ZIPCHUNK];
-
-	// read start of ZIP
-	switch (method)
-	{
-		case METHOD_SD:	// SD Card
-		case METHOD_USB: // USB
-			LoadFATFile (tempbuffer, ZIPCHUNK);
-			break;
-
-		case METHOD_DVD: // DVD
-			LoadDVDFile ((unsigned char *)tempbuffer, ZIPCHUNK);
-			break;
-
-		case METHOD_SMB: // From SMB
-			LoadSMBFile (tempbuffer, ZIPCHUNK);
-			break;
-	}
-
-	tempbuffer[28] = 0; // truncate - filename length is 2 bytes long (bytes 26-27)
-	int namelength = tempbuffer[26]; // filename length starts 26 bytes in
-
-	firstFilename = &tempbuffer[30]; // first filename of a ZIP starts 31 bytes in
-	firstFilename[namelength] = 0; // truncate at filename length
-
-	return firstFilename;
+	fatfile = infile;
+	return UnZipBuffer(outbuffer, 0);
+}
+// Reading from DVD
+int
+UnZipDVDFile (unsigned char *outbuffer, u64 inoffset)
+{
+	discoffset = inoffset;
+	return UnZipBuffer(outbuffer, 1);
+}
+// Reading from SMB
+int
+UnZipSMBFile (unsigned char *outbuffer, SMBFILE infile)
+{
+	smbfile = infile;
+	return UnZipBuffer(outbuffer, 2);
 }
 
-/****************************************************************************
- * 7z functions
- ***************************************************************************/
+/*
+ * 7-zip functions are below. Have to be written to work with above.
+ * 
+else if (selection == 0 && inSz == true) {
+	rootdir = filelist[1].offset;
+	rootdirlength = filelist[1].length;
+	offset = 0;
+	maxfiles = parsedir();
+	inSz = false;
+	SzClose();
+}
+else if (inSz == false && SzDvdIsArchive(filelist[selection].offset) == SZ_OK) {
+	// parse the 7zip file
+	ShowAction("Found 7z");
+	SzParse();
+	if(SzRes == SZ_OK) {
+		inSz = true;
+		offset = selection = 0;
+	} else {
+		SzDisplayError(SzRes);
+	}
+}
+else if (inSz == true) {
+	// extract the selected ROM from the 7zip file to the buffer
+	if(SzExtractROM(filelist[selection].offset, nesrom) == true) {
+		haverom = 1;
+		inSz = false;
+
+		// go one directory up
+		rootdir = filelist[1].offset;
+		rootdirlength = filelist[1].length;
+		offset = selection = 0;
+		maxfiles = parsedir();
+	}
+}
+*/
+
+
+
+
+/*
+ * 7-zip functions are below. Have to be written to work with above.
+
+
+#include "7zCrc.h"
+#include "7zIn.h"
+#include "7zExtract.h"
 
 typedef struct _SzFileInStream
 {
@@ -263,6 +289,9 @@ typedef struct _SzFileInStream
     u64 pos;  // current position of the file pointer
 } SzFileInStream;
 
+
+
+
  // 7zip error list
 char szerrormsg[][30] = {
     "7z: Data error",
@@ -270,8 +299,7 @@ char szerrormsg[][30] = {
     "7z: CRC Error",
     "7z: Not implemented",
     "7z: Fail",
-    "7z: Archive error",
-    "7z: Dictionary too large",
+    "7z: Archive error"
 };
 
 SZ_RESULT SzRes;
@@ -285,66 +313,148 @@ size_t SzBufferSize;
 size_t SzOffset;
 size_t SzOutSizeProcessed;
 CFileItem *SzF;
-
 char sz_buffer[2048];
-int szMethod = 0;
 
-/****************************************************************************
- * Is7ZipFile
- *
- * Returns 1 when 7z signature is found
- ****************************************************************************/
-int
-Is7ZipFile (char *buffer)
-{
-	unsigned int *check;
-	check = (unsigned int *) buffer;
+// the GC's dvd drive only supports offsets and length which are a multiply of 32 bytes
+// additionally the max length of a read is 2048 bytes
+// this function removes these limitations
+// additionally the 7zip SDK does often read data in 1 byte parts from the DVD even when
+// it could read 32 bytes. the dvdsf_buffer has been added to avoid having to read the same sector
+// over and over again
+unsigned char dvdsf_buffer[DVD_SECTOR_SIZE];
+u64 dvdsf_last_offset = 0;
+u64 dvdsf_last_length = 0;
 
-	// 7z signature
-	static Byte Signature[6] = {'7', 'z', 0xBC, 0xAF, 0x27, 0x1C};
+int dvd_buffered_read(void *dst, u32 len, u64 offset) {
+    int ret = 0;
 
-	int i;
-	for(i = 0; i < 6; i++)
-		if(buffer[i] != Signature[i])
-			return 0;
+    // only read data if the data inside dvdsf_buffer cannot be used
+    if(offset != dvdsf_last_offset || len > dvdsf_last_length) {
+        char msg[1024];
+        sprintf(msg, "buff_read: len=%d, offset=%llX, UseSD=%d", len, offset, UseSDCARD);
+        //WaitPrompt(msg);
+        memset(&dvdsf_buffer, '\0', DVD_SECTOR_SIZE);
+        if (UseSDCARD) {
+            if (filehandle == NULL)
+                GetSDInfo();
 
-	return 1; // 7z archive found
+            fseek(filehandle, offset, SEEK_SET);
+            fread(&dvdsf_buffer, len, 1, filehandle);
+        } else if (!UseWiiSDCARD)
+            ret = dvd_read(&dvdsf_buffer, len, offset);
+        dvdsf_last_offset = offset;
+        dvdsf_last_length = len;
+    }
+
+    memcpy(dst, &dvdsf_buffer, len);
+    return ret;
 }
 
-// display an error message
-void SzDisplayError(SZ_RESULT res)
-{
-	WaitPrompt(szerrormsg[(res - 1)]);
+int dvd_safe_read(void *dst_v, u32 len, u64 offset) {
+    unsigned char buffer[DVD_SECTOR_SIZE]; // buffer for one dvd sector
+
+    // if read size and length are a multiply of DVD_(OFFSET,LENGTH)_MULTIPLY and length < DVD_MAX_READ_LENGTH
+    // we don't need to fix anything
+    if(len % DVD_LENGTH_MULTIPLY == 0 && offset % DVD_OFFSET_MULTIPLY == 0 && len <= DVD_MAX_READ_LENGTH) {
+        char msg[1024];
+        sprintf(msg, "simple_safe_read: len=%d, offset=%llX, UseSD=%d", len, offset, UseSDCARD);
+        //WaitPrompt(msg);
+        int ret = dvd_buffered_read(buffer, len, offset);
+        memcpy(dst_v, &buffer, len);
+        return ret;
+    } else {
+        char msg[1024];
+        sprintf(msg, "complex_safe_read: len=%d, offset=%llX, UseSD=%d", len, offset, UseSDCARD);
+        //WaitPrompt(msg);
+        // no errors yet -> ret = 0
+        // the return value of dvd_read will be OR'd with ret
+        // because dvd_read does return 1 on error and 0 on success and
+        // because 0 | 1 = 1 ret will also contain 1 if at least one error
+        // occured and 0 otherwise ;)
+        int ret = 0; // return value of dvd_read
+
+        // we might need to fix all 3 issues
+        unsigned char *dst = (unsigned char *)dst_v; // gcc will not allow to use var[num] on void* types
+        u64 bytesToRead; // the number of bytes we still need to read & copy to the output buffer
+        u64 currentOffset; // the current dvd offset
+        u64 bufferOffset; // the current buffer offset
+        u64 i, j, k; // temporary variables which might be used for different stuff
+        //	unsigned char buffer[DVD_SECTOR_SIZE]; // buffer for one dvd sector
+
+        currentOffset = offset;
+        bytesToRead = len;
+        bufferOffset = 0;
+
+        // fix first issue (offset is not a multiply of 32)
+        if(offset % DVD_OFFSET_MULTIPLY) {
+            // calcualte offset of the prior 32 byte position
+            i = currentOffset - (currentOffset % DVD_OFFSET_MULTIPLY);
+
+            // calculate the offset from which the data of the dvd buffer will be copied
+            j = currentOffset % DVD_OFFSET_MULTIPLY;
+
+            // calculate the number of bytes needed to reach the next DVD_OFFSET_MULTIPLY byte mark
+            k = DVD_OFFSET_MULTIPLY - j;
+
+            // maybe we'll only need to copy a few bytes and we therefore don't even reach the next sector
+            if(k > len) {
+                k = len;
+            }
+
+            // read 32 bytes from the last 32 byte position
+            ret |= dvd_buffered_read(buffer, DVD_OFFSET_MULTIPLY, i);
+
+            // copy the bytes to the output buffer and update currentOffset, bufferOffset and bytesToRead
+            memcpy(&dst[bufferOffset], &buffer[j], k);
+            currentOffset += k;
+            bufferOffset += k;
+            bytesToRead -= k;
+        }
+
+        // fix second issue (more than 2048 bytes are needed)
+        if(bytesToRead > DVD_MAX_READ_LENGTH) {
+            // calculate the number of 2048 bytes sector needed to get all data
+            i = (bytesToRead - (bytesToRead % DVD_MAX_READ_LENGTH)) / DVD_MAX_READ_LENGTH;
+
+            // read data in 2048 byte sector
+            for(j = 0; j < i; j++) {
+                ret |= dvd_buffered_read(buffer, DVD_MAX_READ_LENGTH, currentOffset); // read sector
+                memcpy(&dst[bufferOffset], buffer, DVD_MAX_READ_LENGTH); // copy to output buffer
+
+                // update currentOffset, bufferOffset and bytesToRead
+                currentOffset += DVD_MAX_READ_LENGTH;
+                bufferOffset += DVD_MAX_READ_LENGTH;
+                bytesToRead -= DVD_MAX_READ_LENGTH;
+            }
+        }
+
+        // fix third issue (length is not a multiply of 32)
+        if(bytesToRead) {
+            ret |= dvd_buffered_read(buffer, DVD_MAX_READ_LENGTH, currentOffset); // read 32 byte from the dvd
+            memcpy(&dst[bufferOffset], buffer, bytesToRead); // copy bytes to output buffer
+        }
+
+        //free(tmp);
+        return ret;
+    }
 }
 
-// function used by the 7zip SDK to read data from SD/USB/DVD/SMB
-SZ_RESULT SzFileReadImp(void *object, void **buffer, size_t maxRequiredSize, size_t *processedSize)
+// function used by the 7zip SDK to read data from the DVD (fread)
+SZ_RESULT SzDvdFileReadImp(void *object, void **buffer, size_t maxRequiredSize, size_t *processedSize)
 {
     // the void* object is a SzFileInStream
     SzFileInStream *s = (SzFileInStream *)object;
 
-    // calculate offset
+    // calculate dvd sector offset
     u64 offset = (u64)(s->offset + s->pos);
 
-	if(maxRequiredSize > 2048)
-		maxRequiredSize = 2048;
+    if(maxRequiredSize > 2048)
+    {
+        maxRequiredSize = 2048;
+    }
 
     // read data
-	switch(szMethod)
-	{
-		case METHOD_SD:
-		case METHOD_USB:
-			fseek(fatfile, offset, SEEK_SET);
-			fread (sz_buffer, 1, maxRequiredSize, fatfile);
-			break;
-		case METHOD_DVD:
-			dvd_safe_read(sz_buffer, maxRequiredSize, offset);
-			break;
-		case METHOD_SMB:
-			SMB_ReadFile(sz_buffer, maxRequiredSize, offset, smbfile);
-			break;
-	}
-
+    dvd_safe_read(sz_buffer, maxRequiredSize, offset);
     *buffer = sz_buffer;
     *processedSize = maxRequiredSize;
     s->pos += *processedSize;
@@ -352,8 +462,8 @@ SZ_RESULT SzFileReadImp(void *object, void **buffer, size_t maxRequiredSize, siz
     return SZ_OK;
 }
 
-// function used by the 7zip SDK to change the filepointer
-SZ_RESULT SzFileSeekImp(void *object, CFileSize pos)
+// function used by the 7zip SDK to change the filepointer (fseek(object, pos, SEEK_SET))
+SZ_RESULT SzDvdFileSeekImp(void *object, CFileSize pos)
 {
     // the void* object is a SzFileInStream
     SzFileInStream *s = (SzFileInStream *)object;
@@ -370,158 +480,126 @@ SZ_RESULT SzFileSeekImp(void *object, CFileSize pos)
     return SZ_OK;
 }
 
-/****************************************************************************
- * SzParse
- *
- * Opens a 7z file, and parses it
- * Right now doesn't parse 7z, since we'll always use the first file
- * But it could parse the entire 7z for full browsing capability
- ***************************************************************************/
+SZ_RESULT SzDvdIsArchive(u64 dvd_offset) {
+    // 7z signautre
+    static Byte Signature[6] = {'7', 'z', 0xBC, 0xAF, 0x27, 0x1C};
+    Byte Candidate[6];
 
-int SzParse(char * filepath, int method)
-{
-	int nbfiles = 0;
+    //  read the data from the DVD
+    int res = dvd_safe_read (&Candidate, 6, dvd_offset);
+    char msg[1024];
 
-	// save the offset and the length of this file inside the archive stream structure
-	SzArchiveStream.offset = filelist[selection].offset;
-	SzArchiveStream.len = filelist[selection].length;
-	SzArchiveStream.pos = 0;
+    size_t i;
+    for(i = 0; i < 6; i++) {
+        if(Candidate[i] != Signature[i]) {
+            return SZE_FAIL;
+        }
+    }
 
-	// open file
-	switch (method)
-	{
-		case METHOD_SD:
-		case METHOD_USB:
-			fatfile = fopen (filepath, "rb");
-			if(!fatfile)
-				return 0;
-			break;
-		case METHOD_SMB:
-			smbfile = OpenSMBFile(filepath);
-			if(!smbfile)
-				return 0;
-			break;
-	}
-
-	// set szMethod to current chosen load method
-	szMethod = method;
-
-	// set handler functions for reading data from FAT/SMB/DVD
-	SzArchiveStream.InStream.Read = SzFileReadImp;
-	SzArchiveStream.InStream.Seek = SzFileSeekImp;
-
-	// set default 7Zip SDK handlers for allocation and freeing memory
-	SzAllocImp.Alloc = SzAlloc;
-	SzAllocImp.Free = SzFree;
-	SzAllocTempImp.Alloc = SzAllocTemp;
-	SzAllocTempImp.Free = SzFreeTemp;
-
-	// prepare CRC and 7Zip database structures
-	InitCrcTable();
-	SzArDbExInit(&SzDb);
-
-	// open the archive
-	SzRes = SzArchiveOpen(&SzArchiveStream.InStream, &SzDb, &SzAllocImp,
-			&SzAllocTempImp);
-
-	if (SzRes != SZ_OK)
-	{
-		SzDisplayError(SzRes);
-		// free memory used by the 7z SDK
-		SzClose();
-	}
-	else // archive opened successfully
-	{
-		if(SzDb.Database.NumFiles > 0)
-		{
-			// Parses the 7z into a full file listing
-
-			// erase all previous entries
-			memset(&filelist, 0, sizeof(FILEENTRIES) * MAXFILES);
-
-			// add '..' folder in case the user wants exit the 7z
-			strncpy(filelist[0].displayname, "..", 2);
-			filelist[0].flags = 1;
-			filelist[0].offset = dvddir;
-			filelist[0].length = dvddirlength;
-
-			// get contents and parse them into file list structure
-			unsigned int SzI, SzJ;
-			SzJ = 1;
-			for (SzI = 0; SzI < SzDb.Database.NumFiles; SzI++)
-			{
-				SzF = SzDb.Database.Files + SzI;
-
-				// skip directories
-				if (SzF->IsDirectory)
-					continue;
-
-				// do not exceed MAXFILES to avoid possible buffer overflows
-				if (SzJ == (MAXFILES - 1))
-					break;
-
-				// parse information about this file to the dvd file list structure
-				strncpy(filelist[SzJ].filename, SzF->Name, MAXJOLIET); // copy joliet name (useless...)
-				filelist[SzJ].filename[MAXJOLIET] = 0; // terminate string
-				strncpy(filelist[SzJ].displayname, SzF->Name, MAXDISPLAY+1);	// crop name for display
-				filelist[SzJ].length = SzF->Size; // filesize
-				filelist[SzJ].offset = SzI; // the extraction function identifies the file with this number
-				filelist[SzJ].flags = 0; // only files will be displayed (-> no flags)
-				SzJ++;
-			}
-
-			// update maxfiles and select the first entry
-			offset = selection = 0;
-			nbfiles = SzJ;
-		}
-		else
-		{
-			SzArDbExFree(&SzDb, SzAllocImp.Free);
-		}
-	}
-
-	// close file
-	switch (method)
-	{
-		case METHOD_SD:
-		case METHOD_USB:
-			fclose(fatfile);
-			break;
-		case METHOD_SMB:
-			SMB_CloseFile (smbfile);
-			break;
-	}
-	return nbfiles;
+    return SZ_OK;
 }
 
-/****************************************************************************
- * SzClose
- *
- * Closes a 7z file
- ***************************************************************************/
-
-void SzClose()
+// display an error message
+void SzDisplayError(SZ_RESULT res)
 {
-	if(SzDb.Database.NumFiles > 0)
-		SzArDbExFree(&SzDb, SzAllocImp.Free);
+    WaitPrompt(szerrormsg[(res - 1)]);
 }
 
-/****************************************************************************
- * SzExtractFile
- *
- * Extracts the given file # into the buffer specified
- * Must parse the 7z BEFORE running this function
- ***************************************************************************/
+static u64 rootdir;
+static int rootdirlength;
 
-int SzExtractFile(int i, unsigned char *buffer)
+void SzParse(void) {
+    // save the offset and the length of this file inside the archive stream structure
+    SzArchiveStream.offset = filelist[selection].offset;
+    SzArchiveStream.len = filelist[selection].length;
+    SzArchiveStream.pos = 0;
+
+    // set handler functions for reading data from DVD and setting the position
+    SzArchiveStream.InStream.Read = SzDvdFileReadImp;
+    SzArchiveStream.InStream.Seek = SzDvdFileSeekImp;
+
+    // set default 7Zip SDK handlers for allocation and freeing memory
+    SzAllocImp.Alloc = SzAlloc;
+    SzAllocImp.Free = SzFree;
+    SzAllocTempImp.Alloc = SzAllocTemp;
+    SzAllocTempImp.Free = SzFreeTemp;
+
+    // prepare CRC and 7Zip database structures
+    InitCrcTable();
+    SzArDbExInit(&SzDb);
+
+    // open the archive
+    SzRes = SzArchiveOpen(&SzArchiveStream.InStream, &SzDb, &SzAllocImp, &SzAllocTempImp);
+
+    if(SzRes != SZ_OK)
+    {
+        // free memory used by the 7z SDK
+        SzArDbExFree(&SzDb, SzAllocImp.Free);
+        return;
+    }
+    else
+    {
+        // archive opened successfully
+
+        // erase all previous entries
+        memset(&filelist, 0, sizeof(FILEENTRIES) * MAXFILES);
+
+        // add '../' folder
+        strncpy(filelist[0].filename, "../", 3);
+        filelist[0].length = rootdirlength;  //  store rootdir in case the user wants to go one folder up
+        filelist[0].offset = rootdir;        //   -''- rootdir length -''-
+        filelist[0].flags = 0;
+
+        // get contents and parse them into the dvd file list structure
+        unsigned int SzI, SzJ;
+        SzJ = 1;
+        for(SzI = 0; SzI < SzDb.Database.NumFiles; SzI++)
+        {
+            SzF = SzDb.Database.Files + SzI;
+
+            // skip directories
+            if(SzF->IsDirectory)
+            {
+                continue;
+            }
+
+            // do not exceed MAXFILES to avoid possible buffer overflows
+            if(SzJ == (MAXFILES - 1))
+            {
+                break;
+            }
+
+            // parse information about this file to the dvd file list structure
+            strncpy(filelist[SzJ].filename, SzF->Name, MAXJOLIET); // copy joliet name (useless...)
+            filelist[SzJ].filename[MAXJOLIET] = 0; // terminate string
+            filelist[SzJ].length = SzF->Size; // filesize
+            filelist[SzJ].offset = SzI; // the extraction function identifies the file with this number
+            filelist[SzJ].flags = 0; // only files will be displayed (-> no flags)
+            SzJ++;
+        }
+
+        // update maxfiles and select the first entry
+        maxfiles = SzJ;
+        offset = selection = 0;
+        return;
+    }
+}
+
+void SzClose(void)
 {
+    SzArDbExFree(&SzDb, SzAllocImp.Free);
+}
+
+bool SzExtractROM(int i, unsigned char *buffer)
+{
+
     // prepare some variables
     SzBlockIndex = 0xFFFFFFFF;
     SzOffset = 0;
 
     // Unzip the file
-    ShowAction("Unzipping file. Please wait...");
-
+    //ShowAction("Un7zipping file. Please wait...");
+    WaitPrompt("Un7zipping file. Please wait...");
     SzRes = SzExtract2(
             &SzArchiveStream.InStream,
             &SzDb,
@@ -534,18 +612,18 @@ int SzExtractFile(int i, unsigned char *buffer)
             &SzAllocImp,
             &SzAllocTempImp);
 
-    // close 7Zip archive and free memory
-	SzClose();
-
     // check for errors
     if(SzRes != SZ_OK)
     {
-    	// display error message
-    	SzDisplayError(SzRes);
-        return 0;
+        // display error message
+        WaitPrompt(szerrormsg[(SzRes - 1)]);
+        return false;
     }
     else
     {
-    	return SzOutSizeProcessed;
+        // close 7Zip archive and free memory
+        SzArDbExFree(&SzDb, SzAllocImp.Free);
+        return true;
     }
 }
+*/

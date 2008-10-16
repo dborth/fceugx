@@ -14,9 +14,9 @@
 
 #include <unistd.h>
 
-#define SAVEBUFFERSIZE (512 * 1024)
+#define SAVEBUFFERSIZE (64 * 1024)
 #define MAXJOLIET 255
-#define MAXDISPLAY 50
+#define MAXDISPLAY 54
 
 typedef struct
 {
@@ -39,7 +39,6 @@ extern char romFilename[];
 extern int nesGameType;
 
 void ClearSaveBuffer ();
-bool MakeROMPath(char filepath[], int method);
 int OpenROM (int method);
 int autoLoadMethod();
 int autoSaveMethod();

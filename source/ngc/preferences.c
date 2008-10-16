@@ -256,7 +256,7 @@ decodePrefsData (int method)
 
 	if(verMajor == '2' && verPoint < '3') // less than version 2.0.3
 		return false; // reset settings
-	else if(verMajor > '2' || verMinor > '0' || verPoint > '4') // some future version
+	else if(verMajor > '2' || verMinor > '0' || verPoint > '3') // some future version
 		return false; // reset settings
 
 	// File Settings
@@ -304,9 +304,7 @@ decodePrefsData (int method)
 bool
 SavePrefs (int method, bool silent)
 {
-	// there's no point in saving SMB settings TO SMB, because then we'll have no way to load them the next time!
-	// so instead we'll save using whatever other method is available (eg: SD)
-	if(method == METHOD_AUTO || method == METHOD_SMB)
+	if(method == METHOD_AUTO)
 		method = autoSaveMethod();
 
 	char filepath[1024];
