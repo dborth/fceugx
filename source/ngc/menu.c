@@ -34,9 +34,8 @@
 #include "fceustate.h"
 #include "gcvideo.h"
 #include "preferences.h"
-#include "fceuram.h"
-#include "fceuload.h"
 
+extern int GCMemROM();
 extern void ResetNES(void);
 extern void FCEU_ResetPalette(void);
 
@@ -76,27 +75,28 @@ LoadManager ()
 
 	if ( loadROM == 1 ) // if ROM was loaded
 	{
-		// load the RAM
-		if (GCSettings.AutoLoad == 1)
-			LoadRAM(GCSettings.SaveMethod, SILENT);
-		else if (GCSettings.AutoLoad == 2)
-			LoadState(GCSettings.SaveMethod, SILENT);
+		if(!GCMemROM()) // ROM was not valid
+			return 0;
 
-		ResetNES();
+		// load the state
+		if (GCSettings.AutoLoad == 1)
+			LoadState(GCSettings.SaveMethod, SILENT);
 	}
+
 	return loadROM;
 }
 
 /****************************************************************************
  * Emulator Menu
  ****************************************************************************/
-static int emulatormenuCount = 6;
+static int emulatormenuCount = 7;
 static char emulatormenu[][50] = {
 
 	"Screen Scaler",
 	"Palette",
 	"8 Sprite Limit",
 	"Timing",
+	"Four Score",
 
 	"Save Preferences",
 	"Back to Main Menu"
@@ -122,6 +122,9 @@ EmulatorMenu ()
 
 		sprintf (emulatormenu[3], "Timing - %s",
 			GCSettings.timing == true ? " PAL" : "NTSC");
+
+		sprintf (emulatormenu[4], "Four Score - %s",
+			GCSettings.FSDisable == true ? " ON" : "OFF");
 
 		ret = RunMenu (emulatormenu, emulatormenuCount, (char*)"Emulator Options", 16, -1);
 
@@ -169,12 +172,17 @@ EmulatorMenu ()
 				FCEUI_SetVidSystem(GCSettings.timing);
 				break;
 
-			case 4:
+			case 4: // four score
+				GCSettings.FSDisable ^= 1;
+				FCEUI_DisableFourScore(GCSettings.FSDisable);
+				break;
+
+			case 5:
 				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
 			case -1: // Button B
-			case 5:
+			case 6:
 				quit = 1;
 				break;
 
@@ -223,6 +231,12 @@ PreferencesMenu ()
 			GCSettings.SaveMethod++;
 		#endif
 
+		// check if DVD access in Wii mode is disabled
+		#ifndef WII_DVD
+		if(GCSettings.LoadMethod == METHOD_DVD)
+			GCSettings.LoadMethod++;
+		#endif
+
 		// saving to DVD is impossible
 		if(GCSettings.SaveMethod == METHOD_DVD)
 			GCSettings.SaveMethod++;
@@ -241,10 +255,6 @@ PreferencesMenu ()
 			GCSettings.SaveMethod++;
 		if(GCSettings.SaveMethod == METHOD_MC_SLOTB)
 			GCSettings.SaveMethod++;
-		prefmenu[6][0] = '\0';
-		#else
-		sprintf (prefmenu[6], "Verify MC Saves %s",
-			GCSettings.VerifySaves == true ? " ON" : "OFF");
 		#endif
 
 		// correct load/save methods out of bounds
@@ -275,13 +285,13 @@ PreferencesMenu ()
 		prefmenu[3][0] = '\0';
 
 		if (GCSettings.AutoLoad == 0) sprintf (prefmenu[4],"Auto Load OFF");
-		else if (GCSettings.AutoLoad == 1) sprintf (prefmenu[4],"Auto Load RAM");
-		else if (GCSettings.AutoLoad == 2) sprintf (prefmenu[4],"Auto Load STATE");
+		else if (GCSettings.AutoLoad == 1) sprintf (prefmenu[4],"Auto Load ON");
 
 		if (GCSettings.AutoSave == 0) sprintf (prefmenu[5],"Auto Save OFF");
-		else if (GCSettings.AutoSave == 1) sprintf (prefmenu[5],"Auto Save RAM");
-		else if (GCSettings.AutoSave == 2) sprintf (prefmenu[5],"Auto Save STATE");
-		else if (GCSettings.AutoSave == 3) sprintf (prefmenu[5],"Auto Save BOTH");
+		else if (GCSettings.AutoSave == 1) sprintf (prefmenu[5],"Auto Save ON");
+
+		sprintf (prefmenu[6], "Verify MC Saves %s",
+			GCSettings.VerifySaves == true ? " ON" : "OFF");
 
 		ret = RunMenu (prefmenu, prefmenuCount, (char*)"Preferences", 16, -1);
 
@@ -303,13 +313,13 @@ PreferencesMenu ()
 
 			case 4:
 				GCSettings.AutoLoad ++;
-				if (GCSettings.AutoLoad > 2)
+				if (GCSettings.AutoLoad > 1)
 					GCSettings.AutoLoad = 0;
 				break;
 
 			case 5:
 				GCSettings.AutoSave ++;
-				if (GCSettings.AutoSave > 3)
+				if (GCSettings.AutoSave > 1)
 					GCSettings.AutoSave = 0;
 				break;
 
@@ -338,12 +348,11 @@ PreferencesMenu ()
 int
 GameMenu ()
 {
-	int gamemenuCount = 8;
+	int gamemenuCount = 6;
 	char gamemenu[][50] = {
 	  "Return to Game",
 	  "Reset Game",
 	  "ROM Information",
-	  "Load RAM", "Save RAM",
 	  "Load State", "Save State",
 	  "Back to Main Menu"
 	};
@@ -355,31 +364,12 @@ GameMenu ()
 
 	while (quit == 0)
 	{
-		if(nesGameType == 4) // FDS game
-		{
-			// disable RAM saving/loading
+		// disable state saving/loading if AUTO is on
+
+		if (GCSettings.AutoLoad == 1) // Auto Load SRAM
 			gamemenu[3][0] = '\0';
+		if (GCSettings.AutoSave == 1) // Auto Save SRAM
 			gamemenu[4][0] = '\0';
-
-			// disable ROM Information
-			gamemenu[2][0] = '\0';
-		}
-
-		// disable RAM/STATE saving/loading if AUTO is on
-		if (GCSettings.AutoLoad == 1) // Auto Load RAM
-			gamemenu[3][0] = '\0';
-		else if (GCSettings.AutoLoad == 2) // Auto Load STATE
-			gamemenu[5][0] = '\0';
-
-		if (GCSettings.AutoSave == 1) // Auto Save RAM
-			gamemenu[4][0] = '\0';
-		else if (GCSettings.AutoSave == 2) // Auto Save STATE
-			gamemenu[6][0] = '\0';
-		else if (GCSettings.AutoSave == 3) // Auto Save BOTH
-		{
-			gamemenu[4][0] = '\0';
-			gamemenu[6][0] = '\0';
-		}
 
 		ret = RunMenu (gamemenu, gamemenuCount, (char*)"Game Menu", 20, -1);
 
@@ -399,24 +389,16 @@ GameMenu ()
 				WaitButtonA ();
 				break;
 
-			case 3: // Load RAM
-				quit = retval = LoadRAM(GCSettings.SaveMethod, NOTSILENT);
-				break;
-
-			case 4: // Save RAM
-				SaveRAM(GCSettings.SaveMethod, NOTSILENT);
-				break;
-
-			case 5: // Load State
+			case 3: // Load State
 				quit = retval = LoadState(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
-			case 6: // Save State
+			case 4: // Save State
 				SaveState(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
 			case -1: // Button B
-			case 7: // Return to previous menu
+			case 5: // Return to previous menu
 				retval = 0;
 				quit = 1;
 				break;
@@ -534,17 +516,16 @@ GetButtonMap(u16 ctrlr_type, char* btn_name)
 	return pressed;
 }	// end getButtonMap()
 
-int cfg_btns_count = 10;
+int cfg_btns_count = 9;
 char cfg_btns_menu[][50] = {
-	"B           -         ",
-	"A           -         ",
-	"SELECT      -         ",
-	"START       -         ",
-	"UP          -         ",
-	"DOWN        -         ",
-	"LEFT        -         ",
-	"RIGHT       -         ",
-	"SPECIAL     -         ",
+	"B        -         ",
+	"A        -         ",
+	"SELECT   -         ",
+	"START    -         ",
+	"UP       -         ",
+	"DOWN     -         ",
+	"LEFT     -         ",
+	"RIGHT    -         ",
 	"Return to previous"
 };
 
@@ -591,7 +572,7 @@ ConfigureButtons (u16 ctrlr_type)
 	while (quit == 0)
 	{
 		/*** Update Menu with Current ButtonMap ***/
-		for (i=0; i<MAXJP; i++) // nes pad has 8 buttons to config (plus VS coin insert)
+		for (i=0; i<8; i++) // nes pad has 12 buttons to config (go thru them)
 		{
 			// get current padmap button name to display
 			for ( j=0;
@@ -624,7 +605,6 @@ ConfigureButtons (u16 ctrlr_type)
 			case 5:
 			case 6:
 			case 7:
-			case 8:
 				/*** Change button map ***/
 				// wait for input
 				memset (temp, 0, sizeof(temp));
@@ -636,7 +616,7 @@ ConfigureButtons (u16 ctrlr_type)
 				break;
 
 			case -1: /*** Button B ***/
-			case 9:
+			case 8:
 				/*** Return ***/
 				quit = 1;
 				break;
@@ -645,11 +625,8 @@ ConfigureButtons (u16 ctrlr_type)
 	menu = oldmenu;
 }	// end configurebuttons()
 
-int ctlrmenucount = 9;
+int ctlrmenucount = 6;
 char ctlrmenu[][50] = {
-	"Four Score",
-	"Zapper",
-	"Zapper Crosshair",
 	"Nunchuk",
 	"Classic Controller",
 	"Wiimote",
@@ -668,71 +645,45 @@ ConfigureControllers ()
 
 	// disable unavailable controller options if in GC mode
 	#ifndef HW_RVL
-		ctlrmenu[2][0] = '\0';
-		ctlrmenu[3][0] = '\0';
 		ctlrmenu[4][0] = '\0';
+		ctlrmenu[5][0] = '\0';
+		ctlrmenu[6][0] = '\0';
 	#endif
 
 	while (quit == 0)
 	{
-		sprintf (ctlrmenu[0], "Four Score - %s",
-			GCSettings.FSDisable == false ? " ON" : "OFF");
-
-		if (GCSettings.zapper == 0) sprintf (ctlrmenu[1],"Zapper - Disabled");
-		else if (GCSettings.zapper == 1) sprintf (ctlrmenu[1],"Zapper - Port 1");
-		else if (GCSettings.zapper == 2) sprintf (ctlrmenu[1],"Zapper - Port 2");
-
-		sprintf (ctlrmenu[2], "Zapper Crosshair - %s",
-			GCSettings.crosshair == true ? " ON" : "OFF");
-
 		/*** Controller Config Menu ***/
         ret = RunMenu (ctlrmenu, ctlrmenucount, (char*)"Configure Controllers", 20, -1);
 
 		switch (ret)
 		{
-			case 0: // four score
-				GCSettings.FSDisable ^= 1;
-				ToggleFourScore(GCSettings.FSDisable, romLoaded);
-				break;
-
-			case 1: // zapper
-				GCSettings.zapper -= 1; // we do this so Port 2 is first option shown
-				if(GCSettings.zapper < 0)
-					GCSettings.zapper = 2;
-				ToggleZapper(GCSettings.zapper, romLoaded);
-				break;
-
-			case 2: // zapper crosshair
-				GCSettings.crosshair ^= 1;
-				break;
-
-			case 3:
+			case 0:
 				/*** Configure Nunchuk ***/
 				ConfigureButtons (CTRLR_NUNCHUK);
 				break;
 
-			case 4:
+			case 1:
 				/*** Configure Classic ***/
 				ConfigureButtons (CTRLR_CLASSIC);
 				break;
 
-			case 5:
+			case 2:
 				/*** Configure Wiimote ***/
 				ConfigureButtons (CTRLR_WIIMOTE);
 				break;
 
-			case 6:
+			case 3:
 				/*** Configure GC Pad ***/
 				ConfigureButtons (CTRLR_GCPAD);
 				break;
 
-			case 7:
+			case 4:
 				/*** Save Preferences Now ***/
 				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
 			case -1: /*** Button B ***/
-			case 8:
+			case 5:
 				/*** Return ***/
 				quit = 1;
 				break;
@@ -837,16 +788,12 @@ MainMenu (int selectedMenu)
 		}
 	}
 
-	// Wait for buttons to be released
-	int count = 0; // how long we've been waiting for the user to release the button
-	while(count < 50 && (
-		PAD_ButtonsHeld(0)
-		#ifdef HW_RVL
-		|| WPAD_ButtonsHeld(0)
-		#endif
-	))
-	{
-		VIDEO_WaitVSync();
-		count++;
-	}
+	/*** Remove any still held buttons ***/
+	#ifdef HW_RVL
+		while( PAD_ButtonsHeld(0) || WPAD_ButtonsHeld(0) )
+		    VIDEO_WaitVSync();
+	#else
+		while( PAD_ButtonsHeld(0) )
+		    VIDEO_WaitVSync();
+	#endif
 }

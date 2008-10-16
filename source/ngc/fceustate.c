@@ -52,6 +52,9 @@ extern u32 iNESGameCRC32;
 int sboffset;				/*** Used as a basic fileptr  ***/
 int mcversion = 0x981211;
 
+extern unsigned char savebuffer[SAVEBUFFERSIZE];
+extern char romFilename[];
+
 /****************************************************************************
  * Memory based file functions
  ****************************************************************************/
@@ -59,7 +62,7 @@ int mcversion = 0x981211;
 /*** Open a file ***/
 void memopen() {
     sboffset = 0;
-    memset(savebuffer, 0, SAVEBUFFERSIZE);
+    memset(savebuffer, 0, sizeof(savebuffer));
 }
 
 /*** Close a file ***/
@@ -69,7 +72,7 @@ void memclose() {
 
 /*** Write to the file ***/
 void memfwrite( void *buffer, int len ) {
-    if ( (sboffset + len ) > SAVEBUFFERSIZE)
+    if ( (sboffset + len ) > sizeof(savebuffer))
         WaitPrompt("Buffer Exceeded");
 
     if ( len > 0 ) {
@@ -81,7 +84,7 @@ void memfwrite( void *buffer, int len ) {
 /*** Read from a file ***/
 void memfread( void *buffer, int len ) {
 
-    if ( ( sboffset + len ) > SAVEBUFFERSIZE)
+    if ( ( sboffset + len ) > sizeof(savebuffer))
         WaitPrompt("Buffer exceeded");
 
     if ( len > 0 ) {
@@ -221,9 +224,6 @@ int GCSaveChunk(int chunkid, SFORMAT *sf) {
  * It uses memory for it's I/O and has an added CHNK block.
  * The file is terminated with CHNK length of 0.
  ****************************************************************************/
-extern void (*SPreSave)(void);
-extern void (*SPostSave)(void);
-
 int GCFCEUSS_Save()
 {
     int totalsize = 0;
@@ -247,7 +247,6 @@ int GCFCEUSS_Save()
 
     /*** And Comments ***/
     strncpy (Comment[1],romFilename,31); // we only have 32 chars to work with!
-    Comment[1][31] = 0;
     memfwrite(&Comment[0], 64);
     totalsize += 64;
 
@@ -259,14 +258,7 @@ int GCFCEUSS_Save()
     totalsize += GCSaveChunk(3, FCEUPPU_STATEINFO);
     totalsize += GCSaveChunk(4, FCEUCTRL_STATEINFO);
     totalsize += GCSaveChunk(5, FCEUSND_STATEINFO);
-
-    if(nesGameType == 4) // FDS
-    	SPreSave();
-
     totalsize += GCSaveChunk(0x10, SFMDATA);
-
-    if(nesGameType == 4) // FDS
-    	SPostSave();
 
     /*** Add terminating CHNK ***/
     memfwrite(&chunk,4);
@@ -333,7 +325,7 @@ bool LoadState (int method, bool silent)
 	ShowAction ((char*) "Loading...");
 
 	if(method == METHOD_AUTO)
-		method = autoSaveMethod(); // we use 'Save' because we need R/W
+		method = autoSaveMethod(); // we use 'Save' because SRAM needs R/W
 
 	char filepath[1024];
 	int offset = 0;
@@ -342,14 +334,7 @@ bool LoadState (int method, bool silent)
 	{
 		ChangeFATInterface(method, NOTSILENT);
 		sprintf (filepath, "%s/%s/%s.fcs", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
-		offset = LoadSaveBufferFromFAT (filepath, silent);
-
-		if(offset == 0) // file not found
-		{
-			// look for CRC save
-			sprintf (filepath, "%08x.fcs", iNESGameCRC32);
-			offset = LoadSaveBufferFromFAT (filepath, silent);
-		}
+		offset = LoadBufferFromFAT (filepath, silent);
 	}
 	else if(method == METHOD_SMB)
 	{

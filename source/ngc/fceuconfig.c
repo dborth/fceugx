@@ -25,8 +25,6 @@ DefaultSettings ()
 	GCSettings.currpal = 0;
 	GCSettings.timing = 0;
 	GCSettings.FSDisable = 1;
-	GCSettings.zapper = 0;
-	GCSettings.crosshair = 1;
 	GCSettings.slimit = 1;
 	GCSettings.screenscaler = 2;
 
@@ -35,19 +33,14 @@ DefaultSettings ()
 	sprintf (GCSettings.LoadFolder,"fceugx/roms"); // Path to game files
 	sprintf (GCSettings.SaveFolder,"fceugx/saves"); // Path to save files
 	sprintf (GCSettings.CheatFolder,"fceugx/cheats"); // Path to cheat files
-	GCSettings.AutoLoad = 1; // Auto Load RAM
-	GCSettings.AutoSave = 1; // Auto Save RAM
+	GCSettings.AutoLoad = 0;
+	GCSettings.AutoSave = 0;
 
-	// custom SMB settings
-	strncpy (GCSettings.smbip, "", 15); // IP Address of share server
-	strncpy (GCSettings.smbuser, "", 19); // Your share user
-	strncpy (GCSettings.smbpwd, "", 19); // Your share user password
-	strncpy (GCSettings.smbshare, "", 19); // Share name on server
-
-	GCSettings.smbip[15] = 0;
-	GCSettings.smbuser[19] = 0;
-	GCSettings.smbpwd[19] = 0;
-	GCSettings.smbshare[19] = 0;
+	// default SMB settings
+	strncpy (GCSettings.smbip, "192.168.0.1", 15); // IP Address of share server
+	strncpy (GCSettings.smbuser, "Wiiuser", 19); // Your share user
+	strncpy (GCSettings.smbpwd, "password", 19); // Your share user password
+	strncpy (GCSettings.smbshare, "NES", 19); // Share name on server
 
 	GCSettings.gcip[0] = 0;
 	GCSettings.gwip[0] = 0;

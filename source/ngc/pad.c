@@ -14,111 +14,65 @@
 #include <math.h>
 #include "driver.h"
 #include "fceu.h"
-#include "input.h"
 
 #include "fceuconfig.h"
 #include "pad.h"
-#include "gcaudio.h"
 #include "menu.h"
 #include "fceustate.h"
-#include "fceuram.h"
-#include "gcvideo.h"
-#include "filesel.h"
-
-extern bool romLoaded;
 
 // Original NES controller buttons
 // All other pads are mapped to this
 unsigned int nespadmap[] = {
 	JOY_B, JOY_A,
-	JOY_SELECT, JOY_START,
+	JOY_START, JOY_SELECT,
 	JOY_UP, JOY_DOWN,
-	JOY_LEFT, JOY_RIGHT,
-	0 // insert coin for VS games, insert/eject/select disk for FDS
+	JOY_LEFT, JOY_RIGHT
 };
 
 /*** Gamecube controller Padmap ***/
 unsigned int gcpadmap[] = {
 	PAD_BUTTON_B, PAD_BUTTON_A,
-	PAD_TRIGGER_Z, PAD_BUTTON_START,
+	PAD_TRIGGER_L, PAD_TRIGGER_R,
 	PAD_BUTTON_UP, PAD_BUTTON_DOWN,
-	PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT,
-	PAD_TRIGGER_L
+	PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT
 };
 /*** Wiimote Padmap ***/
 unsigned int wmpadmap[] = {
 	WPAD_BUTTON_1, WPAD_BUTTON_2,
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_RIGHT, WPAD_BUTTON_LEFT,
-	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
-	WPAD_BUTTON_A
+	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN
 };
 /*** Classic Controller Padmap ***/
 unsigned int ccpadmap[] = {
 	WPAD_CLASSIC_BUTTON_Y, WPAD_CLASSIC_BUTTON_B,
 	WPAD_CLASSIC_BUTTON_MINUS, WPAD_CLASSIC_BUTTON_PLUS,
 	WPAD_CLASSIC_BUTTON_UP, WPAD_CLASSIC_BUTTON_DOWN,
-	WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT,
-	WPAD_CLASSIC_BUTTON_A
+	WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT
 };
 /*** Nunchuk + wiimote Padmap ***/
 unsigned int ncpadmap[] = {
 	WPAD_NUNCHUK_BUTTON_C, WPAD_NUNCHUK_BUTTON_Z,
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
-	WPAD_BUTTON_LEFT, WPAD_BUTTON_RIGHT,
-	WPAD_BUTTON_A
+	WPAD_BUTTON_LEFT, WPAD_BUTTON_RIGHT
 };
 
 static uint32 JSReturn = 0;
-void *InputDPR;
-
-INPUTC *zapperdata[2];
-unsigned int myzappers[2][3];
-
-extern INPUTC *FCEU_InitZapper(int w);
 
 /****************************************************************************
  * Initialise Pads
  ****************************************************************************/
 void InitialisePads()
 {
-	InputDPR = &JSReturn;
-	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
-	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
+    int attrib = 0;
+    void *InputDPR;
 
-	ToggleFourScore(GCSettings.FSDisable, true);
-	ToggleZapper(GCSettings.zapper, true);
-}
+    FCEUI_DisableFourScore(1);
 
-void ToggleFourScore(int set, bool loaded)
-{
-	if(loaded)
-		FCEUI_DisableFourScore(set);
-}
-
-void ToggleZapper(int set, bool loaded)
-{
-	if(loaded)
-	{
-		// set defaults
-		zapperdata[0]=NULL;
-		zapperdata[1]=NULL;
-		myzappers[0][0]=myzappers[1][0]=128;
-		myzappers[0][1]=myzappers[1][1]=120;
-		myzappers[0][2]=myzappers[1][2]=0;
-
-		// Default ports back to gamepad
-		FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
-		FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
-
-		if(set)
-		{
-			// enable Zapper
-			zapperdata[set-1] = FCEU_InitZapper(set-1);
-			FCEUI_SetInput(set-1, SI_ZAPPER, myzappers[set-1], 1);
-		}
-	}
+    InputDPR = &JSReturn;
+    FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, attrib);
+    FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, attrib);
 }
 
 s8 WPAD_StickX(u8 chan,u8 right)
@@ -203,70 +157,6 @@ s8 WPAD_StickY(u8 chan, u8 right)
 	double val = mag * cos((PI * ang)/180.0f);
 
 	return (s8)(val * 128.0f);
-}
-
-// hold zapper cursor positions
-int pos_x = 0;
-int pos_y = 0;
-
-void UpdateCursorPosition (int pad)
-{
-	#define ZAPPERPADCAL 20
-
-	// gc left joystick
-	signed char pad_x = PAD_StickX (pad);
-	signed char pad_y = PAD_StickY (pad);
-
-	if (pad_x > ZAPPERPADCAL){
-		pos_x += (pad_x*1.0)/ZAPPERPADCAL;
-		if (pos_x > 256) pos_x = 256;
-	}
-	if (pad_x < -ZAPPERPADCAL){
-		pos_x -= (pad_x*-1.0)/ZAPPERPADCAL;
-		if (pos_x < 0) pos_x = 0;
-	}
-
-	if (pad_y < -ZAPPERPADCAL){
-		pos_y += (pad_y*-1.0)/ZAPPERPADCAL;
-		if (pos_y > 224) pos_y = 224;
-	}
-	if (pad_y > ZAPPERPADCAL){
-		pos_y -= (pad_y*1.0)/ZAPPERPADCAL;
-		if (pos_y < 0) pos_y = 0;
-	}
-
-#ifdef HW_RVL
-	struct ir_t ir;		// wiimote ir
-	WPAD_IR(pad, &ir);
-	if (ir.valid)
-	{
-		pos_x = (ir.x * 256) / 640;
-		pos_y = (ir.y * 224) / 480;
-	}
-	else
-	{
-		signed char wm_ax = WPAD_StickX (pad, 0);
-		signed char wm_ay = WPAD_StickY (pad, 0);
-
-		if (wm_ax > ZAPPERPADCAL){
-			pos_x += (wm_ax*1.0)/ZAPPERPADCAL;
-			if (pos_x > 256) pos_x = 256;
-		}
-		if (wm_ax < -ZAPPERPADCAL){
-			pos_x -= (wm_ax*-1.0)/ZAPPERPADCAL;
-			if (pos_x < 0) pos_x = 0;
-		}
-
-		if (wm_ay < -ZAPPERPADCAL){
-			pos_y += (wm_ay*-1.0)/ZAPPERPADCAL;
-			if (pos_y > 224) pos_y = 224;
-		}
-		if (wm_ay > ZAPPERPADCAL){
-			pos_y -= (wm_ay*1.0)/ZAPPERPADCAL;
-			if (pos_y < 0) pos_y = 0;
-		}
-	}
-#endif
 }
 
 /****************************************************************************
@@ -368,8 +258,9 @@ unsigned char DecodeJoy( unsigned short pad )
 	}
 #endif
 
-	// Report pressed buttons (gamepads)
+	/*** Report pressed buttons (gamepads) ***/
 	int i;
+
 	for (i = 0; i < MAXJP; i++)
 	{
 		if ( (jp & gcpadmap[i])											// gamecube controller
@@ -378,77 +269,15 @@ unsigned char DecodeJoy( unsigned short pad )
 		|| ( (exp_type == WPAD_EXP_CLASSIC) && (wp & ccpadmap[i]) )	// classic controller
 		|| ( (exp_type == WPAD_EXP_NUNCHUK) && (wp & ncpadmap[i]) )	// nunchuk + wiimote
 		#endif
-		)
-		{
-			// if zapper is on, ignore all buttons except START and SELECT
-			if(!GCSettings.zapper || nespadmap[i] == JOY_START || nespadmap[i] == JOY_SELECT)
-			{
-				if(nespadmap[i] > 0)
-				{
-					J |= nespadmap[i];
-				}
-				else
-				{
-					if(nesGameType == 4) // FDS
-					{
-						/* the commands shouldn't be issued in parallel so
-						 * we'll delay them so the virtual FDS has a chance
-						 * to process them
-						 */
-						FDSSwitchRequested = 1;
-					}
-					else
-						FCEUI_VSUniCoin(); // insert coin for VS Games
-				}
-			}
-		}
+	)
+		J |= nespadmap[i];
 	}
-	// zapper enabled
-	if(GCSettings.zapper)
-	{
-		int z = GCSettings.zapper-1; // NES port # (0 or 1)
-
-		myzappers[z][2] = 0; // reset trigger to not pressed
-
-		// is trigger pressed?
-		if ( (jp & PAD_BUTTON_A) // gamecube controller
-		#ifdef HW_RVL
-		|| (wp & WPAD_BUTTON_A)	// wiimote
-		|| (wp & WPAD_BUTTON_B)
-		|| (wp & WPAD_CLASSIC_BUTTON_A) // classic controller
-		#endif
-		)
-		{
-			// report trigger press
-			myzappers[z][2] |= 2;
-		}
-
-		// VS zapper games
-		if ( (jp & PAD_BUTTON_B) // gamecube controller
-		#ifdef HW_RVL
-		|| (wp & WPAD_BUTTON_1)	// wiimote
-		#endif
-		)
-		{
-			FCEUI_VSUniCoin(); // insert coin for VS zapper games
-		}
-
-		// cursor position
-		UpdateCursorPosition(0); // update cursor for wiimote 1
-		myzappers[z][0] = pos_x;
-		myzappers[z][1] = pos_y;
-
-		// Report changes to FCE Ultra
-		zapperdata[z]->Update(z,myzappers[z],0);
-	}
-
-	return J;
+    return J;
 }
 
 void GetJoy()
 {
-    JSReturn = 0; // reset buttons pressed
-	unsigned char pad[4];
+    unsigned char pad[4];
     short i;
 
     s8 gc_px = PAD_SubStickX (0);
@@ -460,7 +289,7 @@ void GetJoy()
     #endif
 
     // request to go back to menu
-    if ((gc_px < -70) || ((jp & PAD_BUTTON_START) && (jp & PAD_BUTTON_A))
+    if ((gc_px < -70) || (jp & PAD_BUTTON_START)
     #ifdef HW_RVL
     		 || (wm_pb & WPAD_BUTTON_HOME)
     		 || (wm_pb & WPAD_CLASSIC_BUTTON_HOME)
@@ -468,21 +297,10 @@ void GetJoy()
     #endif
     )
 	{
-    	StopAudio();
+    	AUDIO_StopDMA();
 
-    	if (GCSettings.AutoSave == 1)
-    	{
-    		SaveRAM(GCSettings.SaveMethod, SILENT);
-    	}
-    	else if (GCSettings.AutoSave == 2)
-    	{
-			SaveState(GCSettings.SaveMethod, SILENT);
-    	}
-    	else if(GCSettings.AutoSave == 3)
-    	{
-    		SaveRAM(GCSettings.SaveMethod, SILENT);
+    	if (GCSettings.AutoLoad == 1)
     		SaveState(GCSettings.SaveMethod, SILENT);
-    	}
 
     	MainMenu(4);
 	}

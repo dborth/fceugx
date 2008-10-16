@@ -22,58 +22,25 @@
 #include "palette.h"
 #include "fceu.h"
 #include "sound.h"
-#include "file.h"
 
 #include "common.h"
 #include "pad.h"
 #include "menudraw.h"
-#include "fceuconfig.h"
-#include "fileop.h"
-#include "filesel.h"
-#include "smbop.h"
 
-unsigned char *nesrom;
+unsigned char *nesromptr;
 bool romLoaded = false;
 
 extern FCEUGI *FCEUGameInfo;
+extern int iNESMemLoad( char *rom );
+
+extern unsigned char nesrom[];
 
 #define SAMPLERATE 48000
 
-FCEUFILE *fceufp = NULL;
-MEMWRAP *fceumem = NULL;
-unsigned char * fceuFileData = NULL;
-
-void MakeFCEUFile(char * membuffer, int length)
+int GCMemROM()
 {
-	if(fceufp != NULL)
-	{
-		free(fceuFileData);
-		free(fceumem);
-		free(fceufp);
-		fceuFileData = NULL;
-		fceumem = NULL;
-		fceufp = NULL;
-	}
+    nesromptr = &nesrom[0];
 
-	fceufp =(FCEUFILE *)malloc(sizeof(FCEUFILE));
-	fceufp->type=3;
-	fceumem = (MEMWRAP *)malloc(sizeof(MEMWRAP));
-	fceumem->location=0;
-	fceumem->size=length;
-	fceuFileData = (unsigned char *)malloc(length);
-	memcpy(fceuFileData, membuffer, length);
-	fceumem->data=fceuFileData;
-	fceufp->fp = fceumem;
-}
-
-extern int FDSLoad(const char *name, FCEUFILE *fp);
-extern int iNESLoad(const char *name, FCEUFILE *fp);
-extern int UNIFLoad(const char *name, FCEUFILE *fp);
-extern int NSFLoad(FCEUFILE *fp);
-extern uint8 FDSBIOS[8192];
-
-int GCMemROM(int method, int size)
-{
     ResetGameLoaded();
 
     /*** Allocate and clear GameInfo ***/
@@ -93,64 +60,13 @@ int GCMemROM(int method, int size)
 
     /*** Set internal sound information ***/
     FCEUI_Sound(SAMPLERATE);
-    FCEUI_SetSoundVolume(100); // 0-100
-    FCEUI_SetSoundQuality(0); // 0 - low, 1 - high
+    FCEUI_SetSoundQuality(0);
+    FCEUI_SetSoundVolume(100);
     FCEUI_SetLowPass(0);
 
     InitialisePads();
 
-    MakeFCEUFile((char *)nesrom, size);
-
-    nesGameType = 0;
-
-    if(iNESLoad(NULL, fceufp))
-		nesGameType = 1;
-	else if(UNIFLoad(NULL,fceufp))
-		nesGameType = 2;
-	else if(NSFLoad(fceufp))
-		nesGameType = 3;
-	else
-	{
-		// read FDS BIOS into FDSBIOS - should be 8192 bytes
-		if(FDSBIOS[1] == 0)
-		{
-			int biosSize = 0;
-			char * tmpbuffer = (char *)malloc(64 * 1024);
-
-			char filepath[1024];
-
-			switch (method)
-			{
-				case METHOD_SD:
-				case METHOD_USB:
-					sprintf(filepath, "%s/%s/disksys.rom", ROOTFATDIR, GCSettings.LoadFolder);
-					biosSize = LoadBufferFromFAT(tmpbuffer, filepath, NOTSILENT);
-					break;
-				case METHOD_SMB:
-					sprintf(filepath, "%s/disksys.rom", GCSettings.LoadFolder);
-					biosSize = LoadBufferFromSMB(tmpbuffer, filepath, 0, NOTSILENT);
-					break;
-			}
-
-			if(biosSize == 8192)
-			{
-				memcpy(FDSBIOS, tmpbuffer, 8192);
-			}
-			else
-			{
-				if(biosSize > 0)
-					WaitPrompt("FDS BIOS file is invalid!");
-
-				return 0; // BIOS not loaded, do not load game
-			}
-			free(tmpbuffer);
-		}
-		// load game
-		if(FDSLoad(NULL,fceufp))
-			nesGameType = 4;
-	}
-
-    if (nesGameType > 0)
+    if ( iNESMemLoad( (char *)nesromptr ) )
     {
         FCEU_ResetVidSys();
         PowerNES();
@@ -158,7 +74,6 @@ int GCMemROM(int method, int size)
         FCEU_ResetMessages();	// Save state, status messages, etc.
         SetSoundVariables();
         romLoaded = true;
-        return 1;
     }
     else
     {
@@ -166,4 +81,7 @@ int GCMemROM(int method, int size)
         romLoaded = false;
         return 0;
     }
+
+    return 1;
 }
+

@@ -164,19 +164,18 @@ preparePrefsData (int method)
 
 	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
 	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
+	createXMLSetting("FSDisable", "Four Score", toStr(GCSettings.FSDisable));
 	createXMLSetting("slimit", "8 Sprite Limit", toStr(GCSettings.slimit));
 	createXMLSetting("screenscaler", "Screen Scaler", toStr(GCSettings.screenscaler));
 
 	createXMLSection("Controller", "Controller Settings");
 
-	createXMLSetting("FSDisable", "Four Score", toStr(GCSettings.FSDisable));
-	createXMLSetting("zapper", "Zapper", toStr(GCSettings.zapper));
-	createXMLSetting("crosshair", "Zapper Crosshair", toStr(GCSettings.crosshair));
 	createXMLController(gcpadmap, "gcpadmap", "GameCube Pad");
 	createXMLController(wmpadmap, "wmpadmap", "Wiimote");
 	createXMLController(ccpadmap, "ccpadmap", "Classic Controller");
 	createXMLController(ncpadmap, "ncpadmap", "Nunchuk");
 
+	memset (savebuffer + offset, 0, SAVEBUFFERSIZE);
 	int datasize = mxmlSaveString(xml, (char *)savebuffer, SAVEBUFFERSIZE, XMLSaveCallback);
 
 	mxmlDelete(xml);
@@ -208,7 +207,6 @@ void loadXMLSettingBool(bool * var, const char * name)
 }
 
 void loadXMLController(unsigned int controller[], const char * name)
-
 {
 	item = mxmlFindElement(xml, xml, "controller", "name", name, MXML_DESCEND);
 
@@ -248,17 +246,6 @@ decodePrefsData (int method)
 	else // version # not found, must be invalid
 		return false;
 
-	// this code assumes version in format X.X.X
-	// XX.X.X, X.XX.X, or X.X.XX will NOT work
-	char verMajor = version[13];
-	char verMinor = version[15];
-	char verPoint = version[17];
-
-	if(verMajor == '2' && verPoint < '3') // less than version 2.0.3
-		return false; // reset settings
-	else if(verMajor > '2' || verMinor > '0' || verPoint > '4') // some future version
-		return false; // reset settings
-
 	// File Settings
 
 	loadXMLSettingInt(&GCSettings.AutoLoad, "AutoLoad");
@@ -284,8 +271,7 @@ decodePrefsData (int method)
 	loadXMLSettingInt(&GCSettings.FSDisable, "FSDisable");
 	loadXMLSettingInt(&GCSettings.slimit, "slimit");
 	loadXMLSettingInt(&GCSettings.screenscaler, "screenscaler");
-	loadXMLSettingInt(&GCSettings.zapper, "zapper");
-	loadXMLSettingInt(&GCSettings.crosshair, "crosshair");
+
 	// Controller Settings
 
 	loadXMLController(gcpadmap, "gcpadmap");
@@ -304,9 +290,7 @@ decodePrefsData (int method)
 bool
 SavePrefs (int method, bool silent)
 {
-	// there's no point in saving SMB settings TO SMB, because then we'll have no way to load them the next time!
-	// so instead we'll save using whatever other method is available (eg: SD)
-	if(method == METHOD_AUTO || method == METHOD_SMB)
+	if(method == METHOD_AUTO)
 		method = autoSaveMethod();
 
 	char filepath[1024];
@@ -350,62 +334,48 @@ SavePrefs (int method, bool silent)
 }
 
 /****************************************************************************
- * Load Preferences from specified method
+ * Load Preferences
  ****************************************************************************/
-
 bool
-LoadPrefsFromMethod (int method)
+LoadPrefs (int method, bool silent)
 {
+	if(method == METHOD_AUTO)
+		method = autoSaveMethod(); // we use 'Save' folder because preferences need R/W
+
 	bool retval = false;
 	char filepath[1024];
 	int offset = 0;
+
+	if ( !silent )
+		ShowAction ((char*) "Loading preferences...");
 
 	if(method == METHOD_SD || method == METHOD_USB)
 	{
 		if(ChangeFATInterface(method, NOTSILENT))
 		{
 			sprintf (filepath, "%s/%s/%s", ROOTFATDIR, GCSettings.SaveFolder, PREFS_FILE_NAME);
-			offset = LoadSaveBufferFromFAT (filepath, SILENT);
+			offset = LoadBufferFromFAT (filepath, silent);
 		}
 	}
 	else if(method == METHOD_SMB)
 	{
 		sprintf (filepath, "%s/%s", GCSettings.SaveFolder, PREFS_FILE_NAME);
-		offset = LoadSaveBufferFromSMB (filepath, SILENT);
+		offset = LoadSaveBufferFromSMB (filepath, silent);
 	}
 	else if(method == METHOD_MC_SLOTA)
 	{
-		offset = LoadBufferFromMC (savebuffer, CARD_SLOTA, (char *)PREFS_FILE_NAME, SILENT);
+		offset = LoadBufferFromMC (savebuffer, CARD_SLOTA, (char *)PREFS_FILE_NAME, silent);
 	}
 	else if(method == METHOD_MC_SLOTB)
 	{
-		offset = LoadBufferFromMC (savebuffer, CARD_SLOTB, (char *)PREFS_FILE_NAME, SILENT);
+		offset = LoadBufferFromMC (savebuffer, CARD_SLOTB, (char *)PREFS_FILE_NAME, silent);
 	}
 
 	if (offset > 0)
+	{
 		retval = decodePrefsData (method);
-
+		if ( !silent )
+			WaitPrompt((char *)"Preferences loaded");
+	}
 	return retval;
-}
-
-/****************************************************************************
- * Load Preferences
- * Checks sources consecutively until we find a preference file
- ****************************************************************************/
-
-bool LoadPrefs()
-{
-	bool prefFound = false;
-	if(ChangeFATInterface(METHOD_SD, SILENT))
-		prefFound = LoadPrefsFromMethod(METHOD_SD);
-	if(!prefFound && ChangeFATInterface(METHOD_USB, SILENT))
-		prefFound = LoadPrefsFromMethod(METHOD_USB);
-	if(!prefFound && TestCard(CARD_SLOTA, SILENT))
-		prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTA);
-	if(!prefFound && TestCard(CARD_SLOTB, SILENT))
-		prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTB);
-	if(!prefFound && ConnectShare (SILENT))
-		prefFound = LoadPrefsFromMethod(METHOD_SMB);
-
-	return prefFound;
 }

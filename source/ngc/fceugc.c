@@ -11,7 +11,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/time.h>
 #include <gctypes.h>
 #include <ogc/system.h>
@@ -28,21 +27,43 @@
 #include "menu.h"
 #include "fceuconfig.h"
 #include "preferences.h"
-#include "gcaudio.h"
 
 #ifdef WII_DVD
 #include <di/di.h>
 #endif
 
-unsigned char * nesrom = NULL;
 extern bool romLoaded;
 bool isWii;
 
+/* Some timing-related variables. */
+static int fullscreen=0;
+static int genie=0;
+static int palyo=0;
+
+static volatile int nofocus=0;
+static volatile int userpause=0;
+
+#define SO_FORCE8BIT  1
+#define SO_SECONDARY  2
+#define SO_GFOCUS     4
+#define SO_D16VOL     8
+
+#define GOO_DISABLESS   1       /* Disable screen saver when game is loaded. */
+#define GOO_CONFIRMEXIT 2       /* Confirmation before exiting. */
+#define GOO_POWERRESET  4       /* Confirm on power/reset. */
+
+static int soundvolume=100;
+static int soundquality=0;
+static int soundo;
+
 uint8 *xbsave=NULL;
+int eoptions=EO_BGRUN | EO_FORCEISCALE;
 
 extern int cleanSFMDATA();
 extern void ResetNES(void);
-extern uint8 FDSBIOS[8192];
+extern void InitialiseSound();
+extern void PlaySound( void *Buf, int samples );
+long long basetime;
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
@@ -72,13 +93,10 @@ int main(int argc, char *argv[])
 	}
 
     InitialiseSound();
-    fatInit (8, false);
+    fatInitDefault();
 #ifndef HW_RVL
     DVD_Init();
 #endif
-
-    // allocate memory to store rom
-    nesrom = (unsigned char *)malloc(1024*1024*3); // 3 MB should be plenty
 
     /*** Minimal Emulation Loop ***/
     if ( !FCEUI_Initialize() ) {
@@ -86,18 +104,24 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    FCEUI_SetVidSystem(0); // 0 - NTSC, 1 - PAL
-    FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
+    palyo=0;
+    FCEUI_SetVidSystem(palyo);
+    genie&=1;
+    FCEUI_SetGameGenie(genie);
+    fullscreen&=1;
+    soundo&=1;
+    FCEUI_SetSoundVolume(soundvolume);
+    FCEUI_SetSoundQuality(soundquality);
 
-    memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
-    cleanSFMDATA(); // clear state data
+    cleanSFMDATA();
+    GCMemROM();
+    romLoaded = false; // we start off with only the color test rom
 
     // Set Defaults
 	DefaultSettings();
 
 	// Load preferences
-
-	if(!LoadPrefs())
+	if(!LoadPrefs(GCSettings.SaveMethod, SILENT))
 	{
 		WaitPrompt((char*) "Preferences reset - check settings!");
 		selectedMenu = 3; // change to preferences menu
@@ -123,14 +147,15 @@ int main(int argc, char *argv[])
 /****************************************************************************
  * FCEU Support Functions to be written
  ****************************************************************************/
-// File Control
+/*** File Control ***/
+
+
 FILE *FCEUD_UTF8fopen(const char *n, const char *m)
 {
-    return NULL;
-	//return(fopen(n,m));
+    return(fopen(n,m));
 }
 
-// General Logging
+/*** General Logging ***/
 void FCEUD_PrintError(char *s)
 {
 }
@@ -139,15 +164,15 @@ void FCEUD_Message(char *text)
 {
 }
 
-// main interface to FCE Ultra
-void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count)
+/*** VIDEO ***/
+void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count)
 {
-    PlaySound(Buffer, Count); // play sound
-    RenderFrame( (char *)XBuf, GCSettings.screenscaler); // output video frame
-    GetJoy(); // check controller input
+    PlaySound(Buffer, Count);
+    RenderFrame( (char *)XBuf, GCSettings.screenscaler );
+    GetJoy();
 }
 
-// Netplay
+/*** Netplay ***/
 int FCEUD_SendData(void *data, uint32 len)
 {
     return 1;
@@ -165,3 +190,4 @@ void FCEUD_NetworkClose(void)
 void FCEUD_NetplayText(uint8 *text)
 {
 }
+
