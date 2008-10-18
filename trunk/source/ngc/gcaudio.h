@@ -11,4 +11,4 @@
 
 void InitialiseSound();
 void StopAudio();
-void PlaySound( void *Buf, int samples );
+void PlaySound( int *Buffer, int samples );

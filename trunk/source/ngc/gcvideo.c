@@ -10,6 +10,7 @@
  ****************************************************************************/
 
 #include <gccore.h>
+#include <unistd.h>
 #include <ogcsys.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,10 +54,56 @@ int whichfb = 0;
 int copynow = GX_FALSE;
 
 /****************************************************************************
+ * VideoThreading
+ ***************************************************************************/
+#define TSTACK 16384
+lwpq_t videoblankqueue;
+lwp_t vbthread;
+static unsigned char vbstack[TSTACK];
+
+/****************************************************************************
+ * vbgetback
+ *
+ * This callback enables the emulator to keep running while waiting for a
+ * vertical blank.
+ *
+ * Putting LWP to good use :)
+ ***************************************************************************/
+static void *
+vbgetback (void *arg)
+{
+	while (1)
+	{
+		VIDEO_WaitVSync ();	 /**< Wait for video vertical blank */
+		LWP_SuspendThread (vbthread);
+	}
+
+	return NULL;
+}
+
+/****************************************************************************
+ * InitVideoThread
+ *
+ * libOGC provides a nice wrapper for LWP access.
+ * This function sets up a new local queue and attaches the thread to it.
+ ***************************************************************************/
+void
+InitVideoThread ()
+{
+	/*** Initialise a new queue ***/
+	LWP_InitQueue (&videoblankqueue);
+
+	/*** Create the thread on this queue ***/
+	LWP_CreateThread (&vbthread, vbgetback, NULL, vbstack, TSTACK, 80);
+}
+
+/****************************************************************************
  * GX Chip Copy to XFB
  ****************************************************************************/
-static void copy_to_xfb() {
-    if (copynow == GX_TRUE) {
+static void copy_to_xfb()
+{
+    if (copynow == GX_TRUE)
+    {
         GX_CopyDisp(xfb[whichfb],GX_TRUE);
         GX_Flush();
         copynow = GX_FALSE;
@@ -90,7 +137,8 @@ static void copy_to_xfb() {
 /****************************************************************************
  * Initialise the GX
  ****************************************************************************/
-void StartGX() {
+void StartGX()
+{
     /*** Clear out FIFO area ***/
     memset(&gp_fifo, 0, DEFAULT_FIFO_SIZE);
 
@@ -149,7 +197,8 @@ void StartGX() {
  *
  * Using the texture map draw with quads
  ****************************************************************************/
-void GXDraw(unsigned char *XBuf) {
+void GXDraw(unsigned char *XBuf)
+{
     float gs = 1.0;
     float gt = 1.0;
     int width, height,t,xb;
@@ -236,7 +285,8 @@ UpdatePadsCB ()
  *
  * Helps keep the rendering at 2x sweet
  ****************************************************************************/
-void initDisplay() {
+void initDisplay()
+{
     /*** Start VIDEO Subsystem ***/
     VIDEO_Init();
 
@@ -258,18 +308,24 @@ void initDisplay() {
     xfb[1] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
 
     VIDEO_SetNextFramebuffer(xfb[0]);
+    VIDEO_ClearFrameBuffer (vmode, xfb[0], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer (vmode, xfb[1], COLOR_BLACK);
+	VIDEO_SetNextFramebuffer (xfb[0]);
+
     VIDEO_SetBlack(FALSE);
     VIDEO_Flush();
     VIDEO_WaitVSync();
 
-    if(vmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
+    if(vmode->viTVMode&VI_NON_INTERLACE)
+    	VIDEO_WaitVSync();
+
     VIDEO_SetPostRetraceCallback((VIRetraceCallback)UpdatePadsCB);
-    /*** Setup a console - guard against spurious printf ***/
     VIDEO_SetPreRetraceCallback((VIRetraceCallback)copy_to_xfb);
-    VIDEO_SetNextFramebuffer(xfb[0]);
 
     PAD_Init();
     StartGX();
+
+    InitVideoThread ();
 }
 
 /****************************************************************************
@@ -279,12 +335,19 @@ void initDisplay() {
  ****************************************************************************/
 #define NESWIDTH 256
 #define NESHEIGHT 240
-void RenderFrame(char *XBuf, int style) {
+
+void RenderFrame(char *XBuf, int style)
+{
     int gcdispOffset = 32;	/*** Offset to centre on screen ***/
     int w,h;
     int c,i;
 
+    // Ensure previous vb has complete
+	while ((LWP_ThreadIsSuspended (vbthread) == 0) || (copynow == GX_TRUE))
+		usleep (50);
+
     whichfb ^= 1;
+
     switch(style) {
         case 0 :
             VIDEO_ClearFrameBuffer(vmode, xfb[whichfb], COLOR_BLACK);
@@ -313,10 +376,12 @@ void RenderFrame(char *XBuf, int style) {
             break;
     }
 
-    /*** Now resync with VSync ***/
-    VIDEO_SetNextFramebuffer(xfb[whichfb]);
-    VIDEO_Flush();
-    VIDEO_WaitVSync();
+	VIDEO_SetNextFramebuffer(xfb[whichfb]);
+	VIDEO_Flush();
+	copynow = GX_TRUE;
+
+	// Return to caller, don't waste time waiting for vb
+	LWP_ResumeThread (vbthread);
 }
 
 /****************************************************************************

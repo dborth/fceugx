@@ -13,31 +13,56 @@
 #include <string.h>
 
 #define SAMPLERATE 48000
-unsigned char audiobuffer[2][64 * 1024] ATTRIBUTE_ALIGN(32);
-/*** Allow for up to 1 full second ***/
+
+static u8 ConfigRequested = 0;
+static u8 soundbuffer[2][3840] ATTRIBUTE_ALIGN(32);
+static u8 mixbuffer[16000];
+static int mixhead = 0;
+static int mixtail = 0;
+static int whichab = 0;
+int IsPlaying = 0;
+
+static int mixercollect( u8 *outbuffer, int len )
+{
+  u32 *dst = (u32 *)outbuffer;
+  u32 *src = (u32 *)mixbuffer;
+  int done = 0;
+
+  /*** Always clear output buffer ***/
+  memset(outbuffer, 0, len);
+
+  while ( ( mixtail != mixhead ) && ( done < len ) )
+  {
+    *dst++ = src[mixtail++];
+    if (mixtail == 4000) mixtail = 0;
+    done += 4;
+  }
+
+  /*** Realign to 32 bytes for DMA ***/
+  mixtail -= ((done&0x1f) >> 2);
+  if (mixtail < 0) mixtail += 4000;
+  done &= ~0x1f;
+  if (!done) return len >> 1;
+  return done;
+}
 
 /****************************************************************************
  * AudioSwitchBuffers
  *
  * Manages which buffer is played next
  ****************************************************************************/
-static int isWriting = 0;	/*** Bool for buffer writes ***/
-static int buffSize[2];		/*** Hold size of current buffer ***/
-static int whichab = 0;		/*** Which Audio Buffer is in use ***/
-static int isPlaying;		/*** Is Playing ***/
-static void AudioSwitchBuffers()
+void AudioSwitchBuffers()
 {
-	if ( buffSize[whichab] )
-	{
-		AUDIO_StopDMA();
-		AUDIO_InitDMA((u32)audiobuffer[whichab], buffSize[whichab]);
-		DCFlushRange(audiobuffer[whichab], buffSize[whichab]);
-		AUDIO_StartDMA();
-		isPlaying = 0;
-	}
-
-	whichab ^= 1;
-	buffSize[whichab] = 0;
+  if ( !ConfigRequested )
+  {
+    int len = mixercollect( soundbuffer[whichab], 3840 );
+    DCFlushRange(soundbuffer[whichab], len);
+    AUDIO_InitDMA((u32)soundbuffer[whichab], len);
+    AUDIO_StartDMA();
+    whichab ^= 1;
+    IsPlaying = 1;
+  }
+  else IsPlaying = 0;
 }
 
 void InitialiseSound()
@@ -45,29 +70,15 @@ void InitialiseSound()
 	AUDIO_Init(NULL);	/*** Start audio subsystem ***/
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 	AUDIO_RegisterDMACallback( AudioSwitchBuffers );
-	memset(audiobuffer, 0, (64 * 1024 * 2));
-	buffSize[0] = buffSize[1] = 0;
-}
-
-void StartAudio()
-{
-	AUDIO_StartDMA();
+  memset(soundbuffer, 0, 3840*2);
+  memset(mixbuffer, 0, 16000);
 }
 
 void StopAudio()
 {
-	AUDIO_StopDMA();
-	buffSize[0] = buffSize[1] = 0;
-}
-
-static inline unsigned short FLIP16(unsigned short b)
-{
-	return((b<<8)|((b>>8)&0xFF));
-}
-
-static inline u32 FLIP32(u32 b)
-{
-	return( (b<<24) | ((b>>8)&0xFF00) | ((b<<8)&0xFF0000) | ((b>>24)&0xFF) );
+  AUDIO_StopDMA();
+  ConfigRequested = 1;
+  IsPlaying = 0;
 }
 
 /****************************************************************************
@@ -75,43 +86,24 @@ static inline u32 FLIP32(u32 b)
  *
  * PlaySound will simply mix to get it right
  ****************************************************************************/
-#define AUDIOBUFFER ((50 * SAMPLERATE) / 1000 ) << 4
-static int isPlaying = 0;
-static short MBuffer[ 8 * 96000 / 50 ];
-
-void PlaySound( unsigned int *Buffer, int count )
+void PlaySound( int *Buffer, int count )
 {
-	int P;
-	unsigned short *s = (unsigned short *)&MBuffer[0];
-	unsigned int *d = (unsigned int *)&audiobuffer[whichab][buffSize[whichab]];
-	unsigned int c;
-	int ms;
+	int i;
+  s16 sample;
+  u32 *dst = (u32 *)mixbuffer;
 
-	isWriting = 1;
+  for( i = 0; i < count; i++ )
+  {
+    sample = Buffer[i] & 0xffff;
+    dst[mixhead++] = sample | ( sample << 16);
+    if (mixhead == 4000) mixhead = 0;
+  }
 
-	for ( P = 0; P < count; P++ )
-	{
-		MBuffer[P] = Buffer[P];
-	}
-
-	/*** Now do Mono - Stereo Conversion ***/
-	ms = count;
-	do
-	{
-		c = 0xffff & *s++;
-		*d++ = (c | (c<<16));
-	} while(--ms);
-
-	buffSize[whichab] += ( count << 2 );
-	/*** This is the kicker for the entire audio loop ***/
-	if ( isPlaying == 0 )
-	{
-		if ( buffSize[whichab] > AUDIOBUFFER )
-		{
-			isPlaying = 1;
-			AudioSwitchBuffers();
-		}
-	}
-
-	isWriting = 0;
+  /* Restart Sound Processing if stopped */
+	//return;
+  if (IsPlaying == 0)
+  {
+    ConfigRequested = 0;
+    AudioSwitchBuffers ();
+  }
 }
