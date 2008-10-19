@@ -3,8 +3,9 @@
  * Nintendo Wii/Gamecube Port
  *
  * Tantric September 2008
+ * eke-eke October 2008
  *
- * audio.h
+ * gcaudio.h
  *
  * Audio driver
  ****************************************************************************/

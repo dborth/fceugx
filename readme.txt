@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 2.0.4
+                                  Version 2.0.5
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -28,6 +28,12 @@ SNES9x GX project.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[What's New 2.0.5 - October 19, 2008]
+* Sound bug fixed - thanks eke-eke!
+* High quality sound enabled, lowpass filter enabled
+* Video threading enabled
+* Fixed timing error (incorrect opcode)
 
 [What's New 2.0.4 - October 15, 2008]
 * Wii DVD fixed
