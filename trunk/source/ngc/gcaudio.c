@@ -3,8 +3,9 @@
  * Nintendo Wii/Gamecube Port
  *
  * Tantric September 2008
+ * eke-eke October 2008
  *
- * audio.c
+ * gcaudio.c
  *
  * Audio driver
  ****************************************************************************/
@@ -24,26 +25,29 @@ int IsPlaying = 0;
 
 static int mixercollect( u8 *outbuffer, int len )
 {
-  u32 *dst = (u32 *)outbuffer;
-  u32 *src = (u32 *)mixbuffer;
-  int done = 0;
+	u32 *dst = (u32 *)outbuffer;
+	u32 *src = (u32 *)mixbuffer;
+	int done = 0;
 
-  /*** Always clear output buffer ***/
-  memset(outbuffer, 0, len);
+	// Always clear output buffer
+	memset(outbuffer, 0, len);
 
-  while ( ( mixtail != mixhead ) && ( done < len ) )
-  {
-    *dst++ = src[mixtail++];
-    if (mixtail == 4000) mixtail = 0;
-    done += 4;
-  }
+	while ( ( mixtail != mixhead ) && ( done < len ) )
+	{
+		*dst++ = src[mixtail++];
+		if (mixtail == 4000) mixtail = 0;
+		done += 4;
+	}
 
-  /*** Realign to 32 bytes for DMA ***/
-  mixtail -= ((done&0x1f) >> 2);
-  if (mixtail < 0) mixtail += 4000;
-  done &= ~0x1f;
-  if (!done) return len >> 1;
-  return done;
+	// Realign to 32 bytes for DMA
+	mixtail -= ((done&0x1f) >> 2);
+	if (mixtail < 0)
+		mixtail += 4000;
+	done &= ~0x1f;
+	if (!done)
+		return len >> 1;
+
+	return done;
 }
 
 /****************************************************************************
@@ -53,32 +57,32 @@ static int mixercollect( u8 *outbuffer, int len )
  ****************************************************************************/
 void AudioSwitchBuffers()
 {
-  if ( !ConfigRequested )
-  {
-    int len = mixercollect( soundbuffer[whichab], 3840 );
-    DCFlushRange(soundbuffer[whichab], len);
-    AUDIO_InitDMA((u32)soundbuffer[whichab], len);
-    AUDIO_StartDMA();
-    whichab ^= 1;
-    IsPlaying = 1;
-  }
-  else IsPlaying = 0;
+	if ( !ConfigRequested )
+	{
+		int len = mixercollect( soundbuffer[whichab], 3840 );
+		DCFlushRange(soundbuffer[whichab], len);
+		AUDIO_InitDMA((u32)soundbuffer[whichab], len);
+		AUDIO_StartDMA();
+		whichab ^= 1;
+		IsPlaying = 1;
+	}
+	else IsPlaying = 0;
 }
 
 void InitialiseSound()
 {
-	AUDIO_Init(NULL);	/*** Start audio subsystem ***/
+	AUDIO_Init(NULL); // Start audio subsystem
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 	AUDIO_RegisterDMACallback( AudioSwitchBuffers );
-  memset(soundbuffer, 0, 3840*2);
-  memset(mixbuffer, 0, 16000);
+	memset(soundbuffer, 0, 3840*2);
+	memset(mixbuffer, 0, 16000);
 }
 
 void StopAudio()
 {
-  AUDIO_StopDMA();
-  ConfigRequested = 1;
-  IsPlaying = 0;
+	AUDIO_StopDMA();
+	ConfigRequested = 1;
+	IsPlaying = 0;
 }
 
 /****************************************************************************
@@ -89,21 +93,21 @@ void StopAudio()
 void PlaySound( int *Buffer, int count )
 {
 	int i;
-  s16 sample;
-  u32 *dst = (u32 *)mixbuffer;
+	s16 sample;
+	u32 *dst = (u32 *)mixbuffer;
 
-  for( i = 0; i < count; i++ )
-  {
-    sample = Buffer[i] & 0xffff;
-    dst[mixhead++] = sample | ( sample << 16);
-    if (mixhead == 4000) mixhead = 0;
-  }
+	for( i = 0; i < count; i++ )
+	{
+		sample = Buffer[i] & 0xffff;
+		dst[mixhead++] = sample | ( sample << 16);
+		if (mixhead == 4000)
+			mixhead = 0;
+	}
 
-  /* Restart Sound Processing if stopped */
-	//return;
-  if (IsPlaying == 0)
-  {
-    ConfigRequested = 0;
-    AudioSwitchBuffers ();
-  }
+	// Restart Sound Processing if stopped
+	if (IsPlaying == 0)
+	{
+		ConfigRequested = 0;
+		AudioSwitchBuffers ();
+	}
 }
