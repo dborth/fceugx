@@ -16,6 +16,7 @@ void clearscreen ();
 void showscreen ();
 void initDisplay();
 void RenderFrame(char *XBuf, int style);
+void setFrameTimer();
 
 // color palettes
 #define MAXPAL 12
@@ -29,6 +30,5 @@ extern struct st_palettes palettes[];
 extern int FDSSwitchRequested;
 extern int vmode_60hz;
 extern bool progressive;
-extern u32 FrameTimer;
 
 #endif

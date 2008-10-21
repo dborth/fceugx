@@ -41,12 +41,6 @@ int ConfigRequested = 0;
 bool isWii;
 uint8 *xbsave=NULL;
 
-long long prev;
-long long now;
-
-long long gettime();
-u32 diff_usec(long long start,long long end);
-
 extern bool romLoaded;
 
 extern int cleanSFMDATA();
@@ -54,44 +48,6 @@ extern void ResetNES(void);
 extern uint8 FDSBIOS[8192];
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
-
-/****************************************************************************
- * setFrameTimer()
- * change frame timings depending on whether ROM is NTSC or PAL
- ***************************************************************************/
-
-int normaldiff;
-
-void setFrameTimer()
-{
-	if (GCSettings.timing) // PAL
-	{
-		if(vmode_60hz == 1)
-			normaldiff = 20000; // 50hz
-		else
-			normaldiff = 16667; // 60hz
-	}
-	else
-	{
-		if(vmode_60hz == 1)
-			normaldiff = 16667; // 60hz
-		else
-			normaldiff = 20000; // 50hz
-	}
-	FrameTimer = 0;
-	prev = gettime();
-}
-
-void SyncSpeed()
-{
-	now = gettime();
-	int diff = normaldiff - diff_usec(prev, now);
-	if (diff > 0) // ahead - take a nap
-		usleep(diff);
-
-	prev = now;
-	FrameTimer--;
-}
 
 /****************************************************************************
  * ipl_set_config
@@ -219,12 +175,8 @@ int main(int argc, char *argv[])
 				ConfigRequested = 0;
 				break; // leave emulation loop
 			}
-
-			SyncSpeed();
 		}
     }
-
-    return 0;
 }
 
 /****************************************************************************
