@@ -256,7 +256,7 @@ decodePrefsData (int method)
 
 	if(verMajor == '2' && verPoint < '3') // less than version 2.0.3
 		return false; // reset settings
-	else if(verMajor > '2' || verMinor > '0' || verPoint > '5') // some future version
+	else if(verMajor > '2' || verMinor > '0' || verPoint > '6') // some future version
 		return false; // reset settings
 
 	// File Settings

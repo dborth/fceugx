@@ -23,7 +23,7 @@ void
 DefaultSettings ()
 {
 	GCSettings.currpal = 0;
-	GCSettings.timing = 0;
+	GCSettings.timing = 0; // 0 - NTSC, 1 - PAL
 	GCSettings.FSDisable = 1;
 	GCSettings.zapper = 0;
 	GCSettings.crosshair = 1;

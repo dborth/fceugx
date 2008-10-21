@@ -16,7 +16,6 @@
 extern int NoWaiting;
 extern FCEUGI *GI;
 void DSMFix(unsigned int msg);
-void StopSound(void);
 
 extern int eoptions;
 

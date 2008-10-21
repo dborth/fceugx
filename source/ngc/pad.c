@@ -20,8 +20,6 @@
 #include "pad.h"
 #include "gcaudio.h"
 #include "menu.h"
-#include "fceustate.h"
-#include "fceuram.h"
 #include "gcvideo.h"
 #include "filesel.h"
 
@@ -469,22 +467,7 @@ void GetJoy()
     )
 	{
     	StopAudio();
-
-    	if (GCSettings.AutoSave == 1)
-    	{
-    		SaveRAM(GCSettings.SaveMethod, SILENT);
-    	}
-    	else if (GCSettings.AutoSave == 2)
-    	{
-			SaveState(GCSettings.SaveMethod, SILENT);
-    	}
-    	else if(GCSettings.AutoSave == 3)
-    	{
-    		SaveRAM(GCSettings.SaveMethod, SILENT);
-    		SaveState(GCSettings.SaveMethod, SILENT);
-    	}
-
-    	MainMenu(4);
+    	ConfigRequested = 1;
 	}
 	else
 	{
