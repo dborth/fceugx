@@ -20,6 +20,7 @@
 #include "driver.h"
 
 #include "gcvideo.h"
+#include "fceuconfig.h"
 #include "images/nesback.h"
 
 extern unsigned int SMBTimer;
@@ -54,7 +55,39 @@ static Mtx projectionMatrix,modelViewMatrix;
 void CheesyScale(unsigned char *XBuf);
 int whichfb = 0;
 int copynow = GX_FALSE;
-u32 FrameTimer = 0;
+
+long long prev;
+long long now;
+
+long long gettime();
+u32 diff_usec(long long start,long long end);
+
+/****************************************************************************
+ * setFrameTimer()
+ * change frame timings depending on whether ROM is NTSC or PAL
+ ***************************************************************************/
+
+int normaldiff;
+
+void setFrameTimer()
+{
+	if (GCSettings.timing == 1) // PAL
+		normaldiff = 20000; // 50hz
+	else
+		normaldiff = 16667; // 60hz
+
+	prev = gettime();
+}
+
+void SyncSpeed()
+{
+	now = gettime();
+	int diff = normaldiff - diff_usec(prev, now);
+	if (diff > 0) // ahead - take a nap
+		usleep(diff);
+
+	prev = now;
+}
 
 /****************************************************************************
  * VideoThreading
@@ -67,8 +100,8 @@ static unsigned char vbstack[TSTACK];
 /****************************************************************************
  * vbgetback
  *
- * This callback enables the emulator to keep running while waiting for a
- * vertical blank.
+ * This callback enables the emulator to keep running while managing proper
+ * timing
  *
  * Putting LWP to good use :)
  ***************************************************************************/
@@ -77,7 +110,7 @@ vbgetback (void *arg)
 {
 	while (1)
 	{
-		VIDEO_WaitVSync ();	 /**< Wait for video vertical blank */
+		SyncSpeed();
 		LWP_SuspendThread (vbthread);
 	}
 
@@ -112,7 +145,6 @@ static void copy_to_xfb()
 		copynow = GX_FALSE;
     }
     SMBTimer++;
-    FrameTimer++;
 
     // FDS switch disk requested - need to eject, select, and insert
     // but not all at once!
@@ -332,30 +364,30 @@ void initDisplay()
 	if (vmode->viTVMode == VI_TVMODE_NTSC_PROG)
 		progressive = true;
 
-    VIDEO_Configure(vmode);
+	VIDEO_Configure(vmode);
 
-    screenheight = vmode->xfbHeight;
+	screenheight = vmode->xfbHeight;
 
-    xfb[0] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
-    xfb[1] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
+	xfb[0] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
+	xfb[1] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
 
-    VIDEO_ClearFrameBuffer (vmode, xfb[0], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer (vmode, xfb[0], COLOR_BLACK);
 	VIDEO_ClearFrameBuffer (vmode, xfb[1], COLOR_BLACK);
 	VIDEO_SetNextFramebuffer (xfb[0]);
 
-    VIDEO_SetBlack(FALSE);
-    VIDEO_Flush();
-    VIDEO_WaitVSync();
+	VIDEO_SetBlack(FALSE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
 
-    if(vmode->viTVMode&VI_NON_INTERLACE)
-    	VIDEO_WaitVSync();
+	if(vmode->viTVMode&VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
 
-    VIDEO_SetPostRetraceCallback((VIRetraceCallback)UpdatePadsCB);
-    VIDEO_SetPreRetraceCallback((VIRetraceCallback)copy_to_xfb);
+	VIDEO_SetPostRetraceCallback((VIRetraceCallback)UpdatePadsCB);
+	VIDEO_SetPreRetraceCallback((VIRetraceCallback)copy_to_xfb);
 
-    StartGX();
+	StartGX();
 
-    InitVideoThread ();
+	InitVideoThread ();
 }
 
 /****************************************************************************
