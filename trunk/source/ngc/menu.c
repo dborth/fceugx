@@ -166,7 +166,6 @@ EmulatorMenu ()
 
 			case 3: // timing
 				GCSettings.timing ^= 1;
-				FCEUI_SetVidSystem(GCSettings.timing);
 				break;
 
 			case 4:

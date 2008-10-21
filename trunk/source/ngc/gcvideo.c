@@ -34,6 +34,8 @@ int FDSSwitchRequested;
 unsigned int *xfb[2];	/*** Framebuffer - used throughout ***/
 GXRModeObj *vmode;
 int screenheight;
+int vmode_60hz = 0;
+bool progressive = false;
 
 /*** Need something to hold the PC palette ***/
 struct pcpal {
@@ -52,6 +54,7 @@ static Mtx projectionMatrix,modelViewMatrix;
 void CheesyScale(unsigned char *XBuf);
 int whichfb = 0;
 int copynow = GX_FALSE;
+u32 FrameTimer = 0;
 
 /****************************************************************************
  * VideoThreading
@@ -104,11 +107,12 @@ static void copy_to_xfb()
 {
     if (copynow == GX_TRUE)
     {
-        GX_CopyDisp(xfb[whichfb],GX_TRUE);
-        GX_Flush();
-        copynow = GX_FALSE;
+		GX_CopyDisp(xfb[whichfb],GX_TRUE);
+		GX_Flush();
+		copynow = GX_FALSE;
     }
     SMBTimer++;
+    FrameTimer++;
 
     // FDS switch disk requested - need to eject, select, and insert
     // but not all at once!
@@ -292,6 +296,30 @@ void initDisplay()
 
     vmode = VIDEO_GetPreferredMode(NULL);
 
+    switch (vmode->viTVMode >> 2)
+	{
+		case VI_PAL:
+			// 576 lines (PAL 50Hz)
+			// display should be centered vertically (borders)
+			vmode = &TVPal574IntDfScale;
+			vmode->xfbHeight = 480;
+			vmode->viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
+			vmode->viHeight = 480;
+
+			vmode_60hz = 0;
+			break;
+
+		case VI_NTSC:
+			// 480 lines (NTSC 60hz)
+			vmode_60hz = 1;
+			break;
+
+		default:
+			// 480 lines (PAL 60Hz)
+			vmode_60hz = 1;
+			break;
+	}
+
 #ifdef HW_DOL
 /* we have component cables, but the preferred mode is interlaced
  * why don't we switch into progressive?
@@ -300,6 +328,10 @@ void initDisplay()
 		vmode = &TVNtsc480Prog;
 #endif
 
+	// check for progressive scan
+	if (vmode->viTVMode == VI_TVMODE_NTSC_PROG)
+		progressive = true;
+
     VIDEO_Configure(vmode);
 
     screenheight = vmode->xfbHeight;
@@ -307,7 +339,6 @@ void initDisplay()
     xfb[0] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
     xfb[1] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
 
-    VIDEO_SetNextFramebuffer(xfb[0]);
     VIDEO_ClearFrameBuffer (vmode, xfb[0], COLOR_BLACK);
 	VIDEO_ClearFrameBuffer (vmode, xfb[1], COLOR_BLACK);
 	VIDEO_SetNextFramebuffer (xfb[0]);
@@ -322,7 +353,6 @@ void initDisplay()
     VIDEO_SetPostRetraceCallback((VIRetraceCallback)UpdatePadsCB);
     VIDEO_SetPreRetraceCallback((VIRetraceCallback)copy_to_xfb);
 
-    PAD_Init();
     StartGX();
 
     InitVideoThread ();
@@ -378,7 +408,6 @@ void RenderFrame(char *XBuf, int style)
 
 	VIDEO_SetNextFramebuffer(xfb[whichfb]);
 	VIDEO_Flush();
-	copynow = GX_TRUE;
 
 	// Return to caller, don't waste time waiting for vb
 	LWP_ResumeThread (vbthread);

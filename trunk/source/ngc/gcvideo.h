@@ -27,5 +27,8 @@ struct st_palettes {
 
 extern struct st_palettes palettes[];
 extern int FDSSwitchRequested;
+extern int vmode_60hz;
+extern bool progressive;
+extern u32 FrameTimer;
 
 #endif

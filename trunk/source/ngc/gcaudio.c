@@ -93,7 +93,7 @@ void StopAudio()
 void PlaySound( int *Buffer, int count )
 {
 	int i;
-	s16 sample;
+	u16 sample;
 	u32 *dst = (u32 *)mixbuffer;
 
 	for( i = 0; i < count; i++ )

@@ -20,31 +20,83 @@
 
 #include "types.h"
 
-#include "gcvideo.h"
-#include "pad.h"
+#include "fceuconfig.h"
 #include "fceuload.h"
+#include "fceustate.h"
+#include "fceuram.h"
 #include "common.h"
 #include "menudraw.h"
 #include "menu.h"
-#include "fceuconfig.h"
 #include "preferences.h"
 #include "gcaudio.h"
+#include "gcvideo.h"
+#include "pad.h"
 
 #ifdef WII_DVD
 #include <di/di.h>
 #endif
 
 unsigned char * nesrom = NULL;
-extern bool romLoaded;
+int ConfigRequested = 0;
 bool isWii;
-
 uint8 *xbsave=NULL;
+
+long long prev;
+long long now;
+
+long long gettime();
+u32 diff_usec(long long start,long long end);
+
+extern bool romLoaded;
 
 extern int cleanSFMDATA();
 extern void ResetNES(void);
 extern uint8 FDSBIOS[8192];
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
+
+/****************************************************************************
+ * setFrameTimer()
+ * change frame timings depending on whether ROM is NTSC or PAL
+ ***************************************************************************/
+
+int normaldiff;
+
+void setFrameTimer()
+{
+	if (GCSettings.timing) // PAL
+	{
+		if(vmode_60hz == 1)
+			normaldiff = 20000; // 50hz
+		else
+			normaldiff = 16667; // 60hz
+	}
+	else
+	{
+		if(vmode_60hz == 1)
+			normaldiff = 16667; // 60hz
+		else
+			normaldiff = 20000; // 50hz
+	}
+	FrameTimer = 0;
+	prev = gettime();
+}
+
+void SyncSpeed()
+{
+	now = gettime();
+	int diff = normaldiff - diff_usec(prev, now);
+	if (diff > 0) // ahead - take a nap
+		usleep(diff);
+
+	prev = now;
+	FrameTimer--;
+}
+
+/****************************************************************************
+ * main
+ * This is where it all happens!
+ ***************************************************************************/
 
 int main(int argc, char *argv[])
 {
@@ -61,6 +113,8 @@ int main(int argc, char *argv[])
 	WPAD_SetDataFormat(WPAD_CHAN_ALL,WPAD_FMT_BTNS_ACC_IR);
 	WPAD_SetVRes(WPAD_CHAN_ALL,640,480);
 #endif
+
+	PAD_Init();
 
     initDisplay();
 
@@ -86,8 +140,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    FCEUI_SetVidSystem(0); // 0 - NTSC, 1 - PAL
-    FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
+	FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
 
     memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
     cleanSFMDATA(); // clear state data
@@ -103,31 +156,57 @@ int main(int argc, char *argv[])
 		selectedMenu = 3; // change to preferences menu
 	}
 
-	// Go to main menu
-    MainMenu (selectedMenu);
-
-    while (1)
+    while (1) // main loop
     {
-        uint8 *gfx;
-        int32 *sound;
-        int32 ssize;
+		MainMenu(selectedMenu);
+		selectedMenu = 4; // return to game menu from now on
 
-        FCEUI_Emulate(&gfx, &sound, &ssize, 0);
-        xbsave = gfx;
-        FCEUD_Update(gfx, sound, ssize);
+		setFrameTimer(); // set frametimer method before emulation
+		FCEUI_SetVidSystem(GCSettings.timing);
+
+		while(1) // emulation loop
+		{
+			uint8 *gfx;
+			int32 *sound;
+			int32 ssize;
+
+			FCEUI_Emulate(&gfx, &sound, &ssize, 0);
+			xbsave = gfx;
+			FCEUD_Update(gfx, sound, ssize);
+
+			if(ConfigRequested)
+			{
+				if (GCSettings.AutoSave == 1)
+				{
+					SaveRAM(GCSettings.SaveMethod, SILENT);
+				}
+				else if (GCSettings.AutoSave == 2)
+				{
+					SaveState(GCSettings.SaveMethod, SILENT);
+				}
+				else if(GCSettings.AutoSave == 3)
+				{
+					SaveRAM(GCSettings.SaveMethod, SILENT);
+					SaveState(GCSettings.SaveMethod, SILENT);
+				}
+				ConfigRequested = 0;
+				break; // leave emulation loop
+			}
+
+			SyncSpeed();
+		}
     }
 
     return 0;
 }
 
 /****************************************************************************
- * FCEU Support Functions to be written
+ * FCEU Support Functions
  ****************************************************************************/
 // File Control
 FILE *FCEUD_UTF8fopen(const char *n, const char *m)
 {
     return NULL;
-	//return(fopen(n,m));
 }
 
 // General Logging

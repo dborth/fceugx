@@ -15,8 +15,8 @@
 
 void DefaultSettings ();
 
-#define VERSIONNUM "2.0.5"
-#define VERSIONSTR "FCE Ultra GX 2.0.5"
+#define VERSIONNUM "2.0.6"
+#define VERSIONSTR "FCE Ultra GX 2.0.6"
 
 #define NOTSILENT 0
 #define SILENT 1
@@ -59,5 +59,6 @@ struct SGCSettings{
 };
 
 extern struct SGCSettings GCSettings;
+extern int ConfigRequested;
 
 #endif
