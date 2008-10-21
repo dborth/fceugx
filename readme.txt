@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 2.0.5
+                                  Version 2.0.6
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -28,6 +28,12 @@ SNES9x GX project.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[What's New 2.0.6]
+* Right audio channel corruption fixed (thanks cyberdog!)
+* Low pass turned off (muffles audio)
+* Timing corrected
+* Cheesy/2X fixed
 
 [What's New 2.0.5 - October 19, 2008]
 * Sound bug fixed - thanks eke-eke!
