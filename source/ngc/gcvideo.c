@@ -110,7 +110,11 @@ vbgetback (void *arg)
 {
 	while (1)
 	{
-		SyncSpeed();
+		if(GCSettings.timing != vmode_60hz)
+			VIDEO_WaitVSync();
+		else
+			SyncSpeed();
+
 		LWP_SuspendThread (vbthread);
 	}
 
