@@ -38,6 +38,7 @@
 #include "fceuload.h"
 
 extern void ResetNES(void);
+extern void PowerNES(void);
 extern void FCEU_ResetPalette(void);
 
 extern int menu;
@@ -389,7 +390,7 @@ GameMenu ()
 				break;
 
 			case 1: // Reset Game
-				ResetNES();
+				PowerNES();
 				quit = retval = 1;
 				break;
 

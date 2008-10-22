@@ -10,6 +10,7 @@
  * Audio driver
  ****************************************************************************/
 
-void InitialiseSound();
+void InitialiseAudio();
 void StopAudio();
+void ResetAudio();
 void PlaySound( int *Buffer, int samples );

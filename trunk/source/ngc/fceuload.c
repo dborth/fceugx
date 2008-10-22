@@ -24,6 +24,7 @@
 #include "sound.h"
 #include "file.h"
 
+#include "gcaudio.h"
 #include "common.h"
 #include "pad.h"
 #include "menudraw.h"
@@ -157,6 +158,7 @@ int GCMemROM(int method, int size)
         FCEU_ResetPalette();
         FCEU_ResetMessages();	// Save state, status messages, etc.
         SetSoundVariables();
+        ResetAudio();
         romLoaded = true;
         return 1;
     }
