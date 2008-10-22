@@ -23,7 +23,13 @@ static int mixtail = 0;
 static int whichab = 0;
 int IsPlaying = 0;
 
-static int mixercollect( u8 *outbuffer, int len )
+/****************************************************************************
+ * MixerCollect
+ *
+ * Collects sound samples from mixbuffer and puts them into outbuffer
+ * Makes sure to align them to 32 bytes for AUDIO_InitDMA
+ ***************************************************************************/
+static int MixerCollect( u8 *outbuffer, int len )
 {
 	u32 *dst = (u32 *)outbuffer;
 	u32 *src = (u32 *)mixbuffer;
@@ -54,12 +60,12 @@ static int mixercollect( u8 *outbuffer, int len )
  * AudioSwitchBuffers
  *
  * Manages which buffer is played next
- ****************************************************************************/
+ ***************************************************************************/
 void AudioSwitchBuffers()
 {
 	if ( !ConfigRequested )
 	{
-		int len = mixercollect( soundbuffer[whichab], 3840 );
+		int len = MixerCollect( soundbuffer[whichab], 3840 );
 		DCFlushRange(soundbuffer[whichab], len);
 		AUDIO_InitDMA((u32)soundbuffer[whichab], len);
 		AUDIO_StartDMA();
@@ -69,7 +75,12 @@ void AudioSwitchBuffers()
 	else IsPlaying = 0;
 }
 
-void InitialiseSound()
+/****************************************************************************
+ * InitialiseAudio
+ *
+ * Initializes sound system on first load of emulator
+ ***************************************************************************/
+void InitialiseAudio()
 {
 	AUDIO_Init(NULL); // Start audio subsystem
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
@@ -78,6 +89,11 @@ void InitialiseSound()
 	memset(mixbuffer, 0, 16000);
 }
 
+/****************************************************************************
+ * StopAudio
+ *
+ * Pause audio output when returning to menu
+ ***************************************************************************/
 void StopAudio()
 {
 	AUDIO_StopDMA();
@@ -86,9 +102,22 @@ void StopAudio()
 }
 
 /****************************************************************************
- * Audio incoming is monaural
+ * ResetAudio
  *
- * PlaySound will simply mix to get it right
+ * Reset audio output when loading a new game
+ ***************************************************************************/
+void ResetAudio()
+{
+	memset(soundbuffer, 0, 3840*2);
+	memset(mixbuffer, 0, 16000);
+	mixhead = mixtail = 0;
+}
+
+/****************************************************************************
+ * PlaySound
+ *
+ * Puts incoming mono samples into mixbuffer
+ * Splits mono samples into two channels (stereo)
  ****************************************************************************/
 void PlaySound( int *Buffer, int count )
 {
