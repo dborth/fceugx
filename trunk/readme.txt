@@ -29,11 +29,13 @@ SNES9x GX project.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[What's New 2.0.6]
+[What's New 2.0.6 - October 21, 2008]
 * Right audio channel corruption fixed (thanks cyberdog!)
-* Low pass turned off (muffles audio)
-* Timing corrected
-* Cheesy/2X fixed
+* Low pass audio filter turned off (muffles audio)
+* Changed to alternate audio filter
+* PAL Timing corrected
+* Cheesy/2X video filters fixed
+* Qoob Pro modchip support for GameCube (thanks emukidid!)
 
 [What's New 2.0.5 - October 19, 2008]
 * Sound bug fixed - thanks eke-eke!

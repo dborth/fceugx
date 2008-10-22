@@ -94,7 +94,7 @@ int GCMemROM(int method, int size)
     /*** Set internal sound information ***/
     FCEUI_Sound(SAMPLERATE);
     FCEUI_SetSoundVolume(100); // 0-100
-    FCEUI_SetSoundQuality(1); // 0 - low, 1 - high
+    FCEUI_SetSoundQuality(2); // 0 - low, 1 - high, 2 - high (alt.)
     FCEUI_SetLowPass(0);
 
     InitialisePads();
