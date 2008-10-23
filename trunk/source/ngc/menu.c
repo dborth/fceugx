@@ -91,13 +91,15 @@ LoadManager ()
 /****************************************************************************
  * Emulator Menu
  ****************************************************************************/
-static int emulatormenuCount = 6;
+static int emulatormenuCount = 8;
 static char emulatormenu[][50] = {
 
-	"Screen Scaler",
+	"Video Filtering",
+	"Video Scaling",
 	"Palette",
-	"8 Sprite Limit",
+	"Enable Zooming",
 	"Timing",
+	"8 Sprite Limit",
 
 	"Save Preferences",
 	"Back to Main Menu"
@@ -112,28 +114,49 @@ EmulatorMenu ()
 	menu = 0;
 	while (quit == 0)
 	{
-		sprintf (emulatormenu[0], "Screen Scaler - %s",
-			(GCSettings.screenscaler == 0) ? "2x" : (GCSettings.screenscaler == 1) ? "Cheesy" : "GX");
+		// don't allow original render mode if progressive video mode detected
+		if (GCSettings.render==0 && progressive)
+			GCSettings.render++;
 
-		sprintf (emulatormenu[1], "Palette - %s",
+		if ( GCSettings.render == 0 )
+			sprintf (emulatormenu[0], "Video Rendering Original");
+		if ( GCSettings.render == 1 )
+			sprintf (emulatormenu[0], "Video Rendering Filtered");
+		if ( GCSettings.render == 2 )
+			sprintf (emulatormenu[0], "Video Rendering Unfiltered");
+
+		sprintf (emulatormenu[1], "Video Scaling %s",
+			GCSettings.widescreen == true ? "16:9 Correction" : "Default");
+
+		sprintf (emulatormenu[2], "Palette - %s",
 			GCSettings.currpal ? palettes[GCSettings.currpal-1].name : "Default");
 
-		sprintf (emulatormenu[2], "8 Sprite Limit - %s",
-			GCSettings.slimit == true ? " ON" : "OFF");
+		sprintf (emulatormenu[3], "Enable Zooming %s",
+			GCSettings.NGCZoom == true ? " ON" : "OFF");
 
-		sprintf (emulatormenu[3], "Timing - %s",
+		sprintf (emulatormenu[5], "Timing - %s",
 			GCSettings.timing == true ? " PAL" : "NTSC");
+
+		sprintf (emulatormenu[4], "8 Sprite Limit - %s",
+			GCSettings.slimit == true ? " ON" : "OFF");
 
 		ret = RunMenu (emulatormenu, emulatormenuCount, (char*)"Emulator Options", 16, -1);
 
 		switch (ret)
 		{
-			case 0: // screen scaler
-				if (++GCSettings.screenscaler > 2)
-					GCSettings.screenscaler = 0;
+			case 0:
+				GCSettings.render++;
+				if (GCSettings.render > 2 )
+					GCSettings.render = 0;
+				// reset zoom
+				zoom_reset ();
 				break;
 
-			case 1: // palette
+			case 1:
+				GCSettings.widescreen ^= 1;
+				break;
+
+			case 2: // palette
 				if ( ++GCSettings.currpal > MAXPAL )
 					GCSettings.currpal = 0;
 
@@ -160,21 +183,25 @@ EmulatorMenu ()
 				}
 				break;
 
-			case 2: // 8 sprite limit
+			case 3:
+				GCSettings.NGCZoom ^= 1;
+				break;
+
+			case 4: // timing
+				GCSettings.timing ^= 1;
+				break;
+
+			case 5: // 8 sprite limit
 				GCSettings.slimit ^=1;
 				FCEUI_DisableSpriteLimitation(GCSettings.slimit);
 				break;
 
-			case 3: // timing
-				GCSettings.timing ^= 1;
-				break;
-
-			case 4:
+			case 6:
 				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
 			case -1: // Button B
-			case 5:
+			case 7:
 				quit = 1;
 				break;
 

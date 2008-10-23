@@ -28,7 +28,10 @@ DefaultSettings ()
 	GCSettings.zapper = 0;
 	GCSettings.crosshair = 1;
 	GCSettings.slimit = 1;
-	GCSettings.screenscaler = 2;
+
+	GCSettings.NGCZoom = 0;	// zooming default off
+	GCSettings.render = 2; // Unfiltered
+	GCSettings.widescreen = 0; // no aspect ratio correction
 
 	GCSettings.LoadMethod = METHOD_AUTO; // Auto, SD, DVD, USB, Network (SMB)
 	GCSettings.SaveMethod = METHOD_AUTO; // Auto, SD, Memory Card Slot A, Memory Card Slot B, USB, Network (SMB)

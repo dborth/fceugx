@@ -450,12 +450,25 @@ void GetJoy()
     short i;
 
     s8 gc_px = PAD_SubStickX (0);
+    s8 gc_py = PAD_SubStickY (0);
     u32 jp = PAD_ButtonsHeld (0); // gamecube controller button info
 
     #ifdef HW_RVL
     s8 wm_sx = WPAD_StickX (0,1);
+    s8 wm_sy = WPAD_StickY (0,1);
     u32 wm_pb = WPAD_ButtonsHeld (0); // wiimote / expansion button info
     #endif
+
+    /*** Check for video zoom ***/
+	if (GCSettings.NGCZoom)
+	{
+		if (gc_py < -36 || gc_py > 36)
+		zoom ((float) gc_py / -36);
+		#ifdef HW_RVL
+			if (wm_sy < -36 || wm_sy > 36)
+			zoom ((float) wm_sy / -36);
+		#endif
+	}
 
     // request to go back to menu
     if ((gc_px < -70) || ((jp & PAD_BUTTON_START) && (jp & PAD_BUTTON_A))

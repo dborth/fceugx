@@ -165,7 +165,9 @@ preparePrefsData (int method)
 	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
 	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
 	createXMLSetting("slimit", "8 Sprite Limit", toStr(GCSettings.slimit));
-	createXMLSetting("screenscaler", "Screen Scaler", toStr(GCSettings.screenscaler));
+	createXMLSetting("NGCZoom", "C-Stick Zoom", toStr(GCSettings.NGCZoom));
+	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
+	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
 
 	createXMLSection("Controller", "Controller Settings");
 
@@ -283,7 +285,9 @@ decodePrefsData (int method)
 	loadXMLSettingInt(&GCSettings.timing, "timing");
 	loadXMLSettingInt(&GCSettings.FSDisable, "FSDisable");
 	loadXMLSettingInt(&GCSettings.slimit, "slimit");
-	loadXMLSettingInt(&GCSettings.screenscaler, "screenscaler");
+	loadXMLSettingInt(&GCSettings.NGCZoom, "NGCZoom");
+	loadXMLSettingInt(&GCSettings.render, "render");
+	loadXMLSettingInt(&GCSettings.widescreen, "widescreen");
 	loadXMLSettingInt(&GCSettings.zapper, "zapper");
 	loadXMLSettingInt(&GCSettings.crosshair, "crosshair");
 	// Controller Settings

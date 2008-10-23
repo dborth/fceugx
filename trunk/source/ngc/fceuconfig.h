@@ -32,9 +32,9 @@ enum {
 };
 
 struct SGCSettings{
-    int		AutoLoad;
-    int		AutoSave;
-    int		LoadMethod; // For ROMS: Auto, SD, DVD, USB, Network (SMB)
+	int		AutoLoad;
+	int		AutoSave;
+	int		LoadMethod; // For ROMS: Auto, SD, DVD, USB, Network (SMB)
 	int		SaveMethod; // For SRAM, Freeze, Prefs: Auto, SD, Memory Card Slot A, Memory Card Slot B, USB, SMB
 	char	LoadFolder[200]; // Path to game files
 	char	SaveFolder[200]; // Path to save files
@@ -48,14 +48,16 @@ struct SGCSettings{
 	char	smbgcid[20];
 	char	smbsvid[20];
 	char	smbshare[20];
+	int		NGCZoom; // 0 - off, 1 - on
 	int		VerifySaves;
+	int		render;		// 0 - original, 1 - filtered, 2 - unfiltered
+	int		widescreen;
 	int		currpal;
 	int		timing;
 	int		FSDisable;
 	int		zapper;
 	int		crosshair;
 	int		slimit;
-	int		screenscaler;
 };
 
 extern struct SGCSettings GCSettings;
