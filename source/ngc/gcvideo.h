@@ -14,9 +14,13 @@
 
 void clearscreen ();
 void showscreen ();
-void initDisplay();
-void RenderFrame(char *XBuf, int style);
+void InitGCVideo ();
+void ResetVideo_Emu ();
+void ResetVideo_Menu ();
+void RenderFrame(unsigned char *XBuf);
 void setFrameTimer();
+void zoom (float speed);
+void zoom_reset ();
 
 // color palettes
 #define MAXPAL 12

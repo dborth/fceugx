@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
 
 	PAD_Init();
 
-    initDisplay();
+    InitGCVideo ();
 
     /*** Initialise freetype ***/
 	if (FT_Init ())
@@ -141,11 +141,14 @@ int main(int argc, char *argv[])
 
     while (1) // main loop
     {
-		MainMenu(selectedMenu);
+    	ResetVideo_Menu();
+    	MainMenu(selectedMenu);
 		selectedMenu = 4; // return to game menu from now on
 
 		setFrameTimer(); // set frametimer method before emulation
 		FCEUI_SetVidSystem(GCSettings.timing);
+		FCEUI_SetSoundQuality(2); // 0 - low, 1 - high, 2 - high (alt.)
+		ResetVideo_Emu();
 
 		while(1) // emulation loop
 		{
@@ -201,7 +204,7 @@ void FCEUD_Message(char *text)
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count)
 {
     PlaySound(Buffer, Count); // play sound
-    RenderFrame( (char *)XBuf, GCSettings.screenscaler); // output video frame
+    RenderFrame(XBuf); // output video frame
     GetJoy(); // check controller input
 }
 
