@@ -118,7 +118,7 @@ GXRModeObj PAL_240p =
 	240,             // efbHeight
 	240,             // xfbHeight
 	(VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
-	(VI_MAX_HEIGHT_PAL/2 - 480/2)/2,        // viYOrigin
+	(VI_MAX_HEIGHT_PAL - 480)/2,        // viYOrigin
 	640,             // viWidth
 	480,             // viHeight
 	VI_XFBMODE_SF,   // xFBmode
@@ -153,7 +153,7 @@ GXRModeObj PAL_480i =
     480,             // efbHeight
     480,             // xfbHeight
     (VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
-    (VI_MAX_HEIGHT_PAL/2 - 480/2)/2,        // viYOrigin
+    (VI_MAX_HEIGHT_PAL - 480)/2,        // viYOrigin
     640,             // viWidth
     480,             // viHeight
     VI_XFBMODE_DF,   // xFBmode
@@ -190,7 +190,7 @@ GXRModeObj NTSC_240p =
 	240,             // efbHeight
 	240,             // xfbHeight
 	(VI_MAX_WIDTH_NTSC - 640)/2,	// viXOrigin
-	(VI_MAX_HEIGHT_NTSC/2 - 480/2)/2,	// viYOrigin
+	(VI_MAX_HEIGHT_NTSC - 480)/2,	// viYOrigin
 	640,             // viWidth
 	480,             // viHeight
 	VI_XFBMODE_SF,   // xFBmode
@@ -225,7 +225,7 @@ GXRModeObj NTSC_480i =
     480,             // efbHeight
     480,             // xfbHeight
     (VI_MAX_WIDTH_NTSC - 640)/2,        // viXOrigin
-    (VI_MAX_HEIGHT_NTSC/2 - 480/2)/2,       // viYOrigin
+    (VI_MAX_HEIGHT_NTSC - 480)/2,       // viYOrigin
     640,             // viWidth
     480,             // viHeight
     VI_XFBMODE_DF,   // xFBmode
@@ -599,11 +599,6 @@ ResetVideo_Emu ()
 			PAL_480i.viTVMode = VI_TVMODE_PAL_INT;
 			NTSC_240p.viTVMode = VI_TVMODE_PAL_DS;
 			NTSC_480i.viTVMode = VI_TVMODE_PAL_INT;
-			// set VI position
-			PAL_240p.viXOrigin = PAL_480i.viXOrigin = NTSC_240p.viXOrigin = NTSC_480i.viXOrigin = (VI_MAX_WIDTH_PAL - 640)/2;
-			PAL_240p.viYOrigin = PAL_480i.viYOrigin = (VI_MAX_HEIGHT_PAL/2 - 478/2)/2;
-			NTSC_240p.viYOrigin = NTSC_480i.viYOrigin = (VI_MAX_HEIGHT_PAL/2 - 448/2)/2;
-
 			break;
 
 		case VI_NTSC: /* 480 lines (NTSC 60hz) */
@@ -613,11 +608,6 @@ ResetVideo_Emu ()
 			PAL_480i.viTVMode = VI_TVMODE_NTSC_INT;
 			NTSC_240p.viTVMode = VI_TVMODE_NTSC_DS;
 			NTSC_480i.viTVMode = VI_TVMODE_NTSC_INT;
-			// set VI position
-			PAL_240p.viXOrigin = NTSC_240p.viXOrigin = PAL_480i.viXOrigin = NTSC_480i.viXOrigin = (VI_MAX_WIDTH_NTSC - 640)/2;
-			PAL_240p.viYOrigin = PAL_480i.viYOrigin = (VI_MAX_HEIGHT_NTSC/2 - 478/2)/2;
-			NTSC_240p.viYOrigin = NTSC_480i.viYOrigin = (VI_MAX_HEIGHT_NTSC/2 - 448/2)/2;
-
 			break;
 
 		default:  /* 480 lines (PAL 60Hz) */
@@ -627,11 +617,6 @@ ResetVideo_Emu ()
 			PAL_480i.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_INTERLACE);
 			NTSC_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
 			NTSC_480i.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_INTERLACE);
-			// set VI position
-			PAL_240p.viXOrigin = NTSC_240p.viXOrigin = PAL_480i.viXOrigin = NTSC_480i.viXOrigin = (VI_MAX_WIDTH_NTSC - 640)/2;
-			PAL_240p.viYOrigin = PAL_480i.viYOrigin = (VI_MAX_HEIGHT_PAL/2 - 478/2)/2;
-			NTSC_240p.viYOrigin = NTSC_480i.viYOrigin = (VI_MAX_HEIGHT_NTSC/2 - 448/2)/2;
-
 			break;
 	}
 
@@ -764,7 +749,7 @@ void RenderFrame(unsigned char *XBuf)
 
 		GX_InitTexObj (&texobj, texturemem, vwidth, vheight, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
 
-		if (GCSettings.render == 0 || GCSettings.render == 2)
+		if (!GCSettings.render&1)
 			GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
 
 		GX_LoadTexObj (&texobj, GX_TEXMAP0);	// load texture object so its ready to use
