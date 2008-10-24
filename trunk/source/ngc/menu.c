@@ -66,6 +66,20 @@ void Reboot()
 #endif
 }
 
+void ExitToLoader()
+{
+	// Exit to Loader
+	#ifdef HW_RVL
+		#ifdef WII_DVD
+		DI_Close();
+		#endif
+		exit(0);
+	#else	// gamecube
+		if (psoid[0] == PSOSDLOADID)
+			PSOReload ();
+	#endif
+}
+
 /****************************************************************************
  * Load Manager
  ****************************************************************************/
@@ -89,24 +103,23 @@ LoadManager ()
 }
 
 /****************************************************************************
- * Emulator Menu
+ * Video Options Menu
  ****************************************************************************/
-static int emulatormenuCount = 8;
-static char emulatormenu[][50] = {
+static int videomenuCount = 7;
+static char videomenu[][50] = {
 
-	"Video Filtering",
+	"Video Rendering",
 	"Video Scaling",
 	"Palette",
 	"Enable Zooming",
 	"Timing",
 	"8 Sprite Limit",
 
-	"Save Preferences",
-	"Back to Main Menu"
+	"Back to Preferences Menu"
 };
 
 void
-EmulatorMenu ()
+VideoOptions ()
 {
 	int ret = 0;
 	int quit = 0;
@@ -119,28 +132,28 @@ EmulatorMenu ()
 			GCSettings.render++;
 
 		if ( GCSettings.render == 0 )
-			sprintf (emulatormenu[0], "Video Rendering Original");
+			sprintf (videomenu[0], "Video Rendering Original");
 		if ( GCSettings.render == 1 )
-			sprintf (emulatormenu[0], "Video Rendering Filtered");
+			sprintf (videomenu[0], "Video Rendering Filtered");
 		if ( GCSettings.render == 2 )
-			sprintf (emulatormenu[0], "Video Rendering Unfiltered");
+			sprintf (videomenu[0], "Video Rendering Unfiltered");
 
-		sprintf (emulatormenu[1], "Video Scaling %s",
+		sprintf (videomenu[1], "Video Scaling %s",
 			GCSettings.widescreen == true ? "16:9 Correction" : "Default");
 
-		sprintf (emulatormenu[2], "Palette - %s",
+		sprintf (videomenu[2], "Palette - %s",
 			GCSettings.currpal ? palettes[GCSettings.currpal-1].name : "Default");
 
-		sprintf (emulatormenu[3], "Enable Zooming %s",
-			GCSettings.NGCZoom == true ? " ON" : "OFF");
+		sprintf (videomenu[3], "Enable Zooming %s",
+			GCSettings.Zoom == true ? " ON" : "OFF");
 
-		sprintf (emulatormenu[5], "Timing - %s",
+		sprintf (videomenu[4], "Timing - %s",
 			GCSettings.timing == true ? " PAL" : "NTSC");
 
-		sprintf (emulatormenu[4], "8 Sprite Limit - %s",
+		sprintf (videomenu[5], "8 Sprite Limit - %s",
 			GCSettings.slimit == true ? " ON" : "OFF");
 
-		ret = RunMenu (emulatormenu, emulatormenuCount, (char*)"Emulator Options", 16, -1);
+		ret = RunMenu (videomenu, videomenuCount, (char*)"Video Options", 20, -1);
 
 		switch (ret)
 		{
@@ -184,7 +197,7 @@ EmulatorMenu ()
 				break;
 
 			case 3:
-				GCSettings.NGCZoom ^= 1;
+				GCSettings.Zoom ^= 1;
 				break;
 
 			case 4: // timing
@@ -196,12 +209,8 @@ EmulatorMenu ()
 				FCEUI_DisableSpriteLimitation(GCSettings.slimit);
 				break;
 
-			case 6:
-				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
-				break;
-
 			case -1: // Button B
-			case 7:
+			case 6:
 				quit = 1;
 				break;
 
@@ -212,10 +221,10 @@ EmulatorMenu ()
 
 
 /****************************************************************************
- * Preferences Menu
+ * File Options Menu
  ****************************************************************************/
-static int prefmenuCount = 9;
-static char prefmenu[][50] = {
+static int filemenuCount = 8;
+static char filemenu[][50] = {
 
 	"Load Method",
 	"Load Folder",
@@ -226,12 +235,11 @@ static char prefmenu[][50] = {
 	"Auto Save",
 	"Verify MC Saves",
 
-	"Save Preferences",
-	"Back to Main Menu"
+	"Back to Preferences Menu"
 };
 
 void
-PreferencesMenu ()
+FileOptions()
 {
 	int ret = 0;
 	int quit = 0;
@@ -268,9 +276,9 @@ PreferencesMenu ()
 			GCSettings.SaveMethod++;
 		if(GCSettings.SaveMethod == METHOD_MC_SLOTB)
 			GCSettings.SaveMethod++;
-		prefmenu[6][0] = '\0';
+		filemenu[6][0] = '\0';
 		#else
-		sprintf (prefmenu[6], "Verify MC Saves %s",
+		sprintf (filemenu[6], "Verify MC Saves %s",
 			GCSettings.VerifySaves == true ? " ON" : "OFF");
 		#endif
 
@@ -280,37 +288,37 @@ PreferencesMenu ()
 		if(GCSettings.SaveMethod > 6)
 			GCSettings.SaveMethod = 0;
 
-		if (GCSettings.LoadMethod == METHOD_AUTO) sprintf (prefmenu[0],"Load Method AUTO");
-		else if (GCSettings.LoadMethod == METHOD_SD) sprintf (prefmenu[0],"Load Method SD");
-		else if (GCSettings.LoadMethod == METHOD_USB) sprintf (prefmenu[0],"Load Method USB");
-		else if (GCSettings.LoadMethod == METHOD_DVD) sprintf (prefmenu[0],"Load Method DVD");
-		else if (GCSettings.LoadMethod == METHOD_SMB) sprintf (prefmenu[0],"Load Method Network");
+		if (GCSettings.LoadMethod == METHOD_AUTO) sprintf (filemenu[0],"Load Method AUTO");
+		else if (GCSettings.LoadMethod == METHOD_SD) sprintf (filemenu[0],"Load Method SD");
+		else if (GCSettings.LoadMethod == METHOD_USB) sprintf (filemenu[0],"Load Method USB");
+		else if (GCSettings.LoadMethod == METHOD_DVD) sprintf (filemenu[0],"Load Method DVD");
+		else if (GCSettings.LoadMethod == METHOD_SMB) sprintf (filemenu[0],"Load Method Network");
 
-		sprintf (prefmenu[1], "Load Folder %s",	GCSettings.LoadFolder);
+		sprintf (filemenu[1], "Load Folder %s",	GCSettings.LoadFolder);
 
-		if (GCSettings.SaveMethod == METHOD_AUTO) sprintf (prefmenu[2],"Save Method AUTO");
-		else if (GCSettings.SaveMethod == METHOD_SD) sprintf (prefmenu[2],"Save Method SD");
-		else if (GCSettings.SaveMethod == METHOD_USB) sprintf (prefmenu[2],"Save Method USB");
-		else if (GCSettings.SaveMethod == METHOD_SMB) sprintf (prefmenu[2],"Save Method Network");
-		else if (GCSettings.SaveMethod == METHOD_MC_SLOTA) sprintf (prefmenu[2],"Save Method MC Slot A");
-		else if (GCSettings.SaveMethod == METHOD_MC_SLOTB) sprintf (prefmenu[2],"Save Method MC Slot B");
+		if (GCSettings.SaveMethod == METHOD_AUTO) sprintf (filemenu[2],"Save Method AUTO");
+		else if (GCSettings.SaveMethod == METHOD_SD) sprintf (filemenu[2],"Save Method SD");
+		else if (GCSettings.SaveMethod == METHOD_USB) sprintf (filemenu[2],"Save Method USB");
+		else if (GCSettings.SaveMethod == METHOD_SMB) sprintf (filemenu[2],"Save Method Network");
+		else if (GCSettings.SaveMethod == METHOD_MC_SLOTA) sprintf (filemenu[2],"Save Method MC Slot A");
+		else if (GCSettings.SaveMethod == METHOD_MC_SLOTB) sprintf (filemenu[2],"Save Method MC Slot B");
 
-		sprintf (prefmenu[3], "Save Folder %s",	GCSettings.SaveFolder);
+		sprintf (filemenu[3], "Save Folder %s",	GCSettings.SaveFolder);
 
 		// disable changing load/save directories for now
-		prefmenu[1][0] = '\0';
-		prefmenu[3][0] = '\0';
+		filemenu[1][0] = '\0';
+		filemenu[3][0] = '\0';
 
-		if (GCSettings.AutoLoad == 0) sprintf (prefmenu[4],"Auto Load OFF");
-		else if (GCSettings.AutoLoad == 1) sprintf (prefmenu[4],"Auto Load RAM");
-		else if (GCSettings.AutoLoad == 2) sprintf (prefmenu[4],"Auto Load STATE");
+		if (GCSettings.AutoLoad == 0) sprintf (filemenu[4],"Auto Load OFF");
+		else if (GCSettings.AutoLoad == 1) sprintf (filemenu[4],"Auto Load RAM");
+		else if (GCSettings.AutoLoad == 2) sprintf (filemenu[4],"Auto Load STATE");
 
-		if (GCSettings.AutoSave == 0) sprintf (prefmenu[5],"Auto Save OFF");
-		else if (GCSettings.AutoSave == 1) sprintf (prefmenu[5],"Auto Save RAM");
-		else if (GCSettings.AutoSave == 2) sprintf (prefmenu[5],"Auto Save STATE");
-		else if (GCSettings.AutoSave == 3) sprintf (prefmenu[5],"Auto Save BOTH");
+		if (GCSettings.AutoSave == 0) sprintf (filemenu[5],"Auto Save OFF");
+		else if (GCSettings.AutoSave == 1) sprintf (filemenu[5],"Auto Save RAM");
+		else if (GCSettings.AutoSave == 2) sprintf (filemenu[5],"Auto Save STATE");
+		else if (GCSettings.AutoSave == 3) sprintf (filemenu[5],"Auto Save BOTH");
 
-		ret = RunMenu (prefmenu, prefmenuCount, (char*)"Preferences", 16, -1);
+		ret = RunMenu (filemenu, filemenuCount, (char*)"Save/Load Options", 20, -1);
 
 		switch (ret)
 		{
@@ -344,12 +352,8 @@ PreferencesMenu ()
 				GCSettings.VerifySaves ^= 1;
 				break;
 
-			case 7:
-				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
-				break;
-
 			case -1: // Button B
-			case 8:
+			case 7:
 				quit = 1;
 				break;
 
@@ -365,13 +369,14 @@ PreferencesMenu ()
 int
 GameMenu ()
 {
-	int gamemenuCount = 8;
+	int gamemenuCount = 9;
 	char gamemenu[][50] = {
 	  "Return to Game",
 	  "Reset Game",
 	  "ROM Information",
 	  "Load RAM", "Save RAM",
 	  "Load State", "Save State",
+	  "Reset Zoom",
 	  "Back to Main Menu"
 	};
 
@@ -408,6 +413,10 @@ GameMenu ()
 			gamemenu[6][0] = '\0';
 		}
 
+		// disable Reset Zoom if Zooming is off
+		if(!GCSettings.Zoom)
+			gamemenu[7][0] = '\0';
+
 		ret = RunMenu (gamemenu, gamemenuCount, (char*)"Game Menu", 20, -1);
 
 		switch (ret)
@@ -442,8 +451,12 @@ GameMenu ()
 				SaveState(GCSettings.SaveMethod, NOTSILENT);
 				break;
 
+			case 7:
+				zoom_reset ();
+				break;
+
 			case -1: // Button B
-			case 7: // Return to previous menu
+			case 8: // Return to previous menu
 				retval = 0;
 				quit = 1;
 				break;
@@ -672,7 +685,7 @@ ConfigureButtons (u16 ctrlr_type)
 	menu = oldmenu;
 }	// end configurebuttons()
 
-int ctlrmenucount = 9;
+int ctlrmenucount = 8;
 char ctlrmenu[][50] = {
 	"Four Score",
 	"Zapper",
@@ -681,8 +694,7 @@ char ctlrmenu[][50] = {
 	"Classic Controller",
 	"Wiimote",
 	"Gamecube Pad",
-	"Save Preferences",
-	"Go Back"
+	"Back to Preferences Menu"
 };
 
 void
@@ -753,13 +765,8 @@ ConfigureControllers ()
 				ConfigureButtons (CTRLR_GCPAD);
 				break;
 
-			case 7:
-				/*** Save Preferences Now ***/
-				SavePrefs(GCSettings.SaveMethod, NOTSILENT);
-				break;
-
 			case -1: /*** Button B ***/
-			case 8:
+			case 7:
 				/*** Return ***/
 				quit = 1;
 				break;
@@ -770,14 +777,69 @@ ConfigureControllers ()
 }
 
 /****************************************************************************
+ * Preferences Menu
+ ***************************************************************************/
+static int prefmenuCount = 5;
+static char prefmenu[][50] = {
+	"Controllers",
+	"Video",
+	"Saving / Loading",
+	"Reset Preferences",
+	"Back to Main Menu"
+};
+
+void
+PreferencesMenu ()
+{
+	int ret = 0;
+	int quit = 0;
+	int oldmenu = menu;
+	menu = 0;
+	while (quit == 0)
+	{
+		ret = RunMenu (prefmenu, prefmenuCount, (char*)"Preferences", 20, -1);
+
+		switch (ret)
+		{
+			case 0:
+				ConfigureControllers ();
+				break;
+
+			case 1:
+				VideoOptions ();
+				break;
+
+			case 2:
+				FileOptions ();
+				break;
+
+			case 3:
+				DefaultSettings ();
+				WaitPrompt((char *)"Preferences Reset");
+				break;
+
+			case -1: /*** Button B ***/
+			case 4:
+				SavePrefs(GCSettings.SaveMethod, SILENT);
+				quit = 1;
+				break;
+
+		}
+	}
+	menu = oldmenu;
+}
+
+/****************************************************************************
  * Main Menu
  ****************************************************************************/
-int menucount = 8;
+int menucount = 6;
 char menuitems[][50] = {
   "Choose Game",
-  "Controller Configuration", "Emulator Options", "Preferences",
+  "Preferences",
   "Game Menu",
-  "Credits", "Reset System", "Exit"
+  "Credits",
+  "Reset System",
+  "Exit"
 };
 
 void
@@ -792,7 +854,7 @@ MainMenu (int selectedMenu)
 	{
 		// disable game-specific menu items if a ROM isn't loaded
 		if(!romLoaded)
-			menuitems[4][0] = '\0';
+			menuitems[2][0] = '\0';
 		else
 			sprintf (menuitems[4], "Game Menu");
 
@@ -814,46 +876,28 @@ MainMenu (int selectedMenu)
 				break;
 
 			case 1:
-				// Configure Controllers
-				ConfigureControllers ();
-				break;
-
-			case 2:
-				// Emulator Options
-				EmulatorMenu ();
-				break;
-			case 3:
 				// Preferences
 				PreferencesMenu ();
 				break;
 
-			case 4:
+			case 2:
 				// Game Options
 				quit = GameMenu ();
 				break;
 
-			case 5:
+			case 3:
 				// Credits
 				Credits ();
 				WaitButtonA ();
                 break;
 
-			case 6:
+			case 4:
 				// Reset the Gamecube/Wii
 			    Reboot();
                 break;
 
-			case 7:
-				// Exit to Loader
-				#ifdef HW_RVL
-					#ifdef WII_DVD
-					DI_Close();
-					#endif
-					exit(0);
-				#else	// gamecube
-					if (psoid[0] == PSOSDLOADID)
-						PSOReload ();
-				#endif
+			case 5:
+				ExitToLoader();
 				break;
 
 			case -1: // Button B

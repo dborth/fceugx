@@ -51,7 +51,6 @@ int vwidth = 256;
 int vheight = 240;
 
 int updateScaling = 1;
-float zoom_level = 1;
 bool progressive = false;
 int vmode_60hz = 0;
 
@@ -753,8 +752,8 @@ void RenderFrame(unsigned char *XBuf)
 		if (GCSettings.widescreen)
 			xscale = (3*xscale)/4;
 
-		xscale *= zoom_level;
-		yscale *= zoom_level;
+		xscale *= GCSettings.ZoomLevel;
+		yscale *= GCSettings.ZoomLevel;
 
 		square[0] = square[9] = (-xscale);
 		square[3] = square[6] = (xscale);
@@ -834,15 +833,15 @@ void RenderFrame(unsigned char *XBuf)
 void
 zoom (float speed)
 {
-	if (zoom_level > 1)
-		zoom_level += (speed / -100.0);
+	if (GCSettings.ZoomLevel > 1)
+		GCSettings.ZoomLevel += (speed / -100.0);
 	else
-		zoom_level += (speed / -200.0);
+		GCSettings.ZoomLevel += (speed / -200.0);
 
-	if (zoom_level < 0.5)
-		zoom_level = 0.5;
-	else if (zoom_level > 2.0)
-		zoom_level = 2.0;
+	if (GCSettings.ZoomLevel < 0.5)
+		GCSettings.ZoomLevel = 0.5;
+	else if (GCSettings.ZoomLevel > 2.0)
+		GCSettings.ZoomLevel = 2.0;
 
 	updateScaling = 1;	// update video
 }
@@ -850,8 +849,7 @@ zoom (float speed)
 void
 zoom_reset ()
 {
-	zoom_level = 1.0;
-
+	GCSettings.ZoomLevel = 1.0;
 	updateScaling = 1;	// update video
 }
 

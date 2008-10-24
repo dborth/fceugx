@@ -56,6 +56,12 @@ const char * toStr(int i)
 	return temp;
 }
 
+const char * FtoStr(float i)
+{
+	sprintf(temp, "%.2f", i);
+	return temp;
+}
+
 void createXMLSection(const char * name, const char * description)
 {
 	section = mxmlNewElement(data, "section");
@@ -165,7 +171,8 @@ preparePrefsData (int method)
 	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
 	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
 	createXMLSetting("slimit", "8 Sprite Limit", toStr(GCSettings.slimit));
-	createXMLSetting("NGCZoom", "C-Stick Zoom", toStr(GCSettings.NGCZoom));
+	createXMLSetting("Zoom", "Zoom On/Off", toStr(GCSettings.Zoom));
+	createXMLSetting("ZoomLevel", "Zoom Level", FtoStr(GCSettings.ZoomLevel));
 	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
 	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
 
@@ -201,6 +208,12 @@ void loadXMLSettingInt(int * var, const char * name)
 	item = mxmlFindElement(xml, xml, "setting", "name", name, MXML_DESCEND);
 	if(item)
 		*var = atoi(mxmlElementGetAttr(item, "value"));
+}
+void loadXMLSettingFloat(float * var, const char * name)
+{
+	item = mxmlFindElement(xml, xml, "setting", "name", name, MXML_DESCEND);
+	if(item)
+		*var = atof(mxmlElementGetAttr(item, "value"));
 }
 void loadXMLSettingBool(bool * var, const char * name)
 {
@@ -285,7 +298,8 @@ decodePrefsData (int method)
 	loadXMLSettingInt(&GCSettings.timing, "timing");
 	loadXMLSettingInt(&GCSettings.FSDisable, "FSDisable");
 	loadXMLSettingInt(&GCSettings.slimit, "slimit");
-	loadXMLSettingInt(&GCSettings.NGCZoom, "NGCZoom");
+	loadXMLSettingInt(&GCSettings.Zoom, "Zoom");
+	loadXMLSettingFloat(&GCSettings.ZoomLevel, "ZoomLevel");
 	loadXMLSettingInt(&GCSettings.render, "render");
 	loadXMLSettingInt(&GCSettings.widescreen, "widescreen");
 	loadXMLSettingInt(&GCSettings.zapper, "zapper");

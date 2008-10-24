@@ -136,14 +136,14 @@ int main(int argc, char *argv[])
 	if(!LoadPrefs())
 	{
 		WaitPrompt((char*) "Preferences reset - check settings!");
-		selectedMenu = 3; // change to preferences menu
+		selectedMenu = 1; // change to preferences menu
 	}
 
     while (1) // main loop
     {
     	ResetVideo_Menu();
     	MainMenu(selectedMenu);
-		selectedMenu = 4; // return to game menu from now on
+		selectedMenu = 2; // return to game menu from now on
 
 		setFrameTimer(); // set frametimer method before emulation
 		FCEUI_SetVidSystem(GCSettings.timing);

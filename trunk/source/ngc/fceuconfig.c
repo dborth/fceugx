@@ -29,7 +29,8 @@ DefaultSettings ()
 	GCSettings.crosshair = 1;
 	GCSettings.slimit = 1;
 
-	GCSettings.NGCZoom = 0;	// zooming default off
+	GCSettings.Zoom = 0; // zooming default off
+	GCSettings.ZoomLevel = 1.0; // zoom amount
 	GCSettings.render = 2; // Unfiltered
 	GCSettings.widescreen = 0; // no aspect ratio correction
 
