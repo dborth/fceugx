@@ -453,6 +453,7 @@ GameMenu ()
 
 			case 7:
 				zoom_reset ();
+				quit = retval = 1;
 				break;
 
 			case -1: // Button B
