@@ -106,7 +106,6 @@ $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@[ -d $(TARGETDIR) ] || mkdir -p $(TARGETDIR)
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.wii
-	@rm -fr $(OUTPUT).elf
 
 #---------------------------------------------------------------------------------
 clean:
@@ -146,20 +145,3 @@ $(OUTPUT).elf: $(OFILES)
 #---------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------
-tags:
-	@( cd source; ctags *.c *.h \
-	    boards/*.c boards/*.h \
-	    mappers/*.c mappers/*.h \
-	    input/*.c input/*.h \
-	    mbshare/*.c mbshare/*.h \
-	    drivers/common/*.c drivers/common/*.h \
-	    drivers/gamecube/*.c drivers/gamecube/*.h \
-	    drivers/gamecube/intl/english.h \
-	    iplfont/*.c iplfont/*.h \
-	    sz/*.c sz/*.h \
-	    /opt/devkitpro/libogc/include/*.h \
-	    /opt/devkitpro/libogc/include/mad/*.h \
-	    /opt/devkitpro/libogc/include/ogc/*.h \
-	    /opt/devkitpro/libogc/include/modplay/*.h \
-	    /opt/devkitpro/libogc/include/sdcard/*.h )
-

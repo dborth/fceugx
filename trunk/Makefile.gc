@@ -146,23 +146,3 @@ $(OUTPUT).elf: $(OFILES)
 #---------------------------------------------------------------------------------
 endif
 #---------------------------------------------------------------------------------
-
-tags:
-	@( cd source; ctags *.c *.h \
-	    boards/*.c boards/*.h \
-	    mappers/*.c mappers/*.h \
-	    input/*.c input/*.h \
-	    mbshare/*.c mbshare/*.h \
-	    drivers/common/*.c drivers/common/*.h \
-	    drivers/gamecube/*.c drivers/gamecube/*.h \
-	    iplfont/*.c iplfont/*.h \
-	    sz/*.c sz/*.h \
-	    /opt/devkitpro/libogc/include/*.h \
-	    /opt/devkitpro/libogc/include/mad/*.h \
-	    /opt/devkitpro/libogc/include/ogc/*.h \
-	    /opt/devkitpro/libogc/include/modplay/*.h \
-	    /opt/devkitpro/libogc/include/sdcard/*.h \
-	    /opt/devkitpro/libjpeg/include/jpeg/*.h \
-	    /opt/devkitpro/libfreetype/include/*.h \
-	    /opt/devkitpro/libfreetype/include/freetype/*.h )
-
