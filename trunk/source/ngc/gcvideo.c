@@ -769,28 +769,28 @@ void RenderFrame(unsigned char *XBuf)
 		for (width = 0; width < 256; width += 4)
 		{
 			// Row one
+			texture[t++] = rgb565[XBuf[xb + width + 0]];
 			texture[t++] = rgb565[XBuf[xb + width + 1]];
 			texture[t++] = rgb565[XBuf[xb + width + 2]];
 			texture[t++] = rgb565[XBuf[xb + width + 3]];
-			texture[t++] = rgb565[XBuf[xb + width + 4]];
 
 			// Row two
+			texture[t++] = rgb565[XBuf[xb + 256 + width + 0]];
 			texture[t++] = rgb565[XBuf[xb + 256 + width + 1]];
 			texture[t++] = rgb565[XBuf[xb + 256 + width + 2]];
 			texture[t++] = rgb565[XBuf[xb + 256 + width + 3]];
-			texture[t++] = rgb565[XBuf[xb + 256 + width + 4]];
 
 			// Row three
+			texture[t++] = rgb565[XBuf[xb + 512 + width + 0]];
 			texture[t++] = rgb565[XBuf[xb + 512 + width + 1]];
 			texture[t++] = rgb565[XBuf[xb + 512 + width + 2]];
 			texture[t++] = rgb565[XBuf[xb + 512 + width + 3]];
-			texture[t++] = rgb565[XBuf[xb + 512 + width + 4]];
 
 			// Row four
+			texture[t++] = rgb565[XBuf[xb + 768 + width + 0]];
 			texture[t++] = rgb565[XBuf[xb + 768 + width + 1]];
 			texture[t++] = rgb565[XBuf[xb + 768 + width + 2]];
 			texture[t++] = rgb565[XBuf[xb + 768 + width + 3]];
-			texture[t++] = rgb565[XBuf[xb + 768 + width + 4]];
 		}
 	}
 
