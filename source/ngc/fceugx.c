@@ -147,7 +147,7 @@ int main(int argc, char *argv[])
 
 		setFrameTimer(); // set frametimer method before emulation
 		FCEUI_SetVidSystem(GCSettings.timing);
-		FCEUI_SetSoundQuality(2); // 0 - low, 1 - high, 2 - high (alt.)
+		FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
 		ResetVideo_Emu();
 
 		while(1) // emulation loop
