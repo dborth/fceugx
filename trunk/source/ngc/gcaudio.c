@@ -97,8 +97,9 @@ void InitialiseAudio()
 void StopAudio()
 {
 	AUDIO_StopDMA();
-	ConfigRequested = 1;
 	IsPlaying = 0;
+	mixhead = mixtail = 0;
+	memset(soundbuffer, 0, 3840*2);
 }
 
 /****************************************************************************
@@ -136,7 +137,6 @@ void PlaySound( int *Buffer, int count )
 	// Restart Sound Processing if stopped
 	if (IsPlaying == 0)
 	{
-		ConfigRequested = 0;
 		AudioSwitchBuffers ();
 	}
 }

@@ -32,27 +32,23 @@ int FDSSwitchRequested;
 GXRModeObj *vmode; // Graphics Mode Object
 unsigned int *xfb[2]; // Framebuffers
 int whichfb = 0; // Frame buffer toggle
-
 int screenheight;
+bool progressive = FALSE;
 
 /*** 3D GX ***/
-#define TEX_WIDTH 512
-#define TEX_HEIGHT 512
+#define TEX_WIDTH 256
+#define TEX_HEIGHT 240
 #define DEFAULT_FIFO_SIZE ( 256 * 1024 )
 static u8 gp_fifo[DEFAULT_FIFO_SIZE] ATTRIBUTE_ALIGN(32);
-unsigned int copynow = GX_FALSE;
+static u32 copynow = GX_FALSE;
+static GXTexObj texobj;
+static Mtx view;
 
 /*** Texture memory ***/
 static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 2] ATTRIBUTE_ALIGN (32);
 
-GXTexObj texobj;
-static Mtx view;
-int vwidth = 256;
-int vheight = 240;
-
-int updateScaling = 1;
-bool progressive = false;
-int vmode_60hz = 0;
+static int updateScaling = 1;
+static int vmode_60hz = 0;
 
 #define HASPECT 256
 #define VASPECT 240
@@ -114,7 +110,7 @@ static camera cam = { {0.0F, 0.0F, 0.0F},
 GXRModeObj PAL_240p =
 {
 	VI_TVMODE_PAL_DS,       // viDisplayMode
-	256,             // fbWidth
+	640,             // fbWidth
 	240,             // efbHeight
 	240,             // xfbHeight
 	(VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
@@ -145,48 +141,13 @@ GXRModeObj PAL_240p =
         }
 };
 
-/* 478 lines interlaced (PAL 50Hz, Deflicker) */
-GXRModeObj PAL_480i =
-{
-    VI_TVMODE_PAL_INT,      // viDisplayMode
-    512,             // fbWidth
-    480,             // efbHeight
-    480,             // xfbHeight
-    (VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
-    (VI_MAX_HEIGHT_PAL - 480)/2,        // viYOrigin
-    640,             // viWidth
-    480,             // viHeight
-    VI_XFBMODE_DF,   // xFBmode
-    GX_FALSE,         // field_rendering
-    GX_FALSE,        // aa
-
-    // sample points arranged in increasing Y order
-        {
-                {6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
-                {6,6},{6,6},{6,6},  // pix 1
-                {6,6},{6,6},{6,6},  // pix 2
-                {6,6},{6,6},{6,6}   // pix 3
-        },
-
-    // vertical filter[7], 1/64 units, 6 bits each
-        {
-		          8,         // line n-1
-		          8,         // line n-1
-		         10,         // line n
-		         12,         // line n
-		         10,         // line n
-		          8,         // line n+1
-		          8          // line n+1
-        }
-};
-
 /** Original NES NTSC Resolutions: **/
 
 /* 240 lines progressive (NTSC or PAL 60Hz) */
 GXRModeObj NTSC_240p =
 {
 	VI_TVMODE_EURGB60_DS,      // viDisplayMode
-	256,             // fbWidth
+	640,             // fbWidth
 	240,             // efbHeight
 	240,             // xfbHeight
 	(VI_MAX_WIDTH_NTSC - 640)/2,	// viXOrigin
@@ -217,46 +178,9 @@ GXRModeObj NTSC_240p =
         }
 };
 
-/* 448 lines interlaced (NTSC or PAL 60Hz, Deflicker) */
-GXRModeObj NTSC_480i =
-{
-    VI_TVMODE_EURGB60_INT,     // viDisplayMode
-    512,             // fbWidth
-    480,             // efbHeight
-    480,             // xfbHeight
-    (VI_MAX_WIDTH_NTSC - 640)/2,        // viXOrigin
-    (VI_MAX_HEIGHT_NTSC - 480)/2,       // viYOrigin
-    640,             // viWidth
-    480,             // viHeight
-    VI_XFBMODE_DF,   // xFBmode
-    GX_FALSE,         // field_rendering
-    GX_FALSE,        // aa
-
-
-    // sample points arranged in increasing Y order
-        {
-                {6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
-                {6,6},{6,6},{6,6},  // pix 1
-                {6,6},{6,6},{6,6},  // pix 2
-                {6,6},{6,6},{6,6}   // pix 3
-        },
-
-    // vertical filter[7], 1/64 units, 6 bits each
-        {
-		          8,         // line n-1
-		          8,         // line n-1
-		         10,         // line n
-		         12,         // line n
-		         10,         // line n
-		          8,         // line n+1
-		          8          // line n+1
-        }
-};
-
 /* TV Modes table */
-GXRModeObj *tvmodes[4] = {
-	&PAL_240p, 	&PAL_480i,	// NES PAL video modes
-	&NTSC_240p, &NTSC_480i, // NES NTSC video modes
+GXRModeObj *tvmodes[2] = {
+	&NTSC_240p, &PAL_240p
 };
 
 /****************************************************************************
@@ -279,10 +203,7 @@ void setFrameTimer()
 void SyncSpeed()
 {
 	now = gettime();
-	int diff = normaldiff - diff_usec(prev, now);
-	if (diff > 0) // ahead - take a nap
-		usleep(diff);
-
+  while (diff_usec(prev, now) < normaldiff) now = gettime();
 	prev = now;
 }
 
@@ -307,9 +228,9 @@ vbgetback (void *arg)
 {
 	while (1)
 	{
-		if(GCSettings.timing != vmode_60hz)
+		/*if(GCSettings.timing != vmode_60hz)
 			VIDEO_WaitVSync();
-		else
+		else*/
 			SyncSpeed();
 		LWP_SuspendThread (vbthread);
 	}
@@ -594,46 +515,31 @@ ResetVideo_Emu ()
 	{
 		case VI_PAL:  /* 576 lines (PAL 50Hz) */
 
-			// set video signal mode
-			PAL_240p.viTVMode = VI_TVMODE_PAL_DS;
-			PAL_480i.viTVMode = VI_TVMODE_PAL_INT;
+			// set video signal mode (50Hz only)
 			NTSC_240p.viTVMode = VI_TVMODE_PAL_DS;
-			NTSC_480i.viTVMode = VI_TVMODE_PAL_INT;
+			NTSC_240p.viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
 			break;
 
 		case VI_NTSC: /* 480 lines (NTSC 60hz) */
 
-			// set video signal mode
+			// set video signal mode  (60Hz only)
 			PAL_240p.viTVMode = VI_TVMODE_NTSC_DS;
-			PAL_480i.viTVMode = VI_TVMODE_NTSC_INT;
+			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
 			NTSC_240p.viTVMode = VI_TVMODE_NTSC_DS;
-			NTSC_480i.viTVMode = VI_TVMODE_NTSC_INT;
 			break;
 
 		default:  /* 480 lines (PAL 60Hz) */
 
-			// set video signal mode
+			// set video signal mode (supports both 50/60Hz but we use 60hz for both PAL & NTSC settings)
 			PAL_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
-			PAL_480i.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_INTERLACE);
+			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
 			NTSC_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
-			NTSC_480i.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_INTERLACE);
 			break;
 	}
 
-	int i = -1;
 	if (GCSettings.render == 0)	// original render mode
 	{
-		for (i=0; i<4; i++) {
-			if (tvmodes[i]->efbHeight == vheight)
-				break;
-		}
-		if(i >= 0)
-			rmode = tvmodes[i];
-		else
-		{
-			WaitPrompt("Video mode not found!");
-			rmode = vmode;
-		}
+		rmode = tvmodes[GCSettings.timing];
 	}
 	else if (GCSettings.render == 2)	// unfiltered
 	{
@@ -659,7 +565,7 @@ ResetVideo_Emu ()
 
 	GX_SetDispCopySrc (0, 0, rmode->fbWidth, rmode->efbHeight);
 	GX_SetDispCopyDst (rmode->fbWidth, rmode->xfbHeight);
-	GX_SetCopyFilter (rmode->aa, rmode->sample_pattern, (GCSettings.render == 1) ? GX_TRUE : GX_FALSE, rmode->vfilter);	// AA on only for filtered mode
+	GX_SetCopyFilter (rmode->aa, rmode->sample_pattern, (GCSettings.render == 1) ? GX_TRUE : GX_FALSE, rmode->vfilter);	// Deflickering Filter only for filtered mode
 
 	GX_SetFieldMode (rmode->field_rendering, ((rmode->viHeight == 2 * rmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 	GX_SetPixelFmt (GX_PF_RGB8_Z24, GX_ZC_LINEAR);
@@ -723,8 +629,8 @@ void RenderFrame(unsigned char *XBuf)
 		/** Update scaling **/
 		if (GCSettings.render == 0)	// original render mode
 		{
-			xscale = vwidth / 2;
-			yscale = vheight / 2;
+			xscale = 640 / 2; /* use GX scaler instead VI (less artefacts) */
+			yscale = 240 / 2;
 		}
 		else // unfiltered and filtered mode
 		{
@@ -747,9 +653,10 @@ void RenderFrame(unsigned char *XBuf)
 
 		GX_InvVtxCache ();	// update vertex cache
 
-		GX_InitTexObj (&texobj, texturemem, vwidth, vheight, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
+		GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
+    memset(texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2);
 
-		if (!GCSettings.render&1)
+		if (!(GCSettings.render&1))
 			GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
 
 		GX_LoadTexObj (&texobj, GX_TEXMAP0);	// load texture object so its ready to use
@@ -757,40 +664,44 @@ void RenderFrame(unsigned char *XBuf)
 		updateScaling = 0;
 	}
 
-    int width, height, t, xb;
-	memset(texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2);
-	unsigned short * texture = (unsigned short *)texturemem;
+  int width, height;
+	u16 *texture = (unsigned short *)texturemem;
+  u8 *src1 = XBuf;  
+  u8 *src2,*src3,*src4;
 
 	// Now draw the texture
-	t = 0;
 	for (height = 0; height < 240; height += 4)
 	{
-		xb = (256 * height);
+    src1 += 768;        /* line 4*N   */
+    src2 = src1 + 256;  /* line 4*(N+1) */
+    src3 = src2 + 256;  /* line 4*(N+2) */
+    src4 = src3 + 256;  /* line 4*(N+3) */
+
 		for (width = 0; width < 256; width += 4)
 		{
 			// Row one
-			texture[t++] = rgb565[XBuf[xb + width + 0]];
-			texture[t++] = rgb565[XBuf[xb + width + 1]];
-			texture[t++] = rgb565[XBuf[xb + width + 2]];
-			texture[t++] = rgb565[XBuf[xb + width + 3]];
+			*texture++ = rgb565[*src1++];
+			*texture++ = rgb565[*src1++];
+			*texture++ = rgb565[*src1++];
+			*texture++ = rgb565[*src1++];
 
 			// Row two
-			texture[t++] = rgb565[XBuf[xb + 256 + width + 0]];
-			texture[t++] = rgb565[XBuf[xb + 256 + width + 1]];
-			texture[t++] = rgb565[XBuf[xb + 256 + width + 2]];
-			texture[t++] = rgb565[XBuf[xb + 256 + width + 3]];
+			*texture++ = rgb565[*src2++];
+			*texture++ = rgb565[*src2++];
+			*texture++ = rgb565[*src2++];
+			*texture++ = rgb565[*src2++];
 
 			// Row three
-			texture[t++] = rgb565[XBuf[xb + 512 + width + 0]];
-			texture[t++] = rgb565[XBuf[xb + 512 + width + 1]];
-			texture[t++] = rgb565[XBuf[xb + 512 + width + 2]];
-			texture[t++] = rgb565[XBuf[xb + 512 + width + 3]];
+			*texture++ = rgb565[*src3++];
+			*texture++ = rgb565[*src3++];
+			*texture++ = rgb565[*src3++];
+			*texture++ = rgb565[*src3++];
 
 			// Row four
-			texture[t++] = rgb565[XBuf[xb + 768 + width + 0]];
-			texture[t++] = rgb565[XBuf[xb + 768 + width + 1]];
-			texture[t++] = rgb565[XBuf[xb + 768 + width + 2]];
-			texture[t++] = rgb565[XBuf[xb + 768 + width + 3]];
+			*texture++ = rgb565[*src4++];
+			*texture++ = rgb565[*src4++];
+			*texture++ = rgb565[*src4++];
+			*texture++ = rgb565[*src4++];
 		}
 	}
 
