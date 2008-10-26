@@ -669,16 +669,13 @@ void RenderFrame(unsigned char *XBuf)
 	int width, height;
 	u16 *texture = (unsigned short *)texturemem;
 	u8 *src1 = XBuf;
-	u8 *src2,*src3,*src4;
+	u8 *src2 = XBuf + 256;
+	u8 *src3 = XBuf + 512;
+	u8 *src4 = XBuf + 768;
 
 	// Now draw the texture
 	for (height = 0; height < 240; height += 4)
 	{
-		src1 += 768;        /* line 4*N   */
-		src2 = src1 + 256;  /* line 4*(N+1) */
-		src3 = src2 + 256;  /* line 4*(N+2) */
-		src4 = src3 + 256;  /* line 4*(N+3) */
-
 		for (width = 0; width < 256; width += 4)
 		{
 			// Row one
@@ -705,6 +702,10 @@ void RenderFrame(unsigned char *XBuf)
 			*texture++ = rgb565[*src4++];
 			*texture++ = rgb565[*src4++];
 		}
+		src1 += 768; // line 4*N
+		src2 += 768; // line 4*(N+1)
+		src3 += 768; // line 4*(N+2)
+		src4 += 768; // line 4*(N+3)
 	}
 
 	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 2);
