@@ -326,6 +326,9 @@ draw_init ()
 	memset (&view, 0, sizeof (Mtx));
 	guLookAt(view, &cam.pos, &cam.up, &cam.view);
 	GX_LoadPosMtxImm (view, GX_PNMTX0);
+
+  GX_InvVtxCache ();	// update vertex cache
+
 }
 
 static void
@@ -396,6 +399,44 @@ StartGX ()
 
 
 	GX_CopyDisp (xfb[whichfb], GX_TRUE); // reset xfb
+}
+
+/****************************************************************************
+ * UpdateScaling
+ *
+ * This function updates the quad aspect ratio.
+ ***************************************************************************/
+static void
+UpdateScaling()
+{
+	int xscale, yscale;
+
+	/** Update scaling **/
+	if (GCSettings.render == 0)	// original render mode
+	{
+		xscale = 640 / 2; /* use GX scaler instead VI (less artifacts) */
+		yscale = 240 / 2;
+	}
+	else // unfiltered and filtered mode
+	{
+		xscale = vmode->fbWidth / 2;
+		yscale = vmode->efbHeight / 2;
+	}
+
+	// aspect ratio scaling (change width scale)
+	// yes its pretty cheap and ugly, but its easy!
+	if (GCSettings.widescreen)
+		xscale = (3*xscale)/4;
+
+	xscale *= GCSettings.ZoomLevel;
+	yscale *= GCSettings.ZoomLevel;
+
+	// update vertex position matrix
+  square[0] = square[9] = (-xscale);
+	square[3] = square[6] = (xscale);
+	square[1] = square[4] = (yscale);
+	square[7] = square[10] = (-yscale);
+  draw_init ();
 }
 
 /****************************************************************************
@@ -573,7 +614,15 @@ ResetVideo_Emu ()
 	guOrtho(p, rmode->efbHeight/2, -(rmode->efbHeight/2), -(rmode->fbWidth/2), rmode->fbWidth/2, 10, 1000);	// matrix, t, b, l, r, n, f
 	GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
 
-	updateScaling = 5;
+  GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
+
+	if (!(GCSettings.render&1))
+		GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
+
+	GX_LoadTexObj (&texobj, GX_TEXMAP0);	// load texture object so its ready to use
+
+
+  UpdateScaling();
 }
 
 /****************************************************************************
@@ -608,47 +657,6 @@ ResetVideo_Menu ()
 	GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
 }
 
-void UpdateScaling()
-{
-	int xscale, yscale;
-
-	/** Update scaling **/
-	if (GCSettings.render == 0)	// original render mode
-	{
-		xscale = 640 / 2; /* use GX scaler instead VI (less artifacts) */
-		yscale = 240 / 2;
-	}
-	else // unfiltered and filtered mode
-	{
-		xscale = vmode->fbWidth / 2;
-		yscale = vmode->efbHeight / 2;
-	}
-
-	// aspect ratio scaling (change width scale)
-	// yes its pretty cheap and ugly, but its easy!
-	if (GCSettings.widescreen)
-		xscale = (3*xscale)/4;
-
-	xscale *= GCSettings.ZoomLevel;
-	yscale *= GCSettings.ZoomLevel;
-
-	square[0] = square[9] = (-xscale);
-	square[3] = square[6] = (xscale);
-	square[1] = square[4] = (yscale);
-	square[7] = square[10] = (-yscale);
-
-	GX_InvVtxCache ();	// update vertex cache
-
-	GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
-
-	if (!(GCSettings.render&1))
-		GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
-
-	GX_LoadTexObj (&texobj, GX_TEXMAP0);	// load texture object so its ready to use
-
-	updateScaling--;
-}
-
 /****************************************************************************
  * RenderFrame
  *
@@ -664,7 +672,10 @@ void RenderFrame(unsigned char *XBuf)
     whichfb ^= 1;
 
     if(updateScaling)
+    {
     	UpdateScaling();
+      updateScaling --;
+    }
 
 	int width, height;
 	u16 *texture = (unsigned short *)texturemem;
