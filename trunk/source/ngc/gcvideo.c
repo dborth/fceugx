@@ -327,8 +327,7 @@ draw_init ()
 	guLookAt(view, &cam.pos, &cam.up, &cam.view);
 	GX_LoadPosMtxImm (view, GX_PNMTX0);
 
-  GX_InvVtxCache ();	// update vertex cache
-
+	GX_InvVtxCache ();	// update vertex cache
 }
 
 static void
@@ -397,7 +396,6 @@ StartGX ()
 	guOrtho(p, vmode->efbHeight/2, -(vmode->efbHeight/2), -(vmode->fbWidth/2), vmode->fbWidth/2, 10, 1000);	// matrix, t, b, l, r, n, f
 	GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
 
-
 	GX_CopyDisp (xfb[whichfb], GX_TRUE); // reset xfb
 }
 
@@ -432,11 +430,14 @@ UpdateScaling()
 	yscale *= GCSettings.ZoomLevel;
 
 	// update vertex position matrix
-  square[0] = square[9] = (-xscale);
+	square[0] = square[9] = (-xscale);
 	square[3] = square[6] = (xscale);
 	square[1] = square[4] = (yscale);
 	square[7] = square[10] = (-yscale);
-  draw_init ();
+	draw_init ();
+
+	if(updateScaling)
+		updateScaling--;
 }
 
 /****************************************************************************
@@ -463,7 +464,7 @@ void
 InitGCVideo ()
 {
 	// init video
-  VIDEO_Init ();
+	VIDEO_Init ();
 
 	// get default video mode
 	vmode = VIDEO_GetPreferredMode(NULL);
@@ -504,42 +505,42 @@ InitGCVideo ()
 	if (vmode->viTVMode == VI_TVMODE_NTSC_PROG)
 		progressive = true;
 
-  // configure VI
-  VIDEO_Configure (vmode);
+	// configure VI
+	VIDEO_Configure (vmode);
 
-  // always 480 lines
-  screenheight = vmode->xfbHeight;
+	// always 480 lines
+	screenheight = vmode->xfbHeight;
 
 	// Allocate the video buffers
-  xfb[0] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
-  xfb[1] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
+	xfb[0] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
+	xfb[1] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
 
-  // A console is always useful while debugging.
-  console_init (xfb[0], 20, 64, vmode->fbWidth, vmode->xfbHeight, vmode->fbWidth * 2);
+	// A console is always useful while debugging.
+	console_init (xfb[0], 20, 64, vmode->fbWidth, vmode->xfbHeight, vmode->fbWidth * 2);
 
-  // Clear framebuffers etc.
-  VIDEO_ClearFrameBuffer (vmode, xfb[0], COLOR_BLACK);
-  VIDEO_ClearFrameBuffer (vmode, xfb[1], COLOR_BLACK);
-  VIDEO_SetNextFramebuffer (xfb[0]);
+	// Clear framebuffers etc.
+	VIDEO_ClearFrameBuffer (vmode, xfb[0], COLOR_BLACK);
+	VIDEO_ClearFrameBuffer (vmode, xfb[1], COLOR_BLACK);
+	VIDEO_SetNextFramebuffer (xfb[0]);
 
 	// video callbacks
 	VIDEO_SetPostRetraceCallback ((VIRetraceCallback)UpdatePadsCB);
-  VIDEO_SetPreRetraceCallback ((VIRetraceCallback)copy_to_xfb);
+	VIDEO_SetPreRetraceCallback ((VIRetraceCallback)copy_to_xfb);
 
-  VIDEO_SetBlack (FALSE);
-  VIDEO_Flush ();
-  VIDEO_WaitVSync ();
-  if (vmode->viTVMode & VI_NON_INTERLACE)
-  VIDEO_WaitVSync ();
+	VIDEO_SetBlack (FALSE);
+	VIDEO_Flush ();
+	VIDEO_WaitVSync ();
+	if (vmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync ();
 
-  copynow = GX_FALSE;
-  StartGX ();
+	copynow = GX_FALSE;
+	StartGX ();
 
 	draw_init ();
 
-  InitVideoThread ();
+	InitVideoThread ();
 
-  // Finally, the video is up and ready for use :)
+	// Finally, the video is up and ready for use :)
 }
 
 /****************************************************************************
@@ -554,7 +555,7 @@ ResetVideo_Emu ()
 	Mtx p;
 
 	// set VI modes
-  switch (vmode->viTVMode >> 2)
+	switch (vmode->viTVMode >> 2)
 	{
 		case VI_PAL:  /* 574 lines (PAL 50Hz) */
 
@@ -581,7 +582,7 @@ ResetVideo_Emu ()
 	}
 
 	// choose current VI mode
-  if (GCSettings.render == 0)	// original render mode
+	if (GCSettings.render == 0)	// original render mode
 	{
 		rmode = tvmodes[GCSettings.timing];
 	}
@@ -595,15 +596,18 @@ ResetVideo_Emu ()
 	}
 
 	// reconfigure VI
-  VIDEO_Configure (rmode);
+	VIDEO_Configure (rmode);
 	VIDEO_ClearFrameBuffer (rmode, xfb[whichfb], COLOR_BLACK);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
-	if (rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
-	else while (VIDEO_GetNextField())  VIDEO_WaitVSync();
+	if (rmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
+	else
+		while (VIDEO_GetNextField())
+			VIDEO_WaitVSync();
 
 	// reconfigure GX
-  GX_SetViewport (0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1);
+	GX_SetViewport (0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1);
 	GX_SetDispCopyYScale ((f32) rmode->xfbHeight / (f32) rmode->efbHeight);
 	GX_SetScissor (0, 0, rmode->fbWidth, rmode->efbHeight);
 	GX_SetDispCopySrc (0, 0, rmode->fbWidth, rmode->efbHeight);
@@ -614,14 +618,14 @@ ResetVideo_Emu ()
 	guOrtho(p, rmode->efbHeight/2, -(rmode->efbHeight/2), -(rmode->fbWidth/2), rmode->fbWidth/2, 10, 1000);	// matrix, t, b, l, r, n, f
 	GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
 
-  // reinitialize texture 
-  GX_InvalidateTexAll ();
-  GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
+	// reinitialize texture
+	GX_InvalidateTexAll ();
+	GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
 	if (!(GCSettings.render&1))
 		GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
 
-  // set aspect ratio
-  UpdateScaling();
+	// set aspect ratio
+	updateScaling = 5;
 }
 
 /****************************************************************************
@@ -638,10 +642,13 @@ ResetVideo_Menu ()
 	VIDEO_ClearFrameBuffer (vmode, xfb[whichfb], COLOR_BLACK);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
-	if (vmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
-	else while (VIDEO_GetNextField())  VIDEO_WaitVSync();
+	if (vmode->viTVMode & VI_NON_INTERLACE)
+		VIDEO_WaitVSync();
+	else
+		while (VIDEO_GetNextField())
+			VIDEO_WaitVSync();
 
-  GX_SetViewport (0, 0, vmode->fbWidth, vmode->efbHeight, 0, 1);
+	GX_SetViewport (0, 0, vmode->fbWidth, vmode->efbHeight, 0, 1);
 	GX_SetDispCopyYScale ((f32) vmode->xfbHeight / (f32) vmode->efbHeight);
 	GX_SetScissor (0, 0, vmode->fbWidth, vmode->efbHeight);
 
@@ -664,19 +671,16 @@ ResetVideo_Menu ()
 
 void RenderFrame(unsigned char *XBuf)
 {
-  // Ensure previous vb has complete
+	// Ensure previous vb has complete
 	while ((LWP_ThreadIsSuspended (vbthread) == 0) || (copynow == GX_TRUE))
 		usleep (50);
 
-  // swap framebuffers
-  whichfb ^= 1;
-  
-  // zoom has changed
-  if(updateScaling)
-  {
-    UpdateScaling();
-    updateScaling --;
-  }
+	// swap framebuffers
+	whichfb ^= 1;
+
+	// zoom has changed
+	if(updateScaling)
+		UpdateScaling();
 
 	int width, height;
 	u16 *texture = (unsigned short *)texturemem;
@@ -686,9 +690,9 @@ void RenderFrame(unsigned char *XBuf)
 	u8 *src4 = XBuf + 768;
 
 	// clear texture objects
-  GX_InvalidateTexAll();
+	GX_InvalidateTexAll();
 
-  // fill the texture
+	// fill the texture
 	for (height = 0; height < 240; height += 4)
 	{
 		for (width = 0; width < 256; width += 4)
@@ -723,8 +727,8 @@ void RenderFrame(unsigned char *XBuf)
 		src4 += 768; // line 4*(N+3)
 	}
 
-  // load texture into GX
-  DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 2);
+	// load texture into GX
+	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 2);
 	GX_LoadTexObj (&texobj, GX_TEXMAP0);
 
 	// render textured quad
@@ -732,7 +736,7 @@ void RenderFrame(unsigned char *XBuf)
 	GX_DrawDone();
 
 	// EFB is ready to be coied into XFB
-  VIDEO_SetNextFramebuffer(xfb[whichfb]);
+	VIDEO_SetNextFramebuffer(xfb[whichfb]);
 	VIDEO_Flush();
 	copynow = GX_TRUE;
 
