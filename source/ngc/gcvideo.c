@@ -614,13 +614,11 @@ ResetVideo_Emu ()
 	guOrtho(p, rmode->efbHeight/2, -(rmode->efbHeight/2), -(rmode->fbWidth/2), rmode->fbWidth/2, 10, 1000);	// matrix, t, b, l, r, n, f
 	GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
 
+  // reinitialize texture 
+  GX_InvalidateTexAll ();
   GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
-
 	if (!(GCSettings.render&1))
 		GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
-
-	GX_LoadTexObj (&texobj, GX_TEXMAP0);	// load texture object so its ready to use
-
 
   UpdateScaling();
 }
@@ -684,7 +682,10 @@ void RenderFrame(unsigned char *XBuf)
 	u8 *src3 = XBuf + 512;
 	u8 *src4 = XBuf + 768;
 
-	// Now draw the texture
+	/* clear texture objects in memory */
+  GX_InvalidateTexAll();
+
+  // Now draw the texture
 	for (height = 0; height < 240; height += 4)
 	{
 		for (width = 0; width < 256; width += 4)
@@ -719,17 +720,16 @@ void RenderFrame(unsigned char *XBuf)
 		src4 += 768; // line 4*(N+3)
 	}
 
-	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 2);
+  /* load texture into GX */
+  DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 2);
+	GX_LoadTexObj (&texobj, GX_TEXMAP0);
 
-	/* setup GX */
-	GX_InvalidateTexAll();
-
+	/* render textured quad */
 	draw_square(view);
-
 	GX_DrawDone();
 
-
-	VIDEO_SetNextFramebuffer(xfb[whichfb]);
+	/* EFB is ready to be copied into XFB */
+  VIDEO_SetNextFramebuffer(xfb[whichfb]);
 	VIDEO_Flush();
 	copynow = GX_TRUE;
 
