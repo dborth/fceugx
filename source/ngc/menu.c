@@ -708,9 +708,9 @@ ConfigureControllers ()
 
 	// disable unavailable controller options if in GC mode
 	#ifndef HW_RVL
-		ctlrmenu[2][0] = '\0';
-		ctlrmenu[3][0] = '\0';
-		ctlrmenu[4][0] = '\0';
+		ctlrmenu[3][0] = 0;
+		ctlrmenu[4][0] = 0;
+		ctlrmenu[5][0] = 0;
 	#endif
 
 	while (quit == 0)
@@ -857,7 +857,7 @@ MainMenu (int selectedMenu)
 		if(!romLoaded)
 			menuitems[2][0] = '\0';
 		else
-			sprintf (menuitems[4], "Game Menu");
+			sprintf (menuitems[2], "Game Menu");
 
 		if(selectedMenu >= 0)
 		{
