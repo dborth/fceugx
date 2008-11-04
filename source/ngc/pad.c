@@ -29,6 +29,7 @@ extern bool romLoaded;
 // All other pads are mapped to this
 unsigned int nespadmap[] = {
 	JOY_B, JOY_A,
+	RAPID_B, RAPID_A, // rapid press A/B buttons
 	JOY_SELECT, JOY_START,
 	JOY_UP, JOY_DOWN,
 	JOY_LEFT, JOY_RIGHT,
@@ -38,6 +39,7 @@ unsigned int nespadmap[] = {
 /*** Gamecube controller Padmap ***/
 unsigned int gcpadmap[] = {
 	PAD_BUTTON_B, PAD_BUTTON_A,
+	PAD_BUTTON_Y, PAD_BUTTON_X,
 	PAD_TRIGGER_Z, PAD_BUTTON_START,
 	PAD_BUTTON_UP, PAD_BUTTON_DOWN,
 	PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT,
@@ -46,6 +48,7 @@ unsigned int gcpadmap[] = {
 /*** Wiimote Padmap ***/
 unsigned int wmpadmap[] = {
 	WPAD_BUTTON_1, WPAD_BUTTON_2,
+	0, 0,
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_RIGHT, WPAD_BUTTON_LEFT,
 	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
@@ -54,14 +57,16 @@ unsigned int wmpadmap[] = {
 /*** Classic Controller Padmap ***/
 unsigned int ccpadmap[] = {
 	WPAD_CLASSIC_BUTTON_Y, WPAD_CLASSIC_BUTTON_B,
+	WPAD_CLASSIC_BUTTON_X, WPAD_CLASSIC_BUTTON_A,
 	WPAD_CLASSIC_BUTTON_MINUS, WPAD_CLASSIC_BUTTON_PLUS,
 	WPAD_CLASSIC_BUTTON_UP, WPAD_CLASSIC_BUTTON_DOWN,
 	WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT,
-	WPAD_CLASSIC_BUTTON_A
+	WPAD_CLASSIC_BUTTON_FULL_L
 };
 /*** Nunchuk + wiimote Padmap ***/
 unsigned int ncpadmap[] = {
 	WPAD_NUNCHUK_BUTTON_C, WPAD_NUNCHUK_BUTTON_Z,
+	0, 0,
 	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
 	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
 	WPAD_BUTTON_LEFT, WPAD_BUTTON_RIGHT,
@@ -270,7 +275,9 @@ void UpdateCursorPosition (int pad)
 /****************************************************************************
  * Convert GC Joystick Readings to JOY
  ****************************************************************************/
-u8 PADTUR = 2;
+int RAPID_SKIP = 2; // frames to skip between rapid button presses
+int RAPID_PRESS = 2; // number of rapid button presses to execute
+int rapidbutton[4][2] = {{0}};
 
 unsigned char DecodeJoy( unsigned short pad )
 {
@@ -381,7 +388,17 @@ unsigned char DecodeJoy( unsigned short pad )
 			// if zapper is on, ignore all buttons except START and SELECT
 			if(!GCSettings.zapper || nespadmap[i] == JOY_START || nespadmap[i] == JOY_SELECT)
 			{
-				if(nespadmap[i] > 0)
+				if(nespadmap[i] == RAPID_A)
+				{
+					// activate rapid fire for A button
+					rapidbutton[pad][0] = RAPID_PRESS;
+				}
+				else if(nespadmap[i] == RAPID_B)
+				{
+					// activate rapid fire for B button
+					rapidbutton[pad][1] = RAPID_PRESS;
+				}
+				else if(nespadmap[i] > 0)
 				{
 					J |= nespadmap[i];
 				}
@@ -401,6 +418,22 @@ unsigned char DecodeJoy( unsigned short pad )
 			}
 		}
 	}
+
+	// rapid fire buttons
+	if(FrameTimer % RAPID_SKIP == 0) // only press button every X frames
+	{
+		if(rapidbutton[pad][0] > 0) // rapid A
+		{
+			J |= JOY_A;
+			rapidbutton[pad][0]--;
+		}
+		if(rapidbutton[pad][1] > 0) // rapid B
+		{
+			J |= JOY_B;
+			rapidbutton[pad][1]--;
+		}
+	}
+
 	// zapper enabled
 	if(GCSettings.zapper)
 	{
@@ -459,7 +492,23 @@ void GetJoy()
     u32 wm_pb = WPAD_ButtonsHeld (0); // wiimote / expansion button info
     #endif
 
-    /*** Check for video zoom ***/
+    // Turbo mode
+    // RIGHT on c-stick and on classic ctrlr right joystick
+    if(
+    	(gc_px > 70)
+		#ifdef HW_RVL
+		|| (wm_sx > 70)
+		#endif
+	)
+    {
+    	frameskip = 3;
+    }
+    else
+    {
+    	frameskip = 0;
+    }
+
+    // Check for video zoom
 	if (GCSettings.Zoom)
 	{
 		if (gc_py < -36 || gc_py > 36)

@@ -40,6 +40,7 @@ unsigned char * nesrom = NULL;
 int ConfigRequested = 0;
 bool isWii;
 uint8 *xbsave=NULL;
+int frameskip = 0;
 
 extern bool romLoaded;
 
@@ -150,15 +151,25 @@ int main(int argc, char *argv[])
 		FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
 		ResetVideo_Emu();
 
+		static int fskipc=0;
+
 		while(1) // emulation loop
 		{
 			uint8 *gfx;
 			int32 *sound;
 			int32 ssize;
 
-			FCEUI_Emulate(&gfx, &sound, &ssize, 0);
-			xbsave = gfx;
-			FCEUD_Update(gfx, sound, ssize);
+			#ifdef FRAMESKIP
+			fskipc=(fskipc+1)%(frameskip+1);
+			#endif
+
+			FCEUI_Emulate(&gfx, &sound, &ssize, fskipc);
+
+			if(!fskipc)
+			{
+				xbsave = gfx;
+				FCEUD_Update(gfx, sound, ssize);
+			}
 
 			if(ConfigRequested)
 			{

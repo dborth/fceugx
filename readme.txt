@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 2.0.6
+                                  Version 2.0.7
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -28,6 +28,15 @@ SNES9x GX project.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[What's New 2.0.7]
+* Special thanks to eke-eke & KruLLo for contributions, bugfixes, and tips
+* Video code rewritten - now has original, unfiltered, filtered modes
+* Zoom option
+* 16:9 aspect ratio correction
+* SD/USB hot-swapping!
+* A/B rapid-fire
+* Turbo option
 
 [What's New 2.0.6 - October 21, 2008]
 * Right audio channel corruption fixed (thanks cyberdog!)

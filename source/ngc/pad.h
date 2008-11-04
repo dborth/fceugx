@@ -16,7 +16,9 @@
 
 #define PI 				3.14159265f
 #define PADCAL			50
-#define MAXJP 			9
+#define MAXJP 			11
+#define RAPID_A 		256
+#define RAPID_B			512
 
 extern unsigned int gcpadmap[];
 extern unsigned int wmpadmap[];

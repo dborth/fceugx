@@ -575,10 +575,12 @@ GetButtonMap(u16 ctrlr_type, char* btn_name)
 	return pressed;
 }	// end getButtonMap()
 
-int cfg_btns_count = 10;
+int cfg_btns_count = 12;
 char cfg_btns_menu[][50] = {
 	"B           -         ",
 	"A           -         ",
+	"RAPID B     -         ",
+	"RAPID A     -         ",
 	"SELECT      -         ",
 	"START       -         ",
 	"UP          -         ",
@@ -666,6 +668,8 @@ ConfigureButtons (u16 ctrlr_type)
 			case 6:
 			case 7:
 			case 8:
+			case 9:
+			case 10:
 				/*** Change button map ***/
 				// wait for input
 				memset (temp, 0, sizeof(temp));
@@ -677,7 +681,7 @@ ConfigureButtons (u16 ctrlr_type)
 				break;
 
 			case -1: /*** Button B ***/
-			case 9:
+			case 11:
 				/*** Return ***/
 				quit = 1;
 				break;

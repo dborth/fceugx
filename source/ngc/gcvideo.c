@@ -25,6 +25,7 @@
 
 extern unsigned int SMBTimer;
 int FDSTimer = 0;
+u32 FrameTimer = 0;
 int FDSSwitchRequested;
 
 /*** External 2D Video ***/
@@ -88,10 +89,10 @@ s16 square[] ATTRIBUTE_ALIGN (32) =
    * X,   Y,  Z
    * Values set are for roughly 4:3 aspect
    */
-  -HASPECT, VASPECT, 0,		// 0
-    HASPECT, VASPECT, 0,	// 1
+   -HASPECT,  VASPECT, 0,	// 0
+    HASPECT,  VASPECT, 0,	// 1
     HASPECT, -VASPECT, 0,	// 2
-    -HASPECT, -VASPECT, 0,	// 3
+   -HASPECT, -VASPECT, 0	// 3
 };
 
 
@@ -273,6 +274,7 @@ copy_to_xfb (u32 arg)
 	}
 
 	SMBTimer++;
+	FrameTimer++;
 
 	// FDS switch disk requested - need to eject, select, and insert
 	// but not all at once!
