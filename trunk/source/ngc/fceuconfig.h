@@ -63,5 +63,6 @@ struct SGCSettings{
 
 extern struct SGCSettings GCSettings;
 extern int ConfigRequested;
+extern int frameskip;
 
 #endif

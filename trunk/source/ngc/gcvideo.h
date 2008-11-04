@@ -33,5 +33,6 @@ struct st_palettes {
 extern struct st_palettes palettes[];
 extern int FDSSwitchRequested;
 extern bool progressive;
+u32 FrameTimer;
 
 #endif

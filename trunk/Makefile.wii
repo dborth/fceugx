@@ -30,7 +30,7 @@ LANG		:=	ENGLISH # Supported languages: ENGLISH
 # options for code generation
 #---------------------------------------------------------------------------------
 CFLAGS  = -g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNGC -DWII_DVD \
-		-DHAVE_ASPRINTF -DSTDC -DFCEU_VERSION_NUMERIC=9812 \
+		-DHAVE_ASPRINTF -DSTDC -DFCEU_VERSION_NUMERIC=9812 -DFRAMESKIP \
 	    -D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 	    -DLANG_$(LANG)
 CXXFLAGS	=	$(CFLAGS)
