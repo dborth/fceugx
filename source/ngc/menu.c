@@ -39,7 +39,6 @@
 
 extern void ResetNES(void);
 extern void PowerNES(void);
-extern void FCEU_ResetPalette(void);
 
 extern int menu;
 extern bool romLoaded;
@@ -172,28 +171,6 @@ VideoOptions ()
 			case 2: // palette
 				if ( ++GCSettings.currpal > MAXPAL )
 					GCSettings.currpal = 0;
-
-				if ( GCSettings.currpal == 0 )
-				{
-					// Do palette reset
-					FCEU_ResetPalette();
-				}
-				else
-				{
-					// Now setup this palette
-					unsigned char i,r,g,b;
-
-					for ( i = 0; i < 64; i++ )
-					{
-						r = palettes[GCSettings.currpal-1].data[i] >> 16;
-						g = ( palettes[GCSettings.currpal-1].data[i] & 0xff00 ) >> 8;
-						b = ( palettes[GCSettings.currpal-1].data[i] & 0xff );
-						FCEUD_SetPalette( i, r, g, b);
-						FCEUD_SetPalette( i+64, r, g, b);
-						FCEUD_SetPalette( i+128, r, g, b);
-						FCEUD_SetPalette( i+192, r, g, b);
-					}
-				}
 				break;
 
 			case 3:

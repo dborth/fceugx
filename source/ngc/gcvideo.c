@@ -23,6 +23,8 @@
 #include "menudraw.h"
 #include "images/nesback.h"
 
+extern void FCEU_ResetPalette(void);
+
 extern unsigned int SMBTimer;
 int FDSTimer = 0;
 u32 FrameTimer = 0;
@@ -499,13 +501,17 @@ InitGCVideo ()
 /* we have component cables, but the preferred mode is interlaced
  * why don't we switch into progressive?
  * on the Wii, the user can do this themselves on their Wii Settings */
-	if(VIDEO_HaveComponentCable() && vmode == &TVNtsc480IntDf)
+	if(VIDEO_HaveComponentCable())
 		vmode = &TVNtsc480Prog;
 #endif
 
 	// check for progressive scan
 	if (vmode->viTVMode == VI_TVMODE_NTSC_PROG)
 		progressive = true;
+
+	// widescreen fix
+	vmode->viWidth = 678;
+	vmode->viXOrigin = (VI_MAX_WIDTH_PAL - 678) / 2;
 
 	// configure VI
 	VIDEO_Configure (vmode);
@@ -844,6 +850,31 @@ void FCEUD_GetPalette(unsigned char i, unsigned char *r, unsigned char *g,
     *r = pcpalette[i].r;
     *g = pcpalette[i].g;
     *b = pcpalette[i].b;
+}
+
+void SetPalette()
+{
+	if ( GCSettings.currpal == 0 )
+	{
+		// Do palette reset
+		FCEU_ResetPalette();
+	}
+	else
+	{
+		// Now setup this palette
+		unsigned char i,r,g,b;
+
+		for ( i = 0; i < 64; i++ )
+		{
+			r = palettes[GCSettings.currpal-1].data[i] >> 16;
+			g = ( palettes[GCSettings.currpal-1].data[i] & 0xff00 ) >> 8;
+			b = ( palettes[GCSettings.currpal-1].data[i] & 0xff );
+			FCEUD_SetPalette( i, r, g, b);
+			FCEUD_SetPalette( i+64, r, g, b);
+			FCEUD_SetPalette( i+128, r, g, b);
+			FCEUD_SetPalette( i+192, r, g, b);
+		}
+	}
 }
 
 struct st_palettes palettes[] = {
