@@ -21,12 +21,13 @@ void RenderFrame(unsigned char *XBuf);
 void setFrameTimer();
 void zoom (float speed);
 void zoom_reset ();
+void SetPalette();
 
 // color palettes
 #define MAXPAL 12
 
 struct st_palettes {
-    char *name, *desc;
+    char name[32], desc[32];
     unsigned int data[64];
 };
 
