@@ -438,6 +438,7 @@ UpdateScaling()
 	square[3] = square[6] = (xscale);
 	square[1] = square[4] = (yscale);
 	square[7] = square[10] = (-yscale);
+	DCFlushRange (square, sizeof(square)); // update memory BEFORE the GPU accesses it!
 	draw_init ();
 
 	if(updateScaling)
@@ -509,12 +510,14 @@ InitGCVideo ()
 	if (vmode->viTVMode == VI_TVMODE_NTSC_PROG)
 		progressive = true;
 
+#ifdef HW_RVL
 	// widescreen fix
 	if(CONF_GetAspectRatio())
 	{
 		vmode->viWidth = 678;
 		vmode->viXOrigin = (VI_MAX_WIDTH_PAL - 678) / 2;
 	}
+#endif
 
 	// configure VI
 	VIDEO_Configure (vmode);
