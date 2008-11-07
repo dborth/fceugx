@@ -98,8 +98,6 @@ void StopAudio()
 {
 	AUDIO_StopDMA();
 	IsPlaying = 0;
-	mixhead = mixtail = 0;
-	memset(soundbuffer, 0, 3840*2);
 }
 
 /****************************************************************************
