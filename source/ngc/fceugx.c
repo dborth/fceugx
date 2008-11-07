@@ -140,17 +140,19 @@ int main(int argc, char *argv[])
 		selectedMenu = 1; // change to preferences menu
 	}
 
+	FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
+	FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
+
     while (1) // main loop
     {
     	ResetVideo_Menu();
     	MainMenu(selectedMenu);
 		selectedMenu = 2; // return to game menu from now on
 
-		setFrameTimer(); // set frametimer method before emulation
-		FCEUI_SetVidSystem(GCSettings.timing);
-		SetPalette();
-		FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
 		ResetVideo_Emu();
+
+		setFrameTimer(); // set frametimer method before emulation
+		SetPalette();
 
 		static int fskipc=0;
 
