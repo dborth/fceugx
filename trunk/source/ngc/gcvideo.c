@@ -697,19 +697,24 @@ void RenderFrame(unsigned char *XBuf)
 		UpdateScaling();
 
 	int width, height;
-	u16 *texture = (unsigned short *)texturemem;
-	u8 *src1 = XBuf;
-	u8 *src2 = XBuf + 256;
-	u8 *src3 = XBuf + 512;
-	u8 *src4 = XBuf + 768;
+
+	int hideoverscan = 1;
+
+	u8 borderwidth = (hideoverscan ? 8 : 0);
+
+	u16 *texture = (unsigned short *)texturemem + borderwidth * 260;
+	u8 *src1 = XBuf + borderwidth * 257;
+	u8 *src2 = XBuf + borderwidth * 257 + 256;
+	u8 *src3 = XBuf + borderwidth * 257 + 512;
+	u8 *src4 = XBuf + borderwidth * 257 + 768;
 
 	// clear texture objects
 	GX_InvalidateTexAll();
 
 	// fill the texture
-	for (height = 0; height < 240; height += 4)
+	for (height = 0; height < 240 - (borderwidth << 1); height += 4)
 	{
-		for (width = 0; width < 256; width += 4)
+		for (width = 0; width < 256 - (borderwidth << 1); width += 4)
 		{
 			// Row one
 			*texture++ = rgb565[*src1++];
@@ -735,10 +740,12 @@ void RenderFrame(unsigned char *XBuf)
 			*texture++ = rgb565[*src4++];
 			*texture++ = rgb565[*src4++];
 		}
-		src1 += 768; // line 4*N
-		src2 += 768; // line 4*(N+1)
-		src3 += 768; // line 4*(N+2)
-		src4 += 768; // line 4*(N+3)
+		src1 += 768 + (borderwidth << 1); // line 4*N
+		src2 += 768 + (borderwidth << 1); // line 4*(N+1)
+		src3 += 768 + (borderwidth << 1); // line 4*(N+2)
+		src4 += 768 + (borderwidth << 1); // line 4*(N+3)
+
+		texture += (borderwidth << 3);
 	}
 
 	// load texture into GX
