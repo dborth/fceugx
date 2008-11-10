@@ -109,6 +109,7 @@ static char videomenu[][50] = {
 
 	"Video Rendering",
 	"Video Scaling",
+	"Video Cropping"
 	"Palette",
 	"Enable Zooming",
 	"Timing",
@@ -130,26 +131,33 @@ VideoOptions ()
 		if (GCSettings.render==0 && progressive)
 			GCSettings.render++;
 
-		if ( GCSettings.render == 0 )
+		if (GCSettings.render == 0)
 			sprintf (videomenu[0], "Video Rendering Original");
-		if ( GCSettings.render == 1 )
+		if (GCSettings.render == 1)
 			sprintf (videomenu[0], "Video Rendering Filtered");
-		if ( GCSettings.render == 2 )
+		if (GCSettings.render == 2)
 			sprintf (videomenu[0], "Video Rendering Unfiltered");
 
 		sprintf (videomenu[1], "Video Scaling %s",
 			GCSettings.widescreen == true ? "16:9 Correction" : "Default");
 
-		sprintf (videomenu[2], "Palette - %s",
+		if (GCSettings.hideoverscan == 0)
+			sprintf (videomenu[2], "Video Cropping Off");
+		if (GCSettings.hideoverscan == 1)
+			sprintf (videomenu[2], "Video Cropping Hide Vertical");
+		if (GCSettings.hideoverscan == 2)
+			sprintf (videomenu[2], "Video Cropping Hide All");
+
+		sprintf (videomenu[3], "Palette - %s",
 			GCSettings.currpal ? palettes[GCSettings.currpal-1].name : "Default");
 
-		sprintf (videomenu[3], "Enable Zooming %s",
+		sprintf (videomenu[4], "Enable Zooming %s",
 			GCSettings.Zoom == true ? " ON" : "OFF");
 
-		sprintf (videomenu[4], "Timing - %s",
+		sprintf (videomenu[5], "Timing - %s",
 			GCSettings.timing == true ? " PAL" : "NTSC");
 
-		sprintf (videomenu[5], "8 Sprite Limit - %s",
+		sprintf (videomenu[6], "8 Sprite Limit - %s",
 			GCSettings.slimit == true ? " ON" : "OFF");
 
 		ret = RunMenu (videomenu, videomenuCount, (char*)"Video Options", 20, -1);
@@ -158,7 +166,7 @@ VideoOptions ()
 		{
 			case 0:
 				GCSettings.render++;
-				if (GCSettings.render > 2 )
+				if (GCSettings.render > 2)
 					GCSettings.render = 0;
 				// reset zoom
 				zoom_reset ();
@@ -168,27 +176,33 @@ VideoOptions ()
 				GCSettings.widescreen ^= 1;
 				break;
 
-			case 2: // palette
+			case 2:
+				GCSettings.hideoverscan++;
+				if (GCSettings.hideoverscan > 2)
+					GCSettings.hideoverscan = 0;
+				break;
+
+			case 3: // palette
 				if ( ++GCSettings.currpal > MAXPAL )
 					GCSettings.currpal = 0;
 				break;
 
-			case 3:
+			case 4:
 				GCSettings.Zoom ^= 1;
 				break;
 
-			case 4: // timing
+			case 5: // timing
 				GCSettings.timing ^= 1;
 				FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
 				break;
 
-			case 5: // 8 sprite limit
+			case 6: // 8 sprite limit
 				GCSettings.slimit ^=1;
 				FCEUI_DisableSpriteLimitation(GCSettings.slimit);
 				break;
 
 			case -1: // Button B
-			case 6:
+			case 7:
 				quit = 1;
 				break;
 

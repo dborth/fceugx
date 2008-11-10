@@ -33,6 +33,7 @@ DefaultSettings ()
 	GCSettings.ZoomLevel = 1.0; // zoom amount
 	GCSettings.render = 2; // Unfiltered
 	GCSettings.widescreen = 0; // no aspect ratio correction
+	GCSettings.hideoverscan = 2; // hide both horizontal and vertical
 
 	GCSettings.LoadMethod = METHOD_AUTO; // Auto, SD, DVD, USB, Network (SMB)
 	GCSettings.SaveMethod = METHOD_AUTO; // Auto, SD, Memory Card Slot A, Memory Card Slot B, USB, Network (SMB)

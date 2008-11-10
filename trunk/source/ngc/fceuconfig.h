@@ -53,6 +53,7 @@ struct SGCSettings{
 	int		VerifySaves;
 	int		render;		// 0 - original, 1 - filtered, 2 - unfiltered
 	int		widescreen;
+	int		hideoverscan;
 	int		currpal;
 	int		timing;
 	int		FSDisable;
