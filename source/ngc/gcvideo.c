@@ -438,7 +438,7 @@ UpdateScaling()
 	square[3] = square[6] = (xscale);
 	square[1] = square[4] = (yscale);
 	square[7] = square[10] = (-yscale);
-	DCFlushRange (square, sizeof(square)); // update memory BEFORE the GPU accesses it!
+	DCFlushRange (square, 32); // update memory BEFORE the GPU accesses it!
 	draw_init ();
 
 	if(updateScaling)
@@ -637,6 +637,7 @@ ResetVideo_Emu ()
 	GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
 	if (!(GCSettings.render&1))
 		GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
+	memset(texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2); // clear texture memory
 
 	// set aspect ratio
 	updateScaling = 5;
@@ -698,21 +699,21 @@ void RenderFrame(unsigned char *XBuf)
 
 	int width, height;
 
-	int hideoverscan = 1;
+	// 0 = off, 1 = vertical, 2 = both
+	u8 borderheight = GCSettings.hideoverscan < 1 ? 0 : 8;
+	u8 borderwidth = GCSettings.hideoverscan < 2 ? 0 : 8;
 
-	u8 borderwidth = (hideoverscan ? 8 : 0);
-
-	u16 *texture = (unsigned short *)texturemem + borderwidth * 260;
-	u8 *src1 = XBuf + borderwidth * 257;
-	u8 *src2 = XBuf + borderwidth * 257 + 256;
-	u8 *src3 = XBuf + borderwidth * 257 + 512;
-	u8 *src4 = XBuf + borderwidth * 257 + 768;
+	u16 *texture = (unsigned short *)texturemem + (borderheight << 8) + (borderwidth << 2);
+	u8 *src1 = XBuf + (borderheight << 8) + borderwidth;
+	u8 *src2 = XBuf + (borderheight << 8) + borderwidth + 256;
+	u8 *src3 = XBuf + (borderheight << 8) + borderwidth + 512;
+	u8 *src4 = XBuf + (borderheight << 8) + borderwidth + 768;
 
 	// clear texture objects
 	GX_InvalidateTexAll();
 
 	// fill the texture
-	for (height = 0; height < 240 - (borderwidth << 1); height += 4)
+	for (height = 0; height < 240 - (borderheight << 1); height += 4)
 	{
 		for (width = 0; width < 256 - (borderwidth << 1); width += 4)
 		{
