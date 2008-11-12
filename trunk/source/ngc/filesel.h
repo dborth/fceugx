@@ -39,7 +39,11 @@ extern char romFilename[];
 extern int nesGameType;
 
 void ClearSaveBuffer ();
-bool MakeROMPath(char filepath[], int method);
+bool MakeFilePath(char filepath[], int type, int method);
+int LoadFileBuf(char * buffer, char filepath[], int length, int method, bool silent);
+int LoadFile(char filepath[], int method, bool silent);
+int SaveFileBuf(char * buffer, char filepath[], int datasize, int method, bool silent);
+int SaveFile(char filepath[], int datasize, int method, bool silent);
 int OpenROM (int method);
 int autoLoadMethod();
 int autoSaveMethod();

@@ -281,42 +281,24 @@ int GCFCEUSS_Save()
 
 bool SaveState (int method, bool silent)
 {
-	ShowAction ((char*) "Saving...");
-
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod();
-
 	bool retval = false;
 	char filepath[1024];
 	int datasize;
 	int offset = 0;
 
+	if(method == METHOD_AUTO)
+		method = autoSaveMethod();
+
+	if (!MakeFilePath(filepath, FILE_STATE, method))
+		return false;
+
+	ShowAction ((char*) "Saving...");
+
 	datasize = GCFCEUSS_Save();
 
-	if ( datasize )
+	if (datasize)
 	{
-		if(method == METHOD_SD || method == METHOD_USB)
-		{
-			if(ChangeFATInterface(method, NOTSILENT))
-			{
-				sprintf (filepath, "%s/%s/%s.fcs", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
-				offset = SaveBufferToFAT (filepath, datasize, silent);
-			}
-		}
-		else if(method == METHOD_SMB)
-		{
-			sprintf (filepath, "%s/%s.fcs", GCSettings.SaveFolder, romFilename);
-			offset = SaveBufferToSMB (filepath, datasize, silent);
-		}
-		else if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
-		{
-			sprintf (filepath, "%08x.fcs", iNESGameCRC32);
-
-			if(method == METHOD_MC_SLOTA)
-				offset = SaveBufferToMC (savebuffer, CARD_SLOTA, filepath, datasize, silent);
-			else
-				offset = SaveBufferToMC (savebuffer, CARD_SLOTB, filepath, datasize, silent);
-		}
+		offset = SaveFile(filepath, datasize, method, silent);
 
 		if (offset > 0)
 		{
@@ -330,41 +312,18 @@ bool SaveState (int method, bool silent)
 
 bool LoadState (int method, bool silent)
 {
-	ShowAction ((char*) "Loading...");
+	char filepath[1024];
+	int offset = 0;
 
 	if(method == METHOD_AUTO)
 		method = autoSaveMethod(); // we use 'Save' because we need R/W
 
-	char filepath[1024];
-	int offset = 0;
+	if (!MakeFilePath(filepath, FILE_STATE, method))
+		return false;
 
-	if(method == METHOD_SD || method == METHOD_USB)
-	{
-		ChangeFATInterface(method, NOTSILENT);
-		sprintf (filepath, "%s/%s/%s.fcs", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
-		offset = LoadSaveBufferFromFAT (filepath, silent);
+	ShowAction ((char*) "Loading...");
 
-		if(offset == 0) // file not found
-		{
-			// look for CRC save
-			sprintf (filepath, "%08x.fcs", iNESGameCRC32);
-			offset = LoadSaveBufferFromFAT (filepath, silent);
-		}
-	}
-	else if(method == METHOD_SMB)
-	{
-		sprintf (filepath, "%s/%s.fcs", GCSettings.SaveFolder, romFilename);
-		offset = LoadSaveBufferFromSMB (filepath, silent);
-	}
-	else if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
-	{
-		sprintf (filepath, "%08x.fcs", iNESGameCRC32);
-
-		if(method == METHOD_MC_SLOTA)
-			offset = LoadBufferFromMC (savebuffer, CARD_SLOTA, filepath, silent);
-		else
-			offset = LoadBufferFromMC (savebuffer, CARD_SLOTB, filepath, silent);
-	}
+	offset = LoadFile(filepath, method, silent);
 
 	if (offset > 0)
 	{
