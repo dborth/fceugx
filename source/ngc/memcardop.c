@@ -36,7 +36,7 @@ card_stat CardStatus;
  *
  * Wrapper to search through the files on the card.
  * Returns TRUE if found.
- ****************************************************************************/
+ ***************************************************************************/
 int
 CardFileExists (char *filename, int slot)
 {
@@ -58,7 +58,7 @@ CardFileExists (char *filename, int slot)
  * TestCard
  *
  * Checks to see if a card is in the card slot specified
- ****************************************************************************/
+ ***************************************************************************/
 bool TestCard(int slot, bool silent)
 {
 	// Memory Cards do not work in Wii mode - disable
@@ -103,7 +103,7 @@ bool TestCard(int slot, bool silent)
  *
  * Mounts the memory card in the given slot.
  * Returns the result of the last attempted CARD_Mount command.
- ****************************************************************************/
+ ***************************************************************************/
 int MountCard(int cslot, bool silent)
 {
 	int ret = -1;
@@ -123,9 +123,9 @@ int MountCard(int cslot, bool silent)
 
 /****************************************************************************
  * Verify Memory Card file against buffer
- ****************************************************************************/
+ ***************************************************************************/
 int
-VerifyMCFile (unsigned char *buf, int slot, char *filename, int datasize)
+VerifyMCFile (char *buf, int slot, char *filename, int datasize)
 {
 	int CardError;
 	unsigned int blocks;
@@ -201,12 +201,12 @@ VerifyMCFile (unsigned char *buf, int slot, char *filename, int datasize)
 	return 0;
 }
 
-
 /****************************************************************************
+ * LoadMCFile
  * Load savebuffer from Memory Card file
- ****************************************************************************/
+ ***************************************************************************/
 int
-LoadBufferFromMC (unsigned char *buf, int slot, char *filename, bool silent)
+LoadMCFile (char *buf, int slot, char *filename, bool silent)
 {
 	int CardError;
 	unsigned int blocks;
@@ -268,10 +268,11 @@ LoadBufferFromMC (unsigned char *buf, int slot, char *filename, bool silent)
 
 
 /****************************************************************************
+ * SaveMCFile
  * Write savebuffer to Memory Card file
- ****************************************************************************/
+ ***************************************************************************/
 int
-SaveBufferToMC (unsigned char *buf, int slot, char *filename, int datasize, bool silent)
+SaveMCFile (char *buf, int slot, char *filename, int datasize, bool silent)
 {
 	int CardError;
 	unsigned int blocks;
@@ -405,7 +406,7 @@ SaveBufferToMC (unsigned char *buf, int slot, char *filename, int datasize, bool
 		}
 		else
 			if ( !silent )
-				WaitPrompt((char*) "No to data to save!");
+				WaitPrompt((char*) "This game does not appear to use RAM");
 	}
 	else
 		if (slot == CARD_SLOTA)
@@ -416,5 +417,3 @@ SaveBufferToMC (unsigned char *buf, int slot, char *filename, int datasize, bool
 	return 0;
 
 }
-
-

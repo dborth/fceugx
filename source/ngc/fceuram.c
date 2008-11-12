@@ -71,6 +71,11 @@ int NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 
 bool SaveRAM (int method, bool silent)
 {
+	bool retval = false;
+	char filepath[1024];
+	int datasize = 0;
+	int offset = 0;
+
 	if(nesGameType == 4)
 	{
 		if(!silent)
@@ -78,15 +83,13 @@ bool SaveRAM (int method, bool silent)
 		return false;
 	}
 
-	ShowAction ((char*) "Saving...");
-
 	if(method == METHOD_AUTO)
 		method = autoSaveMethod();
 
-	bool retval = false;
-	char filepath[1024];
-	int datasize = 0;
-	int offset = 0;
+	if (!MakeFilePath(filepath, FILE_RAM, method))
+		return false;
+
+	ShowAction ((char*) "Saving...");
 
 	// save game save to savebuffer
 	if(nesGameType == 1)
@@ -94,30 +97,9 @@ bool SaveRAM (int method, bool silent)
 	else if(nesGameType == 2)
 		datasize = NGCFCEU_GameSave(&UNIFCart, 0);
 
-	if ( datasize )
+	if (datasize)
 	{
-		if(method == METHOD_SD || method == METHOD_USB)
-		{
-			if(ChangeFATInterface(method, NOTSILENT))
-			{
-				sprintf (filepath, "%s/%s/%s.sav", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
-				offset = SaveBufferToFAT (filepath, datasize, silent);
-			}
-		}
-		else if(method == METHOD_SMB)
-		{
-			sprintf (filepath, "%s/%s.sav", GCSettings.SaveFolder, romFilename);
-			offset = SaveBufferToSMB (filepath, datasize, silent);
-		}
-		else if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
-		{
-			sprintf (filepath, "%08x.sav", iNESGameCRC32);
-
-			if(method == METHOD_MC_SLOTA)
-				offset = SaveBufferToMC (savebuffer, CARD_SLOTA, filepath, datasize, silent);
-			else
-				offset = SaveBufferToMC (savebuffer, CARD_SLOTB, filepath, datasize, silent);
-		}
+		offset = SaveFile(filepath, datasize, method, silent);
 
 		if (offset > 0)
 		{
@@ -136,6 +118,9 @@ bool SaveRAM (int method, bool silent)
 
 bool LoadRAM (int method, bool silent)
 {
+	char filepath[1024];
+	int offset = 0;
+
 	if(nesGameType == 4)
 	{
 		if(!silent)
@@ -143,36 +128,15 @@ bool LoadRAM (int method, bool silent)
 		return false;
 	}
 
-	ShowAction ((char*) "Loading...");
-
 	if(method == METHOD_AUTO)
 		method = autoSaveMethod(); // we use 'Save' because we need R/W
 
-	char filepath[1024];
-	int offset = 0;
+	if (!MakeFilePath(filepath, FILE_RAM, method))
+		return false;
 
-	if(method == METHOD_SD || method == METHOD_USB)
-	{
-		if(ChangeFATInterface(method, NOTSILENT))
-		{
-			sprintf (filepath, "%s/%s/%s.sav", ROOTFATDIR, GCSettings.SaveFolder, romFilename);
-			offset = LoadSaveBufferFromFAT (filepath, silent);
-		}
-	}
-	else if(method == METHOD_SMB)
-	{
-		sprintf (filepath, "%s/%s.sav", GCSettings.SaveFolder, romFilename);
-		offset = LoadSaveBufferFromSMB (filepath, silent);
-	}
-	else if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
-	{
-		sprintf (filepath, "%08x.sav", iNESGameCRC32);
+	ShowAction ((char*) "Loading...");
 
-		if(method == METHOD_MC_SLOTA)
-			offset = LoadBufferFromMC (savebuffer, CARD_SLOTA, filepath, silent);
-		else
-			offset = LoadBufferFromMC (savebuffer, CARD_SLOTB, filepath, silent);
-	}
+	offset = LoadFile(filepath, method, silent);
 
 	if (offset > 0)
 	{
@@ -182,12 +146,12 @@ bool LoadRAM (int method, bool silent)
 			NGCFCEU_GameSave(&UNIFCart, 1);
 
 		ResetNES();
-		return 1;
+		return true;
 	}
 
 	// if we reached here, nothing was done!
 	if(!silent)
 		WaitPrompt ((char*) "Save file not found");
 
-	return 0;
+	return false;
 }

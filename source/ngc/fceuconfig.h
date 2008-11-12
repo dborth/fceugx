@@ -17,6 +17,7 @@ void DefaultSettings ();
 
 #define VERSIONNUM "2.0.6"
 #define VERSIONSTR "FCE Ultra GX 2.0.6"
+#define PREF_FILE_NAME "FCEUGX.xml"
 
 #define NOTSILENT 0
 #define SILENT 1
@@ -29,6 +30,15 @@ enum {
 	METHOD_SMB,
 	METHOD_MC_SLOTA,
 	METHOD_MC_SLOTB
+};
+
+enum {
+	FILE_ROM,
+	FILE_RAM,
+	FILE_STATE,
+	FILE_FDSBIOS,
+	FILE_CHEAT,
+	FILE_PREF
 };
 
 struct SGCSettings{

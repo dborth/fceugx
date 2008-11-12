@@ -111,15 +111,14 @@ int autoSaveMethod()
 int UpdateDirName(int method)
 {
 	int size=0;
-	char *test;
+	char * test;
 	char temp[1024];
 
-	// update DVD directory (does not utilize 'currentdir')
+	// update DVD directory
 	if(method == METHOD_DVD)
 	{
 		dvddir = filelist[selection].offset;
 		dvddirlength = filelist[selection].length;
-		return 1;
 	}
 
 	/* current directory doesn't change */
@@ -157,32 +156,133 @@ int UpdateDirName(int method)
 		}
 		else
 		{
-			WaitPrompt((char*)"Directory name is too long !");
+			WaitPrompt((char*)"Directory name is too long!");
 			return -1;
 		}
 	}
 }
 
-bool MakeROMPath(char filepath[], int method)
+bool MakeFilePath(char filepath[], int type, int method)
 {
+	char file[512];
+	char folder[1024];
 	char temppath[MAXPATHLEN];
 
-	// Check filename length
-	if ((strlen(currentdir)+1+strlen(filelist[selection].filename)) < MAXPATHLEN)
+	if(type == FILE_ROM)
 	{
-		sprintf(temppath, "%s/%s",currentdir,filelist[selection].filename);
-
-		if(method == METHOD_SMB)
-			strcpy(filepath, SMBPath(temppath));
+		// Check path length
+		if ((strlen(currentdir)+1+strlen(filelist[selection].filename)) >= MAXPATHLEN)
+		{
+			WaitPrompt((char*)"Maximum filepath length reached!");
+			filepath[0] = 0;
+			return false;
+		}
 		else
-			strcpy(filepath, temppath);
-		return true;
+		{
+			sprintf(temppath, "%s/%s",currentdir,filelist[selection].filename);
+		}
 	}
 	else
 	{
-		filepath[0] = 0;
-		return false;
+		switch(type)
+		{
+			case FILE_RAM:
+				sprintf(folder, GCSettings.SaveFolder);
+				sprintf(file, "%s.sav", romFilename);
+				break;
+			case FILE_STATE:
+				sprintf(folder, GCSettings.SaveFolder);
+				sprintf(file, "%s.fcs", romFilename);
+				break;
+			case FILE_FDSBIOS:
+				sprintf(folder, GCSettings.LoadFolder);
+				sprintf(file, "disksys.rom");
+				break;
+			case FILE_PREF:
+				sprintf(folder, GCSettings.SaveFolder);
+				sprintf(file, "%s", PREF_FILE_NAME);
+				break;
+		}
+		switch(method)
+		{
+			case METHOD_SD:
+			case METHOD_USB:
+				sprintf (temppath, "%s/%s/%s", ROOTFATDIR, folder, file);
+				break;
+			case METHOD_DVD:
+			case METHOD_SMB:
+				sprintf (temppath, "%s/%s", folder, file);
+				break;
+			case METHOD_MC_SLOTA:
+			case METHOD_MC_SLOTB:
+				sprintf (temppath, "%s", file);
+				temppath[31] = 0; // truncate filename
+				break;
+		}
 	}
+	strcpy(filepath, temppath);
+	return true;
+}
+
+int LoadFileBuf(char * buffer, char filepath[], int length, int method, bool silent)
+{
+	int offset = 0;
+
+	switch(method)
+	{
+		case METHOD_SD:
+		case METHOD_USB:
+			if(ChangeFATInterface(method, NOTSILENT))
+				offset = LoadFATFile (buffer, filepath, length, silent);
+			break;
+		case METHOD_SMB:
+			offset = LoadSMBFile (buffer, filepath, length, silent);
+			break;
+		case METHOD_DVD:
+			offset = LoadDVDFile (buffer, filepath, length, silent);
+			break;
+		case METHOD_MC_SLOTA:
+			offset = LoadMCFile (buffer, CARD_SLOTA, filepath, silent);
+			break;
+		case METHOD_MC_SLOTB:
+			offset = LoadMCFile (buffer, CARD_SLOTB, filepath, silent);
+			break;
+	}
+	return offset;
+}
+
+int LoadFile(char filepath[], int method, bool silent)
+{
+	return LoadFileBuf((char *)savebuffer, filepath, 0, method, silent);
+}
+
+int SaveFileBuf(char * buffer, char filepath[], int datasize, int method, bool silent)
+{
+	int offset = 0;
+
+	switch(method)
+	{
+		case METHOD_SD:
+		case METHOD_USB:
+			if(ChangeFATInterface(method, NOTSILENT))
+				offset = SaveFATFile (buffer, filepath, datasize, silent);
+			break;
+		case METHOD_SMB:
+			offset = SaveSMBFile (buffer, filepath, datasize, silent);
+			break;
+		case METHOD_MC_SLOTA:
+			offset = SaveMCFile (buffer, CARD_SLOTA, filepath, datasize, silent);
+			break;
+		case METHOD_MC_SLOTB:
+			offset = SaveMCFile (buffer, CARD_SLOTB, filepath, datasize, silent);
+			break;
+	}
+	return offset;
+}
+
+int SaveFile(char filepath[], int datasize, int method, bool silent)
+{
+	return SaveFileBuf((char *)savebuffer, filepath, datasize, method, silent);
 }
 
 /***************************************************************************
@@ -424,11 +524,9 @@ int FileSelector (int method)
 				if(IsSz())
 				{
 					// we'll store the 7z filepath for extraction later
-					if(!MakeROMPath(szpath, method))
-					{
-						WaitPrompt((char*) "Maximum filepath length reached!");
+					if(!MakeFilePath(szpath, FILE_ROM, method))
 						return 0;
-					}
+
 					int szfiles = SzParse(szpath, method);
 					if(szfiles)
 					{
@@ -451,30 +549,32 @@ int FileSelector (int method)
 
 					int size = 0;
 
-					switch (method)
+					if(!inSz)
 					{
-						case METHOD_SD:
-						case METHOD_USB:
-							if(inSz)
-								size = LoadFATSzFile(szpath, nesrom);
-							else
-								size = LoadFATFile((char *)nesrom, 0);
-							break;
+						char filepath[1024];
 
-						case METHOD_DVD:
-							if(inSz)
-								size = SzExtractFile(filelist[selection].offset, nesrom);
-							else
-								size = LoadDVDFile(nesrom, 0);
-							break;
+						if(!MakeFilePath(filepath, FILE_ROM, method))
+							return 0;
 
-						case METHOD_SMB:
-							if(inSz)
-								size = LoadSMBSzFile(szpath, nesrom);
-							else
-								size = LoadSMBFile((char *)nesrom, 0);
-							break;
+						size = LoadFileBuf((char *)nesrom, filepath, filelist[selection].length, method, NOTSILENT);
 					}
+					else
+					{
+						switch (method)
+						{
+							case METHOD_SD:
+							case METHOD_USB:
+								size = LoadFATSzFile(szpath, nesrom);
+								break;
+							case METHOD_DVD:
+								size = SzExtractFile(filelist[selection].offset, nesrom);
+								break;
+							case METHOD_SMB:
+								size = LoadSMBSzFile(szpath, nesrom);
+								break;
+						}
+					}
+
 					inSz = false;
 
 					if (size > 0)
@@ -627,6 +727,7 @@ OpenDVD (int method)
 		}
 	}
 
+	currentdir[0] = 0;
 	maxfiles = ParseDVDdirectory(); // load root folder
 
 	// switch to rom folder

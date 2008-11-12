@@ -119,17 +119,9 @@ int GCMemROM(int method, int size)
 
 			char filepath[1024];
 
-			switch (method)
+			if(MakeFilePath(filepath, FILE_FDSBIOS, method))
 			{
-				case METHOD_SD:
-				case METHOD_USB:
-					sprintf(filepath, "%s/%s/disksys.rom", ROOTFATDIR, GCSettings.LoadFolder);
-					biosSize = LoadBufferFromFAT(tmpbuffer, filepath, NOTSILENT);
-					break;
-				case METHOD_SMB:
-					sprintf(filepath, "%s/disksys.rom", GCSettings.LoadFolder);
-					biosSize = LoadBufferFromSMB(tmpbuffer, filepath, 0, NOTSILENT);
-					break;
+				biosSize = LoadFileBuf (tmpbuffer, filepath, 0, method, SILENT);
 			}
 
 			if(biosSize == 8192)
