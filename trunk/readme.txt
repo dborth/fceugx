@@ -18,12 +18,16 @@ SNES9x GX project.
 * iNES, FDS, VS, UNIF, and NSF ROM support
 * 1-4 Player Support
 * Zapper support
-* RAM and State saving
+* Auto Load/Save Game States and RAM
 * Custom controller configurations
-* SD, USB, DVD, SMB, GC Memory Card, Zip, and 7z support
+* SD, USB, DVD (requires DVDx), SMB, GC Memory Card, Zip, and 7z support
+* Custom controller configurations
+* 16:9 widescreen support
+* Original/filtered/unfiltered video modes
+* Turbo Mode - up to 2x the normal speed
+* Zoom option to zoom in/out
 * NES Compatibility Based on v0.98.12
-* Sound Filters
-* Graphics Filters (GX Chipset, Cheesy and 2x)
+* Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
@@ -33,10 +37,16 @@ SNES9x GX project.
 * Special thanks to eke-eke & KruLLo for contributions, bugfixes, and tips
 * Video code rewritten - now has original, unfiltered, filtered modes
 * Zoom option
-* 16:9 aspect ratio correction
-* SD/USB hot-swapping!
+* 16:9 widescreen support
+* Full widescreen support
+* SDHC support
+* SD/USB hot-swapping
 * A/B rapid-fire
 * Turbo option
+* Video cropping (overscan hiding) option (thanks yxkalle!)
+* Palette changing fixed
+* Fix audio 'popping' issue
+* Add DVD motor off option for GameCube users
 
 [What's New 2.0.6 - October 21, 2008]
 * Right audio channel corruption fixed (thanks cyberdog!)
