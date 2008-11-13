@@ -829,14 +829,15 @@ PreferencesMenu ()
 /****************************************************************************
  * Main Menu
  ****************************************************************************/
-int menucount = 6;
+int menucount = 7;
 char menuitems[][50] = {
   "Choose Game",
   "Preferences",
   "Game Menu",
   "Credits",
+  "DVD Motor Off",
   "Reset System",
-  "Exit"
+  "Return to Loader"
 };
 
 void
@@ -844,6 +845,14 @@ MainMenu (int selectedMenu)
 {
 	int quit = 0;
 	int ret;
+
+	#ifdef HW_RVL
+	// don't show dvd motor off on the wii
+	menuitems[4][0] = 0;
+	// rename reset/exit items
+	sprintf (menuitems[5], "Return to Wii Menu");
+	sprintf (menuitems[6], "Return to Homebrew Channel");
+	#endif
 
 	VIDEO_WaitVSync ();
 
@@ -889,11 +898,17 @@ MainMenu (int selectedMenu)
                 break;
 
 			case 4:
+				// turn the dvd motor off (GC only)
+				#ifdef HW_DOL
+				dvd_motor_off ();
+				#endif
+
+			case 5:
 				// Reset the Gamecube/Wii
 			    Reboot();
                 break;
 
-			case 5:
+			case 6:
 				ExitToLoader();
 				break;
 
