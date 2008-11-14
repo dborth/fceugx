@@ -104,7 +104,7 @@ LoadManager ()
 /****************************************************************************
  * Video Options Menu
  ****************************************************************************/
-static int videomenuCount = 7;
+static int videomenuCount = 8;
 static char videomenu[][50] = {
 
 	"Video Rendering",
