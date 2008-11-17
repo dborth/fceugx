@@ -4,7 +4,7 @@
  *
  * Tantric September 2008
  *
- * fceugc.c
+ * fceugx.c
  *
  * This file controls overall program flow. Most things start and end here!
  ****************************************************************************/
@@ -20,6 +20,7 @@
 
 #include "types.h"
 
+#include "fceugx.h"
 #include "fceuconfig.h"
 #include "fceuload.h"
 #include "fceustate.h"
@@ -28,6 +29,7 @@
 #include "menudraw.h"
 #include "menu.h"
 #include "preferences.h"
+#include "fileop.h"
 #include "gcaudio.h"
 #include "gcvideo.h"
 #include "pad.h"
@@ -38,6 +40,8 @@
 
 unsigned char * nesrom = NULL;
 int ConfigRequested = 0;
+int ShutdownRequested = 0;
+int ResetRequested = 0;
 bool isWii;
 uint8 *xbsave=NULL;
 int frameskip = 0;
@@ -45,11 +49,65 @@ int frameskip = 0;
 extern bool romLoaded;
 
 extern int cleanSFMDATA();
-extern void ResetNES(void);
+extern void PowerNES(void);
 extern uint8 FDSBIOS[8192];
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
+/****************************************************************************
+ * Shutdown / Reboot / Exit
+ ***************************************************************************/
+
+#ifdef HW_DOL
+	#define PSOSDLOADID 0x7c6000a6
+	int *psoid = (int *) 0x80001800;
+	void (*PSOReload) () = (void (*)()) 0x80001800;
+#endif
+
+void Reboot()
+{
+	UnmountAllFAT();
+#ifdef HW_RVL
+	DI_Close();
+    SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+#else
+	#define SOFTRESET_ADR ((volatile u32*)0xCC003024)
+	*SOFTRESET_ADR = 0x00000000;
+#endif
+}
+
+void ExitToLoader()
+{
+	UnmountAllFAT();
+	// Exit to Loader
+	#ifdef HW_RVL
+		DI_Close();
+		exit(0);
+	#else	// gamecube
+		if (psoid[0] == PSOSDLOADID)
+			PSOReload ();
+	#endif
+}
+
+#ifdef HW_RVL
+void ShutdownCB()
+{
+	ConfigRequested = 1;
+	ShutdownRequested = 1;
+}
+void ResetCB()
+{
+	ResetRequested = 1;
+}
+void ShutdownWii()
+{
+	UnmountAllFAT();
+	DI_Close();
+	SYS_ResetSystem(SYS_POWEROFF, 0, 0);
+}
+#endif
+
+#ifdef HW_DOL
 /****************************************************************************
  * ipl_set_config
  * lowlevel Qoob Modchip disable
@@ -73,6 +131,7 @@ void ipl_set_config(unsigned char c)
 
 	exi[0] &= 0x405;	//deselect IPL
 }
+#endif
 
 /****************************************************************************
  * main
@@ -100,7 +159,15 @@ int main(int argc, char *argv[])
 
 	PAD_Init();
 
+	// Wii Power/Reset buttons
+#ifdef HW_RVL
+	WPAD_SetPowerButtonCallback((WPADShutdownCallback)ShutdownCB);
+	SYS_SetPowerCallback(ShutdownCB);
+	SYS_SetResetCallback(ResetCB);
+#endif
+
     InitGCVideo ();
+    ResetVideo_Menu (); // change to menu video mode
 
     /*** Initialise freetype ***/
 	if (FT_Init ())
@@ -119,9 +186,10 @@ int main(int argc, char *argv[])
     nesrom = (unsigned char *)malloc(1024*1024*3); // 3 MB should be plenty
 
     /*** Minimal Emulation Loop ***/
-    if ( !FCEUI_Initialize() ) {
-        printf("Unable to initialize system\n");
-        return 1;
+    if ( !FCEUI_Initialize() )
+    {
+		WaitPrompt((char *)"Unable to initialize FCE Ultra\n");
+		ExitToLoader();
     }
 
 	FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
@@ -145,7 +213,11 @@ int main(int argc, char *argv[])
 
     while (1) // main loop
     {
-    	ResetVideo_Menu();
+		#ifdef HW_RVL
+		if(ShutdownRequested)
+			ShutdownWii();
+		#endif
+
     	MainMenu(selectedMenu);
 		selectedMenu = 2; // return to game menu from now on
 
@@ -174,8 +246,15 @@ int main(int argc, char *argv[])
 				FCEUD_Update(gfx, sound, ssize);
 			}
 
+			if(ResetRequested)
+			{
+				PowerNES(); // reset game
+				ResetRequested = 0;
+			}
+
 			if(ConfigRequested)
 			{
+				ResetVideo_Menu();
 				if (GCSettings.AutoSave == 1)
 				{
 					SaveRAM(GCSettings.SaveMethod, SILENT);

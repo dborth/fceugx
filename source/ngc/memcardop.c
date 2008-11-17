@@ -18,7 +18,7 @@
 
 #include "common.h"
 #include "menudraw.h"
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "menu.h"
 #include "memcardop.h"
 #include "fileop.h"

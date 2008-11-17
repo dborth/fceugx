@@ -15,7 +15,7 @@
 #include <string.h>
 
 #include "common.h"
-#include "fceuconfig.h"
+#include "fceugx.h"
 
 struct SGCSettings GCSettings;
 

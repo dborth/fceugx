@@ -19,7 +19,7 @@
 
 #include "driver.h"
 #include "gcvideo.h"
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "menudraw.h"
 #include "images/nesback.h"
 

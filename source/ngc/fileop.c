@@ -17,7 +17,7 @@
 #include <zlib.h>
 
 #include "common.h"
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "fileop.h"
 #include "gcunzip.h"
 #include "menudraw.h"

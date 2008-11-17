@@ -20,7 +20,7 @@
 #include <zlib.h>
 #include FT_FREETYPE_H
 
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "gcvideo.h"
 #include "menudraw.h"
 #include "filesel.h"
@@ -501,7 +501,12 @@ RunMenu (char items[][50], int maxitems, char *title, int fontsize, int x)
 
     while (quit == 0)
     {
-        if (redraw)
+		#ifdef HW_RVL
+		if(ShutdownRequested)
+			ShutdownWii();
+		#endif
+
+    	if (redraw)
         {
             DrawMenu (&items[0], title, maxitems, menu, fontsize, -1);
             redraw = 0;
