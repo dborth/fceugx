@@ -14,7 +14,7 @@
 
 #define VERSIONNUM "2.0.6"
 #define VERSIONSTR "FCE Ultra GX 2.0.6"
-#define PREF_FILE_NAME "FCEUGX.xml"
+#define PREF_FILE_NAME "settings.xml"
 
 #define NOTSILENT 0
 #define SILENT 1
@@ -75,6 +75,7 @@ void ShutdownWii();
 extern struct SGCSettings GCSettings;
 extern int ConfigRequested;
 extern int ShutdownRequested;
+extern char appPath[];
 extern int frameskip;
 
 #endif
