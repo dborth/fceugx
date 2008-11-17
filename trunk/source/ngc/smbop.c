@@ -20,7 +20,7 @@
 #include <errno.h>
 
 #include "common.h"
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "smbop.h"
 #include "gcunzip.h"
 #include "menudraw.h"

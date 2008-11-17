@@ -20,7 +20,7 @@
 #include "fileop.h"
 #include "smbop.h"
 #include "filesel.h"
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "pad.h"
 
 extern const unsigned short saveicon[1024];

@@ -19,7 +19,7 @@
 #include "../sz/7zIn.h"
 #include "../sz/7zExtract.h"
 
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "dvd.h"
 #include "smbop.h"
 #include "fileop.h"

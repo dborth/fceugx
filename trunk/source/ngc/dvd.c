@@ -22,7 +22,7 @@
 
 #include "menudraw.h"
 #include "gcunzip.h"
-#include "fceuconfig.h"
+#include "fceugx.h"
 
 u64 dvddir = 0; // offset of currently selected file or folder
 int dvddirlength = 0; // length of currently selected file or folder

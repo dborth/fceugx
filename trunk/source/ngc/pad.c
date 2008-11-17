@@ -16,7 +16,7 @@
 #include "fceu.h"
 #include "input.h"
 
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "pad.h"
 #include "gcaudio.h"
 #include "menu.h"

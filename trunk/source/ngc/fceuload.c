@@ -24,11 +24,11 @@
 #include "sound.h"
 #include "file.h"
 
+#include "fceugx.h"
 #include "gcaudio.h"
 #include "common.h"
 #include "pad.h"
 #include "menudraw.h"
-#include "fceuconfig.h"
 #include "fileop.h"
 #include "filesel.h"
 #include "smbop.h"

@@ -31,7 +31,7 @@
 
 #include "general.h"
 
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "intl.h"
 #include "menudraw.h"
 #include "filesel.h"

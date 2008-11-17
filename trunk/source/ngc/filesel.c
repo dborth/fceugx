@@ -20,7 +20,7 @@
 #endif
 
 #include "common.h"
-#include "fceuconfig.h"
+#include "fceugx.h"
 #include "dvd.h"
 #include "menudraw.h"
 #include "filesel.h"
