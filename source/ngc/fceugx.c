@@ -42,6 +42,7 @@ unsigned char * nesrom = NULL;
 int ConfigRequested = 0;
 int ShutdownRequested = 0;
 int ResetRequested = 0;
+char appPath[1024];
 bool isWii;
 uint8 *xbsave=NULL;
 int frameskip = 0;
@@ -133,6 +134,32 @@ void ipl_set_config(unsigned char c)
 }
 #endif
 
+void CreateAppPath(char origpath[])
+{
+#ifdef HW_DOL
+	sprintf(appPath, GCSettings.SaveFolder);
+#else
+	char path[1024];
+	strcpy(path, origpath); // make a copy so we don't mess up original
+
+	char * loc;
+	int pos = -1;
+
+	loc = strrchr(path,'/');
+	if (loc != NULL)
+		*loc = 0; // strip file name
+
+	loc = strchr(path,'/'); // looking for / from fat:/
+	if (loc != NULL)
+		pos = loc - path + 1;
+
+	if(pos >= 0 && pos < 1024)
+		sprintf(appPath, &(path[pos]));
+	else
+		sprintf(appPath, "/");
+#endif
+}
+
 /****************************************************************************
  * main
  * This is where it all happens!
@@ -140,31 +167,31 @@ void ipl_set_config(unsigned char c)
 
 int main(int argc, char *argv[])
 {
-#ifdef HW_DOL
+	#ifdef HW_DOL
 	ipl_set_config(6); // disable Qoob modchip
-#endif
+	#endif
 
-#ifdef WII_DVD
+	#ifdef WII_DVD
 	DI_Init();	// first
-#endif
+	#endif
 
 	int selectedMenu = -1;
 
-#ifdef HW_RVL
+	#ifdef HW_RVL
 	WPAD_Init();
 	// read wiimote accelerometer and IR data
 	WPAD_SetDataFormat(WPAD_CHAN_ALL,WPAD_FMT_BTNS_ACC_IR);
 	WPAD_SetVRes(WPAD_CHAN_ALL,640,480);
-#endif
+	#endif
 
 	PAD_Init();
 
 	// Wii Power/Reset buttons
-#ifdef HW_RVL
+	#ifdef HW_RVL
 	WPAD_SetPowerButtonCallback((WPADShutdownCallback)ShutdownCB);
 	SYS_SetPowerCallback(ShutdownCB);
 	SYS_SetResetCallback(ResetCB);
-#endif
+	#endif
 
     InitGCVideo ();
     ResetVideo_Menu (); // change to menu video mode
@@ -178,9 +205,11 @@ int main(int argc, char *argv[])
 
     InitialiseAudio();
     fatInit (8, false);
-#ifndef HW_RVL
-    DVD_Init();
-#endif
+
+    // Initialize DVD subsystem (GameCube only)
+	#ifdef HW_DOL
+	DVD_Init ();
+	#endif
 
     // allocate memory to store rom
     nesrom = (unsigned char *)malloc(1024*1024*3); // 3 MB should be plenty
@@ -197,11 +226,13 @@ int main(int argc, char *argv[])
     memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
     cleanSFMDATA(); // clear state data
 
-    // Set Defaults
+    // Set defaults
 	DefaultSettings();
 
-	// Load preferences
+	// store path app was loaded from
+	CreateAppPath(argv[0]);
 
+	// Load preferences
 	if(!LoadPrefs())
 	{
 		WaitPrompt((char*) "Preferences reset - check settings!");
