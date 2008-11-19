@@ -33,7 +33,7 @@ SNES9x GX project.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[What's New 2.0.7]
+[What's New 2.0.7 - November 18, 2008]
 * Special thanks to eke-eke & KruLLo for contributions, bugfixes, and tips
 * Video code rewritten - now has original, unfiltered, filtered modes
 * Zoom option
@@ -45,8 +45,12 @@ SNES9x GX project.
 * Turbo option
 * Video cropping (overscan hiding) option (thanks yxkalle!)
 * Palette changing fixed
-* Fix audio 'popping' issue
-* Add DVD motor off option for GameCube users
+* Fixed audio 'popping' issue
+* Wii - Added console/remote power button support
+* Wii - Added reset button support (resets game)
+* Wii - Settings file is now named settings.xml and is stored in the same
+  folder as the DOL (eg: apps/fceugx/settings.xml)
+* GameCube - Added DVD motor off option
 
 [What's New 2.0.6 - October 21, 2008]
 * Right audio channel corruption fixed (thanks cyberdog!)
@@ -125,8 +129,7 @@ Unzip the archive. You will find the following folders inside:
 apps			Contains Homebrew Channel ready files
 				(see Homebrew Channel instructions below)
 				
-executables		Contains Gamecube / Wii DOL files
-				(for loading from other methods)
+gamecube		Contains GameCube DOL file (not required for Wii)
 				
 fceugx			Contains the directory structure required for storing
 				roms and saves (see below)

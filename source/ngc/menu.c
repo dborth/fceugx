@@ -74,13 +74,13 @@ static char videomenu[][50] = {
 
 	"Video Rendering",
 	"Video Scaling",
-	"Video Cropping"
+	"Video Cropping",
 	"Palette",
 	"Enable Zooming",
 	"Timing",
 	"8 Sprite Limit",
-
 	"Back to Preferences Menu"
+
 };
 
 void
@@ -612,7 +612,7 @@ ConfigureButtons (u16 ctrlr_type)
 
 		}
 
-		ret = RunMenu (cfg_btns_menu, cfg_btns_count, menu_title, 16, -1);
+		ret = RunMenu (cfg_btns_menu, cfg_btns_count, menu_title, 14, -1);
 
 		switch (ret)
 		{

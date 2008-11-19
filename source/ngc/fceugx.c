@@ -299,6 +299,10 @@ int main(int argc, char *argv[])
 					SaveRAM(GCSettings.SaveMethod, SILENT);
 					SaveState(GCSettings.SaveMethod, SILENT);
 				}
+
+				// save zoom level
+				SavePrefs(GCSettings.SaveMethod, SILENT);
+
 				ConfigRequested = 0;
 				break; // leave emulation loop
 			}
