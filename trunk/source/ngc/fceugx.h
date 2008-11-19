@@ -12,8 +12,8 @@
 #ifndef _FCEUGX_H_
 #define _FCEUGX_H_
 
-#define VERSIONNUM "2.0.6"
-#define VERSIONSTR "FCE Ultra GX 2.0.6"
+#define VERSIONNUM "2.0.7"
+#define VERSIONSTR "FCE Ultra GX 2.0.7"
 #define PREF_FILE_NAME "settings.xml"
 
 #define NOTSILENT 0

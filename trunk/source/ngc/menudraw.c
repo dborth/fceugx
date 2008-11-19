@@ -406,7 +406,7 @@ DrawMenu (char items[][50], char *title, int maxitems, int selected, int fontsiz
 	int n = 1;
 	int line_height;
 
-	ypos = 140;
+	ypos = 130;
 
 	if (screenheight == 480)
 		ypos += 20;
