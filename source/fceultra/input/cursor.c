@@ -1,5 +1,5 @@
 #include "share.h"
-#include "fceuconfig.h"
+#include "fceugx.h"
 
 static uint8 GunSight[]={
         0,0,0,0,0,0,1,0,0,0,0,0,0,

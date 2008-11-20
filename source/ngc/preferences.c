@@ -173,6 +173,7 @@ preparePrefsData (int method)
 	createXMLSetting("ZoomLevel", "Zoom Level", FtoStr(GCSettings.ZoomLevel));
 	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
 	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
+	createXMLSetting("hideoverscan", "Video Cropping", toStr(GCSettings.hideoverscan));
 
 	createXMLSection("Controller", "Controller Settings");
 
@@ -294,15 +295,17 @@ decodePrefsData (int method)
 
 	loadXMLSettingInt(&GCSettings.currpal, "currpal");
 	loadXMLSettingInt(&GCSettings.timing, "timing");
-	loadXMLSettingInt(&GCSettings.FSDisable, "FSDisable");
 	loadXMLSettingInt(&GCSettings.slimit, "slimit");
 	loadXMLSettingInt(&GCSettings.Zoom, "Zoom");
 	loadXMLSettingFloat(&GCSettings.ZoomLevel, "ZoomLevel");
 	loadXMLSettingInt(&GCSettings.render, "render");
 	loadXMLSettingInt(&GCSettings.widescreen, "widescreen");
+	loadXMLSettingInt(&GCSettings.hideoverscan, "hideoverscan");
+
+	// Controller Settings
+	loadXMLSettingInt(&GCSettings.FSDisable, "FSDisable");
 	loadXMLSettingInt(&GCSettings.zapper, "zapper");
 	loadXMLSettingInt(&GCSettings.crosshair, "crosshair");
-	// Controller Settings
 
 	loadXMLController(gcpadmap, "gcpadmap");
 	loadXMLController(wmpadmap, "wmpadmap");
