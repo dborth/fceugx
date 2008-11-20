@@ -867,7 +867,7 @@ MainMenu (int selectedMenu)
 				#ifdef HW_DOL
 				dvd_motor_off ();
 				#endif
-
+				break;
 			case 5:
 				// Reset the Gamecube/Wii
 			    Reboot();
