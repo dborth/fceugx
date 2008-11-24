@@ -90,7 +90,7 @@ void InitialisePads()
 	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
 	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
 
-	ToggleFourScore(GCSettings.FSDisable, true);
+	ToggleFourScore(GCSettings.FourScore, true);
 	ToggleZapper(GCSettings.zapper, true);
 }
 
