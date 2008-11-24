@@ -177,7 +177,7 @@ preparePrefsData (int method)
 
 	createXMLSection("Controller", "Controller Settings");
 
-	createXMLSetting("FSDisable", "Four Score", toStr(GCSettings.FSDisable));
+	createXMLSetting("FourScore", "Four Score", toStr(GCSettings.FourScore));
 	createXMLSetting("zapper", "Zapper", toStr(GCSettings.zapper));
 	createXMLSetting("crosshair", "Zapper Crosshair", toStr(GCSettings.crosshair));
 	createXMLController(gcpadmap, "gcpadmap", "GameCube Pad");
@@ -303,7 +303,7 @@ decodePrefsData (int method)
 	loadXMLSettingInt(&GCSettings.hideoverscan, "hideoverscan");
 
 	// Controller Settings
-	loadXMLSettingInt(&GCSettings.FSDisable, "FSDisable");
+	loadXMLSettingInt(&GCSettings.FourScore, "FSDisable");
 	loadXMLSettingInt(&GCSettings.zapper, "zapper");
 	loadXMLSettingInt(&GCSettings.crosshair, "crosshair");
 

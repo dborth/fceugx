@@ -33,7 +33,7 @@ SNES9x GX project.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[What's New 2.0.7 - November 18, 2008]
+[What's New 2.0.7 - November 19, 2008]
 * Special thanks to eke-eke & KruLLo for contributions, bugfixes, and tips
 * Video code rewritten - now has original, unfiltered, filtered modes
 * Zoom option

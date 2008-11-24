@@ -63,7 +63,7 @@ struct SGCSettings{
 	int		hideoverscan;
 	int		currpal;
 	int		timing;
-	int		FSDisable;
+	int		FourScore;
 	int		zapper;
 	int		crosshair;
 	int		slimit;

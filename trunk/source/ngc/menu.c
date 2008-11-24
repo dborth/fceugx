@@ -677,7 +677,7 @@ ConfigureControllers ()
 	while (quit == 0)
 	{
 		sprintf (ctlrmenu[0], "Four Score - %s",
-			GCSettings.FSDisable == false ? " ON" : "OFF");
+			GCSettings.FourScore == true ? " ON" : "OFF");
 
 		if (GCSettings.zapper == 0) sprintf (ctlrmenu[1],"Zapper - Disabled");
 		else if (GCSettings.zapper == 1) sprintf (ctlrmenu[1],"Zapper - Port 1");
@@ -692,8 +692,8 @@ ConfigureControllers ()
 		switch (ret)
 		{
 			case 0: // four score
-				GCSettings.FSDisable ^= 1;
-				ToggleFourScore(GCSettings.FSDisable, romLoaded);
+				GCSettings.FourScore ^= 1;
+				ToggleFourScore(GCSettings.FourScore, romLoaded);
 				break;
 
 			case 1: // zapper
