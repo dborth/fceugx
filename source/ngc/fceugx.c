@@ -155,8 +155,6 @@ void CreateAppPath(char origpath[])
 
 	if(pos >= 0 && pos < 1024)
 		sprintf(appPath, &(path[pos]));
-	else
-		sprintf(appPath, "/");
 #endif
 }
 
@@ -230,7 +228,9 @@ int main(int argc, char *argv[])
 	DefaultSettings();
 
 	// store path app was loaded from
-	CreateAppPath(argv[0]);
+	sprintf(appPath, "fceugx");
+	if(argc > 0 && argv[0] != NULL)
+		CreateAppPath(argv[0]);
 
 	// Load preferences
 	if(!LoadPrefs())

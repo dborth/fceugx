@@ -332,6 +332,7 @@ static int
 getentry (int entrycount, unsigned char dvdbuffer[])
 {
 	char fname[512];		/* Huge, but experience has determined this */
+	char tmpname[512];
 	char *ptr;
 	char *filename;
 	char *filenamelength;
@@ -411,8 +412,9 @@ getentry (int entrycount, unsigned char dvdbuffer[])
 				*rr = 0;
 
 			strcpy (filelist[entrycount].filename, fname);
-			fname[MAXDISPLAY - 1] = 0;
-			strcpy (filelist[entrycount].displayname, fname);
+			StripExt(tmpname, fname); // hide file extension
+			tmpname[MAXDISPLAY - 1] = 0;
+			strcpy (filelist[entrycount].displayname, tmpname);
 
 			memcpy (&offset32, &dvdbuffer[diroffset + EXTENT], 4);
 
