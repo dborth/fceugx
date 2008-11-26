@@ -498,7 +498,7 @@ int FileSelector (int method)
 						break;
 
 						case METHOD_SMB:
-						maxfiles = ParseSMBdirectory();
+						maxfiles = ParseSMBdirectory(NOTSILENT);
 						break;
 					}
 
@@ -759,7 +759,7 @@ OpenSMB (int method)
 		// change current dir to root dir
 		sprintf(currentdir, "/%s", GCSettings.LoadFolder);
 
-		maxfiles = ParseSMBdirectory ();
+		maxfiles = ParseSMBdirectory (SILENT);
 		if (maxfiles > 0)
 		{
 			return FileSelector (method);
