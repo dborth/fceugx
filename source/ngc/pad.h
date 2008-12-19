@@ -25,6 +25,7 @@ extern unsigned int wmpadmap[];
 extern unsigned int ccpadmap[];
 extern unsigned int ncpadmap[];
 
+void ResetControls();
 s8 WPAD_StickX(u8 chan,u8 right);
 s8 WPAD_StickY(u8 chan, u8 right);
 void InitialisePads();

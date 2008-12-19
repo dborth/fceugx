@@ -114,7 +114,7 @@ u64 dvdsf_last_length = 0;
 
 int dvd_buffered_read(void *dst, u32 len, u64 offset)
 {
-    int ret = 0;
+    int ret = 1;
 
     // only read data if the data inside dvdsf_buffer cannot be used
     if(offset != dvdsf_last_offset || len > dvdsf_last_length)
@@ -143,12 +143,12 @@ int dvd_safe_read(void *dst_v, u32 len, u64 offset)
     }
     else
     {
-        // no errors yet -> ret = 0
-        // the return value of dvd_read will be OR'd with ret
-        // because dvd_read does return 1 on error and 0 on success and
-        // because 0 | 1 = 1 ret will also contain 1 if at least one error
-        // occured and 0 otherwise ;)
-        int ret = 0; // return value of dvd_read
+        // no errors yet -> ret = 1
+        // the return value of dvd_read will be AND'd with ret
+        // because dvd_read does return 0 on error and 1 on success and
+        // because 1 & 0 = 0 ret will also contain 0 if at least one error
+        // occured and 1 otherwise ;)
+        int ret = 1; // return value of dvd_read
 
         // we might need to fix all 3 issues
         unsigned char *dst = (unsigned char *)dst_v; // gcc will not allow to use var[num] on void* types
@@ -181,7 +181,7 @@ int dvd_safe_read(void *dst_v, u32 len, u64 offset)
             }
 
             // read 32 bytes from the last 32 byte position
-            ret |= dvd_buffered_read(buffer, DVD_OFFSET_MULTIPLY, i);
+            ret &= dvd_buffered_read(buffer, DVD_OFFSET_MULTIPLY, i);
 
             // copy the bytes to the output buffer and update currentOffset, bufferOffset and bytesToRead
             memcpy(&dst[bufferOffset], &buffer[j], k);
@@ -199,7 +199,7 @@ int dvd_safe_read(void *dst_v, u32 len, u64 offset)
             // read data in 2048 byte sector
             for(j = 0; j < i; j++)
             {
-                ret |= dvd_buffered_read(buffer, DVD_MAX_READ_LENGTH, currentOffset); // read sector
+                ret &= dvd_buffered_read(buffer, DVD_MAX_READ_LENGTH, currentOffset); // read sector
                 memcpy(&dst[bufferOffset], buffer, DVD_MAX_READ_LENGTH); // copy to output buffer
 
                 // update currentOffset, bufferOffset and bytesToRead
@@ -212,7 +212,7 @@ int dvd_safe_read(void *dst_v, u32 len, u64 offset)
         // fix third issue (length is not a multiply of 32)
         if(bytesToRead)
         {
-            ret |= dvd_buffered_read(buffer, DVD_MAX_READ_LENGTH, currentOffset); // read 32 byte from the dvd
+            ret &= dvd_buffered_read(buffer, DVD_MAX_READ_LENGTH, currentOffset); // read 32 byte from the dvd
             memcpy(&dst[bufferOffset], buffer, bytesToRead); // copy bytes to output buffer
         }
         return ret;
@@ -299,25 +299,38 @@ getpvd ()
 }
 
 /****************************************************************************
- * TestDVD()
+ * MountDVD()
  *
- * Tests if a ISO9660 DVD is inserted and available
+ * Tests if a ISO9660 DVD is inserted and available, and mounts it
  ***************************************************************************/
-bool TestDVD()
-{
 
+bool MountDVD(bool silent)
+{
 	if (!getpvd())
 	{
+		ShowAction("Loading DVD...");
 		#ifdef HW_DOL
-		DVD_Mount();
+		DVD_Mount(); // mount the DVD unit again
 		#elif WII_DVD
+		u32 val;
+		DI_GetCoverRegister(&val);
+		if(val & 0x1)	// True if no disc inside, use (val & 0x2) for true if disc inside.
+		{
+			if(!silent)
+				WaitPrompt("No disc inserted!");
+			return false;
+		}
 		DI_Mount();
 		while(DI_GetStatus() & DVD_INIT);
 		#endif
-		if (!getpvd())
-			return false;
-	}
 
+		if (!getpvd())
+		{
+			if(!silent)
+				WaitPrompt ("Invalid DVD.");
+			return false;
+		}
+	}
 	return true;
 }
 
@@ -506,6 +519,7 @@ int DirectorySearch(char dir[512])
  * SwitchDVDFolder
  *
  * Recursively searches for any directory path 'dir' specified
+ * Also can be used to find and set the offset for a file
  * Also loads the directory contents via ParseDVDdirectory()
  * It relies on dvddir, dvddirlength, and filelist being pre-populated
  ***************************************************************************/
@@ -559,7 +573,7 @@ bool SwitchDVDFolder(char origdir[])
 	if(dir[strlen(dir)-1] == '/')
 		dir[strlen(dir)-1] = 0;
 
-	// start at root of DVD
+	// start searching at root of DVD
 	dvddir = dvdrootdir;
 	dvddirlength = dvdrootlength;
 	ParseDVDdirectory();
@@ -582,6 +596,7 @@ LoadDVDFileOffset (unsigned char *buffer, int length)
 	int offset;
 	int blocks;
 	int i;
+	int ret = 0;
 	u64 discoffset;
 	char readbuffer[2048];
 
@@ -589,15 +604,19 @@ LoadDVDFileOffset (unsigned char *buffer, int length)
 	blocks = dvddirlength / 2048;
 	offset = 0;
 	discoffset = dvddir;
-	ShowAction ((char*) "Loading...");
+	ShowAction ("Loading...");
 
-	if(length > 0 && length <= 2048) // do a partial read (eg: to check file header)
+	if(length > 0 && length <= 2048)
 	{
-		dvd_read (buffer, length, discoffset);
+		ret = dvd_read (buffer, length, discoffset);
+		if(ret <= 0) // read failure
+			return 0;
 	}
 	else // load whole file
 	{
-		dvd_read (readbuffer, 2048, discoffset);
+		ret = dvd_read (readbuffer, 2048, discoffset);
+		if(ret <= 0) // read failure
+			return 0;
 
 		if (IsZipFile (readbuffer))
 		{
@@ -607,17 +626,22 @@ LoadDVDFileOffset (unsigned char *buffer, int length)
 		{
 			for (i = 0; i < blocks; i++)
 			{
-				dvd_read (readbuffer, 2048, discoffset);
+				ret = dvd_read (readbuffer, 2048, discoffset);
+				if(ret <= 0) // read failure
+					return 0;
 				memcpy (buffer + offset, readbuffer, 2048);
 				offset += 2048;
 				discoffset += 2048;
+				ShowProgress ("Loading...", offset, length);
 			}
 
 			/*** And final cleanup ***/
 			if (dvddirlength % 2048)
 			{
 				i = dvddirlength % 2048;
-				dvd_read (readbuffer, 2048, discoffset);
+				ret = dvd_read (readbuffer, 2048, discoffset);
+				if(ret <= 0) // read failure
+					return 0;
 				memcpy (buffer + offset, readbuffer, i);
 			}
 		}
@@ -635,7 +659,7 @@ LoadDVDFile(char * buffer, char *filepath, int datasize, bool silent)
 	else
 	{
 		if(!silent)
-			WaitPrompt((char *)"Error loading file!");
+			WaitPrompt("Error loading file!");
 		return 0;
 	}
 }

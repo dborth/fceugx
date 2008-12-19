@@ -292,7 +292,9 @@ bool SaveState (int method, bool silent)
 	if (!MakeFilePath(filepath, FILE_STATE, method))
 		return false;
 
-	ShowAction ((char*) "Saving...");
+	ShowAction ("Saving...");
+
+	AllocSaveBuffer ();
 
 	datasize = GCFCEUSS_Save();
 
@@ -303,10 +305,11 @@ bool SaveState (int method, bool silent)
 		if (offset > 0)
 		{
 			if ( !silent )
-				WaitPrompt((char *)"Save successful");
+				WaitPrompt("Save successful");
 			retval = true;
 		}
 	}
+	FreeSaveBuffer ();
 	return retval;
 }
 
@@ -314,6 +317,7 @@ bool LoadState (int method, bool silent)
 {
 	char filepath[1024];
 	int offset = 0;
+	bool retval = false;
 
 	if(method == METHOD_AUTO)
 		method = autoSaveMethod(); // we use 'Save' because we need R/W
@@ -321,19 +325,23 @@ bool LoadState (int method, bool silent)
 	if (!MakeFilePath(filepath, FILE_STATE, method))
 		return false;
 
-	ShowAction ((char*) "Loading...");
+	ShowAction ("Loading...");
+
+	AllocSaveBuffer ();
 
 	offset = LoadFile(filepath, method, silent);
 
 	if (offset > 0)
 	{
 		GCFCEUSS_Load();
-		return 1;
+		retval = true;
 	}
-
-	// if we reached here, nothing was done!
-	if(!silent)
-		WaitPrompt ((char*) "State file not found");
-
-	return 0;
+	else
+	{
+		// if we reached here, nothing was done!
+		if(!silent)
+			WaitPrompt ("State file not found");
+	}
+	FreeSaveBuffer ();
+	return retval;
 }

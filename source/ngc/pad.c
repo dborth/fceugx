@@ -25,54 +25,6 @@
 
 extern bool romLoaded;
 
-// Original NES controller buttons
-// All other pads are mapped to this
-unsigned int nespadmap[] = {
-	JOY_B, JOY_A,
-	RAPID_B, RAPID_A, // rapid press A/B buttons
-	JOY_SELECT, JOY_START,
-	JOY_UP, JOY_DOWN,
-	JOY_LEFT, JOY_RIGHT,
-	0 // insert coin for VS games, insert/eject/select disk for FDS
-};
-
-/*** Gamecube controller Padmap ***/
-unsigned int gcpadmap[] = {
-	PAD_BUTTON_B, PAD_BUTTON_A,
-	PAD_BUTTON_Y, PAD_BUTTON_X,
-	PAD_TRIGGER_Z, PAD_BUTTON_START,
-	PAD_BUTTON_UP, PAD_BUTTON_DOWN,
-	PAD_BUTTON_LEFT, PAD_BUTTON_RIGHT,
-	PAD_TRIGGER_L
-};
-/*** Wiimote Padmap ***/
-unsigned int wmpadmap[] = {
-	WPAD_BUTTON_1, WPAD_BUTTON_2,
-	0, 0,
-	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
-	WPAD_BUTTON_RIGHT, WPAD_BUTTON_LEFT,
-	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
-	WPAD_BUTTON_A
-};
-/*** Classic Controller Padmap ***/
-unsigned int ccpadmap[] = {
-	WPAD_CLASSIC_BUTTON_Y, WPAD_CLASSIC_BUTTON_B,
-	WPAD_CLASSIC_BUTTON_X, WPAD_CLASSIC_BUTTON_A,
-	WPAD_CLASSIC_BUTTON_MINUS, WPAD_CLASSIC_BUTTON_PLUS,
-	WPAD_CLASSIC_BUTTON_UP, WPAD_CLASSIC_BUTTON_DOWN,
-	WPAD_CLASSIC_BUTTON_LEFT, WPAD_CLASSIC_BUTTON_RIGHT,
-	WPAD_CLASSIC_BUTTON_FULL_L
-};
-/*** Nunchuk + wiimote Padmap ***/
-unsigned int ncpadmap[] = {
-	WPAD_NUNCHUK_BUTTON_C, WPAD_NUNCHUK_BUTTON_Z,
-	0, 0,
-	WPAD_BUTTON_MINUS, WPAD_BUTTON_PLUS,
-	WPAD_BUTTON_UP, WPAD_BUTTON_DOWN,
-	WPAD_BUTTON_LEFT, WPAD_BUTTON_RIGHT,
-	WPAD_BUTTON_A
-};
-
 static uint32 JSReturn = 0;
 void *InputDPR;
 
@@ -80,6 +32,88 @@ INPUTC *zapperdata[2];
 unsigned int myzappers[2][3];
 
 extern INPUTC *FCEU_InitZapper(int w);
+
+unsigned int nespadmap[11]; // Original NES controller buttons
+unsigned int gcpadmap[11]; // Gamecube controller Padmap
+unsigned int wmpadmap[11]; // Wiimote Padmap
+unsigned int ccpadmap[11]; // Classic Controller Padmap
+unsigned int ncpadmap[11]; // Nunchuk + wiimote Padmap
+
+void ResetControls()
+{
+	int i = 0;
+
+	// Original NES controller buttons
+	// All other pads are mapped to this
+	i=0;
+	nespadmap[i++] = JOY_B;
+	nespadmap[i++] = JOY_A;
+	nespadmap[i++] = RAPID_B;
+	nespadmap[i++] = RAPID_A; // rapid press A/B buttons
+	nespadmap[i++] = JOY_SELECT;
+	nespadmap[i++] = JOY_START;
+	nespadmap[i++] = JOY_UP;
+	nespadmap[i++] = JOY_DOWN;
+	nespadmap[i++] = JOY_LEFT;
+	nespadmap[i++] = JOY_RIGHT;
+	nespadmap[i++] = 0; // insert coin for VS games, insert/eject/select disk for FDS
+
+	/*** Gamecube controller Padmap ***/
+	i=0;
+	gcpadmap[i++] = PAD_BUTTON_B;
+	gcpadmap[i++] = PAD_BUTTON_A;
+	gcpadmap[i++] = PAD_BUTTON_Y;
+	gcpadmap[i++] = PAD_BUTTON_X;
+	gcpadmap[i++] = PAD_TRIGGER_Z;
+	gcpadmap[i++] = PAD_BUTTON_START;
+	gcpadmap[i++] = PAD_BUTTON_UP;
+	gcpadmap[i++] = PAD_BUTTON_DOWN;
+	gcpadmap[i++] = PAD_BUTTON_LEFT;
+	gcpadmap[i++] = PAD_BUTTON_RIGHT;
+	gcpadmap[i++] = PAD_TRIGGER_L;
+
+	/*** Wiimote Padmap ***/
+	i=0;
+	wmpadmap[i++] = WPAD_BUTTON_1;
+	wmpadmap[i++] = WPAD_BUTTON_2;
+	wmpadmap[i++] = 0;
+	wmpadmap[i++] = 0;
+	wmpadmap[i++] = WPAD_BUTTON_MINUS;
+	wmpadmap[i++] = WPAD_BUTTON_PLUS;
+	wmpadmap[i++] = WPAD_BUTTON_RIGHT;
+	wmpadmap[i++] = WPAD_BUTTON_LEFT;
+	wmpadmap[i++] = WPAD_BUTTON_UP;
+	wmpadmap[i++] = WPAD_BUTTON_DOWN;
+	wmpadmap[i++] = WPAD_BUTTON_A;
+
+	/*** Classic Controller Padmap ***/
+	i=0;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_Y;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_B;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_X;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_A;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_MINUS;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_PLUS;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_UP;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_DOWN;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_LEFT;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_RIGHT;
+	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_FULL_L;
+
+	/*** Nunchuk + wiimote Padmap ***/
+	i=0;
+	ncpadmap[i++] = WPAD_NUNCHUK_BUTTON_C;
+	ncpadmap[i++] = WPAD_NUNCHUK_BUTTON_Z;
+	ncpadmap[i++] = 0;
+	ncpadmap[i++] = 0;
+	ncpadmap[i++] = WPAD_BUTTON_MINUS;
+	ncpadmap[i++] = WPAD_BUTTON_PLUS;
+	ncpadmap[i++] = WPAD_BUTTON_UP;
+	ncpadmap[i++] = WPAD_BUTTON_DOWN;
+	ncpadmap[i++] = WPAD_BUTTON_LEFT;
+	ncpadmap[i++] = WPAD_BUTTON_RIGHT;
+	ncpadmap[i++] = WPAD_BUTTON_A;
+}
 
 /****************************************************************************
  * Initialise Pads

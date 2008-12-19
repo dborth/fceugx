@@ -16,12 +16,15 @@
 
 #include "common.h"
 #include "fceugx.h"
+#include "pad.h"
 
 struct SGCSettings GCSettings;
 
 void
 DefaultSettings ()
 {
+	ResetControls(); // controller button mappings
+
 	GCSettings.currpal = 0;
 	GCSettings.timing = 0; // 0 - NTSC, 1 - PAL
 	GCSettings.FourScore = 0;
@@ -53,10 +56,4 @@ DefaultSettings ()
 	GCSettings.smbuser[19] = 0;
 	GCSettings.smbpwd[19] = 0;
 	GCSettings.smbshare[19] = 0;
-
-	GCSettings.gcip[0] = 0;
-	GCSettings.gwip[0] = 0;
-	GCSettings.mask[0] = 0;
-	GCSettings.smbsvid[0] = 0;
-	GCSettings.smbgcid[0] = 0;
 }
