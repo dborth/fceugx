@@ -30,6 +30,7 @@
 #include "menu.h"
 #include "preferences.h"
 #include "fileop.h"
+#include "smbop.h"
 #include "gcaudio.h"
 #include "gcvideo.h"
 #include "pad.h"
@@ -59,6 +60,16 @@ void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
  * Shutdown / Reboot / Exit
  ***************************************************************************/
 
+void ExitCleanup()
+{
+	UnmountAllFAT();
+	CloseShare();
+
+#ifdef HW_RVL
+	DI_Close();
+#endif
+}
+
 #ifdef HW_DOL
 	#define PSOSDLOADID 0x7c6000a6
 	int *psoid = (int *) 0x80001800;
@@ -67,9 +78,8 @@ void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
 void Reboot()
 {
-	UnmountAllFAT();
+	ExitCleanup();
 #ifdef HW_RVL
-	DI_Close();
     SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
 #else
 	#define SOFTRESET_ADR ((volatile u32*)0xCC003024)
@@ -79,10 +89,9 @@ void Reboot()
 
 void ExitToLoader()
 {
-	UnmountAllFAT();
+	ExitCleanup();
 	// Exit to Loader
 	#ifdef HW_RVL
-		DI_Close();
 		exit(0);
 	#else	// gamecube
 		if (psoid[0] == PSOSDLOADID)
@@ -102,8 +111,7 @@ void ResetCB()
 }
 void ShutdownWii()
 {
-	UnmountAllFAT();
-	DI_Close();
+	ExitCleanup();
 	SYS_ResetSystem(SYS_POWEROFF, 0, 0);
 }
 #endif
@@ -202,7 +210,10 @@ int main(int argc, char *argv[])
 	}
 
     InitialiseAudio();
-    fatInit (8, false);
+
+    // Initialize libFAT for SD and USB
+    MountAllFAT();
+    InitDeviceThread();
 
     // Initialize DVD subsystem (GameCube only)
 	#ifdef HW_DOL
@@ -215,7 +226,7 @@ int main(int argc, char *argv[])
     /*** Minimal Emulation Loop ***/
     if ( !FCEUI_Initialize() )
     {
-		WaitPrompt((char *)"Unable to initialize FCE Ultra\n");
+		WaitPrompt("Unable to initialize FCE Ultra\n");
 		ExitToLoader();
     }
 
@@ -235,7 +246,7 @@ int main(int argc, char *argv[])
 	// Load preferences
 	if(!LoadPrefs())
 	{
-		WaitPrompt((char*) "Preferences reset - check settings!");
+		WaitPrompt("Preferences reset - check settings!");
 		selectedMenu = 1; // change to preferences menu
 	}
 
@@ -249,8 +260,16 @@ int main(int argc, char *argv[])
 			ShutdownWii();
 		#endif
 
+		// go back to checking if devices were inserted/removed
+		// since we're entering the menu
+		LWP_ResumeThread (devicethread);
+
     	MainMenu(selectedMenu);
 		selectedMenu = 2; // return to game menu from now on
+
+		// stop checking if devices were removed/inserted
+		// since we're starting emulation again
+		LWP_SuspendThread (devicethread);
 
 		ResetVideo_Emu();
 
@@ -301,7 +320,7 @@ int main(int argc, char *argv[])
 				}
 
 				// save zoom level
-				SavePrefs(GCSettings.SaveMethod, SILENT);
+				SavePrefs(SILENT);
 
 				ConfigRequested = 0;
 				break; // leave emulation loop

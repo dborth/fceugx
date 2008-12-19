@@ -25,7 +25,6 @@
 
 extern void FCEU_ResetPalette(void);
 
-extern unsigned int SMBTimer;
 int FDSTimer = 0;
 u32 FrameTimer = 0;
 int FDSSwitchRequested;
@@ -275,7 +274,6 @@ copy_to_xfb (u32 arg)
 		copynow = GX_FALSE;
 	}
 
-	SMBTimer++;
 	FrameTimer++;
 
 	// FDS switch disk requested - need to eject, select, and insert

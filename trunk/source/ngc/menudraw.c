@@ -134,7 +134,7 @@ DrawCharacter (FT_Bitmap * bmp, FT_Int x, FT_Int y)
  * Place the font bitmap on the screen
  ****************************************************************************/
 void
-DrawText (int x, int y, char *text)
+DrawText (int x, int y, const char *text)
 {
   int px, n;
   int i;
@@ -212,7 +212,7 @@ Credits ()
 	setfontcolour (0xFF, 0xFF, 0xFF);
 
 	setfontsize (28);
-	DrawText (-1, 145, (char*)"Credits");
+	DrawText (-1, 145, "Credits");
 
 	int ypos = 140;
 
@@ -220,26 +220,26 @@ Credits ()
 		ypos += 20;
 
 	setfontsize (14);
-	DrawText (125, ypos += 22, (char*)"GameCube/Wii Port v2.x");
-	DrawText (350, ypos, (char*)"Tantric");
-	DrawText (125, ypos += 18, (char*)"GameCube/Wii Port v1.0.9");
-	DrawText (350, ypos, (char*)"askot & dsbomb");
-	DrawText (125, ypos += 18, (char*)"GameCube Port v1.0.8");
-	DrawText (350, ypos, (char*)"SoftDev");
-	DrawText (125, ypos += 18, (char*)"FCE Ultra");
-	DrawText (350, ypos, (char*)"Xodnizel");
-	DrawText (125, ypos += 18, (char*)"Original FCE");
-	DrawText (350, ypos, (char*)"BERO");
-	DrawText (125, ypos += 18, (char*)"libogc");
-	DrawText (350, ypos, (char*)"Shagkur & wintermute");
-	DrawText (125, ypos += 18, (char*)"Testing");
-	DrawText (350, ypos, (char*)"tehskeen users");
+	DrawText (125, ypos += 22, "GameCube/Wii Port v2.x");
+	DrawText (350, ypos, "Tantric");
+	DrawText (125, ypos += 18, "GameCube/Wii Port v1.0.9");
+	DrawText (350, ypos, "askot & dsbomb");
+	DrawText (125, ypos += 18, "GameCube Port v1.0.8");
+	DrawText (350, ypos, "SoftDev");
+	DrawText (125, ypos += 18, "FCE Ultra");
+	DrawText (350, ypos, "Xodnizel");
+	DrawText (125, ypos += 18, "Original FCE");
+	DrawText (350, ypos, "BERO");
+	DrawText (125, ypos += 18, "libogc");
+	DrawText (350, ypos, "Shagkur & wintermute");
+	DrawText (125, ypos += 18, "Testing");
+	DrawText (350, ypos, "tehskeen users");
 
-	DrawText (-1, ypos += 36, (char*)"And many others who have contributed over the years!");
+	DrawText (-1, ypos += 36, "And many others who have contributed over the years!");
 
 	setfontsize (12);
-	DrawText (-1, ypos += 50, (char*)"This software is open source and may be copied, distributed, or modified");
-	DrawText (-1, ypos += 15, (char*)"under the terms of the GNU General Public License (GPL) Version 2.");
+	DrawText (-1, ypos += 50, "This software is open source and may be copied, distributed, or modified");
+	DrawText (-1, ypos += 15, "under the terms of the GNU General Public License (GPL) Version 2.");
 
 	showscreen ();
 }
@@ -336,7 +336,7 @@ WaitButtonAB ()
  * Show a prompt
  ****************************************************************************/
 void
-WaitPrompt (char *msg)
+WaitPrompt (const char *msg)
 {
 	int ypos = (screenheight - 64) >> 1;
 
@@ -348,7 +348,7 @@ WaitPrompt (char *msg)
 	clearscreen ();
 	DrawText (-1, ypos, msg);
 	ypos += 30;
-	DrawText (-1, ypos, (char*)"Press A to continue");
+	DrawText (-1, ypos, "Press A to continue");
 	showscreen ();
 	WaitButtonA ();
 }
@@ -358,7 +358,7 @@ WaitPrompt (char *msg)
    and 0 if B button was pressed.
  ****************************************************************************/
 int
-WaitPromptChoice (char *msg, char *bmsg, char *amsg)
+WaitPromptChoice (const char *msg, const char *bmsg, const char *amsg)
 {
 	int ypos = (screenheight - 64) >> 1;
 
@@ -381,7 +381,7 @@ WaitPromptChoice (char *msg, char *bmsg, char *amsg)
  * Show an action in progress
  ****************************************************************************/
 void
-ShowAction (char *msg)
+ShowAction (const char *msg)
 {
 	int ypos = (screenheight - 30) >> 1;
 
@@ -399,7 +399,7 @@ ShowAction (char *msg)
  * Generic Menu Routines
  ****************************************************************************/
 void
-DrawMenu (char items[][50], char *title, int maxitems, int selected, int fontsize, int x)
+DrawMenu (char items[][50], const char *title, int maxitems, int selected, int fontsize, int x)
 {
 	int i, w = 0;
 	int ypos = 0;
@@ -488,7 +488,7 @@ int FindMenuItem(char items[][50], int maxitems, int currentItem, int direction)
 int menu = 0;
 
 int
-RunMenu (char items[][50], int maxitems, char *title, int fontsize, int x)
+RunMenu (char items[][50], int maxitems, const char *title, int fontsize, int x)
 {
     int redraw = 1;
     int quit = 0;
@@ -581,7 +581,7 @@ ShowFiles (FILEENTRIES filelist[], int maxfiles, int offset, int selection)
 	clearscreen ();
 
 	setfontsize (28);
-	DrawText (-1, 145, (char*)"Choose Game");
+	DrawText (-1, 145, "Choose Game");
 
 	setfontsize(18);
 
@@ -654,7 +654,7 @@ void RomInfo()
 		ypos += 20;
 
 	setfontsize (28);
-	DrawText (-1, 145, (char*)"Rom Information");
+	DrawText (-1, 145, "Rom Information");
 
 	setfontsize (16);
 	setfontcolour (0xFF, 0xFF, 0xFF);
@@ -786,34 +786,46 @@ DrawLine (int x1, int y1, int x2, int y2, u8 r, u8 g, u8 b)
  * Progress Bar
  *
  * Show the user what's happening
- ****************************************************************************/
+ ***************************************************************************/
 void
-ShowProgress (char *msg, int done, int total)
+ShowProgress (const char *msg, int done, int total)
 {
-  int ypos = (screenheight - 30) >> 1;
+	if(total <= 0) // division by 0 is bad!
+		return;
+	else if(done > total) // this shouldn't happen
+		done = total;
 
-  if (screenheight == 480)
-    ypos += 52;
-  else
-    ypos += 32;
+	int xpos, ypos;
+	int i;
 
-  int xpos;
-  int i;
+	if(done < 5000) // we just started!
+	{
+		ypos = (screenheight - 30) >> 1;
 
-  clearscreen ();
-  DrawText (-1, ypos, msg);
+		if (screenheight == 480)
+			ypos += 52;
+		else
+			ypos += 32;
 
-	/*** Draw a white outline box ***/
-  for (i = 380; i < 401; i++)
-    DrawLine (100, i, 540, i, 0xff, 0xff, 0xff);
+		clearscreen ();
+		setfontsize(20);
+		DrawText (-1, ypos, msg);
+
+		/*** Draw a white outline box ***/
+		for (i = 380; i < 401; i++)
+			DrawLine (100, i, 540, i, 0xff, 0xff, 0xff);
+	}
 
 	/*** Show progess ***/
-  xpos = (int) (((float) done / (float) total) * 438);
+	xpos = (int) (((float) done / (float) total) * 438);
 
-  for (i = 381; i < 400; i++)
-    DrawLine (101, i, 101 + xpos, i, 0x00, 0x00, 0x80);
+	for (i = 381; i < 400; i++)
+		DrawLine (101, i, 101 + xpos, i, 0x00, 0x00, 0x80);
 
-  showscreen ();
+	if(done < 5000) // we just started!
+	{
+		showscreen ();
+	}
 }
 
 /****************************************************************************

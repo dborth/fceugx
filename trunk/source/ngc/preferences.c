@@ -18,13 +18,10 @@
 #include "menudraw.h"
 #include "memcardop.h"
 #include "fileop.h"
-#include "smbop.h"
-#include "filesel.h"
 #include "fceugx.h"
 #include "pad.h"
 
 extern const unsigned short saveicon[1024];
-extern unsigned char savebuffer[];
 extern int currconfig[4];
 
 // button map configurations
@@ -319,33 +316,35 @@ decodePrefsData (int method)
 
 /****************************************************************************
  * Save Preferences
- ****************************************************************************/
+ ***************************************************************************/
 bool
-SavePrefs (int method, bool silent)
+SavePrefs (bool silent)
 {
 	char filepath[1024];
 	int datasize;
 	int offset = 0;
 
-	// there's no point in saving SMB settings TO SMB, because then we'll have no way to load them the next time!
-	// so instead we'll save using whatever other method is available (eg: SD)
-	if(method == METHOD_AUTO || method == METHOD_SMB)
-		method = autoSaveMethod();
+	// We'll save using the first available method (probably SD) since this
+	// is the method preferences will be loaded from by default
+	int method = autoSaveMethod();
 
 	if(!MakeFilePath(filepath, FILE_PREF, method))
 		return false;
 
 	if (!silent)
-		ShowAction ((char*) "Saving preferences...");
+		ShowAction ("Saving preferences...");
 
+	AllocSaveBuffer ();
 	datasize = preparePrefsData (method);
 
 	offset = SaveFile(filepath, datasize, method, silent);
 
+	FreeSaveBuffer ();
+
 	if (offset > 0)
 	{
 		if (!silent)
-			WaitPrompt ((char *)"Preferences saved");
+			WaitPrompt ("Preferences saved");
 		return true;
 	}
 	return false;
@@ -353,8 +352,7 @@ SavePrefs (int method, bool silent)
 
 /****************************************************************************
  * Load Preferences from specified method
- ****************************************************************************/
-
+ ***************************************************************************/
 bool
 LoadPrefsFromMethod (int method)
 {
@@ -365,32 +363,35 @@ LoadPrefsFromMethod (int method)
 	if(!MakeFilePath(filepath, FILE_PREF, method))
 		return false;
 
+	AllocSaveBuffer ();
+
 	offset = LoadFile(filepath, method, SILENT);
 
 	if (offset > 0)
-	{
 		retval = decodePrefsData (method);
-	}
+
+	FreeSaveBuffer ();
+
 	return retval;
 }
 
 /****************************************************************************
  * Load Preferences
  * Checks sources consecutively until we find a preference file
- ****************************************************************************/
-
+ ***************************************************************************/
 bool LoadPrefs()
 {
+	ShowAction ("Loading preferences...");
 	bool prefFound = false;
-	if(ChangeFATInterface(METHOD_SD, SILENT))
+	if(ChangeInterface(METHOD_SD, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_SD);
-	if(!prefFound && ChangeFATInterface(METHOD_USB, SILENT))
+	if(!prefFound && ChangeInterface(METHOD_USB, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_USB);
 	if(!prefFound && TestCard(CARD_SLOTA, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTA);
 	if(!prefFound && TestCard(CARD_SLOTB, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTB);
-	if(!prefFound && ConnectShare (SILENT))
+	if(!prefFound && ChangeInterface(METHOD_SMB, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_SMB);
 
 	return prefFound;

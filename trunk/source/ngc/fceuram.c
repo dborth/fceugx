@@ -79,7 +79,7 @@ bool SaveRAM (int method, bool silent)
 	if(nesGameType == 4)
 	{
 		if(!silent)
-			WaitPrompt((char *)"Saving is not available for FDS games!");
+			WaitPrompt("Saving is not available for FDS games!");
 		return false;
 	}
 
@@ -89,7 +89,9 @@ bool SaveRAM (int method, bool silent)
 	if (!MakeFilePath(filepath, FILE_RAM, method))
 		return false;
 
-	ShowAction ((char*) "Saving...");
+	ShowAction ("Saving...");
+
+	AllocSaveBuffer ();
 
 	// save game save to savebuffer
 	if(nesGameType == 1)
@@ -104,15 +106,16 @@ bool SaveRAM (int method, bool silent)
 		if (offset > 0)
 		{
 			if ( !silent )
-				WaitPrompt((char *)"Save successful");
+				WaitPrompt("Save successful");
 			retval = true;
 		}
 	}
 	else
 	{
 		if ( !silent )
-			WaitPrompt((char *)"No data to save!");
+			WaitPrompt("No data to save!");
 	}
+	FreeSaveBuffer ();
 	return retval;
 }
 
@@ -120,11 +123,12 @@ bool LoadRAM (int method, bool silent)
 {
 	char filepath[1024];
 	int offset = 0;
+	bool retval = false;
 
 	if(nesGameType == 4)
 	{
 		if(!silent)
-			WaitPrompt((char *)"Saving is not available for FDS games!");
+			WaitPrompt("Saving is not available for FDS games!");
 		return false;
 	}
 
@@ -134,7 +138,9 @@ bool LoadRAM (int method, bool silent)
 	if (!MakeFilePath(filepath, FILE_RAM, method))
 		return false;
 
-	ShowAction ((char*) "Loading...");
+	ShowAction ("Loading...");
+
+	AllocSaveBuffer ();
 
 	offset = LoadFile(filepath, method, silent);
 
@@ -146,12 +152,14 @@ bool LoadRAM (int method, bool silent)
 			NGCFCEU_GameSave(&UNIFCart, 1);
 
 		ResetNES();
-		return true;
+		retval = true;
 	}
-
-	// if we reached here, nothing was done!
-	if(!silent)
-		WaitPrompt ((char*) "Save file not found");
-
-	return false;
+	else
+	{
+		// if we reached here, nothing was done!
+		if(!silent)
+			WaitPrompt ("Save file not found");
+	}
+	FreeSaveBuffer ();
+	return retval;
 }
