@@ -478,7 +478,7 @@ SaveFileBuf (char * buffer, char *filepath, u32 datasize, int method, bool silen
 		sprintf(fullpath, "%s%s", rootdir, filepath);
 
 		// open file for writing
-		file = fopen (filepath, "wb");
+		file = fopen (fullpath, "wb");
 
 		if (file > 0)
 		{
