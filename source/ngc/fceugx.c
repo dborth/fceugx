@@ -183,59 +183,59 @@ int main(int argc, char *argv[])
 
 	int selectedMenu = -1;
 
+	InitDeviceThread();
+
+	InitGCVideo ();
+	ResetVideo_Menu (); // change to menu video mode
+
+	// Controllers
+	PAD_Init();
+
 	#ifdef HW_RVL
 	WPAD_Init();
 	// read wiimote accelerometer and IR data
 	WPAD_SetDataFormat(WPAD_CHAN_ALL,WPAD_FMT_BTNS_ACC_IR);
 	WPAD_SetVRes(WPAD_CHAN_ALL,640,480);
-	#endif
-
-	PAD_Init();
 
 	// Wii Power/Reset buttons
-	#ifdef HW_RVL
 	WPAD_SetPowerButtonCallback((WPADShutdownCallback)ShutdownCB);
 	SYS_SetPowerCallback(ShutdownCB);
 	SYS_SetResetCallback(ResetCB);
 	#endif
 
-    InitGCVideo ();
-    ResetVideo_Menu (); // change to menu video mode
-
-    /*** Initialise freetype ***/
+	// Initialise FreeType
 	if (FT_Init ())
 	{
 		printf ("Cannot initialise font subsystem!\n");
 		while (1);
 	}
 
-    InitialiseAudio();
+	InitialiseAudio();
 
-    // Initialize libFAT for SD and USB
-    MountAllFAT();
-    InitDeviceThread();
+	// Initialize libFAT for SD and USB
+	MountAllFAT();
 
-    // Initialize DVD subsystem (GameCube only)
+	// Initialize DVD subsystem (GameCube only)
 	#ifdef HW_DOL
 	DVD_Init ();
 	#endif
 
-    // allocate memory to store rom
-    nesrom = (unsigned char *)malloc(1024*1024*3); // 3 MB should be plenty
+	// allocate memory to store rom
+	nesrom = (unsigned char *)malloc(1024*1024*3); // 3 MB should be plenty
 
-    /*** Minimal Emulation Loop ***/
-    if ( !FCEUI_Initialize() )
-    {
+	/*** Minimal Emulation Loop ***/
+	if ( !FCEUI_Initialize() )
+	{
 		WaitPrompt("Unable to initialize FCE Ultra\n");
 		ExitToLoader();
-    }
+	}
 
 	FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
 
-    memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
-    cleanSFMDATA(); // clear state data
+	memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
+	cleanSFMDATA(); // clear state data
 
-    // Set defaults
+	// Set defaults
 	DefaultSettings();
 
 	// store path app was loaded from
