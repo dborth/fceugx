@@ -19,6 +19,7 @@
 #include <fat.h>
 #include "types.h"
 #include "state.h"
+#include "x6502.h"
 
 #include "images/saveicon.h"
 #include "fceugx.h"
@@ -32,10 +33,10 @@
 /*** External functions ***/
 extern void FCEUPPU_SaveState(void);
 extern void FCEUSND_SaveState(void);
+extern void FCEUPPU_LoadState(int version);
+extern void FCEUSND_LoadState(int version);
 extern void FlipByteOrder(uint8 *src, uint32 count);
-extern void FCEUD_SetPalette(unsigned char index, unsigned char r, unsigned char g, unsigned char b);
-extern void FCEU_ResetPalette(void);
-extern void FCEUI_DisableSpriteLimitation( int a );
+extern void (*GameStateRestore)(int version);
 
 /*** External save structures ***/
 extern SFORMAT SFCPU[];
@@ -47,7 +48,6 @@ extern SFORMAT SFMDATA[64];
 extern u32 iNESGameCRC32;
 
 #define RLSB 0x80000000
-#define FILESIZEOFFSET 2116
 
 int sboffset;				/*** Used as a basic fileptr  ***/
 int mcversion = 0x981211;
@@ -57,9 +57,9 @@ int mcversion = 0x981211;
  ****************************************************************************/
 
 /*** Open a file ***/
-void memopen() {
+void memopen()
+{
     sboffset = 0;
-    memset(savebuffer, 0, SAVEBUFFERSIZE);
 }
 
 /*** Close a file ***/
@@ -95,47 +95,59 @@ void memfread( void *buffer, int len ) {
  *
  * Read the array of SFORMAT structures to memory
  ****************************************************************************/
-int GCReadChunk( int chunkid, SFORMAT *sf ) {
-    int csize;
-    static char chunk[6];
-    int chunklength;
-    int thischunk;
-    char info[128];
+int GCReadChunk(int chunkid, SFORMAT *sf)
+{
+	int csize;
+	static char chunk[6];
+	int chunklength;
+	int thischunk;
+	char info[128];
 
-    memfread(&chunk, 4);
-    memfread(&thischunk, 4);
-    memfread(&chunklength, 4);
+	memfread(&chunk, 4);
+	memfread(&thischunk, 4);
+	memfread(&chunklength, 4);
 
-    if (strcmp(chunk, "CHNK") == 0) {
-        if (chunkid == thischunk) {
-            /*** Now decode the array of chunks to this one ***/
-            while (sf->v) {
-                memfread(&chunk, 4);
-                if ( memcmp(&chunk, "CHKE", 4) == 0 )
-                    return 1;
+	if (strcmp(chunk, "CHNK") == 0)
+	{
+		if (chunkid == thischunk)
+		{
+			/*** Now decode the array of chunks to this one ***/
+			while (sf->v)
+			{
+				memfread(&chunk, 4);
+				if (memcmp(&chunk, "CHKE", 4) == 0)
+					return 1;
 
-                if (memcmp(&chunk, sf->desc, 4) == 0) {
-                    memfread(&csize, 4);
-                    if (csize == (sf->s & (~RLSB ))) {
-                        memfread( sf->v, csize );
-                        sprintf(info,"%s %d", chunk, csize);
-                    } else {
-                        WaitPrompt("Bad chunk link");
-                        return 0;
-                    }
-                } else {
-                    sprintf(info, "No Sync %s %s", chunk, sf->desc);
-                    WaitPrompt(info);
-                    return 0;
-                }
-                sf++;
-            }
-        } else
-            return 0;
-    } else
-        return 0;
+				if (memcmp(&chunk, sf->desc, 4) == 0)
+				{
+					memfread(&csize, 4);
+					if (csize == (sf->s & (~RLSB)))
+					{
+						memfread(sf->v, csize);
+						sprintf(info, "%s %d", chunk, csize);
+					}
+					else
+					{
+						WaitPrompt("Bad chunk link");
+						return 0;
+					}
+				}
+				else
+				{
+					sprintf(info, "No Sync %s %s", chunk, sf->desc);
+					WaitPrompt(info);
+					return 0;
+				}
+				sf++;
+			}
+		}
+		else
+			return 0;
+	}
+	else
+		return 0;
 
-    return 1;
+	return 1;
 }
 
 /****************************************************************************
@@ -143,28 +155,47 @@ int GCReadChunk( int chunkid, SFORMAT *sf ) {
  *
  * Reads the SFORMAT arrays
  ****************************************************************************/
-int GCFCEUSS_Load() {
-    int totalsize = 0;
+int GCFCEUSS_Load(int method)
+{
+	memopen(); // reset file pointer
 
-    sboffset = 16 + sizeof(saveicon) + 64;	/*** Reset memory file pointer ***/
+	// skip save icon and comments for Memory Card saves
+	if (method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
+	{
+		sboffset += sizeof(saveicon);
+		sboffset += 64; // sizeof prefscomment
+	}
 
-    memcpy(&totalsize, &savebuffer[FILESIZEOFFSET], 4);
+	sboffset += 16; // skip FCEU header
 
-    /*** Now read the chunks back ***/
-    if (GCReadChunk(1, SFCPU)) {
-        if (GCReadChunk(2, SFCPUC)) {
-            if (GCReadChunk(3, FCEUPPU_STATEINFO)) {
-                if (GCReadChunk(4, FCEUCTRL_STATEINFO)) {
-                    if (GCReadChunk(5, FCEUSND_STATEINFO)) {
-                        if (GCReadChunk(0x10, SFMDATA))
-                            return 1;
-                    }
-                }
-            }
-        }
-    }
+	// Now read the chunks back
+	if (GCReadChunk(1, SFCPU))
+	{
+		if (GCReadChunk(2, SFCPUC))
+		{
+			X.mooPI = X.P; // Quick and dirty hack.
+			if (GCReadChunk(3, FCEUPPU_STATEINFO))
+			{
+				if (GCReadChunk(4, FCEUCTRL_STATEINFO))
+				{
+					if (GCReadChunk(5, FCEUSND_STATEINFO))
+					{
+						if (GCReadChunk(0x10, SFMDATA))
+						{
+							if (GameStateRestore)
+								GameStateRestore(FCEU_VERSION_NUMERIC);
 
-    return 0;
+							FCEUPPU_LoadState(FCEU_VERSION_NUMERIC);
+							FCEUSND_LoadState(FCEU_VERSION_NUMERIC);
+							return 1;
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return 0;
 }
 
 /****************************************************************************
@@ -172,7 +203,8 @@ int GCFCEUSS_Load() {
  *
  * Write the array of SFORMAT structures to the file
  ****************************************************************************/
-int GCSaveChunk(int chunkid, SFORMAT *sf) {
+int GCSaveChunk(int chunkid, SFORMAT *sf)
+{
     int chnkstart;
     int csize = 0;
     int chsize = 0;
@@ -199,8 +231,10 @@ int GCSaveChunk(int chunkid, SFORMAT *sf) {
         memfwrite( &chsize, 4);
 
         if ( chsize > 0 )
+        {
             /*** Write the actual data ***/
             memfwrite( sf->v, chsize );
+        }
 
         csize += 8;
         csize += chsize;
@@ -224,59 +258,62 @@ int GCSaveChunk(int chunkid, SFORMAT *sf) {
 extern void (*SPreSave)(void);
 extern void (*SPostSave)(void);
 
-int GCFCEUSS_Save()
+int GCFCEUSS_Save(int method)
 {
-    int totalsize = 0;
-    static unsigned char header[16] = "FCS\xff";
-    char chunk[] = "CHKE";
-    int zero = 0;
-    char Comment[2][100] = { { MENU_CREDITS_TITLE }, { "GAME" } };
+	int totalsize = 0;
+	static unsigned char header[16] = "FCS\xff";
+	char chunk[] = "CHKE";
+	int zero = 0;
+	char comment[2][32];
+	memset(comment, 0, 64);
 
-    memopen();	/*** Reset Memory File ***/
+	memopen(); // Reset Memory File
 
-    /*** Add version ID ***/
-    memcpy(&header[8], &mcversion, 4);
+	// add save icon and comments for Memory Card saves
+	if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
+	{
+		// Copy in save icon
+		memfwrite(&saveicon, sizeof(saveicon));
+		totalsize += sizeof(saveicon);
 
-    /*** Do internal Saving ***/
-    FCEUPPU_SaveState();
-    FCEUSND_SaveState();
+		// And the comments
+		sprintf (comment[0], "%s State", VERSIONSTR);
+		strncpy (comment[1],romFilename,31); // we only have 32 chars to work with!
+		comment[1][31] = 0;
+		memfwrite(&comment[0], 64);
+		totalsize += 64;
+	}
 
-    /*** Write Icon ***/
-    memfwrite(&saveicon, sizeof(saveicon));
-    totalsize += sizeof(saveicon);
+	// Add version ID
+	memcpy(&header[8], &mcversion, 4);
 
-    /*** And Comments ***/
-    strncpy (Comment[1],romFilename,31); // we only have 32 chars to work with!
-    Comment[1][31] = 0;
-    memfwrite(&Comment[0], 64);
-    totalsize += 64;
+	// Do internal Saving
+	FCEUPPU_SaveState();
+	FCEUSND_SaveState();
 
-    /*** Write header ***/
-    memfwrite(&header, 16);
-    totalsize += 16;
-    totalsize += GCSaveChunk(1, SFCPU);
-    totalsize += GCSaveChunk(2, SFCPUC);
-    totalsize += GCSaveChunk(3, FCEUPPU_STATEINFO);
-    totalsize += GCSaveChunk(4, FCEUCTRL_STATEINFO);
-    totalsize += GCSaveChunk(5, FCEUSND_STATEINFO);
+	// Write header
+	memfwrite(&header, 16);
+	totalsize += 16;
+	totalsize += GCSaveChunk(1, SFCPU);
+	totalsize += GCSaveChunk(2, SFCPUC);
+	totalsize += GCSaveChunk(3, FCEUPPU_STATEINFO);
+	totalsize += GCSaveChunk(4, FCEUCTRL_STATEINFO);
+	totalsize += GCSaveChunk(5, FCEUSND_STATEINFO);
 
-    if(nesGameType == 4) // FDS
-    	SPreSave();
+	if(nesGameType == 4) // FDS
+		SPreSave();
 
-    totalsize += GCSaveChunk(0x10, SFMDATA);
+	totalsize += GCSaveChunk(0x10, SFMDATA);
 
-    if(nesGameType == 4) // FDS
-    	SPostSave();
+	if(nesGameType == 4) // FDS
+		SPostSave();
 
-    /*** Add terminating CHNK ***/
-    memfwrite(&chunk,4);
-    memfwrite(&zero,4);
-    totalsize += 8;
+	// Add terminating CHNK
+	memfwrite(&chunk,4);
+	memfwrite(&zero,4);
+	totalsize += 8;
 
-    /*** Update size element ***/
-    memcpy(&savebuffer[FILESIZEOFFSET], &totalsize, 4);
-
-    return totalsize;
+	return totalsize;
 }
 
 bool SaveState (int method, bool silent)
@@ -287,7 +324,7 @@ bool SaveState (int method, bool silent)
 	int offset = 0;
 
 	if(method == METHOD_AUTO)
-		method = autoSaveMethod();
+		method = autoSaveMethod(silent);
 
 	if (!MakeFilePath(filepath, FILE_STATE, method))
 		return false;
@@ -296,7 +333,7 @@ bool SaveState (int method, bool silent)
 
 	AllocSaveBuffer ();
 
-	datasize = GCFCEUSS_Save();
+	datasize = GCFCEUSS_Save(method);
 
 	if (datasize)
 	{
@@ -320,7 +357,7 @@ bool LoadState (int method, bool silent)
 	bool retval = false;
 
 	if(method == METHOD_AUTO)
-		method = autoSaveMethod(); // we use 'Save' because we need R/W
+		method = autoSaveMethod(silent); // we use 'Save' because we need R/W
 
 	if (!MakeFilePath(filepath, FILE_STATE, method))
 		return false;
@@ -333,7 +370,7 @@ bool LoadState (int method, bool silent)
 
 	if (offset > 0)
 	{
-		GCFCEUSS_Load();
+		GCFCEUSS_Load(method);
 		retval = true;
 	}
 	else

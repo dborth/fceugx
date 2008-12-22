@@ -326,7 +326,7 @@ SavePrefs (bool silent)
 
 	// We'll save using the first available method (probably SD) since this
 	// is the method preferences will be loaded from by default
-	int method = autoSaveMethod();
+	int method = autoSaveMethod(silent);
 
 	if(!MakeFilePath(filepath, FILE_PREF, method))
 		return false;

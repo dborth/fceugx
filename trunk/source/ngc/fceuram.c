@@ -39,15 +39,42 @@
 #include "fileop.h"
 #include "smbop.h"
 
+extern const unsigned short saveicon[1024];
 extern u32 iNESGameCRC32;
 extern CartInfo iNESCart;
 extern CartInfo UNIFCart;
 
-int NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
+int NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
 {
-	int size = 0;
+	int offset = 0;
+	char comment[2][32];
+	memset(comment, 0, 64);
+
 	if(LocalHWInfo->battery && LocalHWInfo->SaveGame[0])
 	{
+		// add save icon and comments for Memory Card saves
+		if(operation == 0 &&
+			(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB))
+		{
+			// Copy in save icon
+			memcpy(savebuffer, saveicon, sizeof(saveicon));
+			offset += sizeof(saveicon);
+
+			// And the comments
+			sprintf (comment[0], "%s RAM", VERSIONSTR);
+			strncpy (comment[1],romFilename,31); // we only have 32 chars to work with!
+			comment[1][31] = 0;
+			memcpy(savebuffer+offset, comment, 64);
+			offset += 64;
+		}
+		// skip save icon and comments for Memory Card saves
+		else if(operation == 1 &&
+			(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB))
+		{
+			offset += sizeof(saveicon);
+			offset += 64; // sizeof prefscomment
+		}
+
 		int x;
 
 		for(x=0;x<4;x++)
@@ -55,18 +82,14 @@ int NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 			if(LocalHWInfo->SaveGame[x])
 			{
 				if(operation == 0) // save to file
-				{
-					memcpy(savebuffer, LocalHWInfo->SaveGame[x], LocalHWInfo->SaveGameLen[x]);
-				}
+					memcpy(savebuffer+offset, LocalHWInfo->SaveGame[x], LocalHWInfo->SaveGameLen[x]);
 				else // load from file
-				{
-					memcpy(LocalHWInfo->SaveGame[x], savebuffer, LocalHWInfo->SaveGameLen[x]);
-				}
-				size += LocalHWInfo->SaveGameLen[x];
+					memcpy(LocalHWInfo->SaveGame[x], savebuffer+offset, LocalHWInfo->SaveGameLen[x]);
+				offset += LocalHWInfo->SaveGameLen[x];
 			}
 		}
 	}
-	return size;
+	return offset;
 }
 
 bool SaveRAM (int method, bool silent)
@@ -84,7 +107,7 @@ bool SaveRAM (int method, bool silent)
 	}
 
 	if(method == METHOD_AUTO)
-		method = autoSaveMethod();
+		method = autoSaveMethod(silent);
 
 	if (!MakeFilePath(filepath, FILE_RAM, method))
 		return false;
@@ -95,9 +118,9 @@ bool SaveRAM (int method, bool silent)
 
 	// save game save to savebuffer
 	if(nesGameType == 1)
-		datasize = NGCFCEU_GameSave(&iNESCart, 0);
+		datasize = NGCFCEU_GameSave(&iNESCart, 0, method);
 	else if(nesGameType == 2)
-		datasize = NGCFCEU_GameSave(&UNIFCart, 0);
+		datasize = NGCFCEU_GameSave(&UNIFCart, 0, method);
 
 	if (datasize)
 	{
@@ -133,7 +156,7 @@ bool LoadRAM (int method, bool silent)
 	}
 
 	if(method == METHOD_AUTO)
-		method = autoSaveMethod(); // we use 'Save' because we need R/W
+		method = autoSaveMethod(silent); // we use 'Save' because we need R/W
 
 	if (!MakeFilePath(filepath, FILE_RAM, method))
 		return false;
@@ -147,9 +170,9 @@ bool LoadRAM (int method, bool silent)
 	if (offset > 0)
 	{
 		if(nesGameType == 1)
-			NGCFCEU_GameSave(&iNESCart, 1);
+			NGCFCEU_GameSave(&iNESCart, 1, method);
 		else if(nesGameType == 2)
-			NGCFCEU_GameSave(&UNIFCart, 1);
+			NGCFCEU_GameSave(&UNIFCart, 1, method);
 
 		ResetNES();
 		retval = true;
