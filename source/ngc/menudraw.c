@@ -26,6 +26,7 @@
 #include "filesel.h"
 #include "dvd.h"
 #include "pad.h"
+#include "networkop.h"
 
 /*** Globals ***/
 FT_Library ftlibrary;
@@ -422,7 +423,9 @@ DrawMenu (char items[][50], const char *title, int maxitems, int selected, int f
 	}
 
 	setfontsize (12);
-	DrawText (510, screenheight - 40, VERSIONSTR);
+	char versionText[50];
+	sprintf(versionText, "%s %s", APPNAME, APPVERSION);
+	DrawText (510, screenheight - 40, versionText);
 
 	// Draw menu items
 
@@ -502,6 +505,14 @@ RunMenu (char items[][50], int maxitems, const char *title, int fontsize, int x)
     while (quit == 0)
     {
 		#ifdef HW_RVL
+    	if(updateFound)
+		{
+			updateFound = WaitPromptChoice("An update is available!", "Update later", "Update now");
+			if(updateFound)
+				if(DownloadUpdate())
+					ExitToLoader();
+		}
+
 		if(ShutdownRequested)
 			ShutdownWii();
 		#endif

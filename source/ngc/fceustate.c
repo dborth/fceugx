@@ -28,7 +28,6 @@
 #include "filesel.h"
 #include "memcardop.h"
 #include "fileop.h"
-#include "smbop.h"
 
 /*** External functions ***/
 extern void FCEUPPU_SaveState(void);
@@ -277,7 +276,7 @@ int GCFCEUSS_Save(int method)
 		totalsize += sizeof(saveicon);
 
 		// And the comments
-		sprintf (comment[0], "%s State", VERSIONSTR);
+		sprintf (comment[0], "%s State", APPNAME);
 		strncpy (comment[1],romFilename,31); // we only have 32 chars to work with!
 		comment[1][31] = 0;
 		memfwrite(&comment[0], 64);

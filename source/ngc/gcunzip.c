@@ -21,7 +21,6 @@
 
 #include "fceugx.h"
 #include "dvd.h"
-#include "smbop.h"
 #include "fileop.h"
 #include "menudraw.h"
 #include "gcunzip.h"

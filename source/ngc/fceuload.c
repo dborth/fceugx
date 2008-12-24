@@ -31,7 +31,6 @@
 #include "menudraw.h"
 #include "fileop.h"
 #include "filesel.h"
-#include "smbop.h"
 
 unsigned char *nesrom;
 bool romLoaded = false;
