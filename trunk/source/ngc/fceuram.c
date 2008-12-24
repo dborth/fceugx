@@ -37,7 +37,6 @@
 #include "filesel.h"
 #include "memcardop.h"
 #include "fileop.h"
-#include "smbop.h"
 
 extern const unsigned short saveicon[1024];
 extern u32 iNESGameCRC32;
@@ -61,7 +60,7 @@ int NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
 			offset += sizeof(saveicon);
 
 			// And the comments
-			sprintf (comment[0], "%s RAM", VERSIONSTR);
+			sprintf (comment[0], "%s RAM", APPNAME);
 			strncpy (comment[1],romFilename,31); // we only have 32 chars to work with!
 			comment[1][31] = 0;
 			memcpy(savebuffer+offset, comment, 64);

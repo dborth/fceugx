@@ -131,7 +131,7 @@ preparePrefsData (int method)
 		memcpy (savebuffer, saveicon, offset);
 
 		// And the comments
-		sprintf (prefscomment[0], "%s Prefs", VERSIONSTR);
+		sprintf (prefscomment[0], "%s Prefs", APPNAME);
 		sprintf (prefscomment[1], "Preferences");
 		memcpy (savebuffer + offset, prefscomment, 64);
 		offset += 64;
@@ -141,7 +141,8 @@ preparePrefsData (int method)
 	mxmlSetWrapMargin(0); // disable line wrapping
 
 	data = mxmlNewElement(xml, "file");
-	mxmlElementSetAttr(data, "version",VERSIONSTR);
+	mxmlElementSetAttr(data, "app",APPNAME);
+	mxmlElementSetAttr(data, "version",APPVERSION);
 
 	createXMLSection("File", "File Settings");
 
@@ -151,7 +152,7 @@ preparePrefsData (int method)
 	createXMLSetting("SaveMethod", "Save Method", toStr(GCSettings.SaveMethod));
 	createXMLSetting("LoadFolder", "Load Folder", GCSettings.LoadFolder);
 	createXMLSetting("SaveFolder", "Save Folder", GCSettings.SaveFolder);
-	createXMLSetting("CheatFolder", "Cheats Folder", GCSettings.CheatFolder);
+	//createXMLSetting("CheatFolder", "Cheats Folder", GCSettings.CheatFolder);
 	createXMLSetting("VerifySaves", "Verify Memory Card Saves", toStr(GCSettings.VerifySaves));
 
 	createXMLSection("Network", "Network Settings");
@@ -193,11 +194,11 @@ preparePrefsData (int method)
 /****************************************************************************
  * Decode Preferences Data
  ****************************************************************************/
-void loadXMLSettingStr(char * var, const char * name)
+void loadXMLSettingStr(char * var, const char * name, int maxsize)
 {
 	item = mxmlFindElement(xml, xml, "setting", "name", name, MXML_DESCEND);
 	if(item)
-		sprintf(var, "%s", mxmlElementGetAttr(item, "value"));
+		snprintf(var, maxsize, "%s", mxmlElementGetAttr(item, "value"));
 }
 void loadXMLSettingInt(int * var, const char * name)
 {
@@ -261,13 +262,22 @@ decodePrefsData (int method)
 
 	// this code assumes version in format X.X.X
 	// XX.X.X, X.XX.X, or X.X.XX will NOT work
-	char verMajor = version[13];
-	char verMinor = version[15];
-	char verPoint = version[17];
+	int verMajor = version[0] - '0';
+	int verMinor = version[2] - '0';
+	int verPoint = version[4] - '0';
+	int curMajor = APPVERSION[0] - '0';
+	int curMinor = APPVERSION[2] - '0';
+	int curPoint = APPVERSION[4] - '0';
 
-	if(verMajor == '2' && verPoint < '7') // less than version 2.0.7
+	// first we'll check that the versioning is valid
+	if(!(verMajor >= 0 && verMajor <= 9 &&
+		verMinor >= 0 && verMinor <= 9 &&
+		verPoint >= 0 && verPoint <= 9))
+		return false;
+
+	if(verMajor == 2 && verPoint < 7) // less than version 2.0.7
 		return false; // reset settings
-	else if(verMajor > '2' || verMinor > '0' || verPoint > '7') // some future version
+	else if(verMajor > curMajor || verMinor > curMinor || verPoint > curPoint) // some future version
 		return false; // reset settings
 
 	// File Settings
@@ -276,17 +286,17 @@ decodePrefsData (int method)
 	loadXMLSettingInt(&GCSettings.AutoSave, "AutoSave");
 	loadXMLSettingInt(&GCSettings.LoadMethod, "LoadMethod");
 	loadXMLSettingInt(&GCSettings.SaveMethod, "SaveMethod");
-	loadXMLSettingStr(GCSettings.LoadFolder, "LoadFolder");
-	loadXMLSettingStr(GCSettings.SaveFolder, "SaveFolder");
-	loadXMLSettingStr(GCSettings.CheatFolder, "CheatFolder");
+	loadXMLSettingStr(GCSettings.LoadFolder, "LoadFolder", sizeof(GCSettings.LoadFolder));
+	loadXMLSettingStr(GCSettings.SaveFolder, "SaveFolder", sizeof(GCSettings.SaveFolder));
+	//loadXMLSettingStr(GCSettings.CheatFolder, "CheatFolder", sizeof(GCSettings.CheatFolder));
 	loadXMLSettingInt(&GCSettings.VerifySaves, "VerifySaves");
 
 	// Network Settings
 
-	loadXMLSettingStr(GCSettings.smbip, "smbip");
-	loadXMLSettingStr(GCSettings.smbshare, "smbshare");
-	loadXMLSettingStr(GCSettings.smbuser, "smbuser");
-	loadXMLSettingStr(GCSettings.smbpwd, "smbpwd");
+	loadXMLSettingStr(GCSettings.smbip, "smbip", sizeof(GCSettings.smbip));
+	loadXMLSettingStr(GCSettings.smbshare, "smbshare", sizeof(GCSettings.smbshare));
+	loadXMLSettingStr(GCSettings.smbuser, "smbuser", sizeof(GCSettings.smbuser));
+	loadXMLSettingStr(GCSettings.smbpwd, "smbpwd", sizeof(GCSettings.smbpwd));
 
 	// Emulation Settings
 

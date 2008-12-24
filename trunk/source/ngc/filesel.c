@@ -24,7 +24,7 @@
 #include "dvd.h"
 #include "menudraw.h"
 #include "filesel.h"
-#include "smbop.h"
+#include "networkop.h"
 #include "fileop.h"
 #include "memcardop.h"
 #include "pad.h"
@@ -96,7 +96,8 @@ int autoLoadMethod()
 	else
 		WaitPrompt("Unable to auto-determine load method!");
 
-	GCSettings.LoadMethod = method; // save method found for later use
+	if(GCSettings.LoadMethod == METHOD_AUTO)
+		GCSettings.LoadMethod = method; // save method found for later use
 	return method;
 }
 
@@ -125,7 +126,8 @@ int autoSaveMethod(bool silent)
 	else if(!silent)
 		WaitPrompt("Unable to auto-determine save method!");
 
-	GCSettings.SaveMethod = method; // save method found for later use
+	if(GCSettings.SaveMethod == METHOD_AUTO)
+		GCSettings.SaveMethod = method; // save method found for later use
 	return method;
 }
 

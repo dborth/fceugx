@@ -30,7 +30,7 @@
 #include "menu.h"
 #include "preferences.h"
 #include "fileop.h"
-#include "smbop.h"
+#include "networkop.h"
 #include "gcaudio.h"
 #include "gcvideo.h"
 #include "pad.h"
@@ -62,6 +62,7 @@ void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
 void ExitCleanup()
 {
+	LWP_SuspendThread (devicethread);
 	UnmountAllFAT();
 	CloseShare();
 
