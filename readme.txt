@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 2.0.7
+                                  Version 2.0.8
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -32,6 +32,17 @@ SNES9x GX project.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[What's New 2.0.8 - December 24, 2008]
+* Fixed unstable SD card access
+* Proper SD/USB hotswap (Wii only)
+* Auto-update feature (Wii only)
+* Rewritten SMB access - speed boost, NTLM now supported (Wii only)
+* Improved file access code
+* Resetting preferences now resets controls
+* Overscan (cropping) setting now saved in preferences
+* Rewritten RAM/state saving - old state saves are now invalid
+* Minor bug fixes
 
 [What's New 2.0.7 - November 19, 2008]
 * Special thanks to eke-eke & KruLLo for contributions, bugfixes, and tips

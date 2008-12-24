@@ -221,6 +221,9 @@ Credits ()
 		ypos += 20;
 
 	setfontsize (14);
+	DrawText (-1, ypos += 22, "Official Site: http://code.google.com/p/fceugc/");
+	ypos += 10;
+
 	DrawText (125, ypos += 22, "GameCube/Wii Port v2.x");
 	DrawText (350, ypos, "Tantric");
 	DrawText (125, ypos += 18, "GameCube/Wii Port v1.0.9");
@@ -239,7 +242,7 @@ Credits ()
 	DrawText (-1, ypos += 36, "And many others who have contributed over the years!");
 
 	setfontsize (12);
-	DrawText (-1, ypos += 50, "This software is open source and may be copied, distributed, or modified");
+	DrawText (-1, ypos += 40, "This software is open source and may be copied, distributed, or modified");
 	DrawText (-1, ypos += 15, "under the terms of the GNU General Public License (GPL) Version 2.");
 
 	showscreen ();
