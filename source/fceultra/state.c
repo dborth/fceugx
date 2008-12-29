@@ -81,7 +81,7 @@ SFORMAT SFCPUC[]={
 
 void cleanSFMDATA()
 {
-	memset(&SFMDATA[0], 0, sizeof(SFMDATA) * 64 );
+	memset(&SFMDATA[0], 0, sizeof(SFMDATA));
 }
 
 static int SubWrite(FILE *st, SFORMAT *sf)
