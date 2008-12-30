@@ -41,7 +41,7 @@ static void FP_FASTAPASS(1) Write(uint8 V)
 {
  // if(V&0x2) 
  bs=bss;
- printf("Write: %02x\n",V);
+ //printf("Write: %02x\n",V);
 // boop=0xC0;
 }
 
