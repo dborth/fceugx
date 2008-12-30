@@ -367,7 +367,7 @@ draw_square (Mtx v)
 static void
 StartGX ()
 {
-	Mtx p;
+	Mtx44 p;
 
 	GXColor background = { 0, 0, 0, 0xff };
 
@@ -564,7 +564,7 @@ void
 ResetVideo_Emu ()
 {
 	GXRModeObj *rmode;
-	Mtx p;
+	Mtx44 p;
 
 	// set VI modes
 	switch (vmode->viTVMode >> 2)
@@ -649,7 +649,7 @@ ResetVideo_Emu ()
 void
 ResetVideo_Menu ()
 {
-	Mtx p;
+	Mtx44 p;
 
 	VIDEO_Configure (vmode);
 	VIDEO_ClearFrameBuffer (vmode, xfb[whichfb], COLOR_BLACK);
