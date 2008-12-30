@@ -31,7 +31,7 @@ int FDSSwitchRequested;
 
 /*** External 2D Video ***/
 /*** 2D Video Globals ***/
-GXRModeObj *vmode; // Graphics Mode Object
+static GXRModeObj *vmode; // Graphics Mode Object
 unsigned int *xfb[2]; // Framebuffers
 int whichfb = 0; // Frame buffer toggle
 int screenheight;
@@ -62,11 +62,11 @@ struct pcpal {
     unsigned char b;
 } pcpalette[256];
 
-unsigned int gcpalette[256];	// Much simpler GC palette
-unsigned short rgb565[256];	// Texture map palette
+static unsigned int gcpalette[256];	// Much simpler GC palette
+static unsigned short rgb565[256];	// Texture map palette
 
-long long prev;
-long long now;
+static long long prev;
+static long long now;
 
 long long gettime();
 u32 diff_usec(long long start,long long end);
@@ -84,7 +84,7 @@ camera;
      This structure controls the size of the image on the screen.
 	 Think of the output as a -80 x 80 by -60 x 60 graph.
 ***/
-s16 square[] ATTRIBUTE_ALIGN (32) =
+static s16 square[] ATTRIBUTE_ALIGN (32) =
 {
   /*
    * X,   Y,  Z
@@ -109,7 +109,7 @@ static camera cam = { {0.0F, 0.0F, 0.0F},
 /** Original NES PAL Resolutions: **/
 
 /* 240 lines progressive (PAL 50Hz) */
-GXRModeObj PAL_240p =
+static GXRModeObj PAL_240p =
 {
 	VI_TVMODE_PAL_DS,       // viDisplayMode
 	640,             // fbWidth
@@ -146,7 +146,7 @@ GXRModeObj PAL_240p =
 /** Original NES NTSC Resolutions: **/
 
 /* 240 lines progressive (NTSC or PAL 60Hz) */
-GXRModeObj NTSC_240p =
+static GXRModeObj NTSC_240p =
 {
 	VI_TVMODE_EURGB60_DS,      // viDisplayMode
 	640,             // fbWidth
@@ -181,7 +181,7 @@ GXRModeObj NTSC_240p =
 };
 
 /* TV Modes table */
-GXRModeObj *tvmodes[2] = {
+static GXRModeObj *tvmodes[2] = {
 	&NTSC_240p, &PAL_240p
 };
 
@@ -190,7 +190,7 @@ GXRModeObj *tvmodes[2] = {
  * change frame timings depending on whether ROM is NTSC or PAL
  ***************************************************************************/
 
-int normaldiff;
+static int normaldiff;
 
 void setFrameTimer()
 {
@@ -202,7 +202,7 @@ void setFrameTimer()
 	prev = gettime();
 }
 
-void SyncSpeed()
+static void SyncSpeed()
 {
 	now = gettime();
   while (diff_usec(prev, now) < normaldiff) now = gettime();
@@ -213,8 +213,8 @@ void SyncSpeed()
  * VideoThreading
  ***************************************************************************/
 #define TSTACK 16384
-lwpq_t videoblankqueue;
-lwp_t vbthread;
+static lwpq_t videoblankqueue;
+static lwp_t vbthread;
 static unsigned char vbstack[TSTACK];
 
 /****************************************************************************
@@ -448,7 +448,7 @@ UpdateScaling()
  *
  * called by postRetraceCallback in InitGCVideo - scans gcpad and wpad
  ***************************************************************************/
-void
+static void
 UpdatePadsCB ()
 {
 #ifdef HW_RVL
@@ -814,7 +814,7 @@ showscreen ()
  * Support routine for gcpalette
  ****************************************************************************/
 
-unsigned int rgbcolor(unsigned char r1, unsigned char g1, unsigned char b1,
+static unsigned int rgbcolor(unsigned char r1, unsigned char g1, unsigned char b1,
         unsigned char r2, unsigned char g2, unsigned char b2) {
     int y1,cb1,cr1,y2,cb2,cr2,cb,cr;
 

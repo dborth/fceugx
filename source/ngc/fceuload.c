@@ -43,7 +43,7 @@ FCEUFILE *fceufp = NULL;
 MEMWRAP *fceumem = NULL;
 unsigned char * fceuFileData = NULL;
 
-void MakeFCEUFile(char * membuffer, int length)
+static void MakeFCEUFile(char * membuffer, int length)
 {
 	if(fceufp != NULL)
 	{

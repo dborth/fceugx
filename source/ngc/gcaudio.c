@@ -21,7 +21,7 @@ static u8 mixbuffer[16000];
 static int mixhead = 0;
 static int mixtail = 0;
 static int whichab = 0;
-int IsPlaying = 0;
+static int IsPlaying = 0;
 
 /****************************************************************************
  * MixerCollect
@@ -61,7 +61,7 @@ static int MixerCollect( u8 *outbuffer, int len )
  *
  * Manages which buffer is played next
  ***************************************************************************/
-void AudioSwitchBuffers()
+static void AudioSwitchBuffers()
 {
 	if ( !ConfigRequested )
 	{
