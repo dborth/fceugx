@@ -3,18 +3,14 @@
 
 = Setup & Installation =
 
-Download the latest version from the [http://code.google.com/p/fceugc/downloads/list Downloads page]. Unzip the archive. You will find the following folders inside:
-
- * apps - Contains Homebrew Channel ready files (see Homebrew Channel instructions below)
- * executables - Contains Gamecube / Wii DOL files (for loading from other methods)
- * fceugx - Contains the directory structure required for storing roms and saves (see below)
+Download the latest version from the [http://code.google.com/p/fceugc/downloads/list Downloads page].
 
 == Wii - Via the Homebrew Channel ==
 
 The most popular method of running homebrew on the Wii is through the [http://hbc.hackmii.com/ Homebrew Channel]. If you already have the channel installed, just copy over the apps folder
 included in the archive into the root of your SD card.
 
-Remember to also create the fceugx directory structure required. See below.
+Remember to also create the fceugx directory structure required.
 
 == GameCube == 
 
@@ -23,10 +19,4 @@ it to your Gamecube, or by booting a bootable DVD with FCEUGX on it.
 This document doesn't cover how to do any of that. A good source for information 
 on these topics is the [http://www.tehskeen.com/forums/ TehSkeen Forums].
 
-= ROMs, Preferences, and Saves =
-
- * ROMs & saves files should be stored in 'fceugx/roms' and 'fceugx/saves' on the root of you SD card, USB flash drive, or SMB share. You can copy the fceugx directory from the archive to your support drive.
-
-== Loading From DVD or Windows Network Share (SMB) ==
- * ROMs can be burned to a DVD-/+R (4.7GB max size & ISO 9660 file format) but you need to install the [http://hackmii.com/2008/08/libdi-and-the-dvdx-installer/ DVDx] on your Wii.
- * To load roms from a Windows network share (SMB) you will have to edit FCEUGX.xml on your SD card with your network settings, or edit fceuconfig.cpp from the source code and compile. 
+For more detailed instructions, see [http://www.wiibrew.org/wiki/FCE_Ultra_GX Wiibrew].
