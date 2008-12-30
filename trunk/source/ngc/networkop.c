@@ -21,10 +21,10 @@
 #include "fileop.h"
 #include "http.h"
 
-bool networkInit = false;
-bool autoNetworkInit = true;
-bool networkShareInit = false;
-bool updateChecked = false; // true if checked for app update
+static bool networkInit = false;
+static bool autoNetworkInit = true;
+static bool networkShareInit = false;
+static bool updateChecked = false; // true if checked for app update
 static char updateURL[128]; // URL of app update
 bool updateFound = false; // true if an app update was found
 
@@ -90,7 +90,7 @@ void UpdateCheck()
 	}
 }
 
-bool unzipArchive(char * zipfilepath, char * unzipfolderpath)
+static bool unzipArchive(char * zipfilepath, char * unzipfolderpath)
 {
 	unzFile uf = unzOpen(zipfilepath);
 	if (uf==NULL)

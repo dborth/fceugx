@@ -43,9 +43,9 @@ extern u32 iNESGameCRC32;
 extern CartInfo iNESCart;
 extern CartInfo UNIFCart;
 
-int NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
+static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
 {
-	int offset = 0;
+	u32 offset = 0;
 	char comment[2][32];
 	memset(comment, 0, 64);
 

@@ -28,8 +28,8 @@ extern bool romLoaded;
 static uint32 JSReturn = 0;
 void *InputDPR;
 
-INPUTC *zapperdata[2];
-unsigned int myzappers[2][3];
+static INPUTC *zapperdata[2];
+static unsigned int myzappers[2][3];
 
 extern INPUTC *FCEU_InitZapper(int w);
 
@@ -243,10 +243,10 @@ s8 WPAD_StickY(u8 chan, u8 right)
 }
 
 // hold zapper cursor positions
-int pos_x = 0;
-int pos_y = 0;
+static int pos_x = 0;
+static int pos_y = 0;
 
-void UpdateCursorPosition (int pad)
+static void UpdateCursorPosition (int pad)
 {
 	#define ZAPPERPADCAL 20
 
@@ -309,11 +309,11 @@ void UpdateCursorPosition (int pad)
 /****************************************************************************
  * Convert GC Joystick Readings to JOY
  ****************************************************************************/
-int RAPID_SKIP = 2; // frames to skip between rapid button presses
-int RAPID_PRESS = 2; // number of rapid button presses to execute
-int rapidbutton[4][2] = {{0}};
+static int RAPID_SKIP = 2; // frames to skip between rapid button presses
+static int RAPID_PRESS = 2; // number of rapid button presses to execute
+static int rapidbutton[4][2] = {{0}};
 
-unsigned char DecodeJoy( unsigned short pad )
+static unsigned char DecodeJoy( unsigned short pad )
 {
 	signed char pad_x = PAD_StickX (pad);
 	signed char pad_y = PAD_StickY (pad);

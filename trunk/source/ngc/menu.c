@@ -16,7 +16,7 @@
 #include <string.h>
 #include <wiiuse/wpad.h>
 
-#ifdef WII_DVD
+#ifdef HW_RVL
 #include <di/di.h>
 #endif
 
@@ -69,23 +69,24 @@ LoadManager ()
 /****************************************************************************
  * Video Options Menu
  ****************************************************************************/
-static int videomenuCount = 8;
-static char videomenu[][50] = {
 
-	"Video Rendering",
-	"Video Scaling",
-	"Video Cropping",
-	"Palette",
-	"Enable Zooming",
-	"Timing",
-	"8 Sprite Limit",
-	"Back to Preferences Menu"
-
-};
-
-void
+static void
 VideoOptions ()
 {
+	int videomenuCount = 8;
+	char videomenu[][50] = {
+
+		"Video Rendering",
+		"Video Scaling",
+		"Video Cropping",
+		"Palette",
+		"Enable Zooming",
+		"Timing",
+		"8 Sprite Limit",
+		"Back to Preferences Menu"
+
+	};
+
 	int ret = 0;
 	int quit = 0;
 	int oldmenu = menu;
@@ -176,28 +177,28 @@ VideoOptions ()
 	menu = oldmenu;
 }
 
-
 /****************************************************************************
  * File Options Menu
  ****************************************************************************/
-static int filemenuCount = 8;
-static char filemenu[][50] = {
 
-	"Load Method",
-	"Load Folder",
-	"Save Method",
-	"Save Folder",
-
-	"Auto Load",
-	"Auto Save",
-	"Verify MC Saves",
-
-	"Back to Preferences Menu"
-};
-
-void
+static void
 FileOptions()
 {
+	int filemenuCount = 8;
+	char filemenu[][50] = {
+
+		"Load Method",
+		"Load Folder",
+		"Save Method",
+		"Save Folder",
+
+		"Auto Load",
+		"Auto Save",
+		"Verify MC Saves",
+
+		"Back to Preferences Menu"
+	};
+
 	int ret = 0;
 	int quit = 0;
 	int oldmenu = menu;
@@ -323,7 +324,7 @@ FileOptions()
  * Game Options Menu
  ****************************************************************************/
 
-int
+static int
 GameMenu ()
 {
 	int gamemenuCount = 9;
@@ -433,7 +434,7 @@ GameMenu ()
  * Here, I simply move the designated value to the gcpadmaps array, which saves
  * on updating the cmd sequences.
  ****************************************************************************/
-u32
+static u32
 GetInput (u16 ctrlr_type)
 {
 	//u32 exp_type;
@@ -481,20 +482,20 @@ GetInput (u16 ctrlr_type)
 	return pressed;
 }	// end GetInput()
 
-int cfg_text_count = 7;
-char cfg_text[][50] = {
-"Remapping          ",
-"Press Any Button",
-"on the",
-"       ",	// identify controller
-"                   ",
-"Press C-Left or",
-"Home to exit"
-};
-
-u32
+static u32
 GetButtonMap(u16 ctrlr_type, char* btn_name)
 {
+	int cfg_text_count = 7;
+	char cfg_text[][50] = {
+	"Remapping          ",
+	"Press Any Button",
+	"on the",
+	"       ",	// identify controller
+	"                   ",
+	"Press C-Left or",
+	"Home to exit"
+	};
+
 	u32 pressed, previous;
 	char temp[50] = "";
 	uint k;
@@ -532,30 +533,25 @@ GetButtonMap(u16 ctrlr_type, char* btn_name)
 	return pressed;
 }	// end getButtonMap()
 
-int cfg_btns_count = 12;
-char cfg_btns_menu[][50] = {
-	"B           -         ",
-	"A           -         ",
-	"RAPID B     -         ",
-	"RAPID A     -         ",
-	"SELECT      -         ",
-	"START       -         ",
-	"UP          -         ",
-	"DOWN        -         ",
-	"LEFT        -         ",
-	"RIGHT       -         ",
-	"SPECIAL     -         ",
-	"Return to previous"
-};
-
-extern unsigned int gcpadmap[];
-extern unsigned int wmpadmap[];
-extern unsigned int ccpadmap[];
-extern unsigned int ncpadmap[];
-
-void
+static void
 ConfigureButtons (u16 ctrlr_type)
 {
+	int cfg_btns_count = 12;
+	char cfg_btns_menu[][50] = {
+		"B           -         ",
+		"A           -         ",
+		"RAPID B     -         ",
+		"RAPID A     -         ",
+		"SELECT      -         ",
+		"START       -         ",
+		"UP          -         ",
+		"DOWN        -         ",
+		"LEFT        -         ",
+		"RIGHT       -         ",
+		"SPECIAL     -         ",
+		"Return to previous"
+	};
+
 	int quit = 0;
 	int ret = 0;
 	int oldmenu = menu;
@@ -647,21 +643,21 @@ ConfigureButtons (u16 ctrlr_type)
 	menu = oldmenu;
 }	// end configurebuttons()
 
-int ctlrmenucount = 8;
-char ctlrmenu[][50] = {
-	"Four Score",
-	"Zapper",
-	"Zapper Crosshair",
-	"Nunchuk",
-	"Classic Controller",
-	"Wiimote",
-	"Gamecube Pad",
-	"Back to Preferences Menu"
-};
-
-void
+static void
 ConfigureControllers ()
 {
+	int ctlrmenucount = 8;
+	char ctlrmenu[][50] = {
+		"Four Score",
+		"Zapper",
+		"Zapper Crosshair",
+		"Nunchuk",
+		"Classic Controller",
+		"Wiimote",
+		"Gamecube Pad",
+		"Back to Preferences Menu"
+	};
+
 	int quit = 0;
 	int ret = 0;
 	int oldmenu = menu;
@@ -741,18 +737,19 @@ ConfigureControllers ()
 /****************************************************************************
  * Preferences Menu
  ***************************************************************************/
-static int prefmenuCount = 5;
-static char prefmenu[][50] = {
-	"Controllers",
-	"Video",
-	"Saving / Loading",
-	"Reset Preferences",
-	"Back to Main Menu"
-};
 
 void
 PreferencesMenu ()
 {
+	int prefmenuCount = 5;
+	char prefmenu[][50] = {
+		"Controllers",
+		"Video",
+		"Saving / Loading",
+		"Reset Preferences",
+		"Back to Main Menu"
+	};
+
 	int ret = 0;
 	int quit = 0;
 	int oldmenu = menu;
@@ -794,20 +791,21 @@ PreferencesMenu ()
 /****************************************************************************
  * Main Menu
  ****************************************************************************/
-int menucount = 7;
-char menuitems[][50] = {
-  "Choose Game",
-  "Preferences",
-  "Game Menu",
-  "Credits",
-  "DVD Motor Off",
-  "Reset System",
-  "Return to Loader"
-};
 
 void
 MainMenu (int selectedMenu)
 {
+	int menucount = 7;
+	char menuitems[][50] = {
+	  "Choose Game",
+	  "Preferences",
+	  "Game Menu",
+	  "Credits",
+	  "DVD Motor Off",
+	  "Reset System",
+	  "Return to Loader"
+	};
+
 	int quit = 0;
 	int ret;
 

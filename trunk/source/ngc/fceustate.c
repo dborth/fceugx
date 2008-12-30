@@ -48,26 +48,21 @@ extern u32 iNESGameCRC32;
 
 #define RLSB 0x80000000
 
-int sboffset;				/*** Used as a basic fileptr  ***/
-int mcversion = 0x981211;
+static int sboffset;				/*** Used as a basic fileptr  ***/
+static int mcversion = 0x981211;
 
 /****************************************************************************
  * Memory based file functions
  ****************************************************************************/
 
 /*** Open a file ***/
-void memopen()
+static void memopen()
 {
     sboffset = 0;
 }
 
-/*** Close a file ***/
-void memclose() {
-    sboffset = 0;
-}
-
 /*** Write to the file ***/
-void memfwrite( void *buffer, int len ) {
+static void memfwrite( void *buffer, int len ) {
     if ( (sboffset + len ) > SAVEBUFFERSIZE)
         WaitPrompt("Buffer Exceeded");
 
@@ -78,7 +73,7 @@ void memfwrite( void *buffer, int len ) {
 }
 
 /*** Read from a file ***/
-void memfread( void *buffer, int len ) {
+static void memfread( void *buffer, int len ) {
 
     if ( ( sboffset + len ) > SAVEBUFFERSIZE)
         WaitPrompt("Buffer exceeded");
@@ -94,7 +89,7 @@ void memfread( void *buffer, int len ) {
  *
  * Read the array of SFORMAT structures to memory
  ****************************************************************************/
-int GCReadChunk(int chunkid, SFORMAT *sf)
+static int GCReadChunk(int chunkid, SFORMAT *sf)
 {
 	int csize;
 	static char chunk[6];
@@ -154,7 +149,7 @@ int GCReadChunk(int chunkid, SFORMAT *sf)
  *
  * Reads the SFORMAT arrays
  ****************************************************************************/
-int GCFCEUSS_Load(int method)
+static int GCFCEUSS_Load(int method)
 {
 	memopen(); // reset file pointer
 
@@ -202,7 +197,7 @@ int GCFCEUSS_Load(int method)
  *
  * Write the array of SFORMAT structures to the file
  ****************************************************************************/
-int GCSaveChunk(int chunkid, SFORMAT *sf)
+static int GCSaveChunk(int chunkid, SFORMAT *sf)
 {
     int chnkstart;
     int csize = 0;
@@ -257,7 +252,7 @@ int GCSaveChunk(int chunkid, SFORMAT *sf)
 extern void (*SPreSave)(void);
 extern void (*SPostSave)(void);
 
-int GCFCEUSS_Save(int method)
+static int GCFCEUSS_Save(int method)
 {
 	int totalsize = 0;
 	static unsigned char header[16] = "FCS\xff";

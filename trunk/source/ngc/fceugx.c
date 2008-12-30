@@ -44,7 +44,6 @@ int ConfigRequested = 0;
 int ShutdownRequested = 0;
 int ResetRequested = 0;
 char appPath[1024];
-bool isWii;
 uint8 *xbsave=NULL;
 int frameskip = 0;
 
@@ -60,7 +59,7 @@ void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
  * Shutdown / Reboot / Exit
  ***************************************************************************/
 
-void ExitCleanup()
+static void ExitCleanup()
 {
 	LWP_SuspendThread (devicethread);
 	UnmountAllFAT();
@@ -123,7 +122,7 @@ void ShutdownWii()
  * lowlevel Qoob Modchip disable
  ***************************************************************************/
 
-void ipl_set_config(unsigned char c)
+static void ipl_set_config(unsigned char c)
 {
 	volatile unsigned long* exi = (volatile unsigned long*)0xCC006800;
 	unsigned long val,addr;
@@ -143,7 +142,7 @@ void ipl_set_config(unsigned char c)
 }
 #endif
 
-void CreateAppPath(char origpath[])
+static void CreateAppPath(char origpath[])
 {
 #ifdef HW_DOL
 	sprintf(appPath, GCSettings.SaveFolder);
@@ -178,7 +177,7 @@ int main(int argc, char *argv[])
 	ipl_set_config(6); // disable Qoob modchip
 	#endif
 
-	#ifdef WII_DVD
+	#ifdef HW_RVL
 	DI_Init();	// first
 	#endif
 
