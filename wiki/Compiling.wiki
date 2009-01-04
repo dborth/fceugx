@@ -11,7 +11,7 @@ Here's some basic instructions on compiling FCEUGX. You don't need to be a progr
 
  # Download the source either from the [http://code.google.com/p/fceugc/downloads/list Downloads] page, or the latest directly from SVN.
  # Download and install [http://www.devkitpro.org devkitPro]. You only need to install devkitPPC.
- # Download the [http://code.google.com/p/snes9x-gx/downloads/list FCEUGX devkitPro libraries] from the Downloads page, and overwrite the libraries in your devkitPro installation folder.
+ # Download the [http://code.google.com/p/fceugc/downloads/list FCEUGX devkitPro libraries] from the Downloads page, and overwrite the libraries in your devkitPro installation folder.
  # Run Programmer's Notepad (installed with devkitPro)
  # Find the Makefile from the source you downloaded. Click Tools > Make.
  # You're done!
