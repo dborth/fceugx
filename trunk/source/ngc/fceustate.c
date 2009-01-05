@@ -48,12 +48,10 @@ extern u32 iNESGameCRC32;
 
 #define RLSB 0x80000000
 
-static int sboffset;				/*** Used as a basic fileptr  ***/
-static int mcversion = 0x981211;
-
 /****************************************************************************
  * Memory based file functions
  ****************************************************************************/
+static int sboffset; // Used as a basic fileptr
 
 /*** Open a file ***/
 static void memopen()
@@ -62,23 +60,26 @@ static void memopen()
 }
 
 /*** Write to the file ***/
-static void memfwrite( void *buffer, int len ) {
-    if ( (sboffset + len ) > SAVEBUFFERSIZE)
+static void memfwrite(void *buffer, int len)
+{
+    if ((sboffset + len) > SAVEBUFFERSIZE)
         WaitPrompt("Buffer Exceeded");
 
-    if ( len > 0 ) {
-        memcpy(&savebuffer[sboffset], buffer, len );
+    if (len > 0)
+    {
+        memcpy(&savebuffer[sboffset], buffer, len);
         sboffset += len;
     }
 }
 
 /*** Read from a file ***/
-static void memfread( void *buffer, int len ) {
-
-    if ( ( sboffset + len ) > SAVEBUFFERSIZE)
+static void memfread(void *buffer, int len)
+{
+    if ( (sboffset + len) > SAVEBUFFERSIZE)
         WaitPrompt("Buffer exceeded");
 
-    if ( len > 0 ) {
+    if (len > 0)
+    {
         memcpy(buffer, &savebuffer[sboffset], len);
         sboffset += len;
     }
@@ -279,6 +280,7 @@ static int GCFCEUSS_Save(int method)
 	}
 
 	// Add version ID
+	int mcversion = 0x981211;
 	memcpy(&header[8], &mcversion, 4);
 
 	// Do internal Saving

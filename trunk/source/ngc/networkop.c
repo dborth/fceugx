@@ -45,8 +45,9 @@ void UpdateCheck()
 
 		snprintf(url, 128, "http://fceugc.googlecode.com/svn/trunk/update.xml");
 
-		AllocSaveBuffer ();
-		retval = http_request(url, NULL, (u8 *)savebuffer, SAVEBUFFERSIZE);
+		u8 * tmpbuffer = (u8 *)malloc(32768);
+		memset(tmpbuffer, 0, 32768);
+		retval = http_request(url, NULL, tmpbuffer, 32768);
 		memset(url, 0, 128);
 
 		if (retval)
@@ -54,39 +55,47 @@ void UpdateCheck()
 			mxml_node_t *xml;
 			mxml_node_t *item;
 
-			xml = mxmlLoadString(NULL, (char *)savebuffer, MXML_TEXT_CALLBACK);
+			xml = mxmlLoadString(NULL, (char *)tmpbuffer, MXML_TEXT_CALLBACK);
 
-			// check settings version
-			item = mxmlFindElement(xml, xml, "app", "version", NULL, MXML_DESCEND);
-			if(item) // a version entry exists
+			if(xml)
 			{
-				char * version = (char *)mxmlElementGetAttr(item, "version");
-
-				int verMajor = version[0] - '0';
-				int verMinor = version[2] - '0';
-				int verPoint = version[4] - '0';
-				int curMajor = APPVERSION[0] - '0';
-				int curMinor = APPVERSION[2] - '0';
-				int curPoint = APPVERSION[4] - '0';
-
-				// check that the versioning is valid and is a newer version
-				if((verMajor >= 0 && verMajor <= 9 &&
-					verMinor >= 0 && verMinor <= 9 &&
-					verPoint >= 0 && verPoint <= 9) &&
-					(verMajor > curMajor ||
-					verMinor > curMinor ||
-					verPoint > curPoint))
+				// check settings version
+				item = mxmlFindElement(xml, xml, "app", "version", NULL, MXML_DESCEND);
+				if(item) // a version entry exists
 				{
-					item = mxmlFindElement(xml, xml, "file", NULL, NULL, MXML_DESCEND);
-					if(item)
+					const char * version = (char *)mxmlElementGetAttr(item, "version");
+
+					int verMajor = version[0] - '0';
+					int verMinor = version[2] - '0';
+					int verPoint = version[4] - '0';
+					int curMajor = APPVERSION[0] - '0';
+					int curMinor = APPVERSION[2] - '0';
+					int curPoint = APPVERSION[4] - '0';
+
+					// check that the versioning is valid and is a newer version
+					if((verMajor >= 0 && verMajor <= 9 &&
+						verMinor >= 0 && verMinor <= 9 &&
+						verPoint >= 0 && verPoint <= 9) &&
+						(verMajor > curMajor ||
+						verMinor > curMinor ||
+						verPoint > curPoint))
 					{
-						snprintf(updateURL, 128, "%s", mxmlElementGetAttr(item, "url"));
-						updateFound = true;
+						item = mxmlFindElement(xml, xml, "file", NULL, NULL, MXML_DESCEND);
+						if(item)
+						{
+							const char * tmp = mxmlElementGetAttr(item, "url");
+							if(tmp)
+							{
+								snprintf(updateURL, 128, "%s", tmp);
+								updateFound = true;
+							}
+						}
 					}
 				}
+				mxmlDelete(xml);
 			}
 		}
-		FreeSaveBuffer();
+		free(tmpbuffer);
 	}
 }
 
@@ -129,7 +138,7 @@ bool DownloadUpdate()
 			retval = http_request(updateURL, hfile, NULL, (1024*1024*5));
 			fclose (hfile);
 		}
-		ShowAction("Unzipping...");
+		ShowAction("Installing...");
 		bool unzipResult = unzipArchive(updateFile, (char *)"sd:/");
 		remove(updateFile); // delete update file
 
