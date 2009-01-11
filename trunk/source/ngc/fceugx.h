@@ -65,7 +65,6 @@ struct SGCSettings{
 	int		FourScore;
 	int		zapper;
 	int		crosshair;
-	int		slimit;
 };
 
 void ExitToLoader();
