@@ -558,7 +558,6 @@ void GetJoy()
     #ifdef HW_RVL
     		 || (wm_pb & WPAD_BUTTON_HOME)
     		 || (wm_pb & WPAD_CLASSIC_BUTTON_HOME)
-    		 || (wm_sx < -70)
     #endif
     )
 	{

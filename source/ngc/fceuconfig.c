@@ -30,7 +30,6 @@ DefaultSettings ()
 	GCSettings.FourScore = 0;
 	GCSettings.zapper = 0;
 	GCSettings.crosshair = 1;
-	GCSettings.slimit = 1;
 
 	GCSettings.Zoom = 0; // zooming default off
 	GCSettings.ZoomLevel = 1.0; // zoom amount

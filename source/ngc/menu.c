@@ -73,7 +73,7 @@ LoadManager ()
 static void
 VideoOptions ()
 {
-	int videomenuCount = 8;
+	int videomenuCount = 7;
 	char videomenu[][50] = {
 
 		"Video Rendering",
@@ -82,7 +82,6 @@ VideoOptions ()
 		"Palette",
 		"Enable Zooming",
 		"Timing",
-		"8 Sprite Limit",
 		"Back to Preferences Menu"
 
 	};
@@ -123,9 +122,6 @@ VideoOptions ()
 		sprintf (videomenu[5], "Timing - %s",
 			GCSettings.timing == true ? " PAL" : "NTSC");
 
-		sprintf (videomenu[6], "8 Sprite Limit - %s",
-			GCSettings.slimit == true ? " ON" : "OFF");
-
 		ret = RunMenu (videomenu, videomenuCount, "Video Options", 20, -1);
 
 		switch (ret)
@@ -162,13 +158,8 @@ VideoOptions ()
 				FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
 				break;
 
-			case 6: // 8 sprite limit
-				GCSettings.slimit ^=1;
-				FCEUI_DisableSpriteLimitation(GCSettings.slimit);
-				break;
-
 			case -1: // Button B
-			case 7:
+			case 6:
 				quit = 1;
 				break;
 
