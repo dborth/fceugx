@@ -23,7 +23,9 @@
 #include "menudraw.h"
 #include "images/nesback.h"
 
+extern "C" {
 extern void FCEU_ResetPalette(void);
+}
 
 int FDSTimer = 0;
 u32 FrameTimer = 0;
@@ -68,8 +70,11 @@ static unsigned short rgb565[256];	// Texture map palette
 static long long prev;
 static long long now;
 
+extern "C"
+{
 long long gettime();
 u32 diff_usec(long long start,long long end);
+}
 
 /* New texture based scaler */
 typedef struct tagcamera
@@ -190,7 +195,7 @@ static GXRModeObj *tvmodes[2] = {
  * change frame timings depending on whether ROM is NTSC or PAL
  ***************************************************************************/
 
-static int normaldiff;
+static long long normaldiff;
 
 void setFrameTimer()
 {
@@ -205,7 +210,8 @@ void setFrameTimer()
 static void SyncSpeed()
 {
 	now = gettime();
-  while (diff_usec(prev, now) < normaldiff) now = gettime();
+	while (diff_usec(prev, now) < normaldiff)
+		now = gettime();
 	prev = now;
 }
 
@@ -999,7 +1005,7 @@ struct st_palettes palettes[] = {
             0xe0e01e, 0xd8f878, 0xc0e890, 0x95f7c8,
             0x98e0e8, 0xf8d8f8, 0x000000, 0x000000 }
     },
-    { "mess", "palette from the MESS NES driver",
+    { "mess", "palette from MESS NES driver",
         { 0x747474, 0x24188c, 0x0000a8, 0x44009c,
             0x8c0074, 0xa80010, 0xa40000, 0x7c0800,
             0x402c00, 0x004400, 0x005000, 0x003c14,

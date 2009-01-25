@@ -75,5 +75,6 @@ extern int ConfigRequested;
 extern int ShutdownRequested;
 extern char appPath[];
 extern int frameskip;
+extern unsigned char * nesrom;
 
 #endif

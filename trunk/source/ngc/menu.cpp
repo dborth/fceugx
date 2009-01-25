@@ -38,8 +38,10 @@
 #include "fceuram.h"
 #include "fceuload.h"
 
+extern "C" {
 extern void ResetNES(void);
 extern void PowerNES(void);
+}
 
 extern int menu;
 extern bool romLoaded;

@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+extern "C" {
 #include "types.h"
 #include "git.h"
 #include "driver.h"
@@ -23,6 +24,13 @@
 #include "fceu.h"
 #include "sound.h"
 #include "file.h"
+
+extern int FDSLoad(const char *name, FCEUFILE *fp);
+extern int iNESLoad(const char *name, FCEUFILE *fp);
+extern int UNIFLoad(const char *name, FCEUFILE *fp);
+extern int NSFLoad(FCEUFILE *fp);
+extern uint8 FDSBIOS[8192];
+}
 
 #include "fceugx.h"
 #include "gcaudio.h"
@@ -32,7 +40,6 @@
 #include "fileop.h"
 #include "filesel.h"
 
-unsigned char *nesrom;
 bool romLoaded = false;
 
 extern FCEUGI *FCEUGameInfo;
@@ -66,19 +73,13 @@ static void MakeFCEUFile(char * membuffer, int length)
 	fceufp->fp = fceumem;
 }
 
-extern int FDSLoad(const char *name, FCEUFILE *fp);
-extern int iNESLoad(const char *name, FCEUFILE *fp);
-extern int UNIFLoad(const char *name, FCEUFILE *fp);
-extern int NSFLoad(FCEUFILE *fp);
-extern uint8 FDSBIOS[8192];
-
 int GCMemROM(int method, int size)
 {
     ResetGameLoaded();
 
     /*** Allocate and clear GameInfo ***/
 
-    FCEUGameInfo = malloc(sizeof(FCEUGI));
+    FCEUGameInfo = (FCEUGI *)malloc(sizeof(FCEUGI));
     memset(FCEUGameInfo, 0, sizeof(FCEUGI));
 
     /*** Set some default values ***/

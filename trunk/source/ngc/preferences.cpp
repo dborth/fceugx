@@ -15,13 +15,12 @@
 #include <ogcsys.h>
 #include <mxml.h>
 
+#include "images/saveicon.h"
 #include "menudraw.h"
 #include "memcardop.h"
 #include "fileop.h"
 #include "fceugx.h"
 #include "pad.h"
-
-extern const unsigned short saveicon[1024];
 
 /****************************************************************************
  * Prepare Preferences Data

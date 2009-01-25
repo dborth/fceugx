@@ -15,9 +15,11 @@
 #include <string.h>
 #include <zlib.h>
 
+extern "C" {
 #include "../sz/7zCrc.h"
 #include "../sz/7zIn.h"
 #include "../sz/7zExtract.h"
+}
 
 #include "fceugx.h"
 #include "dvd.h"
