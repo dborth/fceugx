@@ -267,8 +267,8 @@ int FileSortCallback(const void *f1, const void *f2)
 
 bool IsValidROM(int method)
 {
-	// file size should be between 10K and 3MB
-	if(browserList[browser.selIndex].length < (1024*10) ||
+	// file size should be between 8K and 3MB
+	if(browserList[browser.selIndex].length < (1024*8) ||
 		browserList[browser.selIndex].length > (1024*1024*3))
 	{
 		WaitPrompt("Invalid file size!");
