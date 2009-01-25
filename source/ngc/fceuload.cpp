@@ -121,7 +121,7 @@ int GCMemROM(int method, int size)
 
 			if(MakeFilePath(filepath, FILE_FDSBIOS, method))
 			{
-				biosSize = LoadFileBuf (tmpbuffer, filepath, 0, method, SILENT);
+				biosSize = LoadFile (tmpbuffer, filepath, 0, method, SILENT);
 			}
 
 			if(biosSize == 8192)

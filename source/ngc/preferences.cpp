@@ -182,7 +182,7 @@ preparePrefsData (int method)
 /****************************************************************************
  * Decode Preferences Data
  ****************************************************************************/
-static void loadXMLSettingStr(char * var, const char * name, int maxsize)
+static void loadXMLSetting(char * var, const char * name, int maxsize)
 {
 	item = mxmlFindElement(xml, xml, "setting", "name", name, MXML_DESCEND);
 	if(item)
@@ -192,7 +192,7 @@ static void loadXMLSettingStr(char * var, const char * name, int maxsize)
 			snprintf(var, maxsize, "%s", tmp);
 	}
 }
-static void loadXMLSettingInt(int * var, const char * name)
+static void loadXMLSetting(int * var, const char * name)
 {
 	item = mxmlFindElement(xml, xml, "setting", "name", name, MXML_DESCEND);
 	if(item)
@@ -202,7 +202,7 @@ static void loadXMLSettingInt(int * var, const char * name)
 			*var = atoi(tmp);
 	}
 }
-static void loadXMLSettingFloat(float * var, const char * name)
+static void loadXMLSetting(float * var, const char * name)
 {
 	item = mxmlFindElement(xml, xml, "setting", "name", name, MXML_DESCEND);
 	if(item)
@@ -287,36 +287,36 @@ decodePrefsData (int method)
 		{
 			// File Settings
 
-			loadXMLSettingInt(&GCSettings.AutoLoad, "AutoLoad");
-			loadXMLSettingInt(&GCSettings.AutoSave, "AutoSave");
-			loadXMLSettingInt(&GCSettings.LoadMethod, "LoadMethod");
-			loadXMLSettingInt(&GCSettings.SaveMethod, "SaveMethod");
-			loadXMLSettingStr(GCSettings.LoadFolder, "LoadFolder", sizeof(GCSettings.LoadFolder));
-			loadXMLSettingStr(GCSettings.SaveFolder, "SaveFolder", sizeof(GCSettings.SaveFolder));
-			//loadXMLSettingStr(GCSettings.CheatFolder, "CheatFolder", sizeof(GCSettings.CheatFolder));
-			loadXMLSettingInt(&GCSettings.VerifySaves, "VerifySaves");
+			loadXMLSetting(&GCSettings.AutoLoad, "AutoLoad");
+			loadXMLSetting(&GCSettings.AutoSave, "AutoSave");
+			loadXMLSetting(&GCSettings.LoadMethod, "LoadMethod");
+			loadXMLSetting(&GCSettings.SaveMethod, "SaveMethod");
+			loadXMLSetting(GCSettings.LoadFolder, "LoadFolder", sizeof(GCSettings.LoadFolder));
+			loadXMLSetting(GCSettings.SaveFolder, "SaveFolder", sizeof(GCSettings.SaveFolder));
+			//loadXMLSetting(GCSettings.CheatFolder, "CheatFolder", sizeof(GCSettings.CheatFolder));
+			loadXMLSetting(&GCSettings.VerifySaves, "VerifySaves");
 
 			// Network Settings
 
-			loadXMLSettingStr(GCSettings.smbip, "smbip", sizeof(GCSettings.smbip));
-			loadXMLSettingStr(GCSettings.smbshare, "smbshare", sizeof(GCSettings.smbshare));
-			loadXMLSettingStr(GCSettings.smbuser, "smbuser", sizeof(GCSettings.smbuser));
-			loadXMLSettingStr(GCSettings.smbpwd, "smbpwd", sizeof(GCSettings.smbpwd));
+			loadXMLSetting(GCSettings.smbip, "smbip", sizeof(GCSettings.smbip));
+			loadXMLSetting(GCSettings.smbshare, "smbshare", sizeof(GCSettings.smbshare));
+			loadXMLSetting(GCSettings.smbuser, "smbuser", sizeof(GCSettings.smbuser));
+			loadXMLSetting(GCSettings.smbpwd, "smbpwd", sizeof(GCSettings.smbpwd));
 
 			// Emulation Settings
 
-			loadXMLSettingInt(&GCSettings.currpal, "currpal");
-			loadXMLSettingInt(&GCSettings.timing, "timing");
-			loadXMLSettingInt(&GCSettings.Zoom, "Zoom");
-			loadXMLSettingFloat(&GCSettings.ZoomLevel, "ZoomLevel");
-			loadXMLSettingInt(&GCSettings.render, "render");
-			loadXMLSettingInt(&GCSettings.widescreen, "widescreen");
-			loadXMLSettingInt(&GCSettings.hideoverscan, "hideoverscan");
+			loadXMLSetting(&GCSettings.currpal, "currpal");
+			loadXMLSetting(&GCSettings.timing, "timing");
+			loadXMLSetting(&GCSettings.Zoom, "Zoom");
+			loadXMLSetting(&GCSettings.ZoomLevel, "ZoomLevel");
+			loadXMLSetting(&GCSettings.render, "render");
+			loadXMLSetting(&GCSettings.widescreen, "widescreen");
+			loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
 
 			// Controller Settings
-			loadXMLSettingInt(&GCSettings.FourScore, "FSDisable");
-			loadXMLSettingInt(&GCSettings.zapper, "zapper");
-			loadXMLSettingInt(&GCSettings.crosshair, "crosshair");
+			loadXMLSetting(&GCSettings.FourScore, "FSDisable");
+			loadXMLSetting(&GCSettings.zapper, "zapper");
+			loadXMLSetting(&GCSettings.crosshair, "crosshair");
 
 			loadXMLController(gcpadmap, "gcpadmap");
 			loadXMLController(wmpadmap, "wmpadmap");

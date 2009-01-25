@@ -393,7 +393,7 @@ LoadSzFile(char * filepath, unsigned char * rbuffer)
  * LoadFile
  ***************************************************************************/
 u32
-LoadFileBuf (char * rbuffer, char *filepath, u32 length, int method, bool silent)
+LoadFile (char * rbuffer, char *filepath, u32 length, int method, bool silent)
 {
 	char zipbuffer[2048];
 	u32 size = 0;
@@ -483,7 +483,7 @@ LoadFileBuf (char * rbuffer, char *filepath, u32 length, int method, bool silent
 
 u32 LoadFile(char filepath[], int method, bool silent)
 {
-	return LoadFileBuf((char *)savebuffer, filepath, 0, method, silent);
+	return LoadFile((char *)savebuffer, filepath, 0, method, silent);
 }
 
 /****************************************************************************
@@ -491,7 +491,7 @@ u32 LoadFile(char filepath[], int method, bool silent)
  * Write buffer to file
  ***************************************************************************/
 u32
-SaveFileBuf (char * buffer, char *filepath, u32 datasize, int method, bool silent)
+SaveFile (char * buffer, char *filepath, u32 datasize, int method, bool silent)
 {
 	u32 written = 0;
 
@@ -541,5 +541,5 @@ SaveFileBuf (char * buffer, char *filepath, u32 datasize, int method, bool silen
 
 u32 SaveFile(char filepath[], u32 datasize, int method, bool silent)
 {
-	return SaveFileBuf((char *)savebuffer, filepath, datasize, method, silent);
+	return SaveFile((char *)savebuffer, filepath, datasize, method, silent);
 }

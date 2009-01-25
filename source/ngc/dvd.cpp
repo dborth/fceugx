@@ -545,8 +545,7 @@ void SetDVDdirectory(u64 dir, int length)
  ***************************************************************************/
 static int DirectorySearch(char dir[512])
 {
-	int i;
-	for (i = 0; i < browser.numEntries; i++ )
+	for (int i = 0; i < browser.numEntries; i++ )
 		if (strcmp(browserList[i].filename, dir) == 0)
 			return i;
 	return -1;
