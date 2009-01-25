@@ -491,7 +491,7 @@ int FileSelector (int method)
 						if(!MakeFilePath(filepath, FILE_ROM, method))
 							return 0;
 
-						size = LoadFileBuf((char *)nesrom, filepath, browserList[browser.selIndex].length, method, NOTSILENT);
+						size = LoadFile((char *)nesrom, filepath, browserList[browser.selIndex].length, method, NOTSILENT);
 					}
 					else
 					{

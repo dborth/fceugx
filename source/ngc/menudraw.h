@@ -12,6 +12,7 @@
 #ifndef _MENUDRAW_H_
 #define _MENUDRAW_H_
 
+#include <gccore.h>
 #include "filesel.h"
 
 #define PAGESIZE 13 // max item listing on a screen
