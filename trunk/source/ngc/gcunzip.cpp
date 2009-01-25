@@ -235,7 +235,7 @@ GetFirstZipFilename (int method)
 		return NULL;
 
 	// read start of ZIP
-	if(LoadFileBuf (tempbuffer, filepath, ZIPCHUNK, method, NOTSILENT))
+	if(LoadFile (tempbuffer, filepath, ZIPCHUNK, method, NOTSILENT))
 	{
 		tempbuffer[28] = 0; // truncate - filename length is 2 bytes long (bytes 26-27)
 		int namelength = tempbuffer[26]; // filename length starts 26 bytes in
