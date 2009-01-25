@@ -17,7 +17,9 @@
 #include <malloc.h>
 
 #ifdef HW_RVL
+extern "C" {
 #include <di/di.h>
+}
 #endif
 
 #include "menudraw.h"

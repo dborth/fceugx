@@ -12,9 +12,6 @@
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 #include <math.h>
-#include "driver.h"
-#include "fceu.h"
-#include "input.h"
 
 #include "fceugx.h"
 #include "pad.h"
@@ -23,6 +20,13 @@
 #include "gcvideo.h"
 #include "filesel.h"
 
+extern "C" {
+#include "driver.h"
+#include "fceu.h"
+#include "input.h"
+extern INPUTC *FCEU_InitZapper(int w);
+}
+
 extern bool romLoaded;
 
 static uint32 JSReturn = 0;
@@ -30,8 +34,6 @@ void *InputDPR;
 
 static INPUTC *zapperdata[2];
 static unsigned int myzappers[2][3];
-
-extern INPUTC *FCEU_InitZapper(int w);
 
 unsigned int nespadmap[11]; // Original NES controller buttons
 unsigned int gcpadmap[11]; // Gamecube controller Padmap

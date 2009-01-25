@@ -29,6 +29,7 @@
 #include "memcardop.h"
 #include "fileop.h"
 
+extern "C" {
 /*** External functions ***/
 extern void FCEUPPU_SaveState(void);
 extern void FCEUSND_SaveState(void);
@@ -45,6 +46,7 @@ extern SFORMAT FCEUCTRL_STATEINFO[];
 extern SFORMAT FCEUSND_STATEINFO[];
 extern SFORMAT SFMDATA[64];
 extern u32 iNESGameCRC32;
+}
 
 #define RLSB 0x80000000
 
@@ -92,7 +94,7 @@ static void memfread(void *buffer, int len)
  ****************************************************************************/
 static int GCReadChunk(int chunkid, SFORMAT *sf)
 {
-	int csize;
+	uint32 csize;
 	static char chunk[6];
 	int chunklength;
 	int thischunk;
@@ -268,7 +270,7 @@ static int GCFCEUSS_Save(int method)
 	if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
 	{
 		// Copy in save icon
-		memfwrite(&saveicon, sizeof(saveicon));
+		memfwrite((void *)&saveicon, sizeof(saveicon));
 		totalsize += sizeof(saveicon);
 
 		// And the comments

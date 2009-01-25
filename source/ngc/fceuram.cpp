@@ -20,17 +20,7 @@
 #include <fat.h>
 #include <string.h>
 
-#include "types.h"
-
-#include "fceu.h"
-#include "ppu.h"
-
-#include "cart.h"
-#include "memory.h"
-#include "x6502.h"
-
-#include "general.h"
-
+#include "images/saveicon.h"
 #include "fceugx.h"
 #include "intl.h"
 #include "menudraw.h"
@@ -38,10 +28,18 @@
 #include "memcardop.h"
 #include "fileop.h"
 
-extern const unsigned short saveicon[1024];
+extern "C" {
+#include "types.h"
+#include "fceu.h"
+#include "ppu.h"
+#include "cart.h"
+#include "memory.h"
+#include "x6502.h"
+#include "general.h"
 extern u32 iNESGameCRC32;
 extern CartInfo iNESCart;
 extern CartInfo UNIFCart;
+}
 
 static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
 {

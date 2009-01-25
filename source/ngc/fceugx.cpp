@@ -18,8 +18,6 @@
 #include <fat.h>
 #include <wiiuse/wpad.h>
 
-#include "types.h"
-
 #include "fceugx.h"
 #include "fceuconfig.h"
 #include "fceuload.h"
@@ -35,9 +33,20 @@
 #include "gcvideo.h"
 #include "pad.h"
 
-#ifdef WII_DVD
+#ifdef HW_RVL
+extern "C" {
 #include <di/di.h>
+}
 #endif
+
+extern "C" {
+#include "types.h"
+extern int cleanSFMDATA();
+extern void PowerNES(void);
+extern uint8 FDSBIOS[8192];
+
+void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
+}
 
 unsigned char * nesrom = NULL;
 int ConfigRequested = 0;
@@ -48,12 +57,6 @@ uint8 *xbsave=NULL;
 int frameskip = 0;
 
 extern bool romLoaded;
-
-extern int cleanSFMDATA();
-extern void PowerNES(void);
-extern uint8 FDSBIOS[8192];
-
-void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
 /****************************************************************************
  * Shutdown / Reboot / Exit
