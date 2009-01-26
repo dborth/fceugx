@@ -65,6 +65,8 @@ struct SGCSettings{
 	int		FourScore;
 	int		zapper;
 	int		crosshair;
+	int		xshift;		// video output shift
+	int		yshift;
 };
 
 void ExitToLoader();

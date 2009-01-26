@@ -161,6 +161,8 @@ preparePrefsData (int method)
 	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
 	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
 	createXMLSetting("hideoverscan", "Video Cropping", toStr(GCSettings.hideoverscan));
+	createXMLSetting("xshift", "Horizontal Video Shift", toStr(GCSettings.xshift));
+	createXMLSetting("yshift", "Vertical Video Shift", toStr(GCSettings.yshift));
 
 	createXMLSection("Controller", "Controller Settings");
 
@@ -312,6 +314,8 @@ decodePrefsData (int method)
 			loadXMLSetting(&GCSettings.render, "render");
 			loadXMLSetting(&GCSettings.widescreen, "widescreen");
 			loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
+			loadXMLSetting(&GCSettings.xshift, "xshift");
+			loadXMLSetting(&GCSettings.yshift, "yshift");
 
 			// Controller Settings
 			loadXMLSetting(&GCSettings.FourScore, "FSDisable");
