@@ -703,9 +703,14 @@ void RenderFrame(unsigned char *XBuf)
 
 	int width, height;
 
-	// 0 = off, 1 = vertical, 2 = both
-	u8 borderheight = GCSettings.hideoverscan < 1 ? 0 : 8;
-	u8 borderwidth = GCSettings.hideoverscan < 2 ? 0 : 8;
+	u8 borderheight = 0;
+	u8 borderwidth = 0;
+
+	// 0 = off, 1 = vertical, 2 = horizontal, 3 = both
+	if(GCSettings.hideoverscan == 1 || GCSettings.hideoverscan == 3)
+		borderheight = 8;
+	if(GCSettings.hideoverscan >= 2)
+		borderwidth = 8;
 
 	u16 *texture = (unsigned short *)texturemem + (borderheight << 8) + (borderwidth << 2);
 	u8 *src1 = XBuf + (borderheight << 8) + borderwidth;
