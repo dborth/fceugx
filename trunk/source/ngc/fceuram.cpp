@@ -33,7 +33,6 @@ extern "C" {
 #include "fceu.h"
 #include "ppu.h"
 #include "cart.h"
-#include "memory.h"
 #include "x6502.h"
 #include "general.h"
 extern u32 iNESGameCRC32;

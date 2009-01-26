@@ -18,8 +18,7 @@ include $(DEVKITPPC)/wii_rules
 TARGET		:=	fceugx_wii
 TARGETDIR   :=  executables
 BUILD		:=	build_wii
-SOURCES		:=	source/fceultra source/fceultra/boards \
-				source/fceultra/drivers/common source/fceultra/input \
+SOURCES		:=	source/fceultra source/fceultra/boards source/fceultra/input \
 				source/fceultra/mappers source/fceultra/mbshare \
 				source/ngc source/sz source/unzip
 INCLUDES	:=	source/fceultra source/ngc source/unzip
@@ -28,7 +27,7 @@ INCLUDES	:=	source/fceultra source/ngc source/unzip
 # options for code generation
 #---------------------------------------------------------------------------------
 CFLAGS  = -g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNGC -DWII_DVD \
-		-DHAVE_ASPRINTF -DSTDC -DFCEU_VERSION_NUMERIC=9812 -DFRAMESKIP \
+		-DFCEU_VERSION_NUMERIC=9812 -DFRAMESKIP \
 	    -D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 	    -DLANG_$(LANG)
 CXXFLAGS	=	$(CFLAGS)
