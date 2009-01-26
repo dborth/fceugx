@@ -29,7 +29,6 @@
 #include "fceu.h"
 #include "general.h"
 #include "cart.h"
-#include "memory.h"
 
 static uint8 *CheatRPtrs[64];
 

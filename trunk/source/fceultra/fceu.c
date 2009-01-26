@@ -31,7 +31,6 @@
 #include	"netplay.h"
 #include	"general.h"
 #include	"endian.h"
-#include        "memory.h"
 
 #include	"cart.h"
 #include	"nsf.h"
@@ -41,7 +40,6 @@
 #include        "cheat.h"
 #include	"palette.h"
 #include	"state.h"
-#include	"movie.h"
 #include        "video.h"
 #include	"input.h"
 #include	"file.h"
@@ -74,9 +72,9 @@ static DECLFR(ANull)
 
 int AllocGenieRW(void)
 {
- if(!(AReadG=(readfunc *)FCEU_malloc(0x8000*sizeof(readfunc))))
+ if(!(AReadG=(readfunc *)malloc(0x8000*sizeof(readfunc))))
   return 0;
- if(!(BWriteG=(writefunc *)FCEU_malloc(0x8000*sizeof(writefunc))))
+ if(!(BWriteG=(writefunc *)malloc(0x8000*sizeof(writefunc))))
   return 0;
  RWWrap=1;
  return 1;
@@ -279,7 +277,6 @@ FCEUGI *FCEUI_LoadGame(const char *name)
 
         PowerNES();
 	FCEUSS_CheckStates();
-	FCEUMOV_CheckMovies();
 
         if(FCEUGameInfo->type!=GIT_NSF)
         {
@@ -340,7 +337,6 @@ void FCEUI_CloseGame(void)
 
 void ResetNES(void)
 {
-        FCEUMOV_AddCommand(FCEUNPCMD_RESET);
         if(!FCEUGameInfo) return;
         GameInterface(GI_RESETM2);
         FCEUSND_Reset();
@@ -367,8 +363,7 @@ void hand(X6502 *X, int type, unsigned int A)
 
 void PowerNES(void) 
 {
-        FCEUMOV_AddCommand(FCEUNPCMD_POWER);
-        if(!FCEUGameInfo) return;
+    if(!FCEUGameInfo) return;
 
 	FCEU_CheatResetRAM();
 	FCEU_CheatAddRAM(2,0,RAM);

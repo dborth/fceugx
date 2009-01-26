@@ -26,7 +26,6 @@
 #include "fceu.h"
 #include "sound.h"
 #include "netplay.h"
-#include "movie.h"
 #include "state.h"
 
 #include "input.h"
@@ -214,7 +213,6 @@ void FCEU_UpdateInput(void)
 	 if(coinon) coinon--;
 
         if(FCEUnetplay) NetplayUpdate(joy);
-	FCEUMOV_AddJoy(joy);
 
         if(FCEUGameInfo->type==GIT_VSUNI)
 	 FCEU_VSUniSwap(&joy[0],&joy[1]);
@@ -394,10 +392,7 @@ void FCEU_QSimpleCommand(int cmd)
   FCEUNET_SendCommand(cmd, 0);
  else
  {
-  if(!FCEUMOV_IsPlaying())
    FCEU_DoSimpleCommand(cmd);
-  else
-   FCEUMOV_AddCommand(cmd);
  }
 }
 

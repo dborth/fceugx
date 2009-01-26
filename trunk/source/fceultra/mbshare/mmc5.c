@@ -685,7 +685,7 @@ void NSFMMC5_Init(void)
 {
   memset(&MMC5Sound,0,sizeof(MMC5Sound));
   mul[0]=mul[1]=0;
-  ExRAM=(uint8*)FCEU_gmalloc(1024);
+  ExRAM=(uint8*)malloc(1024);
   Mapper5_ESI();
   SetWriteHandler(0x5c00,0x5fef,MMC5_ExRAMWr);
   SetReadHandler(0x5c00,0x5fef,MMC5_ExRAMRd);
@@ -697,7 +697,7 @@ void NSFMMC5_Init(void)
 
 void NSFMMC5_Close(void)
 {
- FCEU_gfree(ExRAM);
+ free(ExRAM);
  ExRAM=0;
 }
 
@@ -763,13 +763,13 @@ static void GenMMC5_Init(CartInfo *info, int wsize, int battery)
 {
  if(wsize)
  {
-  WRAM=(uint8*)FCEU_gmalloc(wsize*1024);
+  WRAM=(uint8*)malloc(wsize*1024);
   SetupCartPRGMapping(0x10,WRAM,wsize*1024,1);
   AddExState(WRAM, wsize*1024, 0, "WRAM");
  }
 
- MMC5fill=(uint8*)FCEU_gmalloc(1024);
- ExRAM=(uint8*)FCEU_gmalloc(1024);
+ MMC5fill=(uint8*)malloc(1024);
+ ExRAM=(uint8*)malloc(1024);
 
  AddExState(MMC5_StateRegs, ~0, 0, 0);
  AddExState(WRAM, wsize*1024, 0, "WRAM");

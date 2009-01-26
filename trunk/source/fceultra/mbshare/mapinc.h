@@ -8,3 +8,4 @@
 #include	"../state.h"
 #include	"../cheat.h"
 #include	<string.h>
+#include <malloc.h>

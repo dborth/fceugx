@@ -30,7 +30,6 @@
 #include "sound.h"
 #include "nsf.h"
 #include "general.h"
-#include "memory.h"
 #include "file.h"
 #include "fds.h"
 #include "cart.h"
@@ -161,7 +160,7 @@ int NSFLoad(FCEUFILE *fp)
   NSFMaxBank=((NSFSize+(LoadAddr&0xfff)+4095)/4096);
   NSFMaxBank=uppow2(NSFMaxBank);
 
-  if(!(NSFDATA=(uint8 *)FCEU_malloc(NSFMaxBank*4096)))
+  if(!(NSFDATA=(uint8 *)malloc(NSFMaxBank*4096)))
    return 0;
 
   FCEU_fseek(fp,0x80,SEEK_SET);
@@ -218,9 +217,9 @@ int NSFLoad(FCEUFILE *fp)
  FCEU_printf(" Starting song:  %d / %d\n\n",NSFHeader.StartingSong,NSFHeader.TotalSongs);
 
  if(NSFHeader.SoundChip&4)
-  ExWRAM=FCEU_gmalloc(32768+8192);
+  ExWRAM=malloc(32768+8192);
  else
-  ExWRAM=FCEU_gmalloc(8192);
+  ExWRAM=malloc(8192);
  return 1;
 }
 
@@ -558,8 +557,8 @@ int FCEUI_NSFChange(int amount)
 /* Returns total songs */
 int FCEUI_NSFGetInfo(uint8 *name, uint8 *artist, uint8 *copyright, int maxlen)
 {
- strncpy(name,NSFHeader.SongName,maxlen);
- strncpy(artist,NSFHeader.Artist,maxlen);
- strncpy(copyright,NSFHeader.Copyright,maxlen);
+ strncpy((char *)name,(char *)NSFHeader.SongName,maxlen);
+ strncpy((char *)artist,(char *)NSFHeader.Artist,maxlen);
+ strncpy((char *)copyright,(char *)NSFHeader.Copyright,maxlen);
  return(NSFHeader.TotalSongs);
 }

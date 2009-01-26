@@ -308,9 +308,9 @@ static void GenMMC1Power(void)
 static void GenMMC1Close(void)
 {
  if(CHRRAM)
-  FCEU_gfree(CHRRAM);
+  free(CHRRAM);
  if(WRAM)
-  FCEU_gfree(WRAM);
+  free(WRAM);
  CHRRAM=WRAM=NULL;
 } 
 
@@ -327,7 +327,7 @@ static void GenMMC1Init(CartInfo *info, int prg, int chr, int wram, int battery)
 
  if(wram) 
  { 
-  WRAM=(uint8*)FCEU_gmalloc(wram*1024);
+  WRAM=(uint8*)malloc(wram*1024);
   mmc1opts|=1;
   if(wram>8) mmc1opts|=4;
   SetupCartPRGMapping(0x10,WRAM,wram*1024,1);
@@ -343,7 +343,7 @@ static void GenMMC1Init(CartInfo *info, int prg, int chr, int wram, int battery)
  }
  if(!chr)
  {
-  CHRRAM=(uint8*)FCEU_gmalloc(8192);
+  CHRRAM=(uint8*)malloc(8192);
   SetupCartCHRMapping(0, CHRRAM, 8192, 1);
   AddExState(CHRRAM, 8192, 0, "CHRR");
  }

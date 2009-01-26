@@ -29,12 +29,15 @@
 
 #include "types.h"
 #include "netplay.h"
-#include        "fceu.h"
+#include "fceu.h"
 #include "general.h"
 #include "state.h"
 #include "cheat.h"
 #include "input.h"
 #include "endian.h"
+
+extern int FCEUD_SendData(void *data, uint32 len);
+extern void FCEUD_NetworkClose(void);
 
 int FCEUnetplay=0;
 
@@ -99,7 +102,7 @@ void FCEUI_NetplayText(uint8 *text)
 {
  uint32 len;
 
- len = strlen(text);
+ len = strlen((char *)text);
 
  if(!FCEUNET_SendCommand(FCEUNPCMD_TEXT,len)) return;
 
@@ -124,8 +127,8 @@ int FCEUNET_SendFile(uint8 cmd, char *fn)
  fclose(fp);
 
  cbuf = malloc(4 + len + len / 1000 + 12);
- FCEU_en32lsb(cbuf, len);
- compress2(cbuf + 4, &clen, buf, len, 7);
+ FCEU_en32lsb((uint8 *)cbuf, len);
+ compress2((Bytef *)(cbuf + 4), &clen, (const Bytef *)buf, len, 7);
  free(buf);
 
  //printf("Sending file: %s, %d, %d\n",fn,len,clen);
@@ -150,6 +153,7 @@ int FCEUNET_SendFile(uint8 cmd, char *fn)
  return(1);
 }
 
+#ifdef NETWORK
 static FILE *FetchFile(uint32 remlen)
 {
 				uint32 clen = remlen;
@@ -209,6 +213,7 @@ static FILE *FetchFile(uint32 remlen)
 				free(fn);
 				return(0);
 }
+#endif
 
 void NetplayUpdate(uint8 *joyp)
 {

@@ -29,7 +29,6 @@
 #include "types.h"
 #include "file.h"
 #include "endian.h"
-#include "memory.h"
 #include "driver.h"
 #include "general.h"
 
@@ -127,7 +126,7 @@ static MEMWRAP *MakeMemWrap(void *tz, int type)
 {
  MEMWRAP *tmp;
 
- if(!(tmp=(MEMWRAP *)FCEU_malloc(sizeof(MEMWRAP))))
+ if(!(tmp=(MEMWRAP *)malloc(sizeof(MEMWRAP))))
   goto doret;
  tmp->location=0;
 
@@ -136,7 +135,7 @@ static MEMWRAP *MakeMemWrap(void *tz, int type)
   fseek((FILE *)tz,0,SEEK_END);
   tmp->size=ftell((FILE *)tz);
   fseek((FILE *)tz,0,SEEK_SET);
-  if(!(tmp->data=(uint8*)FCEU_malloc(tmp->size)))
+  if(!(tmp->data=(uint8*)malloc(tmp->size)))
   {
    free(tmp);
    tmp=0;
@@ -150,7 +149,7 @@ static MEMWRAP *MakeMemWrap(void *tz, int type)
      but I can't get to the info with the zlib interface(?). */
   for(tmp->size=0; gzgetc(tz) != EOF; tmp->size++);
   gzseek(tz,0,SEEK_SET);
-  if(!(tmp->data=(uint8 *)FCEU_malloc(tmp->size)))
+  if(!(tmp->data=(uint8 *)malloc(tmp->size)))
   {
    free(tmp);
    tmp=0;
@@ -164,7 +163,7 @@ static MEMWRAP *MakeMemWrap(void *tz, int type)
   unzGetCurrentFileInfo(tz,&ufo,0,0,0,0,0,0);  
 
   tmp->size=ufo.uncompressed_size;
-  if(!(tmp->data=(uint8 *)FCEU_malloc(ufo.uncompressed_size)))
+  if(!(tmp->data=(uint8 *)malloc(ufo.uncompressed_size)))
   {
    free(tmp);
    tmp=0;
