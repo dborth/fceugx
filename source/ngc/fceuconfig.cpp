@@ -37,6 +37,9 @@ DefaultSettings ()
 	GCSettings.widescreen = 0; // no aspect ratio correction
 	GCSettings.hideoverscan = 2; // hide both horizontal and vertical
 
+	GCSettings.xshift = 0;	// video shift
+	GCSettings.yshift = 0;
+
 	GCSettings.LoadMethod = METHOD_AUTO; // Auto, SD, DVD, USB, Network (SMB)
 	GCSettings.SaveMethod = METHOD_AUTO; // Auto, SD, Memory Card Slot A, Memory Card Slot B, USB, Network (SMB)
 	sprintf (GCSettings.LoadFolder,"fceugx/roms"); // Path to game files
