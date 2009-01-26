@@ -303,9 +303,9 @@ void GenMMC3Power(void)
 static void GenMMC3Close(void)
 {
  if(CHRRAM)
-    FCEU_gfree(CHRRAM);
+    free(CHRRAM);
  if(WRAM)
-    FCEU_gfree(WRAM);
+    free(WRAM);
  CHRRAM=WRAM=NULL;
 }
 
@@ -333,7 +333,7 @@ void GenMMC3_Init(CartInfo *info, int prg, int chr, int wram, int battery)
  if(wram)
  {
   mmc3opts|=1;
-  WRAM=(uint8*)FCEU_gmalloc(wrams);
+  WRAM=(uint8*)malloc(wrams);
   AddExState(WRAM, wrams, 0, "WRAM");
  }
 
@@ -757,7 +757,7 @@ void Mapper74_Init(CartInfo *info)
  GenMMC3_Init(info, 512, 256, 8, info->battery);
  cwrap=M74CW;
  CHRRAMSize=2048;
- CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSize);
+ CHRRAM=(uint8*)malloc(CHRRAMSize);
  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
  AddExState(CHRRAM, CHRRAMSize, 0, "CHRR");
 }
@@ -902,7 +902,7 @@ void Mapper116_Init(CartInfo *info)
  GenMMC3_Init(info, 128, 512, 0, 0);
  cwrap=M116CW;
  info->Power=M116Power;
- CHRRAM = (uint8*)FCEU_gmalloc(8192);
+ CHRRAM = (uint8*)malloc(8192);
  SetupCartCHRMapping(0x10, CHRRAM, 8192, 1);
  AddExState(EXPREGS, 4, 0, "EXPR");
 }
@@ -949,7 +949,7 @@ void Mapper119_Init(CartInfo *info)
  GenMMC3_Init(info, 512, 64, 0, 0);
  cwrap=TQWRAP;
  CHRRAMSize=8192;
- CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSize);
+ CHRRAM=(uint8*)malloc(CHRRAMSize);
  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
 }
 
@@ -1015,7 +1015,7 @@ void Mapper165_Init(CartInfo *info)
  PPU_hook=M165PPU;
  info->Power=M165Power;
  CHRRAMSize = 4096;
- CHRRAM = (uint8*)FCEU_gmalloc(CHRRAMSize);
+ CHRRAM = (uint8*)malloc(CHRRAMSize);
  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
  AddExState(CHRRAM, CHRRAMSize, 0, "CHRR");
  AddExState(EXPREGS, 4, 0, "EXPR");
@@ -1068,7 +1068,7 @@ void Mapper191_Init(CartInfo *info)
  GenMMC3_Init(info, 256, 256, 8, info->battery);
  cwrap=M191CW;
  CHRRAMSize=2048;
- CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSize);
+ CHRRAM=(uint8*)malloc(CHRRAMSize);
  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
  AddExState(CHRRAM, CHRRAMSize, 0, "CHRR");
 }
@@ -1088,7 +1088,7 @@ void Mapper192_Init(CartInfo *info)
  GenMMC3_Init(info, 512, 256, 8, info->battery);
  cwrap=M192CW;
  CHRRAMSize=4096;
- CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSize);
+ CHRRAM=(uint8*)malloc(CHRRAMSize);
  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
  AddExState(CHRRAM, CHRRAMSize, 0, "CHRR");
 }
@@ -1108,7 +1108,7 @@ void Mapper194_Init(CartInfo *info)
  GenMMC3_Init(info, 512, 256, 8, info->battery);
  cwrap=M194CW;
  CHRRAMSize=2048;
- CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSize);
+ CHRRAM=(uint8*)malloc(CHRRAMSize);
  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
  AddExState(CHRRAM, CHRRAMSize, 0, "CHRR");
 }
@@ -1136,7 +1136,7 @@ static void M195Power(void)
 static void M195Close(void)
 {
   if(wramtw)
-    FCEU_gfree(wramtw);
+    free(wramtw);
   wramtw=NULL;
 }
 
@@ -1147,10 +1147,10 @@ void Mapper195_Init(CartInfo *info)
  info->Power=M195Power;
  info->Close=M195Close;
  CHRRAMSize=4096;
- CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSize);
+ CHRRAM=(uint8*)malloc(CHRRAMSize);
  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
  wramsize=4096;
- wramtw=(uint8*)FCEU_gmalloc(wramsize);
+ wramtw=(uint8*)malloc(wramsize);
  SetupCartPRGMapping(0x10, wramtw, wramsize, 1);
  AddExState(CHRRAM, CHRRAMSize, 0, "CHRR");
  AddExState(wramtw, wramsize, 0, "WRAMTW");
@@ -1184,7 +1184,7 @@ void Mapper198_Init(CartInfo *info)
  info->Power=M195Power;
  info->Close=M195Close;
  wramsize=4096;
- wramtw=(uint8*)FCEU_gmalloc(wramsize);
+ wramtw=(uint8*)malloc(wramsize);
  SetupCartPRGMapping(0x10, wramtw, wramsize, 1);
  AddExState(wramtw, wramsize, 0, "WRAMTW");
 }
@@ -1603,7 +1603,7 @@ void TQROM_Init(CartInfo *info)
  GenMMC3_Init(info, 512, 64, 0, 0);
  cwrap=TQWRAP;
  CHRRAMSize=8192;
- CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSize);
+ CHRRAM=(uint8*)malloc(CHRRAMSize);
  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
 }
 

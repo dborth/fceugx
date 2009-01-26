@@ -88,7 +88,7 @@ void Mapper199_Init(CartInfo *info)
   mwrap=M199MW;
   info->Power=M199Power;
   int CHRRAMSize=1024*8;
-  CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSize);
+  CHRRAM=(uint8*)malloc(CHRRAMSize);
   SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
   AddExState(CHRRAM, CHRRAMSize, 0, "CHRR");
   AddExState(EXPREGS, 4, 0, "EXPR");

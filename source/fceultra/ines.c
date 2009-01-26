@@ -34,7 +34,6 @@
 #include "general.h"
 #include "state.h"
 #include "file.h"
-#include "memory.h"
 #include "crc32.h"
 #include "md5.h"
 #include "cheat.h"
@@ -110,7 +109,7 @@ static void iNESGI(int h)
 	 	 if(ROM) {free(ROM);ROM=0;}
 		 if(VROM) {free(VROM);VROM=0;}
 	         if(MapClose) MapClose();
-		 if(trainerpoo) {FCEU_gfree(trainerpoo);trainerpoo=0;}
+		 if(trainerpoo) {free(trainerpoo);trainerpoo=0;}
 	        }
         	break;
      }
@@ -612,11 +611,11 @@ int iNESLoad(const char *name, FCEUFILE *fp)
 
 	if(head.ROM_type&8) Mirroring=2;
 
-        if(!(ROM=(uint8 *)FCEU_malloc(ROM_size<<14)))
+        if(!(ROM=(uint8 *)malloc(ROM_size<<14)))
 	 return 0;
 
         if (VROM_size)
-         if(!(VROM=(uint8 *)FCEU_malloc(VROM_size<<13)))
+         if(!(VROM=(uint8 *)malloc(VROM_size<<13)))
 	 {
 	  free(ROM);
 	  return 0;
@@ -626,7 +625,7 @@ int iNESLoad(const char *name, FCEUFILE *fp)
         if(VROM_size) memset(VROM,0xFF,VROM_size<<13);
         if(head.ROM_type&4) 	/* Trainer */
 	{
-	 trainerpoo=(uint8 *)FCEU_gmalloc(512);
+	 trainerpoo=(uint8 *)malloc(512);
  	 FCEU_fread(trainerpoo,512,1,fp);
 	}
 
@@ -846,10 +845,10 @@ void (*MapInitTab[256])(void)=
 	0,Mapper2_init,Mapper3_init,0,
 	0,Mapper6_init,Mapper7_init,Mapper8_init,
 	Mapper9_init,Mapper10_init,0,0,
-	Mapper13_init,0,0,Mapper16_init,
+	Mapper13_init,0,Mapper15_init,Mapper16_init,
 	Mapper17_init,Mapper18_init,0,0,
 	Mapper21_init,Mapper22_init,Mapper23_init,Mapper24_init,
-	Mapper25_init,Mapper26_init,0,0,
+	Mapper25_init,Mapper26_init,Mapper27_init,0,
 	0,0,0,Mapper32_init,
 	Mapper33_init,Mapper34_init,0,0,
 	0,0,0,Mapper40_init,
@@ -874,7 +873,7 @@ void (*MapInitTab[256])(void)=
 	0,0,0,0,0,0,0,0,
 	0,0,Mapper151_init,0,Mapper153_init,Mapper154_init,0,Mapper156_init,
 	Mapper157_init,Mapper158_init,Mapper159_init,0,0,0,0,0,
-	0,0,0,0,0,0,0,0,
+	0,Mapper166_init,Mapper167_init,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,
 	0,0,0,0,Mapper185_init,0,0,0,
 	Mapper189_init,0,0,0,Mapper193_init,0,0,0,
@@ -883,7 +882,7 @@ void (*MapInitTab[256])(void)=
 	0,0,0,0,0,0,0,0,
 	0,0,0,0,Mapper225_init,Mapper226_init,Mapper227_init,Mapper228_init,
 	Mapper229_init,Mapper230_init,Mapper231_init,Mapper232_init,0,Mapper234_init,Mapper235_init,0,
-	0,0,0,0,Mapper241_init,0,0,Mapper244_init,
+	0,0,0,0,Mapper241_init,Mapper242_init,0,Mapper244_init,
 	0,Mapper246_init,0,Mapper248_init,0,0,0,0,0,0,Mapper255_init
 };
 
@@ -1058,14 +1057,14 @@ static BMAPPING bmap[] = {
 		{164,  Mapper164_Init},
 		{163,  Mapper163_Init},
 		//15.c
-		{15,  Mapper15_init},
+		//{15,  Mapper15_init},
 		//subor.c //warning message
-		{166,  Mapper166_init},
-		{167,  Mapper167_init},
+		//{166,  Mapper166_init},
+		//{167,  Mapper167_init},
 		//27.c
-		{27,  Mapper27_init},
+		//{27,  Mapper27_init},
 		//242.c
-		{242,  Mapper242_init},
+		//{242,  Mapper242_init},
 		//252.c
 		{252,  Mapper252_Init},
 

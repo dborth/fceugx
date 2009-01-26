@@ -13,7 +13,7 @@ fceustr *fceustr_create(const char *str)
  ret=malloc(sizeof(fceustr));
  
  ret->data=malloc(strlen(str)+1);
- strcpy(ret->data,str);
+ strcpy((char *)ret->data,str);
 
  ret->len=strlen(str);
 

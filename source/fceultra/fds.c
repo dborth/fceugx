@@ -30,7 +30,6 @@
 #include "general.h"
 #include "state.h"
 #include "file.h"
-#include "memory.h"
 #include "cart.h"
 #include "md5.h"
 #include "netplay.h"
@@ -702,7 +701,7 @@ static int SubLoad(FCEUFILE *fp)
 
  for(x=0;x<TotalSides;x++)
  {
-  diskdata[x]=(uint8 *)FCEU_malloc(65500);
+  diskdata[x]=(uint8 *)malloc(65500);
   if(!diskdata[x])
   {
    int zol;
@@ -786,7 +785,7 @@ int FDSLoad(const char *name, FCEUFILE *fp)
   int x;
   for(x=0;x<TotalSides;x++)
   {
-   diskdatao[x]=(uint8 *)FCEU_malloc(65500);
+   diskdatao[x]=(uint8 *)malloc(65500);
    memcpy(diskdatao[x],diskdata[x],65500);
   }
 /* if((tp=FCEU_fopen(fn,0,"rb",0)))

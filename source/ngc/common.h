@@ -10,7 +10,6 @@
  ****************************************************************************/
 
 #include "driver.h"
-#include "drivers/common/config.h"
 
 /* Message logging(non-netplay messages, usually) for all. */
 extern int NoWaiting;

@@ -34,7 +34,6 @@
 #include "fds.h"
 #include "general.h"
 #include "state.h"
-#include "movie.h"
 #include "memory.h"
 #include "ppu.h"
 #include "netplay.h"
@@ -398,7 +397,7 @@ void AddExState(void *v, uint32 s, int type, char *desc)
 {
  if(desc)
  {
-  SFMDATA[SFEXINDEX].desc=(char *)FCEU_malloc(5);
+  SFMDATA[SFEXINDEX].desc=(char *)malloc(5);
   strcpy(SFMDATA[SFEXINDEX].desc,desc);
  }
  else
@@ -429,8 +428,6 @@ void FCEUI_SaveState(char *fname)
 void FCEUI_LoadState(char *fname)
 {
  StateShow=0;
-
- FCEUMOV_Stop();
 
  /* For network play, be load the state locally, and then save the state to a temporary file,
     and send that.  This insures that if an older state is loaded that is missing some

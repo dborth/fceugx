@@ -27,7 +27,6 @@
 #include "ppu.h"
 
 #include "cart.h"
-#include "memory.h"
 #include "x6502.h"
 
 #include "general.h"
@@ -442,7 +441,7 @@ void OpenGenie(void)
  {
   char *fn;
 
-  if(!(GENIEROM=(uint8 *)FCEU_malloc(4096+1024))) return;
+  if(!(GENIEROM=(uint8 *)malloc(4096+1024))) return;
 
   fn=FCEU_MakeFName(FCEUMKF_GGROM,0,0);
   fp=FCEUD_UTF8fopen(fn,"rb");

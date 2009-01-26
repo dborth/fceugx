@@ -159,7 +159,7 @@ static int NAME(FCEUFILE *fp)
  if(!FCEUGameInfo->name)
  {
   FCEUGameInfo->name=malloc(strlen(namebuf)+1);
-  strcpy(FCEUGameInfo->name,namebuf);
+  strcpy((char *)FCEUGameInfo->name,namebuf);
  }
  return(1);
 }
@@ -256,7 +256,7 @@ static int LoadPRG(FCEUFILE *fp)
  if(malloced[z])
   free(malloced[z]);
  t=FixRomSize(uchead.info,2048);
- if(!(malloced[z]=(uint8 *)FCEU_malloc(t)))
+ if(!(malloced[z]=(uint8 *)malloc(t)))
   return(0);
  mallocedsizes[z]=t;
  memset(malloced[z]+uchead.info,0xFF,t-uchead.info);
@@ -274,7 +274,7 @@ static int LoadPRG(FCEUFILE *fp)
 
 static int SetBoardName(FCEUFILE *fp)
 {
- if(!(boardname=(uint8 *)FCEU_malloc(uchead.info+1)))
+ if(!(boardname=(uint8 *)malloc(uchead.info+1)))
   return(0);
  FCEU_fread(boardname,1,uchead.info,fp);
  boardname[uchead.info]=0;
@@ -295,7 +295,7 @@ static int LoadCHR(FCEUFILE *fp)
  if(malloced[16+z])
   free(malloced[16+z]);
  t=FixRomSize(uchead.info,8192);
- if(!(malloced[16+z]=(uint8 *)FCEU_malloc(t)))
+ if(!(malloced[16+z]=(uint8 *)malloc(t)))
   return(0);
  mallocedsizes[16+z]=t;
  memset(malloced[16+z]+uchead.info,0xFF,t-uchead.info);
@@ -450,7 +450,7 @@ static int InitializeBoard(void)
     {
      if(!malloced[16] && (bmap[x].flags&BMCFLAG_CHRROK))
      {
-      if((UNIFchrrama=(uint8 *)FCEU_malloc(8192)))
+      if((UNIFchrrama=(uint8 *)malloc(8192)))
       {
        SetupCartCHRMapping(0,UNIFchrrama,8192,1);
        AddExState(UNIFchrrama, 8192, 0,"CHRR");

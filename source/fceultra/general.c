@@ -32,7 +32,6 @@
 
 #include "general.h"
 #include "state.h"
-#include "movie.h"
 
 #include "driver.h"
 
@@ -60,113 +59,12 @@ void FCEUI_SetDirOverride(int which, char *n)
  {
   if(which==FCEUIOD_STATE)
    FCEUSS_CheckStates();
-  else if(which == FCEUIOD_MOVIE)
-   FCEUMOV_CheckMovies();
  }
 }
-
-#ifndef HAVE_ASPRINTF
-static int asprintf(char **strp, const char *fmt, ...)
-{
- va_list ap;
- int ret;
-
- va_start(ap,fmt);
- if(!(*strp=malloc(2048)))
-  return(0);
- ret=vsnprintf(*strp,2048,fmt,ap);
- va_end(ap);
- return(ret);
-}
-#endif
 
 char *FCEU_MakeFName(int type, int id1, char *cd1)
 {
- char *ret=0;
-
-/*** REMOVED GC V1.0
- struct stat tmpstat;
-
- switch(type)
- {
-  case FCEUMKF_NPTEMP: asprintf(&ret,"%s"PSS"m590plqd94fo.tmp",BaseDirectory);break;
-  case FCEUMKF_MOVIE:if(odirs[FCEUIOD_STATE])
-                      asprintf(&ret,"%s"PSS"%s.%d.fcm",odirs[FCEUIOD_STATE],FileBase,id1);
-                     else
-                      asprintf(&ret,"%s"PSS"fcs"PSS"%s.%d.fcm",BaseDirectory,FileBase,id1);
-                     if(stat(ret,&tmpstat)==-1)
-                     {  
-                      if(odirs[FCEUIOD_STATE])
-                       asprintf(&ret,"%s"PSS"%s.%s.%d.fcm",odirs[FCEUIOD_STATE],FileBase,md5_asciistr(FCEUGameInfo->MD5),id1);
-                      else
-                       asprintf(&ret,"%s"PSS"fcs"PSS"%s.%s.%d.fcm",BaseDirectory,FileBase,md5_asciistr(FCEUGameInfo->MD5),id1);
-                     }
-		     break;
-  case FCEUMKF_STATE:if(odirs[FCEUIOD_STATE])
-                      asprintf(&ret,"%s"PSS"%s.fc%d",odirs[FCEUIOD_STATE],FileBase,id1);
-                     else
-                      asprintf(&ret,"%s"PSS"fcs"PSS"%s.fc%d",BaseDirectory,FileBase,id1);
-		     if(stat(ret,&tmpstat)==-1)
-		     {
-		      if(odirs[FCEUIOD_STATE])                                  
-                       asprintf(&ret,"%s"PSS"%s.%s.fc%d",odirs[FCEUIOD_STATE],FileBase,md5_asciistr(FCEUGameInfo->MD5),id1);
-                      else
-                       asprintf(&ret,"%s"PSS"fcs"PSS"%s.%s.fc%d",BaseDirectory,FileBase,md5_asciistr(FCEUGameInfo->MD5),id1);
-		     }
-                     break;
-  case FCEUMKF_SNAP:
-		    if(FSettings.SnapName)
-		    {
-                     if(odirs[FCEUIOD_SNAPS])
-                      asprintf(&ret,"%s"PSS"%s-%d.%s",odirs[FCEUIOD_SNAPS],FileBase,id1,cd1);
-                     else
-                      asprintf(&ret,"%s"PSS"snaps"PSS"%s-%d.%s",BaseDirectory,FileBase,id1,cd1);
-		    }
-		    else
-		    {
-		     if(odirs[FCEUIOD_SNAPS])
-                      asprintf(&ret,"%s"PSS"%d.%s",odirs[FCEUIOD_SNAPS],id1,cd1);
-                     else
-                      asprintf(&ret,"%s"PSS"snaps"PSS"%d.%s",BaseDirectory,id1,cd1);
-		    }
-                    break;
-  case FCEUMKF_FDS:if(odirs[FCEUIOD_NV])
-		    asprintf(&ret,"%s"PSS"%s.%s.fds",odirs[FCEUIOD_NV],FileBase,md5_asciistr(FCEUGameInfo->MD5));
-		   else
-	 	    asprintf(&ret,"%s"PSS"sav"PSS"%s.%s.fds",BaseDirectory,FileBase,md5_asciistr(FCEUGameInfo->MD5));
-		   break;
-  case FCEUMKF_SAV:if(odirs[FCEUIOD_NV])
-                    asprintf(&ret,"%s"PSS"%s.%s",odirs[FCEUIOD_NV],FileBase,cd1);
-	           else
-                    asprintf(&ret,"%s"PSS"sav"PSS"%s.%s",BaseDirectory,FileBase,cd1);
-                   if(stat(ret,&tmpstat)==-1)
-                   {     
-                    if(odirs[FCEUIOD_NV])
-                     asprintf(&ret,"%s"PSS"%s.%s.%s",odirs[FCEUIOD_NV],FileBase,md5_asciistr(FCEUGameInfo->MD5),cd1);
-                    else
-                     asprintf(&ret,"%s"PSS"sav"PSS"%s.%s.%s",BaseDirectory,FileBase,md5_asciistr(FCEUGameInfo->MD5),cd1);
-                   }
-                   break;
-  case FCEUMKF_CHEAT:
-                     if(odirs[FCEUIOD_CHEATS])
-                      asprintf(&ret,"%s"PSS"%s.cht",odirs[FCEUIOD_CHEATS],FileBase);
-                     else
-                      asprintf(&ret,"%s"PSS"cheats"PSS"%s.cht",BaseDirectory,FileBase);
-                     break;
-  case FCEUMKF_IPS:  asprintf(&ret,"%s"PSS"%s%s.ips",FileBaseDirectory,FileBase,FileExt);
-                     break;
-  case FCEUMKF_GGROM:asprintf(&ret,"%s"PSS"gg.rom",BaseDirectory);break;
-  case FCEUMKF_FDSROM:asprintf(&ret,"%s"PSS"disksys.rom",BaseDirectory);break;
-  case FCEUMKF_PALETTE:
-                       if(odirs[FCEUIOD_MISC])
-                        asprintf(&ret,"%s"PSS"%s.pal",odirs[FCEUIOD_MISC],FileBase);
-                       else
-                        asprintf(&ret,"%s"PSS"gameinfo"PSS"%s.pal",BaseDirectory,FileBase);
-                       break;
- }
-
- REMOVED GC V1.0 ***/
- return(ret);
+	return NULL;
 }
 
 void GetFileBase(const char *f)

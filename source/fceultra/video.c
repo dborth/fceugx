@@ -31,7 +31,6 @@
 #include "memory.h"
 #include "crc32.h"
 #include "state.h"
-#include "movie.h"
 #include "palette.h"
 #include "nsf.h"
 #include "input.h"
@@ -54,7 +53,7 @@ int FCEU_InitVirtualVideo(void)
  if(!XBuf)		/* Some driver code may allocate XBuf externally. */
 			/* 256 bytes per scanline, * 240 scanline maximum, +8 for alignment,
 			*/
- if(!(XBuf= (uint8*) (FCEU_malloc(256 * 256 + 8))))
+ if(!(XBuf= (uint8*) (malloc(256 * 256 + 8))))
   return 0;
  xbsave=XBuf;
 
@@ -86,7 +85,6 @@ void FCEU_PutImageDummy(void)
  {
   FCEU_DrawNTSCControlBars(XBuf);
   FCEU_DrawSaveStates(XBuf);
-  FCEU_DrawMovies(XBuf);
  }
  if(howlong) howlong--; /* DrawMessage() */
 }
@@ -135,7 +133,6 @@ void FCEU_PutImage(void)
          if(FCEUGameInfo->type==GIT_VSUNI)
           FCEU_VSUniDraw(XBuf);
 	 FCEU_DrawSaveStates(XBuf);
-	 FCEU_DrawMovies(XBuf);
          FCEU_DrawNTSCControlBars(XBuf);
         }
         DrawMessage();
@@ -204,7 +201,7 @@ int SaveSnapshot(void)
  uint8 *compmem=NULL;
  uLongf compmemsize=totallines*263+12;
 
- if(!(compmem=(uint8 *)FCEU_malloc(compmemsize)))
+ if(!(compmem=(uint8 *)malloc(compmemsize)))
   return 0;
 
  for(u=lastu;u<99999;u++)
