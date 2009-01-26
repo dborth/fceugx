@@ -556,7 +556,9 @@ void GetJoy()
 	}
 
     // request to go back to menu
-    if ((gc_px < -70) || ((jp & PAD_BUTTON_START) && (jp & PAD_BUTTON_A))
+    if ((gc_px < -70) ||
+       ((jp & PAD_BUTTON_START) && (jp & PAD_BUTTON_A) &&
+        (jp & PAD_BUTTON_B) && (jp & PAD_TRIGGER_Z))
     #ifdef HW_RVL
     		 || (wm_pb & WPAD_BUTTON_HOME)
     		 || (wm_pb & WPAD_CLASSIC_BUTTON_HOME)

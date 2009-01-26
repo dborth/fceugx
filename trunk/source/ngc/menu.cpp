@@ -111,9 +111,11 @@ VideoOptions ()
 		if (GCSettings.hideoverscan == 0)
 			sprintf (videomenu[2], "Video Cropping Off");
 		if (GCSettings.hideoverscan == 1)
-			sprintf (videomenu[2], "Video Cropping Hide Vertical");
+			sprintf (videomenu[2], "Video Cropping Vertical");
 		if (GCSettings.hideoverscan == 2)
-			sprintf (videomenu[2], "Video Cropping Hide All");
+			sprintf (videomenu[2], "Video Cropping Horizontal");
+		if (GCSettings.hideoverscan == 3)
+			sprintf (videomenu[2], "Video Cropping Both");
 
 		sprintf (videomenu[3], "Palette - %s",
 			GCSettings.currpal ? palettes[GCSettings.currpal-1].name : "Default");
@@ -142,7 +144,7 @@ VideoOptions ()
 
 			case 2:
 				GCSettings.hideoverscan++;
-				if (GCSettings.hideoverscan > 2)
+				if (GCSettings.hideoverscan > 3)
 					GCSettings.hideoverscan = 0;
 				break;
 
