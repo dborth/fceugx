@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 2.0.8
+                                  Version 2.0.9
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -32,6 +32,17 @@ SNES9x GX project.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[What's New 2.0.9 - January 27, 2009]
+* Fixed a major memory corruption bug in FCE Ultra 0.98.12
+* Faster SD/USB - new read-ahead cache
+* Removed trigger of back to menu for Classic Controller right joystick
+* Changed GameCube controller back to menu from A+Start to A+B+Z+Start
+* Add option for horizontal-only video cropping
+* Decreased minimum game size to 8 KB
+* Fixed a bug with reading files < 2048 bytes
+* Fixed some memory leaks, buffer overflows, etc
+* Code cleanup, other general bugfixes
 
 [What's New 2.0.8 - December 24, 2008]
 * Fixed unstable SD card access
