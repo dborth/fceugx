@@ -23,7 +23,6 @@
 
 #include "images/saveicon.h"
 #include "fceugx.h"
-#include "intl.h"
 #include "menudraw.h"
 #include "filesel.h"
 #include "memcardop.h"
