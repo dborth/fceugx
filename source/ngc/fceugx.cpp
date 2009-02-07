@@ -17,6 +17,7 @@
 #include <ogc/system.h>
 #include <fat.h>
 #include <wiiuse/wpad.h>
+#include <malloc.h>
 
 #include "fceugx.h"
 #include "fceuconfig.h"
@@ -224,7 +225,7 @@ int main(int argc, char *argv[])
 	#endif
 
 	// allocate memory to store rom
-	nesrom = (unsigned char *)malloc(1024*1024*3); // 3 MB should be plenty
+	nesrom = (unsigned char *)memalign(32,1024*1024*3); // 3 MB should be plenty
 
 	/*** Minimal Emulation Loop ***/
 	if ( !FCEUI_Initialize() )

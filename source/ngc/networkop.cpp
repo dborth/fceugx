@@ -12,6 +12,7 @@
 #include <network.h>
 #include <smb.h>
 #include <mxml.h>
+#include <malloc.h>
 
 #include "unzip.h"
 #include "miniunz.h"
@@ -45,7 +46,7 @@ void UpdateCheck()
 
 		snprintf(url, 128, "http://fceugc.googlecode.com/svn/trunk/update.xml");
 
-		u8 * tmpbuffer = (u8 *)malloc(32768);
+		u8 * tmpbuffer = (u8 *)memalign(32,32768);
 		memset(tmpbuffer, 0, 32768);
 		retval = http_request(url, NULL, tmpbuffer, 32768);
 		memset(url, 0, 128);

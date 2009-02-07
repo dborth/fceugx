@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <malloc.h>
 
 extern "C" {
 #include "types.h"
@@ -62,12 +63,12 @@ static void MakeFCEUFile(char * membuffer, int length)
 		fceufp = NULL;
 	}
 
-	fceufp =(FCEUFILE *)malloc(sizeof(FCEUFILE));
+	fceufp =(FCEUFILE *)memalign(32,sizeof(FCEUFILE));
 	fceufp->type=3;
-	fceumem = (MEMWRAP *)malloc(sizeof(MEMWRAP));
+	fceumem = (MEMWRAP *)memalign(32,sizeof(MEMWRAP));
 	fceumem->location=0;
 	fceumem->size=length;
-	fceuFileData = (unsigned char *)malloc(length);
+	fceuFileData = (unsigned char *)memalign(32,length);
 	memcpy(fceuFileData, membuffer, length);
 	fceumem->data=fceuFileData;
 	fceufp->fp = fceumem;
@@ -79,7 +80,7 @@ int GCMemROM(int method, int size)
 
     /*** Allocate and clear GameInfo ***/
 
-    FCEUGameInfo = (FCEUGI *)malloc(sizeof(FCEUGI));
+    FCEUGameInfo = (FCEUGI *)memalign(32,sizeof(FCEUGI));
     memset(FCEUGameInfo, 0, sizeof(FCEUGI));
 
     /*** Set some default values ***/
@@ -115,7 +116,7 @@ int GCMemROM(int method, int size)
 		if(FDSBIOS[1] == 0)
 		{
 			int biosSize = 0;
-			char * tmpbuffer = (char *)malloc(64 * 1024);
+			char * tmpbuffer = (char *)memalign(32,64 * 1024);
 
 			char filepath[1024];
 
