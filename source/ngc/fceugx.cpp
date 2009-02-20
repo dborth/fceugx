@@ -182,21 +182,22 @@ int main(int argc, char *argv[])
 	#endif
 
 	#ifdef HW_RVL
+	DI_Close();
 	DI_Init();	// first
 	#endif
 
-	int selectedMenu = -1;
-
 	InitDeviceThread();
-
-	InitGCVideo ();
-	ResetVideo_Menu (); // change to menu video mode
-
-	// Controllers
+	VIDEO_Init();
 	PAD_Init();
 
 	#ifdef HW_RVL
 	WPAD_Init();
+	#endif
+
+	InitGCVideo ();
+	ResetVideo_Menu (); // change to menu video mode
+
+	#ifdef HW_RVL
 	// read wiimote accelerometer and IR data
 	WPAD_SetDataFormat(WPAD_CHAN_ALL,WPAD_FMT_BTNS_ACC_IR);
 	WPAD_SetVRes(WPAD_CHAN_ALL,640,480);
@@ -246,6 +247,8 @@ int main(int argc, char *argv[])
 	sprintf(appPath, "fceugx");
 	if(argc > 0 && argv[0] != NULL)
 		CreateAppPath(argv[0]);
+
+	int selectedMenu = -1;
 
 	// Load preferences
 	if(!LoadPrefs())
