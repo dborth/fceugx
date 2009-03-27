@@ -15,12 +15,14 @@ include $(DEVKITPPC)/wii_rules
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 #---------------------------------------------------------------------------------
-TARGET		:=	fceugx_wii
+TARGET		:=	fceugx-wii
 TARGETDIR   :=  executables
 BUILD		:=	build_wii
-SOURCES		:=	source/fceultra source/fceultra/boards source/fceultra/input \
+SOURCES		:=	source/ngc/images source/ngc/sounds source/ngc/fonts \
+				source/ngc/gui source/ngc \
+				source/fceultra source/fceultra/boards source/fceultra/input \
 				source/fceultra/mappers source/fceultra/mbshare \
-				source/ngc source/sz source/unzip
+				source/sz source/unzip
 INCLUDES	:=	source/fceultra source/ngc source/unzip
 
 #---------------------------------------------------------------------------------
@@ -38,7 +40,8 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-ldi -lmxml -lfat -lwiiuse -lz -lbte -logc -lm -lfreetype -ltinysmb
+LIBS	:=	-ldb -ldi -lpngu -lpng -lmxml -lmetaphrasis \
+			-lfat -lwiiuse -lz -lbte -logc -lasnd -ltremor -lfreetype -ltinysmb
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -67,8 +70,11 @@ CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
-BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
-
+TTFFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.ttf)))
+PNGFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.png)))
+OGGFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.ogg)))
+PCMFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.pcm)))
+	
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
 #---------------------------------------------------------------------------------
@@ -78,9 +84,10 @@ else
 	export LD	:=	$(CXX)
 endif
 
-export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
-					$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
-					$(sFILES:.s=.o) $(SFILES:.S=.o)
+export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
+					$(sFILES:.s=.o) $(SFILES:.S=.o) \
+					$(TTFFILES:.ttf=.ttf.o) $(PNGFILES:.png=.png.o) \
+					$(OGGFILES:.ogg=.ogg.o) $(PCMFILES:.pcm=.pcm.o)
 
 #---------------------------------------------------------------------------------
 # build a list of include paths
@@ -108,15 +115,15 @@ $(BUILD):
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).dol source/tags
+	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
 
 #---------------------------------------------------------------------------------
 run:
-	wiiload $(TARGET).dol
+	wiiload $(OUTPUT).dol
 
 #---------------------------------------------------------------------------------
 reload:
-	wiiload -r $(TARGET).dol
+	wiiload -r $(OUTPUT).dol
 
 
 #---------------------------------------------------------------------------------
@@ -131,10 +138,21 @@ $(OUTPUT).dol: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
 
 #---------------------------------------------------------------------------------
-# This rule links in binary data with the .jpg extension
+# This rule links in binary data with .ttf, .png, and .mp3 extensions
 #---------------------------------------------------------------------------------
-%.jpg.o	:	%.jpg
-#---------------------------------------------------------------------------------
+%.ttf.o : %.ttf
+	@echo $(notdir $<)
+	$(bin2o)
+
+%.png.o : %.png
+	@echo $(notdir $<)
+	$(bin2o)
+	
+%.ogg.o : %.ogg
+	@echo $(notdir $<)
+	$(bin2o)
+	
+%.pcm.o : %.pcm
 	@echo $(notdir $<)
 	$(bin2o)
 
