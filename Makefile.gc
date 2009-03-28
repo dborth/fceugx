@@ -28,7 +28,7 @@ INCLUDES	:=	source/fceultra source/ngc source/unzip
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS  = -g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNGC \
+CFLAGS  = -g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNGC -DNO_SOUND \
 		-DFCEU_VERSION_NUMERIC=9812 -DFRAMESKIP \
 	    -D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 	    -fomit-frame-pointer -fno-exceptions \
