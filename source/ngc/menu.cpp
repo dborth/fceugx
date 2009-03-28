@@ -927,13 +927,10 @@ static void ControllerWindowUpdate(void * ptr, int dir)
 	{
 		GCSettings.Controller += dir;
 
-		if(GCSettings.Controller == CTRL_PAD) // skip
-			GCSettings.Controller += dir;
-
-		if(GCSettings.Controller > CTRL_LENGTH-1)
-			GCSettings.Controller = 0;
-		else if(GCSettings.Controller < 0)
-			GCSettings.Controller = CTRL_LENGTH-1;
+		if(GCSettings.Controller > CTRL_PAD4)
+			GCSettings.Controller = CTRL_ZAPPER;
+		else if(GCSettings.Controller < CTRL_ZAPPER)
+			GCSettings.Controller = CTRL_PAD4;
 
 		settingText->SetText(ctrlName[GCSettings.Controller]);
 		b->ResetState();
@@ -945,7 +942,7 @@ static void ControllerWindowRightClick(void * ptr) { ControllerWindowUpdate(ptr,
 
 static void ControllerWindow()
 {
-	GuiWindow * w = new GuiWindow(250,250);
+	GuiWindow * w = new GuiWindow(300,250);
 	w->SetAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
 
 	GuiTrigger trigA;
