@@ -1037,8 +1037,8 @@ static int MenuGame()
 	GuiImage saveBtnImg(&btnLargeOutline);
 	GuiImage saveBtnImgOver(&btnLargeOutlineOver);
 	GuiButton saveBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
-	saveBtn.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
-	saveBtn.SetPosition(50, 120);
+	saveBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	saveBtn.SetPosition(-125, 120);
 	saveBtn.SetLabel(&saveBtnTxt);
 	saveBtn.SetImage(&saveBtnImg);
 	saveBtn.SetImageOver(&saveBtnImgOver);
@@ -1051,7 +1051,7 @@ static int MenuGame()
 	GuiImage loadBtnImgOver(&btnLargeOutlineOver);
 	GuiButton loadBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	loadBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	loadBtn.SetPosition(0, 120);
+	loadBtn.SetPosition(125, 120);
 	loadBtn.SetLabel(&loadBtnTxt);
 	loadBtn.SetImage(&loadBtnImg);
 	loadBtn.SetImageOver(&loadBtnImgOver);
@@ -1063,8 +1063,8 @@ static int MenuGame()
 	GuiImage resetBtnImg(&btnLargeOutline);
 	GuiImage resetBtnImgOver(&btnLargeOutlineOver);
 	GuiButton resetBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
-	resetBtn.SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
-	resetBtn.SetPosition(-50, 120);
+	resetBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	resetBtn.SetPosition(-125, 250);
 	resetBtn.SetLabel(&resetBtnTxt);
 	resetBtn.SetImage(&resetBtnImg);
 	resetBtn.SetImageOver(&resetBtnImgOver);
@@ -1077,7 +1077,7 @@ static int MenuGame()
 	GuiImage controllerBtnImgOver(&btnLargeOutlineOver);
 	GuiButton controllerBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	controllerBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	controllerBtn.SetPosition(-125, 250);
+	controllerBtn.SetPosition(125, 250);
 	controllerBtn.SetLabel(&controllerBtnTxt);
 	controllerBtn.SetImage(&controllerBtnImg);
 	controllerBtn.SetImageOver(&controllerBtnImgOver);

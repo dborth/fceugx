@@ -11,7 +11,6 @@
  ****************************************************************************/
 
 void InitialiseAudio();
-void StopAudio();
 void ResetAudio();
 void PlaySound( int *Buffer, int samples );
 void SwitchAudioMode(int mode);

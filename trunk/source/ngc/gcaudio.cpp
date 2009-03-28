@@ -89,17 +89,6 @@ void InitialiseAudio()
 }
 
 /****************************************************************************
- * StopAudio
- *
- * Pause audio output when returning to menu
- ***************************************************************************/
-void StopAudio()
-{
-	AUDIO_StopDMA();
-	IsPlaying = 0;
-}
-
-/****************************************************************************
  * ResetAudio
  *
  * Reset audio output when loading a new game
@@ -132,6 +121,7 @@ SwitchAudioMode(int mode)
 	{
 		AUDIO_StopDMA();
 		AUDIO_RegisterDMACallback(NULL);
+		IsPlaying = 0;
 		#ifndef NO_SOUND
 		ASND_Init();
 		ASND_Pause(0);
