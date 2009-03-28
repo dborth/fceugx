@@ -11,6 +11,11 @@
 
 #include "driver.h"
 
+extern "C" {
+extern void ResetNES(void);
+extern void PowerNES(void);
+}
+
 /* Message logging(non-netplay messages, usually) for all. */
 extern int NoWaiting;
 extern FCEUGI *GI;

@@ -2,16 +2,17 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  * eke-eke October 2008
  *
- * gcaudio.c
+ * gcaudio.cpp
  *
  * Audio driver
  ****************************************************************************/
 
 #include <gccore.h>
 #include <string.h>
+#include <asndlib.h>
 
 #define SAMPLERATE 48000
 
@@ -83,8 +84,6 @@ static void AudioSwitchBuffers()
 void InitialiseAudio()
 {
 	AUDIO_Init(NULL); // Start audio subsystem
-	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
-	AUDIO_RegisterDMACallback( AudioSwitchBuffers );
 	memset(soundbuffer, 0, 3840*2);
 	memset(mixbuffer, 0, 16000);
 }
@@ -110,6 +109,50 @@ void ResetAudio()
 	memset(soundbuffer, 0, 3840*2);
 	memset(mixbuffer, 0, 16000);
 	mixhead = mixtail = 0;
+}
+
+/****************************************************************************
+ * SwitchAudioMode
+ *
+ * Switches between menu sound and emulator sound
+ ***************************************************************************/
+void
+SwitchAudioMode(int mode)
+{
+	if(mode == 0) // emulator
+	{
+		#ifndef NO_SOUND
+		ASND_Pause(1);
+		ASND_End();
+		#endif
+		AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
+		AUDIO_RegisterDMACallback(AudioSwitchBuffers);
+	}
+	else // menu
+	{
+		AUDIO_StopDMA();
+		AUDIO_RegisterDMACallback(NULL);
+		#ifndef NO_SOUND
+		ASND_Init();
+		ASND_Pause(0);
+		#endif
+	}
+}
+
+/****************************************************************************
+ * ShutdownAudio
+ *
+ * Shuts down audio subsystem. Useful to avoid unpleasant sounds if a
+ * crash occurs during shutdown.
+ ***************************************************************************/
+void ShutdownAudio()
+{
+	#ifndef NO_SOUND
+	ASND_Pause(1);
+	ASND_End();
+	#endif
+	AUDIO_StopDMA();
+	AUDIO_RegisterDMACallback(NULL);
 }
 
 /****************************************************************************

@@ -2,7 +2,9 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * softdev July 2006
+ * svpe & crunchy2 June 2007
+ * Tantric 2008-2009
  *
  * dvd.h
  *

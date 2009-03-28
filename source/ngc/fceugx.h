@@ -40,6 +40,18 @@ enum {
 	FILE_PREF
 };
 
+enum
+{
+	CTRL_PAD,
+	CTRL_ZAPPER,
+	CTRL_PAD2,
+	CTRL_PAD4,
+	CTRL_LENGTH
+};
+
+const char ctrlName[6][20] =
+{ "NES Controller", "NES Zapper", "NES Controllers (2)", "NES Controllers (4)" };
+
 struct SGCSettings{
 	int		AutoLoad;
 	int		AutoSave;
@@ -54,7 +66,6 @@ struct SGCSettings{
 	char	smbpwd[20];
 	char	smbshare[20];
 
-	int		Zoom; // 0 - off, 1 - on
 	float	ZoomLevel; // zoom amount
 	int		VerifySaves;
 	int		render;		// 0 - original, 1 - filtered, 2 - unfiltered
@@ -62,21 +73,23 @@ struct SGCSettings{
 	int		hideoverscan;
 	int		currpal;
 	int		timing;
-	int		FourScore;
-	int		zapper;
+	int		Controller;
 	int		crosshair;
 	int		xshift;		// video output shift
 	int		yshift;
+	int		WiimoteOrientation;
+	int		ExitAction;
+	int		MusicVolume;
+	int		SFXVolume;
 };
 
-void ExitToLoader();
-void Reboot();
+void ExitApp();
 void ShutdownWii();
 extern struct SGCSettings GCSettings;
 extern int ConfigRequested;
 extern int ShutdownRequested;
+extern int ExitRequested;
 extern char appPath[];
 extern int frameskip;
-extern unsigned char * nesrom;
 
 #endif

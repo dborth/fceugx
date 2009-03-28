@@ -1,5 +1,6 @@
 /****************************************************************************
- * Snes9x 1.51 Nintendo Wii/Gamecube Port
+ * FCE Ultra 0.98.12
+ * Nintendo Wii/Gamecube Port
  *
  * Tantric February 2009
  *
@@ -19,14 +20,15 @@
 #include <math.h>
 #include <asndlib.h>
 #include "pngu/pngu.h"
-#include "FreeTypeGX.h"
-#include "snes9xGX.h"
-#include "video.h"
-#include "input.h"
-#include "filelist.h"
-#include "fileop.h"
-#include "menu.h"
-#include "oggplayer.h"
+
+#include "../FreeTypeGX.h"
+#include "../fceugx.h"
+#include "../gcvideo.h"
+#include "../pad.h"
+#include "../filelist.h"
+#include "../fileop.h"
+#include "../menu.h"
+#include "../oggplayer.h"
 
 #define SCROLL_INITIAL_DELAY 20
 #define SCROLL_LOOP_DELAY 3
@@ -77,6 +79,8 @@ enum
 #define EFFECT_FADE					64
 #define EFFECT_SCALE				128
 #define EFFECT_COLOR_TRANSITION		256
+
+extern FreeTypeGX *fontSystem;
 
 class GuiSound
 {

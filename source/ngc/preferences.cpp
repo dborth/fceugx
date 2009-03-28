@@ -2,9 +2,9 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  *
- * preferences.c
+ * preferences.cpp
  *
  * Preferences save/load preferences utilities
  ****************************************************************************/
@@ -15,8 +15,10 @@
 #include <ogcsys.h>
 #include <mxml.h>
 
-#include "images/saveicon.h"
-#include "menudraw.h"
+#include "fceuconfig.h"
+#include "button_mapping.h"
+#include "filebrowser.h"
+#include "menu.h"
 #include "memcardop.h"
 #include "fileop.h"
 #include "fceugx.h"
@@ -108,25 +110,6 @@ static const char * XMLSaveCallback(mxml_node_t *node, int where)
 static int
 preparePrefsData (int method)
 {
-	int offset = 0;
-
-	// add save icon and comments for Memory Card saves
-	if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
-	{
-		offset = sizeof (saveicon);
-
-		// Copy in save icon
-		memcpy (savebuffer, saveicon, offset);
-
-		// And the comments
-		char prefscomment[2][32];
-		memset(prefscomment, 0, 64);
-		sprintf (prefscomment[0], "%s Prefs", APPNAME);
-		sprintf (prefscomment[1], "Preferences");
-		memcpy (savebuffer + offset, prefscomment, 64);
-		offset += 64;
-	}
-
 	xml = mxmlNewXML("1.0");
 	mxmlSetWrapMargin(0); // disable line wrapping
 
@@ -152,11 +135,10 @@ preparePrefsData (int method)
 	createXMLSetting("smbuser", "Share Username", GCSettings.smbuser);
 	createXMLSetting("smbpwd", "Share Password", GCSettings.smbpwd);
 
-	createXMLSection("Emulation", "Emulation Settings");
+	createXMLSection("Video", "Video Settings");
 
 	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
 	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
-	createXMLSetting("Zoom", "Zoom On/Off", toStr(GCSettings.Zoom));
 	createXMLSetting("ZoomLevel", "Zoom Level", FtoStr(GCSettings.ZoomLevel));
 	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
 	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
@@ -164,15 +146,24 @@ preparePrefsData (int method)
 	createXMLSetting("xshift", "Horizontal Video Shift", toStr(GCSettings.xshift));
 	createXMLSetting("yshift", "Vertical Video Shift", toStr(GCSettings.yshift));
 
+	createXMLSection("Menu", "Menu Settings");
+
+	createXMLSetting("WiimoteOrientation", "Wiimote Orientation", toStr(GCSettings.WiimoteOrientation));
+	createXMLSetting("ExitAction", "Exit Action", toStr(GCSettings.ExitAction));
+	createXMLSetting("MusicVolume", "Music Volume", toStr(GCSettings.MusicVolume));
+	createXMLSetting("SFXVolume", "Sound Effects Volume", toStr(GCSettings.SFXVolume));
+
 	createXMLSection("Controller", "Controller Settings");
 
-	createXMLSetting("FourScore", "Four Score", toStr(GCSettings.FourScore));
-	createXMLSetting("zapper", "Zapper", toStr(GCSettings.zapper));
+	createXMLSetting("Controller", "Controller", toStr(GCSettings.Controller));
 	createXMLSetting("crosshair", "Zapper Crosshair", toStr(GCSettings.crosshair));
-	createXMLController(gcpadmap, "gcpadmap", "GameCube Pad");
-	createXMLController(wmpadmap, "wmpadmap", "Wiimote");
-	createXMLController(ccpadmap, "ccpadmap", "Classic Controller");
-	createXMLController(ncpadmap, "ncpadmap", "Nunchuk");
+
+	createXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad", "NES Pad - GameCube Controller");
+	createXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote", "NES Pad - Wiimote");
+	createXMLController(btnmap[CTRL_PAD][CTRLR_CLASSIC], "btnmap_pad_classic", "NES Pad - Classic Controller");
+	createXMLController(btnmap[CTRL_PAD][CTRLR_NUNCHUK], "btnmap_pad_nunchuk", "NES Pad - Nunchuk + Wiimote");
+	createXMLController(btnmap[CTRL_ZAPPER][CTRLR_GCPAD], "btnmap_zapper_gcpad", "Zapper - GameCube Controller");
+	createXMLController(btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE], "btnmap_zapper_wiimote", "Zapper - Wiimote");
 
 	int datasize = mxmlSaveString(xml, (char *)savebuffer, SAVEBUFFERSIZE, XMLSaveCallback);
 
@@ -216,7 +207,6 @@ static void loadXMLSetting(float * var, const char * name)
 }
 
 static void loadXMLController(unsigned int controller[], const char * name)
-
 {
 	item = mxmlFindElement(xml, xml, "controller", "name", name, MXML_DESCEND);
 
@@ -241,16 +231,8 @@ static bool
 decodePrefsData (int method)
 {
 	bool result = false;
-	int offset = 0;
 
-	// skip save icon and comments for Memory Card saves
-	if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
-	{
-		offset = sizeof (saveicon);
-		offset += 64; // sizeof prefscomment
-	}
-
-	xml = mxmlLoadString(NULL, (char *)savebuffer+offset, MXML_TEXT_CALLBACK);
+	xml = mxmlLoadString(NULL, (char *)savebuffer, MXML_TEXT_CALLBACK);
 
 	if(xml)
 	{
@@ -305,11 +287,10 @@ decodePrefsData (int method)
 			loadXMLSetting(GCSettings.smbuser, "smbuser", sizeof(GCSettings.smbuser));
 			loadXMLSetting(GCSettings.smbpwd, "smbpwd", sizeof(GCSettings.smbpwd));
 
-			// Emulation Settings
+			// Video Settings
 
 			loadXMLSetting(&GCSettings.currpal, "currpal");
 			loadXMLSetting(&GCSettings.timing, "timing");
-			loadXMLSetting(&GCSettings.Zoom, "Zoom");
 			loadXMLSetting(&GCSettings.ZoomLevel, "ZoomLevel");
 			loadXMLSetting(&GCSettings.render, "render");
 			loadXMLSetting(&GCSettings.widescreen, "widescreen");
@@ -317,15 +298,23 @@ decodePrefsData (int method)
 			loadXMLSetting(&GCSettings.xshift, "xshift");
 			loadXMLSetting(&GCSettings.yshift, "yshift");
 
+			// Menu Settings
+
+			loadXMLSetting(&GCSettings.WiimoteOrientation, "WiimoteOrientation");
+			loadXMLSetting(&GCSettings.ExitAction, "ExitAction");
+			loadXMLSetting(&GCSettings.MusicVolume, "MusicVolume");
+			loadXMLSetting(&GCSettings.SFXVolume, "SFXVolume");
+
 			// Controller Settings
-			loadXMLSetting(&GCSettings.FourScore, "FSDisable");
-			loadXMLSetting(&GCSettings.zapper, "zapper");
+			loadXMLSetting(&GCSettings.Controller, "Controller");
 			loadXMLSetting(&GCSettings.crosshair, "crosshair");
 
-			loadXMLController(gcpadmap, "gcpadmap");
-			loadXMLController(wmpadmap, "wmpadmap");
-			loadXMLController(ccpadmap, "ccpadmap");
-			loadXMLController(ncpadmap, "ncpadmap");
+			loadXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad");
+			loadXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote");
+			loadXMLController(btnmap[CTRL_PAD][CTRLR_CLASSIC], "btnmap_pad_classic");
+			loadXMLController(btnmap[CTRL_PAD][CTRLR_NUNCHUK], "btnmap_pad_nunchuk");
+			loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_GCPAD], "btnmap_zapper_gcpad");
+			loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE], "btnmap_zapper_wiimote");
 		}
 		mxmlDelete(xml);
 	}
@@ -347,23 +336,40 @@ SavePrefs (bool silent)
 	// is the method preferences will be loaded from by default
 	int method = autoSaveMethod(silent);
 
+	if(method == METHOD_AUTO)
+		return false;
+
 	if(!MakeFilePath(filepath, FILE_PREF, method))
 		return false;
 
 	if (!silent)
 		ShowAction ("Saving preferences...");
 
+	FixInvalidSettings();
+
 	AllocSaveBuffer ();
 	datasize = preparePrefsData (method);
+
+	if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
+	{
+		// Set the comments
+		char prefscomment[2][32];
+		memset(prefscomment, 0, 64);
+		sprintf (prefscomment[0], "%s Prefs", APPNAME);
+		sprintf (prefscomment[1], "Preferences");
+		SetMCSaveComments(prefscomment);
+	}
 
 	offset = SaveFile(filepath, datasize, method, silent);
 
 	FreeSaveBuffer ();
 
+	CancelAction();
+
 	if (offset > 0)
 	{
 		if (!silent)
-			WaitPrompt ("Preferences saved");
+			InfoPrompt ("Preferences saved");
 		return true;
 	}
 	return false;
@@ -398,20 +404,29 @@ LoadPrefsFromMethod (int method)
  * Load Preferences
  * Checks sources consecutively until we find a preference file
  ***************************************************************************/
+static bool prefLoaded = false;
+
 bool LoadPrefs()
 {
-	ShowAction ("Loading preferences...");
+	if(prefLoaded) // already attempted loading
+		return true;
+
 	bool prefFound = false;
 	if(ChangeInterface(METHOD_SD, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_SD);
 	if(!prefFound && ChangeInterface(METHOD_USB, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_USB);
-	if(!prefFound && TestCard(CARD_SLOTA, SILENT))
+	if(!prefFound && TestMC(CARD_SLOTA, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTA);
-	if(!prefFound && TestCard(CARD_SLOTB, SILENT))
+	if(!prefFound && TestMC(CARD_SLOTB, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTB);
 	if(!prefFound && ChangeInterface(METHOD_SMB, SILENT))
 		prefFound = LoadPrefsFromMethod(METHOD_SMB);
+
+	prefLoaded = true; // attempted to load preferences
+
+	if(prefFound)
+		FixInvalidSettings();
 
 	return prefFound;
 }

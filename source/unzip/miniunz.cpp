@@ -16,7 +16,7 @@
 #include <utime.h>
 
 #include "unzip.h"
-#include "menudraw.h"
+#include "menu.h"
 
 #define CASESENSITIVITY (0)
 #define WRITEBUFFERSIZE (1024*256)

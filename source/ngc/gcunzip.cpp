@@ -23,8 +23,11 @@ extern "C" {
 
 #include "fceugx.h"
 #include "dvd.h"
+#include "networkop.h"
 #include "fileop.h"
-#include "menudraw.h"
+#include "filebrowser.h"
+#include "gcvideo.h"
+#include "menu.h"
 #include "gcunzip.h"
 
 #define ZIPCHUNK 2048
@@ -145,7 +148,7 @@ UnZipBuffer (unsigned char *outbuffer, int method)
 	res = inflateInit2 (&zs, -MAX_WBITS);
 
 	if (res != Z_OK)
-		return 0;
+		goto done;
 
 	/*** Set ZipChunk for first pass ***/
 	zipoffset =
@@ -169,8 +172,7 @@ UnZipBuffer (unsigned char *outbuffer, int method)
 
 			if (res == Z_MEM_ERROR)
 			{
-				inflateEnd (&zs);
-				return 0;
+				goto done;
 			}
 
 			have = ZIPCHUNK - zs.avail_out;
@@ -198,23 +200,20 @@ UnZipBuffer (unsigned char *outbuffer, int method)
 				break;
 		}
 		if(sizeread <= 0)
-			break; // read failure
+			goto done; // read failure
 
 		ShowProgress ("Loading...", bufferoffset, pkzip.uncompressedSize);
 	}
 	while (res != Z_STREAM_END);
 
+done:
 	inflateEnd (&zs);
+	CancelAction();
 
 	if (res == Z_STREAM_END)
-	{
-		if (pkzip.uncompressedSize == (u32) bufferoffset)
-			return bufferoffset;
-		else
-			return pkzip.uncompressedSize;
-	}
-
-	return 0;
+		return pkzip.uncompressedSize;
+	else
+		return 0;
 }
 
 /****************************************************************************
@@ -247,7 +246,7 @@ GetFirstZipFilename (int method)
 		}
 		else
 		{
-			WaitPrompt("Error - Invalid ZIP file!");
+			ErrorPrompt("Error - Invalid ZIP file!");
 		}
 	}
 
@@ -317,7 +316,7 @@ Is7ZipFile (char *buffer)
 // display an error message
 static void SzDisplayError(SZ_RESULT res)
 {
-	WaitPrompt(szerrormsg[(res - 1)]);
+	ErrorPrompt(szerrormsg[(res - 1)]);
 }
 
 // function used by the 7zip SDK to read data from SD/USB/DVD/SMB
@@ -472,7 +471,7 @@ int SzParse(char * filepath, int method)
 				if(!newBrowserList) // failed to allocate required memory
 				{
 					ResetBrowser();
-					WaitPrompt("Out of memory: too many files!");
+					ErrorPrompt("Out of memory: too many files!");
 					nbfiles = 0;
 					break;
 				}
@@ -552,6 +551,8 @@ int SzExtractFile(int i, unsigned char *buffer)
 
 	// close 7Zip archive and free memory
 	SzClose();
+
+	CancelAction();
 
 	// check for errors
 	if(SzRes != SZ_OK)
