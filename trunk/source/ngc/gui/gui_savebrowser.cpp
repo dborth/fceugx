@@ -1,5 +1,6 @@
 /****************************************************************************
- * Snes9x 1.51 Nintendo Wii/Gamecube Port
+ * FCE Ultra 0.98.12
+ * Nintendo Wii/Gamecube Port
  *
  * Tantric February 2009
  *
@@ -354,10 +355,10 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 			saveDate[i]->SetText(saves->date[listOffset+i]);
 			saveTime[i]->SetText(saves->time[listOffset+i]);
 
-			if(saves->type[listOffset+i] == FILE_SRAM)
-				sprintf(savetext, "SRAM");
+			if(saves->type[listOffset+i] == FILE_RAM)
+				sprintf(savetext, "RAM");
 			else
-				sprintf(savetext, "Snapshot");
+				sprintf(savetext, "State");
 
 			len = strlen(saves->filename[listOffset+i]);
 			if(len > 10 &&

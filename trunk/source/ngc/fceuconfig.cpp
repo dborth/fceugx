@@ -2,9 +2,9 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  *
- * fceuconfig.c
+ * fceuconfig.cpp
  *
  * Configuration parameters
  ****************************************************************************/
@@ -20,6 +20,31 @@
 
 struct SGCSettings GCSettings;
 
+/****************************************************************************
+ * FixInvalidSettings
+ *
+ * Attempts to correct at least some invalid settings - the ones that
+ * might cause crashes
+ ***************************************************************************/
+void FixInvalidSettings()
+{
+	if(!(GCSettings.ZoomLevel > 0.5 && GCSettings.ZoomLevel < 1.5))
+		GCSettings.ZoomLevel = 1.0;
+	if(!(GCSettings.xshift > -50 && GCSettings.xshift < 50))
+		GCSettings.xshift = 0;
+	if(!(GCSettings.yshift > -50 && GCSettings.yshift < 50))
+		GCSettings.yshift = 0;
+	if(!(GCSettings.MusicVolume >= 0 && GCSettings.MusicVolume <= 100))
+		GCSettings.MusicVolume = 40;
+	if(!(GCSettings.SFXVolume >= 0 && GCSettings.SFXVolume <= 100))
+		GCSettings.SFXVolume = 40;
+}
+
+/****************************************************************************
+ * DefaultSettings
+ *
+ * Sets all the defaults!
+ ***************************************************************************/
 void
 DefaultSettings ()
 {
@@ -27,18 +52,21 @@ DefaultSettings ()
 
 	GCSettings.currpal = 0;
 	GCSettings.timing = 0; // 0 - NTSC, 1 - PAL
-	GCSettings.FourScore = 0;
-	GCSettings.zapper = 0;
+	GCSettings.Controller = CTRL_PAD2; // NES pad, Four Score, Zapper
 	GCSettings.crosshair = 1;
 
-	GCSettings.Zoom = 0; // zooming default off
 	GCSettings.ZoomLevel = 1.0; // zoom amount
 	GCSettings.render = 2; // Unfiltered
 	GCSettings.widescreen = 0; // no aspect ratio correction
 	GCSettings.hideoverscan = 2; // hide both horizontal and vertical
 
-	GCSettings.xshift = 0;	// video shift
-	GCSettings.yshift = 0;
+	GCSettings.xshift = 0; // horizontal video shift
+	GCSettings.yshift = 0; // vertical video shift
+
+	GCSettings.WiimoteOrientation = 0;
+	GCSettings.ExitAction = 0;
+	GCSettings.MusicVolume = 40;
+	GCSettings.SFXVolume = 40;
 
 	GCSettings.LoadMethod = METHOD_AUTO; // Auto, SD, DVD, USB, Network (SMB)
 	GCSettings.SaveMethod = METHOD_AUTO; // Auto, SD, Memory Card Slot A, Memory Card Slot B, USB, Network (SMB)

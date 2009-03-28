@@ -2,9 +2,9 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  *
- * fceustate.c
+ * fceustate.cpp
  *
  * Memory Based Load/Save State Manager
  *
@@ -21,10 +21,9 @@
 #include "state.h"
 #include "x6502.h"
 
-#include "images/saveicon.h"
 #include "fceugx.h"
-#include "menudraw.h"
-#include "filesel.h"
+#include "menu.h"
+#include "filebrowser.h"
 #include "memcardop.h"
 #include "fileop.h"
 
@@ -57,33 +56,33 @@ static int sboffset; // Used as a basic fileptr
 /*** Open a file ***/
 static void memopen()
 {
-    sboffset = 0;
+	sboffset = 0;
 }
 
 /*** Write to the file ***/
 static void memfwrite(void *buffer, int len)
 {
-    if ((sboffset + len) > SAVEBUFFERSIZE)
-        WaitPrompt("Buffer Exceeded");
+	if ((sboffset + len) > SAVEBUFFERSIZE)
+		ErrorPrompt("Buffer Exceeded");
 
-    if (len > 0)
-    {
-        memcpy(&savebuffer[sboffset], buffer, len);
-        sboffset += len;
-    }
+	if (len > 0)
+	{
+		memcpy(&savebuffer[sboffset], buffer, len);
+		sboffset += len;
+	}
 }
 
 /*** Read from a file ***/
 static void memfread(void *buffer, int len)
 {
-    if ( (sboffset + len) > SAVEBUFFERSIZE)
-        WaitPrompt("Buffer exceeded");
+	if ((sboffset + len) > SAVEBUFFERSIZE)
+		ErrorPrompt("Buffer exceeded");
 
-    if (len > 0)
-    {
-        memcpy(buffer, &savebuffer[sboffset], len);
-        sboffset += len;
-    }
+	if (len > 0)
+	{
+		memcpy(buffer, &savebuffer[sboffset], len);
+		sboffset += len;
+	}
 }
 
 /****************************************************************************
@@ -124,14 +123,14 @@ static int GCReadChunk(int chunkid, SFORMAT *sf)
 					}
 					else
 					{
-						WaitPrompt("Bad chunk link");
+						ErrorPrompt("Bad chunk link");
 						return 0;
 					}
 				}
 				else
 				{
 					sprintf(info, "No Sync %s %s", chunk, sf->desc);
-					WaitPrompt(info);
+					ErrorPrompt(info);
 					return 0;
 				}
 				sf++;
@@ -154,13 +153,6 @@ static int GCReadChunk(int chunkid, SFORMAT *sf)
 static int GCFCEUSS_Load(int method)
 {
 	memopen(); // reset file pointer
-
-	// skip save icon and comments for Memory Card saves
-	if (method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
-	{
-		sboffset += sizeof(saveicon);
-		sboffset += 64; // sizeof prefscomment
-	}
 
 	sboffset += 16; // skip FCEU header
 
@@ -201,47 +193,48 @@ static int GCFCEUSS_Load(int method)
  ****************************************************************************/
 static int GCSaveChunk(int chunkid, SFORMAT *sf)
 {
-    int chnkstart;
-    int csize = 0;
-    int chsize = 0;
-    char chunk[] = "CHNK";
+	int chnkstart;
+	int csize = 0;
+	int chsize = 0;
+	char chunk[] = "CHNK";
 
-    /*** Add chunk marker ***/
-    memfwrite(&chunk, 4);
-    memfwrite(&chunkid, 4);
-    chnkstart = sboffset;		/*** Save ptr ***/
-    sboffset += 4;			/*** Space for length ***/
-    csize += 12;
+	/*** Add chunk marker ***/
+	memfwrite(&chunk, 4);
+	memfwrite(&chunkid, 4);
+	chnkstart = sboffset; /*** Save ptr ***/
+	sboffset += 4; /*** Space for length ***/
+	csize += 12;
 
-    /*** Now run through this structure ***/
-    while (sf->v) {
-        /*** Check that there is a decription ***/
-        if ( sf->desc == NULL)
-            break;
+	/*** Now run through this structure ***/
+	while (sf->v)
+	{
+		/*** Check that there is a decription ***/
+		if (sf->desc == NULL)
+			break;
 
-        /*** Write out the description ***/
-        memfwrite( sf->desc, 4);
+		/*** Write out the description ***/
+		memfwrite(sf->desc, 4);
 
-        /*** Write the length of this chunk ***/
-        chsize = ( sf->s & (~RLSB) );
-        memfwrite( &chsize, 4);
+		/*** Write the length of this chunk ***/
+		chsize = (sf->s & (~RLSB));
+		memfwrite(&chsize, 4);
 
-        if ( chsize > 0 )
-        {
-            /*** Write the actual data ***/
-            memfwrite( sf->v, chsize );
-        }
+		if (chsize > 0)
+		{
+			/*** Write the actual data ***/
+			memfwrite(sf->v, chsize);
+		}
 
-        csize += 8;
-        csize += chsize;
+		csize += 8;
+		csize += chsize;
 
-        sf++;
-    }
+		sf++;
+	}
 
-    /*** Update CHNK length ***/
-    memcpy(&savebuffer[chnkstart], &csize, 4);
+	/*** Update CHNK length ***/
+	memcpy(&savebuffer[chnkstart], &csize, 4);
 
-    return csize;
+	return csize;
 }
 
 /****************************************************************************
@@ -264,21 +257,6 @@ static int GCFCEUSS_Save(int method)
 	memset(comment, 0, 64);
 
 	memopen(); // Reset Memory File
-
-	// add save icon and comments for Memory Card saves
-	if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
-	{
-		// Copy in save icon
-		memfwrite((void *)&saveicon, sizeof(saveicon));
-		totalsize += sizeof(saveicon);
-
-		// And the comments
-		sprintf (comment[0], "%s State", APPNAME);
-		strncpy (comment[1],romFilename,31); // we only have 32 chars to work with!
-		comment[1][31] = 0;
-		memfwrite(&comment[0], 64);
-		totalsize += 64;
-	}
 
 	// Add version ID
 	int mcversion = 0x981211;
@@ -313,20 +291,17 @@ static int GCFCEUSS_Save(int method)
 	return totalsize;
 }
 
-bool SaveState (int method, bool silent)
+bool SaveState (char * filepath, int method, bool silent)
 {
 	bool retval = false;
-	char filepath[1024];
 	int datasize;
 	int offset = 0;
 
 	if(method == METHOD_AUTO)
 		method = autoSaveMethod(silent);
 
-	if (!MakeFilePath(filepath, FILE_STATE, method))
+	if(method == METHOD_AUTO)
 		return false;
-
-	ShowAction ("Saving...");
 
 	AllocSaveBuffer ();
 
@@ -334,12 +309,22 @@ bool SaveState (int method, bool silent)
 
 	if (datasize)
 	{
+		if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
+		{
+			// Set the comments
+			char comments[2][32];
+			memset(comments, 0, 64);
+			sprintf (comments[0], "%s State", APPNAME);
+			snprintf (comments[1], 32, romFilename);
+			SetMCSaveComments(comments);
+		}
+
 		offset = SaveFile(filepath, datasize, method, silent);
 
 		if (offset > 0)
 		{
 			if ( !silent )
-				WaitPrompt("Save successful");
+				InfoPrompt("Save successful");
 			retval = true;
 		}
 	}
@@ -347,19 +332,33 @@ bool SaveState (int method, bool silent)
 	return retval;
 }
 
-bool LoadState (int method, bool silent)
+bool
+SaveStateAuto (int method, bool silent)
 {
+	if(method == METHOD_AUTO)
+		method = autoSaveMethod(silent);
+
+	if(method == METHOD_AUTO)
+		return false;
+
 	char filepath[1024];
+
+	if(!MakeFilePath(filepath, FILE_STATE, method, romFilename, 0))
+		return false;
+
+	return SaveState(filepath, method, silent);
+}
+
+bool LoadState (char * filepath, int method, bool silent)
+{
 	int offset = 0;
 	bool retval = false;
 
 	if(method == METHOD_AUTO)
 		method = autoSaveMethod(silent); // we use 'Save' because we need R/W
 
-	if (!MakeFilePath(filepath, FILE_STATE, method))
+	if(method == METHOD_AUTO)
 		return false;
-
-	ShowAction ("Loading...");
 
 	AllocSaveBuffer ();
 
@@ -374,8 +373,25 @@ bool LoadState (int method, bool silent)
 	{
 		// if we reached here, nothing was done!
 		if(!silent)
-			WaitPrompt ("State file not found");
+			ErrorPrompt ("State file not found");
 	}
 	FreeSaveBuffer ();
 	return retval;
+}
+
+bool
+LoadStateAuto (int method, bool silent)
+{
+	if(method == METHOD_AUTO)
+		method = autoSaveMethod(silent);
+
+	if(method == METHOD_AUTO)
+		return false;
+
+	char filepath[1024];
+
+	if(!MakeFilePath(filepath, FILE_STATE, method, romFilename, 0))
+		return false;
+
+	return LoadState(filepath, method, silent);
 }

@@ -18,7 +18,7 @@
 #include "miniunz.h"
 
 #include "fceugx.h"
-#include "menudraw.h"
+#include "menu.h"
 #include "fileop.h"
 #include "http.h"
 
@@ -146,12 +146,12 @@ bool DownloadUpdate()
 		if(unzipResult)
 		{
 			result = true;
-			WaitPrompt("Update successful!");
+			InfoPrompt("Update successful!");
 		}
 		else
 		{
 			result = false;
-			WaitPrompt("Update failed!");
+			InfoPrompt("Update failed!");
 		}
 
 		updateFound = false; // updating is finished (successful or not!)
@@ -193,7 +193,7 @@ void InitializeNetwork(bool silent)
 		{
 			char msg[150];
 			sprintf(msg, "Unable to initialize network (Error #: %i)", initResult);
-			WaitPrompt(msg);
+			ErrorPrompt(msg);
 		}
 	}
 }
@@ -201,7 +201,7 @@ void InitializeNetwork(bool silent)
 void CloseShare()
 {
 	if(networkShareInit)
-		smbClose();
+		smbClose("smb");
 	networkShareInit = false;
 	networkInit = false; // trigger a network reinit
 }
@@ -242,7 +242,7 @@ ConnectShare (bool silent)
 				sprintf(msg, "Share IP is blank.");
 
 			sprintf(msg2, "Invalid network settings - %s", msg);
-			WaitPrompt(msg2);
+			ErrorPrompt(msg2);
 		}
 		return false;
 	}
@@ -268,7 +268,7 @@ ConnectShare (bool silent)
 		}
 
 		if(!networkShareInit && !silent)
-			WaitPrompt ("Failed to connect to network share.");
+			ErrorPrompt ("Failed to connect to network share.");
 	}
 
 	return networkShareInit;

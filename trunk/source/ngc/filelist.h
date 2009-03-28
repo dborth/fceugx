@@ -1,5 +1,6 @@
 /****************************************************************************
- * Snes9x 1.51 Nintendo Wii/Gamecube Port
+ * FCE Ultra 0.98.12
+ * Nintendo Wii/Gamecube Port
  *
  * Tantric January 2009
  *

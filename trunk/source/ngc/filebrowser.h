@@ -2,15 +2,15 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  *
- * filesel.h
+ * filebrowser.h
  *
  * Generic file routines - reading, writing, browsing
  ****************************************************************************/
 
-#ifndef _NGCFILESEL_
-#define _NGCFILESEL_
+#ifndef _FILEBROWSER_H_
+#define _FILEBROWSER_H_
 
 #include <unistd.h>
 
@@ -29,6 +29,7 @@ typedef struct
 {
 	u64 offset; // DVD offset
 	unsigned int length; // file length
+	time_t mtime; // file modified time
 	char isdir; // 0 - file, 1 - directory
 	char filename[MAXJOLIET + 1]; // full filename
 	char displayname[MAXDISPLAY + 1]; // name for browser display
@@ -41,12 +42,17 @@ extern char rootdir[10];
 extern char romFilename[];
 extern int nesGameType;
 
-bool MakeFilePath(char filepath[], int type, int method);
-int OpenROM (int method);
+bool MakeFilePath(char filepath[], int type, int method, char * filename = NULL, int filenum = -1);
+int UpdateDirName(int method);
+int OpenGameList();
 int autoLoadMethod();
 int autoSaveMethod(bool silent);
 int FileSortCallback(const void *f1, const void *f2);
 void StripExt(char* returnstring, char * inputstring);
+bool IsSz();
 void ResetBrowser();
+int BrowserLoadSz(int method);
+int BrowserChangeFolder(int method);
+int BrowserLoadFile(int method);
 
 #endif

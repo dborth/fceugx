@@ -23,7 +23,7 @@
 #include <sys/errno.h>
 #include <fcntl.h>
 
-#include "menudraw.h"
+#include "menu.h"
 #include "http.h"
 
 static s32 tcp_socket(void)

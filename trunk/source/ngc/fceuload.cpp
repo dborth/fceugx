@@ -2,7 +2,7 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  *
  * fceload.c
  *
@@ -37,9 +37,9 @@ extern uint8 FDSBIOS[8192];
 #include "gcaudio.h"
 #include "common.h"
 #include "pad.h"
-#include "menudraw.h"
+#include "menu.h"
 #include "fileop.h"
-#include "filesel.h"
+#include "filebrowser.h"
 
 bool romLoaded = false;
 
@@ -76,88 +76,88 @@ static void MakeFCEUFile(char * membuffer, int length)
 
 int GCMemROM(int method, int size)
 {
-    ResetGameLoaded();
+	ResetGameLoaded();
 
-    /*** Allocate and clear GameInfo ***/
+	/*** Allocate and clear GameInfo ***/
 
-    FCEUGameInfo = (FCEUGI *)memalign(32,sizeof(FCEUGI));
-    memset(FCEUGameInfo, 0, sizeof(FCEUGI));
+	FCEUGameInfo = (FCEUGI *) memalign(32, sizeof(FCEUGI));
+	memset(FCEUGameInfo, 0, sizeof(FCEUGI));
 
-    /*** Set some default values ***/
-    FCEUGameInfo->soundchan = 1;
-    FCEUGameInfo->soundrate = SAMPLERATE;
-    FCEUGameInfo->name=0;
-    FCEUGameInfo->type=GIT_CART;
-    FCEUGameInfo->vidsys=GIV_USER;
-    FCEUGameInfo->input[0]=FCEUGameInfo->input[1]=-1;
-    FCEUGameInfo->inputfc=-1;
-    FCEUGameInfo->cspecial=0;
+	/*** Set some default values ***/
+	FCEUGameInfo->soundchan = 1;
+	FCEUGameInfo->soundrate = SAMPLERATE;
+	FCEUGameInfo->name = 0;
+	FCEUGameInfo->type = GIT_CART;
+	FCEUGameInfo->vidsys = GIV_USER;
+	FCEUGameInfo->input[0] = FCEUGameInfo->input[1] = -1;
+	FCEUGameInfo->inputfc = -1;
+	FCEUGameInfo->cspecial = 0;
 
-    /*** Set internal sound information ***/
-    FCEUI_Sound(SAMPLERATE);
-    FCEUI_SetSoundVolume(100); // 0-100
-    FCEUI_SetLowPass(0);
+	/*** Set internal sound information ***/
+	FCEUI_Sound(SAMPLERATE);
+	FCEUI_SetSoundVolume(100); // 0-100
+	FCEUI_SetLowPass(0);
 
-    InitialisePads();
+	InitialisePads();
 
-    MakeFCEUFile((char *)nesrom, size);
+	MakeFCEUFile((char *) nesrom, size);
 
-    nesGameType = 0;
+	nesGameType = 0;
 
-    if(iNESLoad(NULL, fceufp))
+	if (iNESLoad(NULL, fceufp))
 		nesGameType = 1;
-	else if(UNIFLoad(NULL,fceufp))
+	else if (UNIFLoad(NULL, fceufp))
 		nesGameType = 2;
-	else if(NSFLoad(fceufp))
+	else if (NSFLoad(fceufp))
 		nesGameType = 3;
 	else
 	{
 		// read FDS BIOS into FDSBIOS - should be 8192 bytes
-		if(FDSBIOS[1] == 0)
+		if (FDSBIOS[1] == 0)
 		{
 			int biosSize = 0;
-			char * tmpbuffer = (char *)memalign(32,64 * 1024);
+			char * tmpbuffer = (char *) memalign(32, 64 * 1024);
 
 			char filepath[1024];
 
-			if(MakeFilePath(filepath, FILE_FDSBIOS, method))
+			if (MakeFilePath(filepath, FILE_FDSBIOS, method))
 			{
-				biosSize = LoadFile (tmpbuffer, filepath, 0, method, SILENT);
+				biosSize = LoadFile(tmpbuffer, filepath, 0, method, SILENT);
 			}
 
-			if(biosSize == 8192)
+			if (biosSize == 8192)
 			{
 				memcpy(FDSBIOS, tmpbuffer, 8192);
 			}
 			else
 			{
-				if(biosSize > 0)
-					WaitPrompt("FDS BIOS file is invalid!");
+				if (biosSize > 0)
+					ErrorPrompt("FDS BIOS file is invalid!");
 
 				return 0; // BIOS not loaded, do not load game
 			}
 			free(tmpbuffer);
 		}
 		// load game
-		if(FDSLoad(NULL,fceufp))
+		if (FDSLoad(NULL, fceufp))
 			nesGameType = 4;
 	}
 
-    if (nesGameType > 0)
-    {
-        FCEU_ResetVidSys();
-        PowerNES();
-        FCEU_ResetPalette();
-        FCEU_ResetMessages();	// Save state, status messages, etc.
-        SetSoundVariables();
-        ResetAudio();
-        romLoaded = true;
-        return 1;
-    }
-    else
-    {
-        WaitPrompt("Invalid game file!");
-        romLoaded = false;
-        return 0;
-    }
+	if (nesGameType > 0)
+	{
+		FCEU_ResetVidSys();
+		PowerNES();
+		FCEU_ResetPalette();
+		FCEU_ResetMessages(); // Save state, status messages, etc.
+		SetSoundVariables();
+		ResetAudio();
+		romLoaded = true;
+		return 1;
+	}
+	else
+	{
+		ErrorPrompt("Invalid game file!");
+		romLoaded = false;
+		return 0;
+	}
 }

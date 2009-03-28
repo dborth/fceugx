@@ -2,7 +2,7 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  *
  * fceuload.h
  *
@@ -10,3 +10,4 @@
  ****************************************************************************/
 
 int GCMemROM(int method, int size);
+extern bool romLoaded;

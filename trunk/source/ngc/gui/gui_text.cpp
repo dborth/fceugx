@@ -1,5 +1,6 @@
 /****************************************************************************
- * Snes9x 1.51 Nintendo Wii/Gamecube Port
+ * FCE Ultra 0.98.12
+ * Nintendo Wii/Gamecube Port
  *
  * Tantric February 2009
  *
@@ -9,8 +10,6 @@
  ***************************************************************************/
 
 #include "gui.h"
-#include "snes9xGX.h"
-#include "filelist.h"
 
 static int currentSize = 0;
 static int presetSize = 0;

@@ -2,8 +2,8 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
  * michniewski August 2008
+ * Tantric 2008-2009
  *
  * button_mapping.c
  *
@@ -27,6 +27,50 @@
 ***/
 
 CtrlrMap ctrlr_def[4] = {
+// Gamecube controller btn def
+{
+	CTRLR_GCPAD,
+	13,
+	{
+		{PAD_BUTTON_DOWN, "DOWN"},
+		{PAD_BUTTON_UP, "UP"},
+		{PAD_BUTTON_LEFT, "LEFT"},
+		{PAD_BUTTON_RIGHT, "RIGHT"},
+		{PAD_BUTTON_A, "A"},
+		{PAD_BUTTON_B, "B"},
+		{PAD_BUTTON_X, "X"},
+		{PAD_BUTTON_Y, "Y"},
+		{PAD_BUTTON_MENU, "START"},
+		{PAD_BUTTON_START, "START"},
+		{PAD_TRIGGER_L, "L"},
+		{PAD_TRIGGER_R, "R"},
+		{PAD_TRIGGER_Z, "Z"},
+		{0, ""},
+		{0, ""}
+	}
+},
+// Wiimote btn def
+{
+	CTRLR_WIIMOTE,
+	11,
+	{
+		{WPAD_BUTTON_DOWN, "DOWN"},
+		{WPAD_BUTTON_UP, "UP"},
+		{WPAD_BUTTON_LEFT, "LEFT"},
+		{WPAD_BUTTON_RIGHT, "RIGHT"},
+		{WPAD_BUTTON_A, "A"},
+		{WPAD_BUTTON_B, "B"},
+		{WPAD_BUTTON_1, "1"},
+		{WPAD_BUTTON_2, "2"},
+		{WPAD_BUTTON_PLUS, "PLUS"},
+		{WPAD_BUTTON_MINUS, "MINUS"},
+		{WPAD_BUTTON_HOME, "HOME"},
+		{0, ""},
+		{0, ""},
+		{0, ""},
+		{0, ""}
+	}
+},
 // Nunchuk btn def
 {
 	CTRLR_NUNCHUK,
@@ -70,50 +114,5 @@ CtrlrMap ctrlr_def[4] = {
 		{WPAD_CLASSIC_BUTTON_ZL, "ZL"},
 		{WPAD_CLASSIC_BUTTON_ZR, "ZR"}
 	}
-},
-// Gamecube controller btn def
-{
-	CTRLR_GCPAD,
-	13,
-	{
-		{PAD_BUTTON_DOWN, "DOWN"},
-		{PAD_BUTTON_UP, "UP"},
-		{PAD_BUTTON_LEFT, "LEFT"},
-		{PAD_BUTTON_RIGHT, "RIGHT"},
-		{PAD_BUTTON_A, "A"},
-		{PAD_BUTTON_B, "B"},
-		{PAD_BUTTON_X, "X"},
-		{PAD_BUTTON_Y, "Y"},
-		{PAD_BUTTON_MENU, "START"},
-		{PAD_BUTTON_START, "START"},
-		{PAD_TRIGGER_L, "L TRIG"},
-		{PAD_TRIGGER_R, "R TRIG"},
-		{PAD_TRIGGER_Z, "Z"},
-		{0, ""},
-		{0, ""}
-	}
-},
-// Wiimote btn def
-{
-	CTRLR_WIIMOTE,
-	11,
-	{
-		{WPAD_BUTTON_DOWN, "DOWN"},
-		{WPAD_BUTTON_UP, "UP"},
-		{WPAD_BUTTON_LEFT, "LEFT"},
-		{WPAD_BUTTON_RIGHT, "RIGHT"},
-		{WPAD_BUTTON_A, "A"},
-		{WPAD_BUTTON_B, "B"},
-		{WPAD_BUTTON_1, "1"},
-		{WPAD_BUTTON_2, "2"},
-		{WPAD_BUTTON_PLUS, "PLUS"},
-		{WPAD_BUTTON_MINUS, "MINUS"},
-		{WPAD_BUTTON_HOME, "HOME"},
-		{0, ""},
-		{0, ""},
-		{0, ""},
-		{0, ""}
-		}
-	}
+}
 };
-

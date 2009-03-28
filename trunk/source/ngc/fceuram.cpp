@@ -2,9 +2,9 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  *
- * fceustate.c
+ * fceustate.cpp
  *
  * Memory Based Load/Save RAM Manager
  *
@@ -20,10 +20,9 @@
 #include <fat.h>
 #include <string.h>
 
-#include "images/saveicon.h"
 #include "fceugx.h"
-#include "menudraw.h"
-#include "filesel.h"
+#include "menu.h"
+#include "filebrowser.h"
 #include "memcardop.h"
 #include "fileop.h"
 
@@ -42,34 +41,9 @@ extern CartInfo UNIFCart;
 static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
 {
 	u32 offset = 0;
-	char comment[2][32];
-	memset(comment, 0, 64);
 
 	if(LocalHWInfo->battery && LocalHWInfo->SaveGame[0])
 	{
-		// add save icon and comments for Memory Card saves
-		if(operation == 0 &&
-			(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB))
-		{
-			// Copy in save icon
-			memcpy(savebuffer, saveicon, sizeof(saveicon));
-			offset += sizeof(saveicon);
-
-			// And the comments
-			sprintf (comment[0], "%s RAM", APPNAME);
-			strncpy (comment[1],romFilename,31); // we only have 32 chars to work with!
-			comment[1][31] = 0;
-			memcpy(savebuffer+offset, comment, 64);
-			offset += 64;
-		}
-		// skip save icon and comments for Memory Card saves
-		else if(operation == 1 &&
-			(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB))
-		{
-			offset += sizeof(saveicon);
-			offset += 64; // sizeof prefscomment
-		}
-
 		int x;
 
 		for(x=0;x<4;x++)
@@ -87,27 +61,24 @@ static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
 	return offset;
 }
 
-bool SaveRAM (int method, bool silent)
+bool SaveRAM (char * filepath, int method, bool silent)
 {
 	bool retval = false;
-	char filepath[1024];
 	int datasize = 0;
 	int offset = 0;
 
 	if(nesGameType == 4)
 	{
 		if(!silent)
-			WaitPrompt("Saving is not available for FDS games!");
+			InfoPrompt("RAM saving is not available for FDS games!");
 		return false;
 	}
 
 	if(method == METHOD_AUTO)
 		method = autoSaveMethod(silent);
 
-	if (!MakeFilePath(filepath, FILE_RAM, method))
+	if(method == METHOD_AUTO)
 		return false;
-
-	ShowAction ("Saving...");
 
 	AllocSaveBuffer ();
 
@@ -119,44 +90,64 @@ bool SaveRAM (int method, bool silent)
 
 	if (datasize)
 	{
+		if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
+		{
+			// Set the comments
+			char comments[2][32];
+			memset(comments, 0, 64);
+			sprintf (comments[0], "%s RAM", APPNAME);
+			snprintf (comments[1], 32, romFilename);
+			SetMCSaveComments(comments);
+		}
+
 		offset = SaveFile(filepath, datasize, method, silent);
 
 		if (offset > 0)
 		{
-			if ( !silent )
-				WaitPrompt("Save successful");
+			if (!silent)
+				InfoPrompt("Save successful");
 			retval = true;
 		}
 	}
 	else
 	{
-		if ( !silent )
-			WaitPrompt("No data to save!");
+		if (!silent)
+			InfoPrompt("No data to save!");
 	}
 	FreeSaveBuffer ();
 	return retval;
 }
 
-bool LoadRAM (int method, bool silent)
+bool
+SaveRAMAuto (int method, bool silent)
 {
+	if(method == METHOD_AUTO)
+		method = autoSaveMethod(silent);
+
+	if(method == METHOD_AUTO)
+		return false;
+
 	char filepath[1024];
+
+	if(!MakeFilePath(filepath, FILE_RAM, method, romFilename, 0))
+		return false;
+
+	return SaveRAM(filepath, method, silent);
+}
+
+bool LoadRAM (char * filepath, int method, bool silent)
+{
 	int offset = 0;
 	bool retval = false;
 
-	if(nesGameType == 4)
-	{
-		if(!silent)
-			WaitPrompt("Saving is not available for FDS games!");
+	if(nesGameType == 4) // RAM saves don't exist for FDS games
 		return false;
-	}
 
 	if(method == METHOD_AUTO)
 		method = autoSaveMethod(silent); // we use 'Save' because we need R/W
 
-	if (!MakeFilePath(filepath, FILE_RAM, method))
+	if(method == METHOD_AUTO)
 		return false;
-
-	ShowAction ("Loading...");
 
 	AllocSaveBuffer ();
 
@@ -176,8 +167,25 @@ bool LoadRAM (int method, bool silent)
 	{
 		// if we reached here, nothing was done!
 		if(!silent)
-			WaitPrompt ("Save file not found");
+			InfoPrompt ("Save file not found");
 	}
 	FreeSaveBuffer ();
 	return retval;
+}
+
+bool
+LoadRAMAuto (int method, bool silent)
+{
+	if(method == METHOD_AUTO)
+		method = autoSaveMethod(silent);
+
+	if(method == METHOD_AUTO)
+		return false;
+
+	char filepath[1024];
+
+	if(!MakeFilePath(filepath, FILE_RAM, method, romFilename, 0))
+		return false;
+
+	return LoadRAM(filepath, method, silent);
 }

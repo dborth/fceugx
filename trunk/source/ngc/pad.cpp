@@ -10,7 +10,6 @@
  ****************************************************************************/
 
 #include <gccore.h>
-#include <wiiuse/wpad.h>
 #include <math.h>
 
 #include "fceugx.h"
@@ -18,7 +17,10 @@
 #include "gcaudio.h"
 #include "menu.h"
 #include "gcvideo.h"
-#include "filesel.h"
+#include "filebrowser.h"
+#include "button_mapping.h"
+#include "gui/gui.h"
+#include "fceuload.h"
 
 extern "C" {
 #include "driver.h"
@@ -27,7 +29,12 @@ extern "C" {
 extern INPUTC *FCEU_InitZapper(int w);
 }
 
-extern bool romLoaded;
+int rumbleRequest[4] = {0,0,0,0};
+GuiTrigger userInput[4];
+
+#ifdef HW_RVL
+static int rumbleCount[4] = {0,0,0,0};
+#endif
 
 static uint32 JSReturn = 0;
 void *InputDPR;
@@ -35,11 +42,9 @@ void *InputDPR;
 static INPUTC *zapperdata[2];
 static unsigned int myzappers[2][3];
 
-unsigned int nespadmap[11]; // Original NES controller buttons
-unsigned int gcpadmap[11]; // Gamecube controller Padmap
-unsigned int wmpadmap[11]; // Wiimote Padmap
-unsigned int ccpadmap[11]; // Classic Controller Padmap
-unsigned int ncpadmap[11]; // Nunchuk + wiimote Padmap
+u32 nespadmap[11]; // Original NES controller buttons
+u32 zapperpadmap[11]; // Original NES Zapper controller buttons
+u32 btnmap[2][4][12]; // button mapping
 
 void ResetControls()
 {
@@ -62,101 +67,151 @@ void ResetControls()
 
 	/*** Gamecube controller Padmap ***/
 	i=0;
-	gcpadmap[i++] = PAD_BUTTON_B;
-	gcpadmap[i++] = PAD_BUTTON_A;
-	gcpadmap[i++] = PAD_BUTTON_Y;
-	gcpadmap[i++] = PAD_BUTTON_X;
-	gcpadmap[i++] = PAD_TRIGGER_Z;
-	gcpadmap[i++] = PAD_BUTTON_START;
-	gcpadmap[i++] = PAD_BUTTON_UP;
-	gcpadmap[i++] = PAD_BUTTON_DOWN;
-	gcpadmap[i++] = PAD_BUTTON_LEFT;
-	gcpadmap[i++] = PAD_BUTTON_RIGHT;
-	gcpadmap[i++] = PAD_TRIGGER_L;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_B;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_A;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_Y;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_X;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_TRIGGER_Z;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_START;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_UP;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_DOWN;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_LEFT;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_RIGHT;
+	btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_TRIGGER_L;
 
 	/*** Wiimote Padmap ***/
 	i=0;
-	wmpadmap[i++] = WPAD_BUTTON_1;
-	wmpadmap[i++] = WPAD_BUTTON_2;
-	wmpadmap[i++] = 0;
-	wmpadmap[i++] = 0;
-	wmpadmap[i++] = WPAD_BUTTON_MINUS;
-	wmpadmap[i++] = WPAD_BUTTON_PLUS;
-	wmpadmap[i++] = WPAD_BUTTON_RIGHT;
-	wmpadmap[i++] = WPAD_BUTTON_LEFT;
-	wmpadmap[i++] = WPAD_BUTTON_UP;
-	wmpadmap[i++] = WPAD_BUTTON_DOWN;
-	wmpadmap[i++] = WPAD_BUTTON_A;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_1;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_2;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = 0;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = 0;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_MINUS;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_PLUS;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_RIGHT;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_LEFT;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_UP;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_DOWN;
+	btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_A;
 
 	/*** Classic Controller Padmap ***/
 	i=0;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_Y;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_B;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_X;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_A;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_MINUS;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_PLUS;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_UP;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_DOWN;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_LEFT;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_RIGHT;
-	ccpadmap[i++] = WPAD_CLASSIC_BUTTON_FULL_L;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_Y;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_B;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_X;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_A;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_MINUS;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_PLUS;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_UP;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_DOWN;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_LEFT;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_RIGHT;
+	btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_FULL_L;
 
 	/*** Nunchuk + wiimote Padmap ***/
 	i=0;
-	ncpadmap[i++] = WPAD_NUNCHUK_BUTTON_C;
-	ncpadmap[i++] = WPAD_NUNCHUK_BUTTON_Z;
-	ncpadmap[i++] = 0;
-	ncpadmap[i++] = 0;
-	ncpadmap[i++] = WPAD_BUTTON_MINUS;
-	ncpadmap[i++] = WPAD_BUTTON_PLUS;
-	ncpadmap[i++] = WPAD_BUTTON_UP;
-	ncpadmap[i++] = WPAD_BUTTON_DOWN;
-	ncpadmap[i++] = WPAD_BUTTON_LEFT;
-	ncpadmap[i++] = WPAD_BUTTON_RIGHT;
-	ncpadmap[i++] = WPAD_BUTTON_A;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_NUNCHUK_BUTTON_C;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_NUNCHUK_BUTTON_Z;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = 0;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = 0;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_BUTTON_MINUS;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_BUTTON_PLUS;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_BUTTON_UP;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_BUTTON_DOWN;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_BUTTON_LEFT;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_BUTTON_RIGHT;
+	btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_BUTTON_A;
+
+	/*** Zapper : GC controller button mapping ***/
+	i=0;
+	btnmap[CTRL_ZAPPER][CTRLR_GCPAD][i++] = PAD_BUTTON_A; // shoot
+	btnmap[CTRL_ZAPPER][CTRLR_GCPAD][i++] = PAD_BUTTON_B; // insert coin
+
+	/*** Zapper : wiimote button mapping ***/
+	i=0;
+	btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_B; // shoot
+	btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_A; // insert coin
+}
+
+/****************************************************************************
+ * SetControllers
+ ***************************************************************************/
+void SetControllers()
+{
+	if(!romLoaded)
+		return;
+
+	if(GCSettings.Controller == CTRL_PAD4)
+		FCEUI_DisableFourScore(false);
+	else
+		FCEUI_DisableFourScore(true);
+
+	// set defaults
+	zapperdata[0]=NULL;
+	zapperdata[1]=NULL;
+	myzappers[0][0]=myzappers[1][0]=128;
+	myzappers[0][1]=myzappers[1][1]=120;
+	myzappers[0][2]=myzappers[1][2]=0;
+
+	// Default ports back to gamepad
+	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
+	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
+
+	if(GCSettings.Controller == CTRL_ZAPPER)
+	{
+		// enable Zapper
+		int z = 1;
+		zapperdata[z] = FCEU_InitZapper(z);
+		FCEUI_SetInput(z, SI_ZAPPER, myzappers[z], 1);
+	}
 }
 
 /****************************************************************************
  * Initialise Pads
- ****************************************************************************/
+ ***************************************************************************/
 void InitialisePads()
 {
 	InputDPR = &JSReturn;
 	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
 	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
-
-	ToggleFourScore(GCSettings.FourScore, true);
-	ToggleZapper(GCSettings.zapper, true);
+	SetControllers();
 }
 
-void ToggleFourScore(int set, bool loaded)
-{
-	if(loaded)
-		FCEUI_DisableFourScore(set);
-}
+#ifdef HW_RVL
 
-void ToggleZapper(int set, bool loaded)
+/****************************************************************************
+ * ShutoffRumble
+ ***************************************************************************/
+
+void ShutoffRumble()
 {
-	if(loaded)
+	for(int i=0;i<4;i++)
 	{
-		// set defaults
-		zapperdata[0]=NULL;
-		zapperdata[1]=NULL;
-		myzappers[0][0]=myzappers[1][0]=128;
-		myzappers[0][1]=myzappers[1][1]=120;
-		myzappers[0][2]=myzappers[1][2]=0;
+		WPAD_Rumble(i, 0);
+		rumbleCount[i] = 0;
+	}
+}
 
-		// Default ports back to gamepad
-		FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
-		FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
+/****************************************************************************
+ * DoRumble
+ ***************************************************************************/
 
-		if(set)
-		{
-			// enable Zapper
-			zapperdata[set-1] = FCEU_InitZapper(set-1);
-			FCEUI_SetInput(set-1, SI_ZAPPER, myzappers[set-1], 1);
-		}
+void DoRumble(int i)
+{
+	if(rumbleRequest[i] && rumbleCount[i] < 3)
+	{
+		WPAD_Rumble(i, 1); // rumble on
+		rumbleCount[i]++;
+	}
+	else if(rumbleRequest[i])
+	{
+		rumbleCount[i] = 12;
+		rumbleRequest[i] = 0;
+	}
+	else
+	{
+		if(rumbleCount[i])
+			rumbleCount[i]--;
+		WPAD_Rumble(i, 0); // rumble off
 	}
 }
 
@@ -243,6 +298,7 @@ s8 WPAD_StickY(u8 chan, u8 right)
 
 	return (s8)(val * 128.0f);
 }
+#endif
 
 // hold zapper cursor positions
 static int pos_x = 0;
@@ -413,16 +469,16 @@ static unsigned char DecodeJoy( unsigned short pad )
 	int i;
 	for (i = 0; i < MAXJP; i++)
 	{
-		if ( (jp & gcpadmap[i])											// gamecube controller
+		if ( (jp & btnmap[CTRL_PAD][CTRLR_GCPAD][i])											// gamecube controller
 		#ifdef HW_RVL
-		|| ( (exp_type == WPAD_EXP_NONE) && (wp & wmpadmap[i]) )	// wiimote
-		|| ( (exp_type == WPAD_EXP_CLASSIC) && (wp & ccpadmap[i]) )	// classic controller
-		|| ( (exp_type == WPAD_EXP_NUNCHUK) && (wp & ncpadmap[i]) )	// nunchuk + wiimote
+		|| ( (exp_type == WPAD_EXP_NONE) && (wp & btnmap[CTRL_PAD][CTRLR_WIIMOTE][i]) )	// wiimote
+		|| ( (exp_type == WPAD_EXP_CLASSIC) && (wp & btnmap[CTRL_PAD][CTRLR_CLASSIC][i]) )	// classic controller
+		|| ( (exp_type == WPAD_EXP_NUNCHUK) && (wp & btnmap[CTRL_PAD][CTRLR_NUNCHUK][i]) )	// nunchuk + wiimote
 		#endif
 		)
 		{
 			// if zapper is on, ignore all buttons except START and SELECT
-			if(!GCSettings.zapper || nespadmap[i] == JOY_START || nespadmap[i] == JOY_SELECT)
+			if(GCSettings.Controller != CTRL_ZAPPER || nespadmap[i] == JOY_START || nespadmap[i] == JOY_SELECT)
 			{
 				if(nespadmap[i] == RAPID_A)
 				{
@@ -471,18 +527,16 @@ static unsigned char DecodeJoy( unsigned short pad )
 	}
 
 	// zapper enabled
-	if(GCSettings.zapper)
+	if(GCSettings.Controller == CTRL_ZAPPER)
 	{
-		int z = GCSettings.zapper-1; // NES port # (0 or 1)
+		int z = 1; // NES port # (0 or 1)
 
 		myzappers[z][2] = 0; // reset trigger to not pressed
 
 		// is trigger pressed?
-		if ( (jp & PAD_BUTTON_A) // gamecube controller
+		if ( (jp & btnmap[CTRL_ZAPPER][CTRLR_GCPAD][0])	// gamecube controller
 		#ifdef HW_RVL
-		|| (wp & WPAD_BUTTON_A)	// wiimote
-		|| (wp & WPAD_BUTTON_B)
-		|| (wp & WPAD_CLASSIC_BUTTON_A) // classic controller
+		|| ( (exp_type == WPAD_EXP_NONE) && (wp & btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE][0]) )	// wiimote
 		#endif
 		)
 		{
@@ -491,9 +545,9 @@ static unsigned char DecodeJoy( unsigned short pad )
 		}
 
 		// VS zapper games
-		if ( (jp & PAD_BUTTON_B) // gamecube controller
+		if ( (jp & btnmap[CTRL_ZAPPER][CTRLR_GCPAD][1])	// gamecube controller
 		#ifdef HW_RVL
-		|| (wp & WPAD_BUTTON_1)	// wiimote
+		|| ( (exp_type == WPAD_EXP_NONE) && (wp & btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE][1]) )	// wiimote
 		#endif
 		)
 		{
@@ -519,13 +573,11 @@ void GetJoy()
     short i;
 
     s8 gc_px = PAD_SubStickX (0);
-    s8 gc_py = PAD_SubStickY (0);
     u32 jp = PAD_ButtonsHeld (0); // gamecube controller button info
 
     #ifdef HW_RVL
     s8 wm_sx = WPAD_StickX (0,1);
-    s8 wm_sy = WPAD_StickY (0,1);
-    u32 wm_pb = WPAD_ButtonsHeld (0); // wiimote / expansion button info
+    u32 wm_pb = WPAD_ButtonsDown (0); // wiimote / expansion button info
     #endif
 
     // Turbo mode
@@ -544,17 +596,6 @@ void GetJoy()
     	frameskip = 0;
     }
 
-    // Check for video zoom
-	if (GCSettings.Zoom)
-	{
-		if (gc_py < -36 || gc_py > 36)
-		zoom ((float) gc_py / -36);
-		#ifdef HW_RVL
-			if (wm_sy < -36 || wm_sy > 36)
-			zoom ((float) wm_sy / -36);
-		#endif
-	}
-
     // request to go back to menu
     if ((gc_px < -70) ||
        ((jp & PAD_BUTTON_START) && (jp & PAD_BUTTON_A) &&
@@ -565,7 +606,6 @@ void GetJoy()
     #endif
     )
 	{
-    	StopAudio();
     	ConfigRequested = 1;
 	}
 	else

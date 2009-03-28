@@ -2,9 +2,9 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  *
- * fceugx.c
+ * fceugx.cpp
  *
  * This file controls overall program flow. Most things start and end here!
  ****************************************************************************/
@@ -25,20 +25,24 @@
 #include "fceustate.h"
 #include "fceuram.h"
 #include "common.h"
-#include "menudraw.h"
 #include "menu.h"
 #include "preferences.h"
 #include "fileop.h"
+#include "filebrowser.h"
 #include "networkop.h"
 #include "gcaudio.h"
 #include "gcvideo.h"
 #include "pad.h"
+#include "filelist.h"
+#include "gui/gui.h"
 
 #ifdef HW_RVL
 extern "C" {
 #include <di/di.h>
 }
 #endif
+
+#include "FreeTypeGX.h"
 
 extern "C" {
 #include "types.h"
@@ -53,11 +57,11 @@ unsigned char * nesrom = NULL;
 int ConfigRequested = 0;
 int ShutdownRequested = 0;
 int ResetRequested = 0;
+int ExitRequested = 0;
 char appPath[1024];
+FreeTypeGX *fontSystem;
 uint8 *xbsave=NULL;
 int frameskip = 0;
-
-extern bool romLoaded;
 
 /****************************************************************************
  * Shutdown / Reboot / Exit
@@ -65,9 +69,14 @@ extern bool romLoaded;
 
 static void ExitCleanup()
 {
+#ifdef HW_RVL
+	ShutoffRumble();
+#endif
+	ShutdownAudio();
+	StopGX();
+
 	LWP_SuspendThread (devicethread);
 	UnmountAllFAT();
-	CloseShare();
 
 #ifdef HW_RVL
 	DI_Close();
@@ -80,27 +89,32 @@ static void ExitCleanup()
 	void (*PSOReload) () = (void (*)()) 0x80001800;
 #endif
 
-void Reboot()
+void ExitApp()
 {
 	ExitCleanup();
-#ifdef HW_RVL
-    SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
-#else
-	#define SOFTRESET_ADR ((volatile u32*)0xCC003024)
-	*SOFTRESET_ADR = 0x00000000;
-#endif
-}
 
-void ExitToLoader()
-{
-	ExitCleanup();
-	// Exit to Loader
-	#ifdef HW_RVL
-		exit(0);
-	#else	// gamecube
-		if (psoid[0] == PSOSDLOADID)
-			PSOReload ();
-	#endif
+	if(GCSettings.ExitAction == 0) // Exit to Loader
+	{
+		#ifdef HW_RVL
+			exit(0);
+		#else
+			if (psoid[0] == PSOSDLOADID)
+				PSOReload ();
+		#endif
+	}
+	else if(GCSettings.ExitAction == 1) // Exit to Menu
+	{
+		#ifdef HW_RVL
+			SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+		#else
+			#define SOFTRESET_ADR ((volatile u32*)0xCC003024)
+			*SOFTRESET_ADR = 0x00000000;
+		#endif
+	}
+	else // Shutdown Wii
+	{
+		SYS_ResetSystem(SYS_POWEROFF, 0, 0);
+	}
 }
 
 #ifdef HW_RVL
@@ -182,7 +196,6 @@ int main(int argc, char *argv[])
 	#endif
 
 	#ifdef HW_RVL
-	DI_Close();
 	DI_Init();	// first
 	#endif
 
@@ -194,13 +207,13 @@ int main(int argc, char *argv[])
 	WPAD_Init();
 	#endif
 
-	InitGCVideo ();
+	InitGCVideo (); // Initialise video
 	ResetVideo_Menu (); // change to menu video mode
 
 	#ifdef HW_RVL
 	// read wiimote accelerometer and IR data
 	WPAD_SetDataFormat(WPAD_CHAN_ALL,WPAD_FMT_BTNS_ACC_IR);
-	WPAD_SetVRes(WPAD_CHAN_ALL,640,480);
+	WPAD_SetVRes(WPAD_CHAN_ALL, screenwidth, screenheight);
 
 	// Wii Power/Reset buttons
 	WPAD_SetPowerButtonCallback((WPADShutdownCallback)ShutdownCB);
@@ -208,71 +221,61 @@ int main(int argc, char *argv[])
 	SYS_SetResetCallback(ResetCB);
 	#endif
 
-	// Initialise FreeType
-	if (FT_Init ())
-	{
-		printf ("Cannot initialise font subsystem!\n");
-		while (1);
-	}
-
-	InitialiseAudio();
-
-	// Initialize libFAT for SD and USB
-	MountAllFAT();
-
 	// Initialize DVD subsystem (GameCube only)
 	#ifdef HW_DOL
 	DVD_Init ();
 	#endif
-
-	// allocate memory to store rom
-	nesrom = (unsigned char *)memalign(32,1024*1024*3); // 3 MB should be plenty
-
-	/*** Minimal Emulation Loop ***/
-	if ( !FCEUI_Initialize() )
-	{
-		WaitPrompt("Unable to initialize FCE Ultra\n");
-		ExitToLoader();
-	}
-
-	FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
-
-	memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
-	cleanSFMDATA(); // clear state data
-
-	// Set defaults
-	DefaultSettings();
 
 	// store path app was loaded from
 	sprintf(appPath, "fceugx");
 	if(argc > 0 && argv[0] != NULL)
 		CreateAppPath(argv[0]);
 
-	int selectedMenu = -1;
+	MountAllFAT(); // Initialize libFAT for SD and USB
 
-	// Load preferences
-	if(!LoadPrefs())
-	{
-		WaitPrompt("Preferences reset - check settings!");
-		selectedMenu = 1; // change to preferences menu
-	}
+	// Audio
+	InitialiseAudio();
+
+	// Initialize font system
+	fontSystem = new FreeTypeGX();
+	fontSystem->loadFont(font_ttf, font_ttf_size, 0);
+	fontSystem->setCompatibilityMode(FTGX_COMPATIBILITY_DEFAULT_TEVOP_GX_PASSCLR | FTGX_COMPATIBILITY_DEFAULT_VTXDESC_GX_NONE);
+
+	InitGUIThreads();
+
+	DefaultSettings(); // Set defaults
+
+	// allocate memory to store rom
+	nesrom = (unsigned char *)memalign(32,1024*1024*3); // 3 MB should be plenty
+
+	/*** Minimal Emulation Loop ***/
+	if (!FCEUI_Initialize())
+		ExitApp();
+
+	FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
+
+	memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
+	cleanSFMDATA(); // clear state data
 
 	FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
 	FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
 
     while (1) // main loop
     {
-		#ifdef HW_RVL
-		if(ShutdownRequested)
-			ShutdownWii();
-		#endif
-
-		// go back to checking if devices were inserted/removed
+    	// go back to checking if devices were inserted/removed
 		// since we're entering the menu
 		LWP_ResumeThread (devicethread);
 
-    	MainMenu(selectedMenu);
-		selectedMenu = 2; // return to game menu from now on
+		ConfigRequested = 1;
+		SwitchAudioMode(1);
+
+		if(!romLoaded)
+			MainMenu(MENU_GAMESELECTION);
+		else
+			MainMenu(MENU_GAME);
+
+		ConfigRequested = 0;
+		SwitchAudioMode(0);
 
 		// stop checking if devices were removed/inserted
 		// since we're starting emulation again
@@ -308,32 +311,15 @@ int main(int argc, char *argv[])
 				PowerNES(); // reset game
 				ResetRequested = 0;
 			}
-
 			if(ConfigRequested)
 			{
+				TakeScreenshot();
 				ResetVideo_Menu();
-				if (GCSettings.AutoSave == 1)
-				{
-					SaveRAM(GCSettings.SaveMethod, SILENT);
-				}
-				else if (GCSettings.AutoSave == 2)
-				{
-					SaveState(GCSettings.SaveMethod, SILENT);
-				}
-				else if(GCSettings.AutoSave == 3)
-				{
-					SaveRAM(GCSettings.SaveMethod, SILENT);
-					SaveState(GCSettings.SaveMethod, SILENT);
-				}
-
-				// save zoom level
-				SavePrefs(SILENT);
-
 				ConfigRequested = 0;
 				break; // leave emulation loop
 			}
-		}
-    }
+		} // emulation loop
+    } // main loop
 }
 
 /****************************************************************************
