@@ -40,7 +40,7 @@ char rootdir[10];
 static char szpath[MAXPATHLEN];
 static bool inSz = false;
 
-char romFilename[200];
+char romFilename[256];
 int nesGameType;
 
 /****************************************************************************
