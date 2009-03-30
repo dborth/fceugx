@@ -625,7 +625,6 @@ ResetVideo_Emu ()
 
 	// reconfigure VI
 	VIDEO_Configure (rmode);
-	VIDEO_ClearFrameBuffer (rmode, xfb[whichfb], COLOR_BLACK);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	if (rmode->viTVMode & VI_NON_INTERLACE)
@@ -633,6 +632,9 @@ ResetVideo_Emu ()
 	else
 		while (VIDEO_GetNextField())
 			VIDEO_WaitVSync();
+
+	GXColor background = {0, 0, 0, 255};
+	GX_SetCopyClear (background, 0x00ffffff);
 
 	// reconfigure GX
 	GX_SetViewport (0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1);

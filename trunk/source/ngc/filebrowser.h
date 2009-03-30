@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 #define MAXJOLIET 255
-#define MAXDISPLAY 50
+#define MAXDISPLAY 35
 
 typedef struct
 {
