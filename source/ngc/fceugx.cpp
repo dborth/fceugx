@@ -233,6 +233,8 @@ int main(int argc, char *argv[])
 
 	MountAllFAT(); // Initialize libFAT for SD and USB
 
+	DefaultSettings(); // Set defaults
+
 	// Audio
 	InitialiseAudio();
 
@@ -242,8 +244,6 @@ int main(int argc, char *argv[])
 	fontSystem->setCompatibilityMode(FTGX_COMPATIBILITY_DEFAULT_TEVOP_GX_PASSCLR | FTGX_COMPATIBILITY_DEFAULT_VTXDESC_GX_NONE);
 
 	InitGUIThreads();
-
-	DefaultSettings(); // Set defaults
 
 	// allocate memory to store rom
 	nesrom = (unsigned char *)memalign(32,1024*1024*3); // 3 MB should be plenty

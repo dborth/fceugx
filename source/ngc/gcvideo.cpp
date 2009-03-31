@@ -265,7 +265,7 @@ InitVideoThread ()
 	LWP_InitQueue (&videoblankqueue);
 
 	/*** Create the thread on this queue ***/
-	LWP_CreateThread (&vbthread, vbgetback, NULL, vbstack, TSTACK, 150);
+	LWP_CreateThread (&vbthread, vbgetback, NULL, vbstack, TSTACK, 77);
 }
 
 /****************************************************************************
@@ -566,7 +566,6 @@ InitGCVideo ()
 	copynow = GX_FALSE;
 
 	StartGX ();
-	draw_init ();
 	InitVideoThread ();
 	// Finally, the video is up and ready for use :)
 }
@@ -663,6 +662,7 @@ ResetVideo_Emu ()
 
 	// set aspect ratio
 	updateScaling = 5;
+	draw_init ();
 }
 
 /****************************************************************************
