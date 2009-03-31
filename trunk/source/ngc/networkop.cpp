@@ -9,6 +9,8 @@
  * Network and SMB support routines
  ****************************************************************************/
 
+#ifdef HW_RVL
+
 #include <network.h>
 #include <smb.h>
 #include <mxml.h>
@@ -22,6 +24,7 @@
 #include "fileop.h"
 #include "http.h"
 
+static bool inNetworkInit = false;
 static bool networkInit = false;
 static bool autoNetworkInit = true;
 static bool networkShareInit = false;
@@ -64,31 +67,34 @@ void UpdateCheck()
 				item = mxmlFindElement(xml, xml, "app", "version", NULL, MXML_DESCEND);
 				if(item) // a version entry exists
 				{
-					const char * version = (char *)mxmlElementGetAttr(item, "version");
+					const char * version = mxmlElementGetAttr(item, "version");
 
-					int verMajor = version[0] - '0';
-					int verMinor = version[2] - '0';
-					int verPoint = version[4] - '0';
-					int curMajor = APPVERSION[0] - '0';
-					int curMinor = APPVERSION[2] - '0';
-					int curPoint = APPVERSION[4] - '0';
-
-					// check that the versioning is valid and is a newer version
-					if((verMajor >= 0 && verMajor <= 9 &&
-						verMinor >= 0 && verMinor <= 9 &&
-						verPoint >= 0 && verPoint <= 9) &&
-						(verMajor > curMajor ||
-						verMinor > curMinor ||
-						verPoint > curPoint))
+					if(version && strlen(version) == 5)
 					{
-						item = mxmlFindElement(xml, xml, "file", NULL, NULL, MXML_DESCEND);
-						if(item)
+						int verMajor = version[0] - '0';
+						int verMinor = version[2] - '0';
+						int verPoint = version[4] - '0';
+						int curMajor = APPVERSION[0] - '0';
+						int curMinor = APPVERSION[2] - '0';
+						int curPoint = APPVERSION[4] - '0';
+
+						// check that the versioning is valid and is a newer version
+						if((verMajor >= 0 && verMajor <= 9 &&
+							verMinor >= 0 && verMinor <= 9 &&
+							verPoint >= 0 && verPoint <= 9) &&
+							(verMajor > curMajor ||
+							verMinor > curMinor ||
+							verPoint > curPoint))
 						{
-							const char * tmp = mxmlElementGetAttr(item, "url");
-							if(tmp)
+							item = mxmlFindElement(xml, xml, "file", NULL, NULL, MXML_DESCEND);
+							if(item)
 							{
-								snprintf(updateURL, 128, "%s", tmp);
-								updateFound = true;
+								const char * tmp = mxmlElementGetAttr(item, "url");
+								if(tmp)
+								{
+									snprintf(updateURL, 128, "%s", tmp);
+									updateFound = true;
+								}
 							}
 						}
 					}
@@ -151,7 +157,7 @@ bool DownloadUpdate()
 		else
 		{
 			result = false;
-			InfoPrompt("Update failed!");
+			ErrorPrompt("Update failed!");
 		}
 
 		updateFound = false; // updating is finished (successful or not!)
@@ -177,6 +183,14 @@ void InitializeNetwork(bool silent)
 	if(!silent)
 		ShowAction ("Initializing network...");
 
+	while(inNetworkInit) // a network init is already in progress!
+		usleep(50);
+
+	if(networkInit) // check again if the network was inited
+		return;
+
+	inNetworkInit = true;
+
 	char ip[16];
 	s32 initResult = if_config(ip, NULL, NULL, true);
 
@@ -196,6 +210,9 @@ void InitializeNetwork(bool silent)
 			ErrorPrompt(msg);
 		}
 	}
+	if(!silent)
+		CancelAction();
+	inNetworkInit = false;
 }
 
 void CloseShare()
@@ -265,11 +282,15 @@ ConnectShare (bool silent)
 			{
 				networkShareInit = true;
 			}
+			if(!silent)
+				CancelAction();
 		}
 
 		if(!networkShareInit && !silent)
-			ErrorPrompt ("Failed to connect to network share.");
+			ErrorPrompt("Failed to connect to network share.");
 	}
 
 	return networkShareInit;
 }
+
+#endif
