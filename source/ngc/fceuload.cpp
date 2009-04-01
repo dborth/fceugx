@@ -98,8 +98,6 @@ int GCMemROM(int method, int size)
 	FCEUI_SetSoundVolume(100); // 0-100
 	FCEUI_SetLowPass(0);
 
-	InitialisePads();
-
 	MakeFCEUFile((char *) nesrom, size);
 
 	nesGameType = 0;

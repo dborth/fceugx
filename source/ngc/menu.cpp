@@ -1165,7 +1165,7 @@ static int MenuGame()
 	GuiImage resetBtnIcon(&iconReset);
 	GuiButton resetBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	resetBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	resetBtn.SetPosition(-125, 250);
+	resetBtn.SetPosition(125, 250);
 	resetBtn.SetLabel(&resetBtnTxt);
 	resetBtn.SetImage(&resetBtnImg);
 	resetBtn.SetImageOver(&resetBtnImgOver);
@@ -1180,7 +1180,7 @@ static int MenuGame()
 	GuiImage controllerBtnIcon(&iconController);
 	GuiButton controllerBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	controllerBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	controllerBtn.SetPosition(125, 250);
+	controllerBtn.SetPosition(-125, 250);
 	controllerBtn.SetLabel(&controllerBtnTxt);
 	controllerBtn.SetImage(&controllerBtnImg);
 	controllerBtn.SetImageOver(&controllerBtnImgOver);
@@ -1632,7 +1632,7 @@ static int MenuGameSaves(int action)
 			}
 			else // save
 			{
-				if(ret == 0) // new SRAM
+				if(ret == 0) // new RAM
 				{
 					for(i=1; i < 100; i++)
 						if(saves.files[FILE_RAM][i] == 0)
@@ -1658,7 +1658,7 @@ static int MenuGameSaves(int action)
 						menu = MENU_GAME_SAVE;
 					}
 				}
-				else // overwrite SRAM/Snapshot
+				else // overwrite RAM/State
 				{
 					MakeFilePath(filepath, saves.type[ret-2], method, saves.filename[ret-2]);
 					switch(saves.type[ret-2])
@@ -2504,7 +2504,7 @@ static int MenuSettingsMappingsMap()
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.SetPosition(0, 108);
 	optionBrowser.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	optionBrowser.SetCol2Position(180);
+	optionBrowser.SetCol2Position(280);
 
 	HaltGui();
 	GuiWindow w(screenwidth, screenheight);
@@ -3024,12 +3024,12 @@ static int MenuSettingsFile()
 		snprintf (options.value[4], 256, "%s", GCSettings.CheatFolder);
 
 		if (GCSettings.AutoLoad == 0) sprintf (options.value[5],"Off");
-		else if (GCSettings.AutoLoad == 1) sprintf (options.value[5],"SRAM");
-		else if (GCSettings.AutoLoad == 2) sprintf (options.value[5],"Snapshot");
+		else if (GCSettings.AutoLoad == 1) sprintf (options.value[5],"RAM");
+		else if (GCSettings.AutoLoad == 2) sprintf (options.value[5],"State");
 
 		if (GCSettings.AutoSave == 0) sprintf (options.value[5],"Off");
-		else if (GCSettings.AutoSave == 1) sprintf (options.value[6],"SRAM");
-		else if (GCSettings.AutoSave == 2) sprintf (options.value[6],"Snapshot");
+		else if (GCSettings.AutoSave == 1) sprintf (options.value[6],"RAM");
+		else if (GCSettings.AutoSave == 2) sprintf (options.value[6],"State");
 		else if (GCSettings.AutoSave == 3) sprintf (options.value[6],"Both");
 
 		sprintf (options.value[7], "%s", GCSettings.VerifySaves == true ? "On" : "Off");

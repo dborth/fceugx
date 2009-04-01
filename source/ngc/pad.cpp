@@ -140,6 +140,8 @@ void SetControllers()
 	if(!romLoaded)
 		return;
 
+	InputDPR = &JSReturn;
+
 	if(GCSettings.Controller == CTRL_PAD4)
 		FCEUI_DisableFourScore(false);
 	else
@@ -158,22 +160,12 @@ void SetControllers()
 
 	if(GCSettings.Controller == CTRL_ZAPPER)
 	{
-		// enable Zapper
-		int z = 1;
-		zapperdata[z] = FCEU_InitZapper(z);
-		FCEUI_SetInput(z, SI_ZAPPER, myzappers[z], 1);
+		int p;
+		if(nesGameType == 2) p = 0;
+		else p = 1;
+		zapperdata[p] = FCEU_InitZapper(p);
+		FCEUI_SetInput(p, SI_ZAPPER, myzappers[p], 1);
 	}
-}
-
-/****************************************************************************
- * Initialise Pads
- ***************************************************************************/
-void InitialisePads()
-{
-	InputDPR = &JSReturn;
-	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
-	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
-	SetControllers();
 }
 
 #ifdef HW_RVL
