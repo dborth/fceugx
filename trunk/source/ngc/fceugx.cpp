@@ -282,7 +282,7 @@ int main(int argc, char *argv[])
 		LWP_SuspendThread (devicethread);
 
 		ResetVideo_Emu();
-
+		SetControllers();
 		setFrameTimer(); // set frametimer method before emulation
 		SetPalette();
 

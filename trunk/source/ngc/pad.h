@@ -64,15 +64,13 @@ extern GuiTrigger userInput[4];
 extern int rumbleRequest[4];
 extern u32 btnmap[2][4][12];
 
+void SetControllers();
 void ResetControls();
 void ShutoffRumble();
 void DoRumble(int i);
 s8 WPAD_StickX(u8 chan,u8 right);
 s8 WPAD_StickY(u8 chan, u8 right);
-void InitialisePads();
 void GetJoy();
-void ToggleFourScore(int set);
-void ToggleZapper(int set);
 void DrawCursor();
 
 #endif
