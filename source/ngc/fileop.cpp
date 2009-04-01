@@ -80,8 +80,8 @@ devicecallback (void *arg)
 			}
 		}
 
-		//InitializeNetwork(SILENT);
-		//UpdateCheck();
+		InitializeNetwork(SILENT);
+		UpdateCheck();
 #else
 		if(isMounted[METHOD_SD_SLOTA])
 		{
