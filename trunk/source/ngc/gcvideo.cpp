@@ -530,8 +530,8 @@ InitGCVideo ()
 	// widescreen fix
 	if(CONF_GetAspectRatio())
 	{
-		vmode->viWidth = 678;
-		vmode->viXOrigin = (VI_MAX_WIDTH_PAL - 678) / 2;
+		vmode->viWidth = VI_MAX_WIDTH_PAL-12;
+		vmode->viXOrigin = ((VI_MAX_WIDTH_PAL - vmode->viWidth) / 2) + 2;
 	}
 #endif
 
