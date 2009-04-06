@@ -242,10 +242,8 @@ vbgetback (void *arg)
 {
 	while (1)
 	{
-		/*if(GCSettings.timing != vmode_60hz)
-			VIDEO_WaitVSync();
-		else*/
-			SyncSpeed();
+		VIDEO_WaitVSync();
+		SyncSpeed();
 		LWP_SuspendThread (vbthread);
 	}
 
@@ -265,7 +263,7 @@ InitVideoThread ()
 	LWP_InitQueue (&videoblankqueue);
 
 	/*** Create the thread on this queue ***/
-	LWP_CreateThread (&vbthread, vbgetback, NULL, vbstack, TSTACK, 77);
+	LWP_CreateThread (&vbthread, vbgetback, NULL, vbstack, TSTACK, 100);
 }
 
 /****************************************************************************
@@ -744,13 +742,12 @@ void RenderFrame(unsigned char *XBuf)
 	// load texture into GX
 	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 2);
 	GX_LoadTexObj (&texobj, GX_TEXMAP0);
-	GX_InvalidateTexAll();
 
 	// render textured quad
 	draw_square(view);
 	GX_DrawDone();
 
-	// EFB is ready to be coied into XFB
+	// EFB is ready to be copied into XFB
 	VIDEO_SetNextFramebuffer(xfb[whichfb]);
 	VIDEO_Flush();
 	copynow = GX_TRUE;

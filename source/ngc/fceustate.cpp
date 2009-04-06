@@ -17,6 +17,8 @@
 #include <string.h>
 #include <malloc.h>
 #include <fat.h>
+#include "pngu/pngu.h"
+
 #include "types.h"
 #include "state.h"
 #include "x6502.h"
@@ -26,6 +28,7 @@
 #include "filebrowser.h"
 #include "memcardop.h"
 #include "fileop.h"
+#include "gcvideo.h"
 
 extern "C" {
 /*** External functions ***/
@@ -296,6 +299,7 @@ bool SaveState (char * filepath, int method, bool silent)
 	bool retval = false;
 	int datasize;
 	int offset = 0;
+	int imgSize = 0; // image screenshot bytes written
 
 	if(method == METHOD_AUTO)
 		method = autoSaveMethod(silent);
@@ -320,15 +324,39 @@ bool SaveState (char * filepath, int method, bool silent)
 		}
 
 		offset = SaveFile(filepath, datasize, method, silent);
-
-		if (offset > 0)
-		{
-			if ( !silent )
-				InfoPrompt("Save successful");
-			retval = true;
-		}
 	}
 	FreeSaveBuffer ();
+
+	// save screenshot - I would prefer to do this from gameScreenTex
+	if(gameScreenTex2 != NULL && method != METHOD_MC_SLOTA && method != METHOD_MC_SLOTB)
+	{
+		AllocSaveBuffer ();
+
+		IMGCTX pngContext = PNGU_SelectImageFromBuffer(savebuffer);
+
+		if (pngContext != NULL)
+		{
+			imgSize = PNGU_EncodeFromGXTexture(pngContext, 640, 480, gameScreenTex2, 0);
+			PNGU_ReleaseImageContext(pngContext);
+		}
+
+		if(imgSize > 0)
+		{
+			char screenpath[1024];
+			filepath[strlen(filepath)-4] = 0;
+			sprintf(screenpath, "%s.png", filepath);
+			SaveFile(screenpath, imgSize, method, silent);
+		}
+
+		FreeSaveBuffer ();
+	}
+
+	if (offset > 0)
+	{
+		if (!silent)
+			InfoPrompt("Save successful");
+		retval = true;
+	}
 	return retval;
 }
 
