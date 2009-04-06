@@ -35,11 +35,11 @@ int FDSSwitchRequested;
 /*** External 2D Video ***/
 /*** 2D Video Globals ***/
 static GXRModeObj *vmode; // Graphics Mode Object
-unsigned int *xfb[2]; // Framebuffers
-int whichfb = 0; // Frame buffer toggle
+static unsigned int *xfb[2]; // Framebuffers
+static int whichfb = 0; // Frame buffer toggle
 int screenheight;
 int screenwidth;
-bool progressive = FALSE;
+bool progressive = false;
 
 /*** 3D GX ***/
 #define TEX_WIDTH 256
@@ -226,7 +226,7 @@ static void SyncSpeed()
  ***************************************************************************/
 #define TSTACK 16384
 static lwpq_t videoblankqueue;
-static lwp_t vbthread;
+static lwp_t vbthread = LWP_THREAD_NULL;
 static unsigned char vbstack[TSTACK];
 
 /****************************************************************************
@@ -528,7 +528,7 @@ InitGCVideo ()
 
 #ifdef HW_RVL
 	// widescreen fix
-	if(CONF_GetAspectRatio())
+	if(CONF_GetAspectRatio() == CONF_ASPECT_16_9)
 	{
 		vmode->viWidth = VI_MAX_WIDTH_PAL-12;
 		vmode->viXOrigin = ((VI_MAX_WIDTH_PAL - vmode->viWidth) / 2) + 2;
@@ -744,6 +744,7 @@ void RenderFrame(unsigned char *XBuf)
 	// load texture into GX
 	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 2);
 	GX_LoadTexObj (&texobj, GX_TEXMAP0);
+	GX_InvalidateTexAll();
 
 	// render textured quad
 	draw_square(view);
