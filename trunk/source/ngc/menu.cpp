@@ -542,7 +542,7 @@ void AutoSave()
  * Opens an on-screen keyboard window, with the data entered being stored
  * into the specified variable.
  ***************************************************************************/
-static void OnScreenKeyboard(char * var, u16 maxlen)
+static void OnScreenKeyboard(char * var, u32 maxlen)
 {
 	int save = -1;
 
@@ -3080,7 +3080,7 @@ static int MenuSettingsFile()
 		else if (GCSettings.AutoLoad == 1) sprintf (options.value[5],"RAM");
 		else if (GCSettings.AutoLoad == 2) sprintf (options.value[5],"State");
 
-		if (GCSettings.AutoSave == 0) sprintf (options.value[5],"Off");
+		if (GCSettings.AutoSave == 0) sprintf (options.value[6],"Off");
 		else if (GCSettings.AutoSave == 1) sprintf (options.value[6],"RAM");
 		else if (GCSettings.AutoSave == 2) sprintf (options.value[6],"State");
 		else if (GCSettings.AutoSave == 3) sprintf (options.value[6],"Both");
@@ -3100,15 +3100,15 @@ static int MenuSettingsFile()
 				break;
 
 			case 2:
-				OnScreenKeyboard(GCSettings.LoadFolder, 256);
+				OnScreenKeyboard(GCSettings.LoadFolder, 30);
 				break;
 
 			case 3:
-				OnScreenKeyboard(GCSettings.SaveFolder, 256);
+				OnScreenKeyboard(GCSettings.SaveFolder, 30);
 				break;
 
 			case 4:
-				OnScreenKeyboard(GCSettings.CheatFolder, 256);
+				OnScreenKeyboard(GCSettings.CheatFolder, 30);
 				break;
 
 			case 5:
@@ -3414,6 +3414,8 @@ MainMenu (int menu)
 	else
 		trigA.SetSimpleTrigger(-1, WPAD_BUTTON_A | WPAD_CLASSIC_BUTTON_A, PAD_BUTTON_A);
 
+	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
+	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
 	GuiImageData bgTop(bg_top_png);
 	bgTopImg = new GuiImage(&bgTop);
 	GuiImageData bgBottom(bg_bottom_png);
@@ -3431,6 +3433,8 @@ MainMenu (int menu)
 	btnLogo->SetImage(&logoImg);
 	btnLogo->SetImageOver(&logoImgOver);
 	btnLogo->SetLabel(&logoTxt);
+	btnLogo->SetSoundOver(&btnSoundOver);
+	btnLogo->SetSoundClick(&btnSoundClick);
 	btnLogo->SetTrigger(&trigA);
 	btnLogo->SetUpdateCallback(WindowCredits);
 
