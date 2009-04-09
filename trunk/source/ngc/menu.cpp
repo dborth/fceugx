@@ -609,8 +609,7 @@ static void OnScreenKeyboard(char * var, u32 maxlen)
 
 	if(save)
 	{
-		strncpy(var, keyboard.kbtextstr, 100);
-		var[100] = 0;
+		snprintf(var, maxlen, "%s", keyboard.kbtextstr);
 	}
 
 	HaltGui();

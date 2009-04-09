@@ -211,16 +211,30 @@ bool MakeFilePath(char filepath[], int type, int method, char * filename, int fi
 				if(type == FILE_RAM) sprintf(ext, "sav");
 				else sprintf(ext, "fcs");
 
-				if(filenum >= 0)
+				if(filenum >= -1)
 				{
 					if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
 					{
-						filename[26] = 0; // truncate filename
-						sprintf(file, "%s%i.%s", filename, filenum, ext);
+						if(filenum > 9)
+						{
+							return false;
+						}
+						else if(filenum == -1)
+						{
+							filename[27] = 0; // truncate filename
+							sprintf(file, "%s.%s", filename, ext);
+						}
+						else
+						{
+							filename[26] = 0; // truncate filename
+							sprintf(file, "%s%i.%s", filename, filenum, ext);
+						}
 					}
 					else
 					{
-						if(filenum == 0)
+						if(filenum == -1)
+							sprintf(file, "%s.%s", filename, ext);
+						else if(filenum == 0)
 							sprintf(file, "%s Auto.%s", filename, ext);
 						else
 							sprintf(file, "%s %i.%s", filename, filenum, ext);
@@ -394,8 +408,11 @@ int BrowserLoadSz(int method)
 		return 0;
 
 	// add device to filepath
-	sprintf(filepath, "%s%s", rootdir, szpath);
-	memcpy(szpath, filepath, MAXPATHLEN);
+	if(method != METHOD_DVD)
+	{
+		sprintf(filepath, "%s%s", rootdir, szpath);
+		memcpy(szpath, filepath, MAXPATHLEN);
+	}
 
 	int szfiles = SzParse(szpath, method);
 	if(szfiles)

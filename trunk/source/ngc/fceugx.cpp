@@ -53,15 +53,18 @@ extern uint8 FDSBIOS[8192];
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 }
 
-unsigned char * nesrom = NULL;
+static uint8 *xbsave=NULL;
+static int fskipc = 0;
+static int videoReset = 0;
+static int currentMode = 0;
+static int ResetRequested = 0;
 int ConfigRequested = 0;
 int ShutdownRequested = 0;
-int ResetRequested = 0;
 int ExitRequested = 0;
 char appPath[1024];
 FreeTypeGX *fontSystem;
-uint8 *xbsave=NULL;
 int frameskip = 0;
+unsigned char * nesrom = NULL;
 
 /****************************************************************************
  * Shutdown / Reboot / Exit
@@ -274,6 +277,8 @@ int main(int argc, char *argv[])
 		else
 			MainMenu(MENU_GAME);
 
+		videoReset = -1;
+		currentMode = GCSettings.render;
 		ConfigRequested = 0;
 		SwitchAudioMode(0);
 
@@ -286,7 +291,7 @@ int main(int argc, char *argv[])
 		setFrameTimer(); // set frametimer method before emulation
 		SetPalette();
 
-		static int fskipc=0;
+		fskipc=0;
 
 		while(1) // emulation loop
 		{
@@ -313,10 +318,21 @@ int main(int argc, char *argv[])
 			}
 			if(ConfigRequested)
 			{
-				TakeScreenshot();
-				ResetVideo_Menu();
-				ConfigRequested = 0;
-				break; // leave emulation loop
+				if((GCSettings.render != 0 && videoReset == -1) || videoReset == 0)
+				{
+					TakeScreenshot();
+					ResetVideo_Menu();
+					ConfigRequested = 0;
+					GCSettings.render = currentMode;
+					break; // leave emulation loop
+				}
+				else if(videoReset == -1)
+				{
+					GCSettings.render = 2;
+					videoReset = 2;
+					ResetVideo_Emu();
+				}
+				videoReset--;
 			}
 		} // emulation loop
     } // main loop
