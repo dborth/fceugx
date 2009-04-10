@@ -195,7 +195,7 @@ LoadRAMAuto (int method, bool silent)
 		return true;
 
 	// look for file with no number or Auto appended
-	if(!MakeFilePath(filepath2, action, method, romFilename, -1))
+	if(!MakeFilePath(filepath2, FILE_RAM, method, romFilename, -1))
 		return false;
 
 	if(LoadRAM(filepath2, method, silent))
