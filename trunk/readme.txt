@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 2.0.9
+                                  Version 3.0.0
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -9,8 +9,7 @@
 
 FCE Ultra GX is a modified port of the FCE Ultra 0.98.12 Nintendo Entertainment
 system for x86 (Windows/Linux) PC's. With it you can play NES games on your 
-Wii/GameCube.  Version 2 is a complete rewrite based on code from the 
-SNES9x GX project.
+Wii/GameCube.
 
 -=[ Features ]=-
 
@@ -33,7 +32,22 @@ SNES9x GX project.
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
 
-[What's New 2.0.9 - January 27, 2009]
+[3.0.0 - April 13, 2009]
+* New GX-based menu, with a completely redesigned layout. Has Wiimote IR 
+  support, sounds, graphics, animation effects, and more
+* Thanks to the3seashells for designing some top-notch artwork, to 
+  Peter de Man for composing the music, and a special thanks to shagkur for 
+  fixing libogc bugs that would have otherwise prevented the release
+* Onscreen keyboard for changing save/load folders and network settings
+* Menu configuration options (configurable exit button, wiimote orientation,
+  volumes)
+* Configurable button mapping for zapper
+* New save manager, allowing multiple saves and save browsing. Shows
+  screenshots for Snapshot saves, and save dates/times
+* SMB reconnection feature
+* ISI issue fixed
+
+[2.0.9 - January 27, 2009]
 * Fixed a major memory corruption bug in FCE Ultra 0.98.12
 * Faster SD/USB - new read-ahead cache
 * Removed trigger of back to menu for Classic Controller right joystick
@@ -44,7 +58,7 @@ SNES9x GX project.
 * Fixed some memory leaks, buffer overflows, etc
 * Code cleanup, other general bugfixes
 
-[What's New 2.0.8 - December 24, 2008]
+[2.0.8 - December 24, 2008]
 * Fixed unstable SD card access
 * Proper SD/USB hotswap (Wii only)
 * Auto-update feature (Wii only)
@@ -55,7 +69,7 @@ SNES9x GX project.
 * Rewritten RAM/state saving - old state saves are now invalid
 * Minor bug fixes
 
-[What's New 2.0.7 - November 19, 2008]
+[2.0.7 - November 19, 2008]
 * Special thanks to eke-eke & KruLLo for contributions, bugfixes, and tips
 * Video code rewritten - now has original, unfiltered, filtered modes
 * Zoom option
@@ -74,7 +88,7 @@ SNES9x GX project.
   folder as the DOL (eg: apps/fceugx/settings.xml)
 * GameCube - Added DVD motor off option
 
-[What's New 2.0.6 - October 21, 2008]
+[2.0.6 - October 21, 2008]
 * Right audio channel corruption fixed (thanks cyberdog!)
 * Low pass audio filter turned off (muffles audio)
 * Changed to alternate audio filter
@@ -82,13 +96,13 @@ SNES9x GX project.
 * Cheesy/2X video filters fixed
 * Qoob Pro modchip support for GameCube (thanks emukidid!)
 
-[What's New 2.0.5 - October 19, 2008]
+[2.0.5 - October 19, 2008]
 * Sound bug fixed - thanks eke-eke!
 * High quality sound enabled, lowpass filter enabled
 * Video threading enabled
 * Fixed timing error (incorrect opcode)
 
-[What's New 2.0.4 - October 15, 2008]
+[2.0.4 - October 15, 2008]
 * Wii DVD fixed
 * FDS BIOS loading works now
 * FDS disk switching now consistently works with one button press
@@ -99,21 +113,21 @@ SNES9x GX project.
 * Changed GC controller mappings - Select - Z, Start - Start, 
   Home - Start+A, Special - L
 
-[What's New 2.0.3 - October 1, 2008]
+[2.0.3 - October 1, 2008]
 * Complete rewrite of loading code - FDS / UNIF / NSF support added!
 * VS games work (coin insert submitted by pakitovic)
 * Mapping of 'Special' commands - VS coin insert, FDS switch disk (default A)
 * 480p and DVD now available for GameCube
 * Improved stability - less crashes!
 
-[What's New 2.0.2 - September 19, 2008]
+[2.0.2 - September 19, 2008]
 * Fixed network freeze-up problem
 * Zapper now mapped to A and B
 * Fixed auto-save feature
 * Performance slowdowns on Gamecube should be fixed
 * Will now attempt to load old save states with CRC filename
 
-[What's New 2.0.1 - September 6, 2008]
+[2.0.1 - September 6, 2008]
 * Zapper support! Turn this on in the Controller Settings - most games 
   require you to have the Zapper on Port 2. Thanks go to aksommerville whose
   previous work on the Zapper helped, and michniewski's cursor code
@@ -123,7 +137,7 @@ SNES9x GX project.
 * Start/Select reversed mapping fixed for Wii controllers
 * Small bug fixes / improvements / tweaks
 
-[What's New 2.0.0 - September 1, 2008]
+[2.0.0 - September 1, 2008]
 
 * Complete rewrite based on code from SNES9x GX and Genesis Plus GX
 * Wiimote, Nunchuk, and Classic controller support
@@ -215,38 +229,44 @@ FCE Ultra 0.98.12 for Windows before asking for help.
  
 Mappers are the way the Nintendo handles switching from ROM/VROM so the more
 that are supported the more games will work.
- 
+
 000 . 112 . 113 . 114 . 117 .  15 . 151 . 16  . 17  .  18 . 180 . 182 . 184 . 187
 189 . 193 . 200 . 201 . 202 . 203 . 208 . 21  . 22  . 225 . 226 . 227 . 228 . 229  
  23 . 230 . 231 . 232 . 234 . 235 . 240 . 241 . 242 . 244 . 246 . 248 .  24 .  26
  25 . 255 . 32  . 33  . 40  . 41  . 42  . 43  . 46  . 50  . 51  . 57  .  58 .  59
   6 .  60 . 61  . 62  . 65  . 67  . 68  . 69  . 71  . 72  . 73  . 75  .  76 .  77
  79 .   8 . 80  . 82  . 83  . 85  . 86  . 88  . 89  . 91  . 92  . 95  .  97 .  99
- 
+
 -[ Emulator Options ]-
- 
+
 Screen Scaler - How to scale the screen: GX, Cheesy or 2x
- 
+
 Palette - The colors used while viewing the game:
           Default . loopy . quor . chris . matt
           pasofami . crashman . mess . zaphod-cv
           zaphod-smb . vs-drmar . vs-cv . vs-smb
- 
+
 Timing - NTSC or PAL (Depends if you're running a PAL or NTSC game)
- 
+
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
- 
+
 -=[ Credits ]=-
 
-GameCube/Wii Port v2.x            Tantric
-GameCube/Wii Port v1.0.9          askot & dsbomb
-GameCube Port v1.0.8              SoftDev
-FCE Ultra                         Xodnizel
-Original FCE                      BERO
-libogc                            Shagkur & wintermute
-Testing                           tehskeen users
+			Coding & menu design		Tantric
+			Menu artwork				the3seashells
+			Menu sound					Peter de Man
+			Logo design					mvit
 
-And many others who have contributed over the years!
+			¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨
+			FCE Ultra GX GameCube		SoftDev,
+										askot & dsbomb
+
+			FCE Ultra					Xodnizel
+			Original FCE				BERO
+			libogc/devkitPPC			shagkur & wintermute
+			FreeTypeGX					Armin Tamzarian
+
+			And many others who have contributed over the years!
  
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
