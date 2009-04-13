@@ -2,9 +2,9 @@
  * FCE Ultra 0.98.12
  * Nintendo Wii/Gamecube Port
  *
- * Tantric September 2008
+ * Tantric 2008-2009
  *
- * pad.c
+ * pad.cpp
  *
  * Controller input
  ****************************************************************************/
@@ -560,51 +560,33 @@ static unsigned char DecodeJoy( unsigned short pad )
 
 void GetJoy()
 {
-    JSReturn = 0; // reset buttons pressed
+	JSReturn = 0; // reset buttons pressed
 	unsigned char pad[4];
-    short i;
+	short i;
 
-    s8 gc_px = PAD_SubStickX (0);
-    u32 jp = PAD_ButtonsHeld (0); // gamecube controller button info
-
-    #ifdef HW_RVL
-    s8 wm_sx = WPAD_StickX (0,1);
-    u32 wm_pb = WPAD_ButtonsDown (0); // wiimote / expansion button info
-    #endif
-
-    // Turbo mode
-    // RIGHT on c-stick and on classic ctrlr right joystick
-    if(
-    	(gc_px > 70)
-		#ifdef HW_RVL
-		|| (wm_sx > 70)
-		#endif
-	)
-    {
-    	frameskip = 3;
-    }
-    else
-    {
-    	frameskip = 0;
-    }
-
-    // request to go back to menu
-    if ((gc_px < -70) ||
-       ((jp & PAD_BUTTON_START) && (jp & PAD_BUTTON_A) &&
-        (jp & PAD_BUTTON_B) && (jp & PAD_TRIGGER_Z))
-    #ifdef HW_RVL
-    		 || (wm_pb & WPAD_BUTTON_HOME)
-    		 || (wm_pb & WPAD_CLASSIC_BUTTON_HOME)
-    #endif
-    )
-	{
-    	ConfigRequested = 1;
-	}
+	// Turbo mode
+	// RIGHT on c-stick and on classic ctrlr right joystick
+	if(userInput[0].pad.substickX > 70 || userInput[0].WPAD_Stick(1,0) > 70)
+		frameskip = 3;
 	else
-	{
-		for (i = 0; i < 4; i++)
-			pad[i] = DecodeJoy(i);
+		frameskip = 0;
 
-		JSReturn = pad[0] | pad[1] << 8 | pad[2] << 16 | pad[3] << 24;
+	// request to go back to menu
+	for(i=0; i<4; i++)
+	{
+		if (
+			(userInput[i].pad.substickX < -70) ||
+			(userInput[i].pad.btns_h & (PAD_BUTTON_START | PAD_BUTTON_A | PAD_BUTTON_B | PAD_TRIGGER_Z)) ||
+			(userInput[i].wpad.btns_d & WPAD_BUTTON_HOME) ||
+			(userInput[i].wpad.btns_d & WPAD_CLASSIC_BUTTON_HOME)
+		)
+		{
+			ConfigRequested = 1; // go to the menu
+		}
 	}
+
+	for (i = 0; i < 4; i++)
+		pad[i] = DecodeJoy(i);
+
+	JSReturn = pad[0] | pad[1] << 8 | pad[2] << 16 | pad[3] << 24;
 }

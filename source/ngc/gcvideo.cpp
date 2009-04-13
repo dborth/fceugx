@@ -23,6 +23,7 @@
 #include "fceugx.h"
 #include "menu.h"
 #include "pad.h"
+#include "gui/gui.h"
 
 extern "C" {
 extern void FCEU_ResetPalette(void);
