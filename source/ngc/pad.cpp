@@ -576,7 +576,11 @@ void GetJoy()
 	{
 		if (
 			(userInput[i].pad.substickX < -70) ||
-			(userInput[i].pad.btns_h & (PAD_BUTTON_START | PAD_BUTTON_A | PAD_BUTTON_B | PAD_TRIGGER_Z)) ||
+			(userInput[i].pad.btns_h & PAD_BUTTON_START &&
+			userInput[i].pad.btns_h & PAD_BUTTON_A &&
+			userInput[i].pad.btns_h & PAD_BUTTON_B &&
+			userInput[i].pad.btns_h & PAD_TRIGGER_Z
+			 ) ||
 			(userInput[i].wpad.btns_d & WPAD_BUTTON_HOME) ||
 			(userInput[i].wpad.btns_d & WPAD_CLASSIC_BUTTON_HOME)
 		)
