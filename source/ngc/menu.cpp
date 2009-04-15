@@ -1600,7 +1600,7 @@ static int MenuGameSaves(int action)
 		ret = saveBrowser.GetClickedSave();
 
 		// load or save game
-		if(ret >= 0)
+		if(ret > -3)
 		{
 			int result = 0;
 
@@ -1621,7 +1621,7 @@ static int MenuGameSaves(int action)
 			}
 			else // save
 			{
-				if(ret == 0) // new RAM
+				if(ret == -2) // new RAM
 				{
 					for(i=1; i < 100; i++)
 						if(saves.files[FILE_RAM][i] == 0)
@@ -1634,7 +1634,7 @@ static int MenuGameSaves(int action)
 						menu = MENU_GAME_SAVE;
 					}
 				}
-				else if(ret == 1) // new Snapshot
+				else if(ret == -1) // new State
 				{
 					for(i=1; i < 100; i++)
 						if(saves.files[FILE_STATE][i] == 0)
@@ -1649,8 +1649,8 @@ static int MenuGameSaves(int action)
 				}
 				else // overwrite RAM/State
 				{
-					MakeFilePath(filepath, saves.type[ret-2], method, saves.filename[ret-2]);
-					switch(saves.type[ret-2])
+					MakeFilePath(filepath, saves.type[ret], method, saves.filename[ret]);
+					switch(saves.type[ret])
 					{
 						case FILE_RAM:
 							SaveRAM(filepath, GCSettings.SaveMethod, NOTSILENT);
