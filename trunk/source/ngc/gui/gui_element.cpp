@@ -69,6 +69,7 @@ GuiElement * GuiElement::GetParent()
 {
 	return parentElement;
 }
+
 /**
  * Get the left position of the GuiElement.
  * @see SetLeft()
