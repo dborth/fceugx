@@ -105,7 +105,7 @@ static int GCReadChunk(int chunkid, SFORMAT *sf)
 	memfread(&thischunk, 4);
 	memfread(&chunklength, 4);
 
-	if (strcmp(chunk, "CHNK") == 0)
+	if (memcmp(&chunk, "CHNK", 4) == 0)
 	{
 		if (chunkid == thischunk)
 		{
@@ -253,17 +253,13 @@ extern void (*SPostSave)(void);
 static int GCFCEUSS_Save(int method)
 {
 	int totalsize = 0;
-	static unsigned char header[16] = "FCS\xff";
+	unsigned char header[16] = "FCS\xff";
 	char chunk[] = "CHKE";
 	int zero = 0;
-	char comment[2][32];
-	memset(comment, 0, 64);
+	int version = 0x981211;
+	memcpy(&header[8], &version, 4); // Add version ID
 
 	memopen(); // Reset Memory File
-
-	// Add version ID
-	int mcversion = 0x981211;
-	memcpy(&header[8], &mcversion, 4);
 
 	// Do internal Saving
 	FCEUPPU_SaveState();
