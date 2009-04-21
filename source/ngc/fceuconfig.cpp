@@ -42,6 +42,8 @@ void FixInvalidSettings()
 		GCSettings.Controller = CTRL_PAD2;
 	if(!(GCSettings.render >= 0 && GCSettings.render < 3))
 		GCSettings.render = 2;
+	if(GCSettings.timing != 0 && GCSettings.timing != 1)
+		GCSettings.timing = 0;
 }
 
 /****************************************************************************
