@@ -489,27 +489,30 @@ InitGCVideo ()
 	// get default video mode
 	vmode = VIDEO_GetPreferredMode(NULL);
 
+	// set VI modes
 	switch (vmode->viTVMode >> 2)
 	{
-		case VI_PAL:
-			// 576 lines (PAL 50Hz)
-			// display should be centered vertically (borders)
-			vmode = &TVPal574IntDfScale;
-			vmode->xfbHeight = 480;
-			vmode->viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
-			vmode->viHeight = 480;
-
+		case VI_PAL: // 574 lines (PAL 50Hz)
 			vmode_60hz = 0;
+			// 50Hz only
+			NTSC_240p.viTVMode = VI_TVMODE_PAL_DS;
+			NTSC_240p.viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
 			break;
 
-		case VI_NTSC:
-			// 480 lines (NTSC 60hz)
+		case VI_NTSC: // 480 lines (NTSC 60Hz)
 			vmode_60hz = 1;
+			// 60Hz only
+			PAL_240p.viTVMode = VI_TVMODE_NTSC_DS;
+			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
+			NTSC_240p.viTVMode = VI_TVMODE_NTSC_DS;
 			break;
 
-		default:
-			// 480 lines (PAL 60Hz)
+		default: // 480 lines (PAL 60Hz)
 			vmode_60hz = 1;
+			// supports both 50/60Hz but better use 60hz by default
+			PAL_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
+			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
+			NTSC_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
 			break;
 	}
 
@@ -538,7 +541,7 @@ InitGCVideo ()
 	VIDEO_Configure (vmode);
 
 	screenheight = 480;
-	screenwidth = vmode->fbWidth;
+	screenwidth = 640;
 
 	// Allocate the video buffers
 	xfb[0] = (u32 *) MEM_K0_TO_K1 (SYS_AllocateFramebuffer (vmode));
@@ -580,45 +583,26 @@ ResetVideo_Emu ()
 	GXRModeObj *rmode;
 	Mtx44 p;
 
-	// set VI modes
-	switch (vmode->viTVMode >> 2)
-	{
-		case VI_PAL:  /* 574 lines (PAL 50Hz) */
-
-			// 50Hz only
-			NTSC_240p.viTVMode = VI_TVMODE_PAL_DS;
-			NTSC_240p.viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
-			break;
-
-		case VI_NTSC: /* 480 lines (NTSC 60hz) */
-
-			// 60Hz only
-			PAL_240p.viTVMode = VI_TVMODE_NTSC_DS;
-			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
-			NTSC_240p.viTVMode = VI_TVMODE_NTSC_DS;
-			break;
-
-		default:  /* 480 lines (PAL 60Hz) */
-
-			// supports both 50/60Hz but better use 60hz by default
-			PAL_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
-			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
-			NTSC_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
-			break;
-	}
-
 	// choose current VI mode
 	if (GCSettings.render == 0)	// original render mode
 	{
 		rmode = tvmodes[GCSettings.timing];
 	}
-	else if (GCSettings.render == 2)	// unfiltered
+	else if (GCSettings.render == 2) // unfiltered
 	{
 		rmode = vmode;
 	}
 	else	// filtered
 	{
-		rmode = vmode;		// same mode as menu
+		rmode = vmode; // same mode as menu
+
+		if(rmode->viTVMode >> 2 == VI_PAL)
+		{
+			rmode = &TVPal574IntDfScale;
+			rmode->xfbHeight = 480;
+			rmode->viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
+			rmode->viHeight = 480;
+		}
 	}
 
 	// reconfigure VI
@@ -649,7 +633,7 @@ ResetVideo_Emu ()
 	GX_SetZMode (GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate (GX_TRUE);
 
-	guOrtho(p, 480/2, -(480/2), -(640/2), 640/2, 100, 1000);	// matrix, t, b, l, r, n, f
+	guOrtho(p, rmode->efbHeight/2, -(rmode->efbHeight/2), -(rmode->fbWidth/2), rmode->fbWidth/2, 100, 1000); // matrix, t, b, l, r, n, f
 	GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
 
 	// reinitialize texture

@@ -290,6 +290,7 @@ int main(int argc, char *argv[])
 		SetControllers();
 		setFrameTimer(); // set frametimer method before emulation
 		SetPalette();
+		FCEUI_DisableSpriteLimitation(GCSettings.spritelimit ^ 1);
 
 		fskipc=0;
 

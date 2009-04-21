@@ -13,7 +13,7 @@
 #define _FCEUGX_H_
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.0.0"
+#define APPVERSION		"3.0.1"
 #define PREF_FILE_NAME	"settings.xml"
 
 #define NOTSILENT 0
@@ -75,6 +75,7 @@ struct SGCSettings{
 	int		timing;
 	int		Controller;
 	int		crosshair;
+	int		spritelimit;
 	int		xshift;		// video output shift
 	int		yshift;
 	int		WiimoteOrientation;
