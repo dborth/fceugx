@@ -139,6 +139,7 @@ preparePrefsData (int method)
 
 	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
 	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
+	createXMLSetting("spritelimit", "Sprite Limit", toStr(GCSettings.spritelimit));
 	createXMLSetting("ZoomLevel", "Zoom Level", FtoStr(GCSettings.ZoomLevel));
 	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
 	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
@@ -291,6 +292,7 @@ decodePrefsData (int method)
 
 			loadXMLSetting(&GCSettings.currpal, "currpal");
 			loadXMLSetting(&GCSettings.timing, "timing");
+			loadXMLSetting(&GCSettings.spritelimit, "spritelimit");
 			loadXMLSetting(&GCSettings.ZoomLevel, "ZoomLevel");
 			loadXMLSetting(&GCSettings.render, "render");
 			loadXMLSetting(&GCSettings.widescreen, "widescreen");

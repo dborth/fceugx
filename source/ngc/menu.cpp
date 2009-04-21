@@ -371,6 +371,7 @@ ProgressWindow(char *title, char *msg)
 		return;
 
 	HaltGui();
+	int oldState = mainWindow->GetState();
 	mainWindow->SetState(STATE_DISABLED);
 	mainWindow->Append(&promptWindow);
 	mainWindow->ChangeFocus(&promptWindow);
@@ -402,7 +403,7 @@ ProgressWindow(char *title, char *msg)
 
 	HaltGui();
 	mainWindow->Remove(&promptWindow);
-	mainWindow->SetState(STATE_DEFAULT);
+	mainWindow->SetState(oldState);
 	ResumeGui();
 }
 
@@ -982,7 +983,8 @@ static int MenuGameSelection()
 					mainWindow->SetState(STATE_DISABLED);
 					if(BrowserLoadFile(GCSettings.LoadMethod))
 						menu = MENU_EXIT;
-					mainWindow->SetState(STATE_DEFAULT);
+					else
+						mainWindow->SetState(STATE_DEFAULT);
 				}
 			}
 		}
@@ -2742,6 +2744,8 @@ static int MenuSettingsVideo()
 	sprintf(options.name[i++], "Timing");
 	sprintf(options.name[i++], "Screen Zoom");
 	sprintf(options.name[i++], "Screen Position");
+	sprintf(options.name[i++], "Zapper Crosshair");
+	sprintf(options.name[i++], "Sprite Limit");
 	options.length = i;
 
 	GuiText titleTxt("Game Settings - Video", 28, (GXColor){255, 255, 255, 255});
@@ -2816,9 +2820,11 @@ static int MenuSettingsVideo()
 		sprintf (options.value[3], "%s",
 			GCSettings.currpal ? palettes[GCSettings.currpal-1].name : "Default");
 
-		sprintf (options.value[4], "%s", GCSettings.timing == true ? "PAL" : "NTSC");
+		sprintf (options.value[4], "%s", GCSettings.timing == 1 ? "PAL" : "NTSC");
 		sprintf (options.value[5], "%.2f%%", GCSettings.ZoomLevel*100);
 		sprintf (options.value[6], "%d, %d", GCSettings.xshift, GCSettings.yshift);
+		sprintf (options.value[7], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
+		sprintf (options.value[8], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
 
 		ret = optionBrowser.GetClickedOption();
 
@@ -2856,6 +2862,14 @@ static int MenuSettingsVideo()
 
 			case 6:
 				ScreenPositionWindow();
+				break;
+
+			case 7:
+				GCSettings.crosshair ^= 1;
+				break;
+
+			case 8:
+				GCSettings.spritelimit ^= 1;
 				break;
 		}
 
