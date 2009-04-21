@@ -585,25 +585,9 @@ ResetVideo_Emu ()
 
 	// choose current VI mode
 	if (GCSettings.render == 0)	// original render mode
-	{
 		rmode = tvmodes[GCSettings.timing];
-	}
-	else if (GCSettings.render == 2) // unfiltered
-	{
-		rmode = vmode;
-	}
-	else	// filtered
-	{
+	else // filtered/unfiltered
 		rmode = vmode; // same mode as menu
-
-		if(rmode->viTVMode >> 2 == VI_PAL)
-		{
-			rmode = &TVPal574IntDfScale;
-			rmode->xfbHeight = 480;
-			rmode->viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
-			rmode->viHeight = 480;
-		}
-	}
 
 	// reconfigure VI
 	VIDEO_Configure (rmode);
