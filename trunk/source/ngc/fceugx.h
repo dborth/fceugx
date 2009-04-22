@@ -69,6 +69,7 @@ struct SGCSettings{
 	float	ZoomLevel; // zoom amount
 	int		VerifySaves;
 	int		render;		// 0 - original, 1 - filtered, 2 - unfiltered
+	int		videomode; // 0 - automatic, 1 - NTSC (480i), 2 - Progressive (480p), 3 - PAL (50Hz), 4 - PAL (60Hz)
 	int		widescreen;
 	int		hideoverscan;
 	int		currpal;

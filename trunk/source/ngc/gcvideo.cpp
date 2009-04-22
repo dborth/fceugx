@@ -41,6 +41,7 @@ static int whichfb = 0; // Frame buffer toggle
 int screenheight;
 int screenwidth;
 bool progressive = false;
+static int currentVideoMode = -1; // -1 - not set, 0 - automatic, 1 - NTSC (480i), 2 - Progressive (480p), 3 - PAL (50Hz), 4 - PAL (60Hz)
 
 /*** 3D GX ***/
 #define TEX_WIDTH 256
@@ -477,6 +478,104 @@ UpdatePadsCB ()
 	}
 }
 
+
+/****************************************************************************
+ * SetupVideoMode
+ *
+ * Finds the optimal video mode, or uses the user-specified one
+ * Also configures original video modes
+ ***************************************************************************/
+static void SetupVideoMode()
+{
+	if(currentVideoMode == GCSettings.videomode)
+		return; // no need to do anything
+
+	// choose the desired video mode
+	switch(GCSettings.videomode)
+	{
+		case 1: // NTSC (480i)
+			vmode = &TVNtsc480IntDf;
+			break;
+		case 2: // Progressive (480p)
+			vmode = &TVNtsc480Prog;
+			break;
+		case 3: // PAL (50Hz)
+			vmode = &TVPal574IntDfScale;
+			break;
+		case 4: // PAL (60Hz)
+			vmode = &TVEurgb60Hz480IntDf;
+			break;
+		default:
+			vmode = VIDEO_GetPreferredMode(NULL);
+
+			#ifdef HW_DOL
+			/* we have component cables, but the preferred mode is interlaced
+			 * why don't we switch into progressive?
+			 * on the Wii, the user can do this themselves on their Wii Settings */
+			if(VIDEO_HaveComponentCable())
+				vmode = &TVNtsc480Prog;
+			#endif
+
+			// use hardware vertical scaling to fill screen
+			if(vmode->viTVMode >> 2 == VI_PAL)
+				vmode = &TVPal574IntDfScale;
+			break;
+	}
+
+	// configure original modes
+	switch (vmode->viTVMode >> 2)
+	{
+		case VI_PAL:
+			// 576 lines (PAL 50Hz)
+			vmode_60hz = 0;
+
+			// Original Video modes (forced to PAL 50Hz)
+			// set video signal mode
+			NTSC_240p.viTVMode = VI_TVMODE_PAL_DS;
+			NTSC_240p.viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
+			break;
+
+		case VI_NTSC:
+			// 480 lines (NTSC 60Hz)
+			vmode_60hz = 1;
+
+			// Original Video modes (forced to NTSC 60Hz)
+			// set video signal mode
+			PAL_240p.viTVMode = VI_TVMODE_NTSC_DS;
+			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
+			NTSC_240p.viTVMode = VI_TVMODE_NTSC_DS;
+			break;
+
+		default:
+			// 480 lines (PAL 60Hz)
+			vmode_60hz = 1;
+
+			// Original Video modes (forced to PAL 60Hz)
+			// set video signal mode
+			PAL_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
+			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
+			NTSC_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
+			break;
+	}
+
+	// check for progressive scan
+	if (vmode->viTVMode == VI_TVMODE_NTSC_PROG)
+		progressive = true;
+	else
+		progressive = false;
+
+	#ifdef HW_RVL
+	// widescreen fix
+	if(CONF_GetAspectRatio() == CONF_ASPECT_16_9)
+	{
+		vmode->viWidth = VI_MAX_WIDTH_PAL-12;
+		vmode->viXOrigin = ((VI_MAX_WIDTH_PAL - vmode->viWidth) / 2) + 2;
+	}
+	#endif
+
+	currentVideoMode = GCSettings.videomode;
+}
+
 /****************************************************************************
  * InitGCVideo
  *
@@ -486,56 +585,7 @@ UpdatePadsCB ()
 void
 InitGCVideo ()
 {
-	// get default video mode
-	vmode = VIDEO_GetPreferredMode(NULL);
-
-	// set VI modes
-	switch (vmode->viTVMode >> 2)
-	{
-		case VI_PAL: // 574 lines (PAL 50Hz)
-			vmode_60hz = 0;
-			// 50Hz only
-			NTSC_240p.viTVMode = VI_TVMODE_PAL_DS;
-			NTSC_240p.viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
-			break;
-
-		case VI_NTSC: // 480 lines (NTSC 60Hz)
-			vmode_60hz = 1;
-			// 60Hz only
-			PAL_240p.viTVMode = VI_TVMODE_NTSC_DS;
-			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
-			NTSC_240p.viTVMode = VI_TVMODE_NTSC_DS;
-			break;
-
-		default: // 480 lines (PAL 60Hz)
-			vmode_60hz = 1;
-			// supports both 50/60Hz but better use 60hz by default
-			PAL_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
-			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
-			NTSC_240p.viTVMode = VI_TVMODE(vmode->viTVMode >> 2, VI_NON_INTERLACE);
-			break;
-	}
-
-#ifdef HW_DOL
-/* we have component cables, but the preferred mode is interlaced
- * why don't we switch into progressive?
- * on the Wii, the user can do this themselves on their Wii Settings */
-	if(VIDEO_HaveComponentCable())
-		vmode = &TVNtsc480Prog;
-#endif
-
-	// check for progressive scan
-	if (vmode->viTVMode == VI_TVMODE_NTSC_PROG)
-		progressive = true;
-
-#ifdef HW_RVL
-	// widescreen fix
-	if(CONF_GetAspectRatio() == CONF_ASPECT_16_9)
-	{
-		vmode->viWidth = VI_MAX_WIDTH_PAL-12;
-		vmode->viXOrigin = ((VI_MAX_WIDTH_PAL - vmode->viWidth) / 2) + 2;
-	}
-#endif
+	SetupVideoMode();
 
 	// configure VI
 	VIDEO_Configure (vmode);
@@ -580,14 +630,13 @@ InitGCVideo ()
 void
 ResetVideo_Emu ()
 {
-	GXRModeObj *rmode;
+	SetupVideoMode();
+	GXRModeObj *rmode = vmode; // same mode as menu
 	Mtx44 p;
 
-	// choose current VI mode
-	if (GCSettings.render == 0)	// original render mode
+	// change current VI mode if using original render mode
+	if (GCSettings.render == 0)
 		rmode = tvmodes[GCSettings.timing];
-	else // filtered/unfiltered
-		rmode = vmode; // same mode as menu
 
 	// reconfigure VI
 	VIDEO_Configure (rmode);
@@ -791,6 +840,7 @@ ResetVideo_Menu ()
 	f32 yscale;
 	u32 xfbHeight;
 
+	SetupVideoMode();
 	VIDEO_Configure (vmode);
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
