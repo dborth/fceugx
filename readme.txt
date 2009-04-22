@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.0.0
+                                  Version 3.0.1
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -31,6 +31,17 @@ Wii/GameCube.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.0.1 - April 22, 2009]
+
+* GameCube controller home trigger fixed
+* USB support fixed
+* More stable SMB support
+* Corrections/improvements to game saving/loading
+* Video mode corrections
+* Settings are now saved when exiting game menu settings area
+* 8 sprite limit and Zapper crosshair can now be turned off from the menu
+* New video mode selection in menu (forcing a video mode is not recommended)
 
 [3.0.0 - April 13, 2009]
 * New GX-based menu, with a completely redesigned layout. Has Wiimote IR 
