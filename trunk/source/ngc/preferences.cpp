@@ -137,6 +137,7 @@ preparePrefsData (int method)
 
 	createXMLSection("Video", "Video Settings");
 
+	createXMLSetting("videomode", "Video Mode", toStr(GCSettings.videomode));
 	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
 	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
 	createXMLSetting("spritelimit", "Sprite Limit", toStr(GCSettings.spritelimit));
@@ -290,6 +291,7 @@ decodePrefsData (int method)
 
 			// Video Settings
 
+			loadXMLSetting(&GCSettings.videomode, "videomode");
 			loadXMLSetting(&GCSettings.currpal, "currpal");
 			loadXMLSetting(&GCSettings.timing, "timing");
 			loadXMLSetting(&GCSettings.spritelimit, "spritelimit");
