@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 	cleanSFMDATA(); // clear state data
 
 	FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
-	FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
+	int currentTiming = 0;
 
     while (1) // main loop
     {
@@ -276,6 +276,9 @@ int main(int argc, char *argv[])
 			MainMenu(MENU_GAMESELECTION);
 		else
 			MainMenu(MENU_GAME);
+
+		if(currentTiming != GCSettings.timing)
+			FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
 
 		videoReset = -1;
 		currentMode = GCSettings.render;

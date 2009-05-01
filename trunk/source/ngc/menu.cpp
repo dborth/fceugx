@@ -2876,7 +2876,6 @@ static int MenuSettingsVideo()
 
 			case 4: // timing
 				GCSettings.timing ^= 1;
-				FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
 				break;
 
 			case 5:
