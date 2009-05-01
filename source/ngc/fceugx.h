@@ -32,9 +32,9 @@ enum {
 };
 
 enum {
-	FILE_ROM,
 	FILE_RAM,
 	FILE_STATE,
+	FILE_ROM,
 	FILE_FDSBIOS,
 	FILE_CHEAT,
 	FILE_PREF
