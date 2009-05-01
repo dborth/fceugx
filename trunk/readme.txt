@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.0.1
+                                  Version 3.0.2
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -32,6 +32,16 @@ Wii/GameCube.
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
 
+[3.0.2 - April 30, 2009]
+
+* Improved scrollbar
+* Multiple state saves now working
+* Built with more stable libogc/libfat
+* Fixed rumble bug in filebrowser
+* Fixed PAL sound stuttering
+* Added confirmation prompts
+* Fixed settings saving glitches
+
 [3.0.1 - April 22, 2009]
 
 * GameCube controller home trigger fixed
@@ -44,6 +54,7 @@ Wii/GameCube.
 * New video mode selection in menu (forcing a video mode is not recommended)
 
 [3.0.0 - April 13, 2009]
+
 * New GX-based menu, with a completely redesigned layout. Has Wiimote IR 
   support, sounds, graphics, animation effects, and more
 * Thanks to the3seashells for designing some top-notch artwork, to 
@@ -59,6 +70,7 @@ Wii/GameCube.
 * ISI issue fixed
 
 [2.0.9 - January 27, 2009]
+
 * Fixed a major memory corruption bug in FCE Ultra 0.98.12
 * Faster SD/USB - new read-ahead cache
 * Removed trigger of back to menu for Classic Controller right joystick
@@ -70,6 +82,7 @@ Wii/GameCube.
 * Code cleanup, other general bugfixes
 
 [2.0.8 - December 24, 2008]
+
 * Fixed unstable SD card access
 * Proper SD/USB hotswap (Wii only)
 * Auto-update feature (Wii only)
@@ -81,6 +94,7 @@ Wii/GameCube.
 * Minor bug fixes
 
 [2.0.7 - November 19, 2008]
+
 * Special thanks to eke-eke & KruLLo for contributions, bugfixes, and tips
 * Video code rewritten - now has original, unfiltered, filtered modes
 * Zoom option
@@ -100,6 +114,7 @@ Wii/GameCube.
 * GameCube - Added DVD motor off option
 
 [2.0.6 - October 21, 2008]
+
 * Right audio channel corruption fixed (thanks cyberdog!)
 * Low pass audio filter turned off (muffles audio)
 * Changed to alternate audio filter
@@ -108,12 +123,14 @@ Wii/GameCube.
 * Qoob Pro modchip support for GameCube (thanks emukidid!)
 
 [2.0.5 - October 19, 2008]
+
 * Sound bug fixed - thanks eke-eke!
 * High quality sound enabled, lowpass filter enabled
 * Video threading enabled
 * Fixed timing error (incorrect opcode)
 
 [2.0.4 - October 15, 2008]
+
 * Wii DVD fixed
 * FDS BIOS loading works now
 * FDS disk switching now consistently works with one button press
@@ -125,6 +142,7 @@ Wii/GameCube.
   Home - Start+A, Special - L
 
 [2.0.3 - October 1, 2008]
+
 * Complete rewrite of loading code - FDS / UNIF / NSF support added!
 * VS games work (coin insert submitted by pakitovic)
 * Mapping of 'Special' commands - VS coin insert, FDS switch disk (default A)
@@ -132,6 +150,7 @@ Wii/GameCube.
 * Improved stability - less crashes!
 
 [2.0.2 - September 19, 2008]
+
 * Fixed network freeze-up problem
 * Zapper now mapped to A and B
 * Fixed auto-save feature
@@ -139,6 +158,7 @@ Wii/GameCube.
 * Will now attempt to load old save states with CRC filename
 
 [2.0.1 - September 6, 2008]
+
 * Zapper support! Turn this on in the Controller Settings - most games 
   require you to have the Zapper on Port 2. Thanks go to aksommerville whose
   previous work on the Zapper helped, and michniewski's cursor code
