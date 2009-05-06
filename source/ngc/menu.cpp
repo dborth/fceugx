@@ -41,6 +41,8 @@
 #include "menu.h"
 #include "fceuload.h"
 
+#define THREAD_SLEEP 100
+
 #ifdef HW_RVL
 static GuiImageData * pointer[4];
 #endif
@@ -101,7 +103,7 @@ HaltGui()
 
 	// wait for thread to finish
 	while(!LWP_ThreadIsSuspended(guithread))
-		usleep(50);
+		usleep(THREAD_SLEEP);
 }
 
 /****************************************************************************
@@ -196,7 +198,7 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 
 	while(choice == -1)
 	{
-		VIDEO_WaitVSync();
+		usleep(THREAD_SLEEP);
 
 		if(btn1.GetState() == STATE_CLICKED)
 			choice = 1;
@@ -205,7 +207,7 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	}
 
 	promptWindow.SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_OUT, 50);
-	while(promptWindow.GetEffect() > 0) usleep(50);
+	while(promptWindow.GetEffect() > 0) usleep(THREAD_SLEEP);
 	HaltGui();
 	mainWindow->Remove(&promptWindow);
 	mainWindow->SetState(STATE_DEFAULT);
@@ -293,6 +295,7 @@ UpdateGUI (void *arg)
 				#endif
 			}
 		}
+		usleep(THREAD_SLEEP);
 	}
 	return NULL;
 }
@@ -382,7 +385,7 @@ ProgressWindow(char *title, char *msg)
 
 	while(showProgress)
 	{
-		VIDEO_WaitVSync();
+		usleep(20000);
 
 		if(showProgress == 1)
 		{
@@ -415,6 +418,7 @@ static void * ProgressThread (void *arg)
 			LWP_SuspendThread (progressthread);
 
 		ProgressWindow(progressTitle, progressMsg);
+		usleep(THREAD_SLEEP);
 	}
 	return NULL;
 }
@@ -445,7 +449,7 @@ CancelAction()
 
 	// wait for thread to finish
 	while(!LWP_ThreadIsSuspended(progressthread))
-		usleep(50);
+		usleep(THREAD_SLEEP);
 }
 
 /****************************************************************************
@@ -600,7 +604,7 @@ static void OnScreenKeyboard(char * var, u32 maxlen)
 
 	while(save == -1)
 	{
-		VIDEO_WaitVSync();
+		usleep(THREAD_SLEEP);
 
 		if(okBtn.GetState() == STATE_CLICKED)
 			save = 1;
@@ -693,7 +697,7 @@ SettingWindow(const char * title, GuiWindow * w)
 
 	while(save == -1)
 	{
-		VIDEO_WaitVSync();
+		usleep(THREAD_SLEEP);
 
 		if(okBtn.GetState() == STATE_CLICKED)
 			save = 1;
@@ -830,6 +834,7 @@ static void WindowCredits(void * ptr)
 			if(userInput[i].wpad.btns_d || userInput[i].pad.btns_d)
 				exit = true;
 		}
+		usleep(THREAD_SLEEP);
 	}
 
 	// clear buttons pressed
@@ -944,7 +949,7 @@ static int MenuGameSelection()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync();
+		usleep(THREAD_SLEEP);
 
 		// update gameWindow based on arrow buttons
 		// set MENU_EXIT if A button pressed on a game
@@ -1313,7 +1318,7 @@ static int MenuGame()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync();
+		usleep(THREAD_SLEEP);
 
 		#ifdef HW_RVL
 		int level;
@@ -1603,7 +1608,7 @@ static int MenuGameSaves(int action)
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		ret = saveBrowser.GetClickedSave();
 
@@ -1851,7 +1856,7 @@ static int MenuGameSettings()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync();
+		usleep(THREAD_SLEEP);
 
 		if(mappingBtn.GetState() == STATE_CLICKED)
 		{
@@ -1972,7 +1977,7 @@ static int MenuGameCheats()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		for(i=0; i < Cheat.num_cheats; i++)
 			sprintf (options.value[i], "%s", Cheat.c[i].enabled == true ? "On" : "Off");
@@ -2085,7 +2090,7 @@ static int MenuSettingsMappings()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		if(nesBtn.GetState() == STATE_CLICKED)
 		{
@@ -2249,7 +2254,7 @@ static int MenuSettingsMappingsController()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		if(wiimoteBtn.GetState() == STATE_CLICKED)
 		{
@@ -2348,7 +2353,7 @@ ButtonMappingWindow()
 
 	while(pressed == 0)
 	{
-		VIDEO_WaitVSync();
+		usleep(THREAD_SLEEP);
 
 		if(mapMenuCtrl == CTRLR_GCPAD)
 		{
@@ -2491,7 +2496,7 @@ static int MenuSettingsMappingsMap()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		for(i=0; i < options.length; i++)
 		{
@@ -2800,7 +2805,7 @@ static int MenuSettingsVideo()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		// don't allow original render mode if progressive video mode detected
 		if (GCSettings.render==0 && progressive)
@@ -3042,7 +3047,7 @@ static int MenuSettings()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		if(savingBtn.GetState() == STATE_CLICKED)
 		{
@@ -3148,7 +3153,7 @@ static int MenuSettingsFile()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		// some load/save methods are not implemented - here's where we skip them
 		// they need to be skipped in the order they were enumerated in snes9xGX.h
@@ -3329,7 +3334,7 @@ static int MenuSettingsMenu()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		#ifdef HW_RVL
 		if (GCSettings.ExitAction == 1)
@@ -3463,7 +3468,7 @@ static int MenuSettingsNetwork()
 
 	while(menu == MENU_NONE)
 	{
-		VIDEO_WaitVSync ();
+		usleep(THREAD_SLEEP);
 
 		strncpy (options.value[0], GCSettings.smbip, 15);
 		strncpy (options.value[1], GCSettings.smbshare, 19);
@@ -3640,6 +3645,7 @@ MainMenu (int menu)
 				break;
 		}
 		lastMenu = currentMenu;
+		usleep(THREAD_SLEEP);
 	}
 
 	#ifdef HW_RVL
