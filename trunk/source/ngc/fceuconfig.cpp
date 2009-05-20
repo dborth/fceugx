@@ -77,6 +77,7 @@ DefaultSettings ()
 	GCSettings.ExitAction = 0;
 	GCSettings.MusicVolume = 40;
 	GCSettings.SFXVolume = 40;
+	GCSettings.Rumble = 1;
 
 	GCSettings.LoadMethod = METHOD_AUTO; // Auto, SD, DVD, USB, Network (SMB)
 	GCSettings.SaveMethod = METHOD_AUTO; // Auto, SD, Memory Card Slot A, Memory Card Slot B, USB, Network (SMB)
