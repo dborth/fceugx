@@ -220,8 +220,7 @@ Gamecube:
 ---------
 You can load FCEUGX via sdload and an SD card in slot A, or by streaming 
 it to your Gamecube, or by booting a bootable DVD with FCEUGX on it. 
-This document doesn't cover how to do any of that. A good source for information 
-on these topics is the tehskeen forums: http://www.tehskeen.com/forums/
+This document doesn't cover how to do any of that.
 
 ----------------------------
 ROMS, Preferences, and Saves:
@@ -303,8 +302,5 @@ Timing - NTSC or PAL (Depends if you're running a PAL or NTSC game)
  
                                   FCEUGX Web Site
                           http://code.google.com/p/fceugc
-                              
-                              TehSkeen Support Forums
-                              http://www.tehskeen.net
  
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
