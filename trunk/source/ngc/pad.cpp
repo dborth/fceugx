@@ -582,8 +582,8 @@ void GetJoy()
 			userInput[i].pad.btns_h & PAD_BUTTON_B &&
 			userInput[i].pad.btns_h & PAD_TRIGGER_Z
 			 ) ||
-			(userInput[i].wpad.btns_d & WPAD_BUTTON_HOME) ||
-			(userInput[i].wpad.btns_d & WPAD_CLASSIC_BUTTON_HOME)
+			(userInput[i].wpad.btns_h & WPAD_BUTTON_HOME) ||
+			(userInput[i].wpad.btns_h & WPAD_CLASSIC_BUTTON_HOME)
 		)
 		{
 			ConfigRequested = 1; // go to the menu
