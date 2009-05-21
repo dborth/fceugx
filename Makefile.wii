@@ -31,7 +31,7 @@ INCLUDES	:=	source/fceultra source/ngc source/unzip
 CFLAGS  = -g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNGC \
 		-DFCEU_VERSION_NUMERIC=9812 -DFRAMESKIP \
 	    -D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
-	    -fomit-frame-pointer -fno-exceptions \
+	    -fomit-frame-pointer \
 		-Wno-unused-parameter -Wno-strict-aliasing
 CXXFLAGS	=	$(CFLAGS)
 
