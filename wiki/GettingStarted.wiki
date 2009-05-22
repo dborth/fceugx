@@ -17,4 +17,4 @@ For more detailed instructions, see [http://www.wiibrew.org/wiki/FCE_Ultra_GX Wi
 == GameCube == 
 
 You can load FCE Ultra GX via sdload and an SD card in slot A, or by streaming 
-it to your Gamecube, or by making a bootable DVD. A good source for information is the [http://www.tehskeen.com/forums/ TehSkeen Forums].
+it to your Gamecube, or by making a bootable DVD.
