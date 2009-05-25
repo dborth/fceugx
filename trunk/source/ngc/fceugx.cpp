@@ -55,9 +55,10 @@ static uint8 *xbsave=NULL;
 static int fskipc = 0;
 static int videoReset = 0;
 static int currentMode = 0;
-static int ResetRequested = 0;
+int ScreenshotRequested = 0;
 int ConfigRequested = 0;
 int ShutdownRequested = 0;
+int ResetRequested = 0;
 int ExitRequested = 0;
 char appPath[1024];
 FreeTypeGX *fontSystem;
@@ -341,7 +342,6 @@ int main(int argc, char *argv[])
 			{
 				if((GCSettings.render != 0 && videoReset == -1) || videoReset == 0)
 				{
-					TakeScreenshot();
 					ResetVideo_Menu();
 					ConfigRequested = 0;
 					GCSettings.render = currentMode;
