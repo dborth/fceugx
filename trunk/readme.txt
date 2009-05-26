@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.0.2
+                                  Version 3.0.3
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -31,6 +31,15 @@ Wii/GameCube.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.0.3 - May 26, 2009]
+
+* Improved stability
+* Fixed broken SDHC from HBC 1.0.2 update
+* Fixed issues with returning to menu from in-game
+* Add option to disable rumble
+* Auto-determines if HBC is present - returns to Wii menu otherwise
+* Miscellaneous bugfixes
 
 [3.0.2 - April 30, 2009]
 
