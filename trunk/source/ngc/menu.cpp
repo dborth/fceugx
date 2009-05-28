@@ -3664,6 +3664,10 @@ MainMenu (int menu)
 	ShutoffRumble();
 	#endif
 
+	// wait for keys to be depressed
+	while(MenuRequested())
+		usleep(100);
+
 	CancelAction();
 	HaltGui();
 

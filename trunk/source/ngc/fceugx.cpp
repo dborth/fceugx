@@ -300,6 +300,7 @@ int main(int argc, char *argv[])
 
 		videoReset = -1;
 		currentMode = GCSettings.render;
+		currentTiming = GCSettings.timing;
 		ConfigRequested = 0;
 		SwitchAudioMode(0);
 

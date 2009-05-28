@@ -32,5 +32,6 @@ s8 WPAD_StickX(u8 chan,u8 right);
 s8 WPAD_StickY(u8 chan, u8 right);
 void GetJoy();
 void DrawCursor();
+bool MenuRequested();
 
 #endif
