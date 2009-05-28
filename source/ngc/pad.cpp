@@ -559,6 +559,27 @@ static unsigned char DecodeJoy( unsigned short pad )
 	return J;
 }
 
+bool MenuRequested()
+{
+	for(int i=0; i<4; i++)
+	{
+		if (
+			(userInput[i].pad.substickX < -70) ||
+			(userInput[i].pad.btns_h & PAD_BUTTON_START &&
+			userInput[i].pad.btns_h & PAD_BUTTON_A &&
+			userInput[i].pad.btns_h & PAD_BUTTON_B &&
+			userInput[i].pad.btns_h & PAD_TRIGGER_Z
+			 ) ||
+			(userInput[i].wpad.btns_h & WPAD_BUTTON_HOME) ||
+			(userInput[i].wpad.btns_h & WPAD_CLASSIC_BUTTON_HOME)
+		)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 void GetJoy()
 {
 	JSReturn = 0; // reset buttons pressed
@@ -573,22 +594,8 @@ void GetJoy()
 		frameskip = 0;
 
 	// request to go back to menu
-	for(i=0; i<4; i++)
-	{
-		if (
-			(userInput[i].pad.substickX < -70) ||
-			(userInput[i].pad.btns_h & PAD_BUTTON_START &&
-			userInput[i].pad.btns_h & PAD_BUTTON_A &&
-			userInput[i].pad.btns_h & PAD_BUTTON_B &&
-			userInput[i].pad.btns_h & PAD_TRIGGER_Z
-			 ) ||
-			(userInput[i].wpad.btns_h & WPAD_BUTTON_HOME) ||
-			(userInput[i].wpad.btns_h & WPAD_CLASSIC_BUTTON_HOME)
-		)
-		{
-			ScreenshotRequested = 1; // go to the menu
-		}
-	}
+	if(MenuRequested())
+		ScreenshotRequested = 1; // go to the menu
 
 	for (i = 0; i < 4; i++)
 		pad[i] = DecodeJoy(i);
