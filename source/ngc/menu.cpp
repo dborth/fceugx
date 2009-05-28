@@ -1604,6 +1604,7 @@ static int MenuGameSaves(int action)
 
 	HaltGui();
 	mainWindow->Append(&saveBrowser);
+	mainWindow->ChangeFocus(&saveBrowser);
 	ResumeGui();
 
 	while(menu == MENU_NONE)
