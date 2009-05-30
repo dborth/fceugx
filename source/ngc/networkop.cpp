@@ -209,8 +209,6 @@ void InitializeNetwork(bool silent)
 			ErrorPrompt(msg);
 		}
 	}
-	if(!silent)
-		CancelAction();
 	inNetworkInit = false;
 }
 
@@ -281,8 +279,6 @@ ConnectShare (bool silent)
 			{
 				networkShareInit = true;
 			}
-			if(!silent)
-				CancelAction();
 		}
 
 		if(!networkShareInit && !silent)
