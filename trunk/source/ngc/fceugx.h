@@ -13,7 +13,7 @@
 #define _FCEUGX_H_
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.0.3"
+#define APPVERSION		"3.0.4"
 #define PREF_FILE_NAME	"settings.xml"
 
 #define NOTSILENT 0
