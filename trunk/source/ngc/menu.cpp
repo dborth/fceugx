@@ -4,7 +4,7 @@
  *
  * Tantric 2008-2009
  *
- * menu.c
+ * menu.cpp
  *
  * Main menu flow control
  ****************************************************************************/
@@ -958,7 +958,7 @@ static int MenuGameSelection()
 	else
 	{
 		gameBrowser.ResetState();
-		gameBrowser.gameList[0]->SetState(STATE_SELECTED);
+		gameBrowser.fileList[0]->SetState(STATE_SELECTED);
 		gameBrowser.TriggerUpdate();
 
 		while(menu == MENU_NONE)
@@ -969,9 +969,9 @@ static int MenuGameSelection()
 			// set MENU_EXIT if A button pressed on a game
 			for(i=0; i<PAGESIZE; i++)
 			{
-				if(gameBrowser.gameList[i]->GetState() == STATE_CLICKED)
+				if(gameBrowser.fileList[i]->GetState() == STATE_CLICKED)
 				{
-					gameBrowser.gameList[i]->ResetState();
+					gameBrowser.fileList[i]->ResetState();
 					// check corresponding browser entry
 					if(browserList[browser.selIndex].isdir || IsSz())
 					{
@@ -983,7 +983,7 @@ static int MenuGameSelection()
 						if(res)
 						{
 							gameBrowser.ResetState();
-							gameBrowser.gameList[0]->SetState(STATE_SELECTED);
+							gameBrowser.fileList[0]->SetState(STATE_SELECTED);
 							gameBrowser.TriggerUpdate();
 						}
 						else
