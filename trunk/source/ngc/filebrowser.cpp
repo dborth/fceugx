@@ -125,6 +125,28 @@ void ResetBrowser()
 }
 
 /****************************************************************************
+ * CleanupPath()
+ * Cleans up the filepath, removing double // and replacing \ with /
+ ***************************************************************************/
+static void CleanupPath(char * path)
+{
+	int pathlen = strlen(path);
+	int j = 0;
+	for(int i=0; i < pathlen && i < MAXPATHLEN; i++)
+	{
+		if(path[i] == '\\')
+			path[i] = '/';
+
+		if(j == 0 || !(path[j-1] == '/' && path[i] == '/'))
+			path[j++] = path[i];
+	}
+	path[j] = 0;
+
+	if(strlen(path) == 0)
+		sprintf(path, "/");
+}
+
+/****************************************************************************
  * UpdateDirName()
  * Update curent directory name for file browser
  ***************************************************************************/
@@ -168,7 +190,7 @@ int UpdateDirName(int method)
 		if ((strlen(browser.dir)+1+strlen(browserList[browser.selIndex].filename)) < MAXPATHLEN)
 		{
 			/* update current directory name */
-			sprintf(browser.dir, "%s/%s",browser.dir, browserList[browser.selIndex].filename);
+			sprintf(browser.dir, "%s%s/",browser.dir, browserList[browser.selIndex].filename);
 			return 1;
 		}
 		else
@@ -197,7 +219,7 @@ bool MakeFilePath(char filepath[], int type, int method, char * filename, int fi
 		}
 		else
 		{
-			sprintf(temppath, "%s/%s",browser.dir,browserList[browser.selIndex].filename);
+			sprintf(temppath, "%s%s",browser.dir,browserList[browser.selIndex].filename);
 		}
 	}
 	else
@@ -263,10 +285,11 @@ bool MakeFilePath(char filepath[], int type, int method, char * filename, int fi
 				temppath[31] = 0; // truncate filename
 				break;
 			default:
-				sprintf (temppath, "%s/%s", folder, file);
+				sprintf (temppath, "/%s/%s", folder, file);
 				break;
 		}
 	}
+	CleanupPath(temppath); // cleanup path
 	strncpy(filepath, temppath, MAXPATHLEN);
 	return true;
 }
@@ -509,6 +532,8 @@ int BrowserChangeFolder(int method)
 	if(!UpdateDirName(method))
 		return -1;
 
+	CleanupPath(browser.dir);
+
 	switch (method)
 	{
 		case METHOD_DVD:
@@ -550,7 +575,8 @@ OpenGameList ()
 					SwitchDVDFolder(GCSettings.LoadFolder); // switch to ROM folder
 			break;
 		default:
-			sprintf(browser.dir, "/%s", GCSettings.LoadFolder);
+			sprintf(browser.dir, "/%s/", GCSettings.LoadFolder);
+			CleanupPath(browser.dir);
 			ParseDirectory(method); // Parse root directory
 			break;
 	}
