@@ -53,8 +53,6 @@ void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
 static uint8 *xbsave=NULL;
 static int fskipc = 0;
-static int videoReset = 0;
-static int currentMode = 0;
 int ScreenshotRequested = 0;
 int ConfigRequested = 0;
 int ShutdownRequested = 0;
@@ -297,8 +295,6 @@ int main(int argc, char *argv[])
 		if(currentTiming != GCSettings.timing)
 			FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
 
-		videoReset = -1;
-		currentMode = GCSettings.render;
 		currentTiming = GCSettings.timing;
 		ConfigRequested = 0;
 		ScreenshotRequested = 0;
@@ -341,20 +337,9 @@ int main(int argc, char *argv[])
 			}
 			if(ConfigRequested)
 			{
-				if((GCSettings.render != 0 && videoReset == -1) || videoReset == 0)
-				{
-					ResetVideo_Menu();
-					ConfigRequested = 0;
-					GCSettings.render = currentMode;
-					break; // leave emulation loop
-				}
-				else if(videoReset == -1)
-				{
-					GCSettings.render = 2;
-					videoReset = 2;
-					ResetVideo_Emu();
-				}
-				videoReset--;
+				ConfigRequested = 0;
+				ResetVideo_Menu();
+				break;
 			}
 		} // emulation loop
     } // main loop

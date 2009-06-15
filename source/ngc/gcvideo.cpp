@@ -42,6 +42,7 @@ int screenheight;
 int screenwidth;
 bool progressive = false;
 static int currentVideoMode = -1; // -1 - not set, 0 - automatic, 1 - NTSC (480i), 2 - Progressive (480p), 3 - PAL (50Hz), 4 - PAL (60Hz)
+static int oldRenderMode = -1; // set to GCSettings.render when changing (temporarily) to another mode
 
 /*** 3D GX ***/
 #define TEX_WIDTH 256
@@ -56,7 +57,7 @@ static Mtx GXmodelView2D;
 /*** Texture memory ***/
 static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 2] ATTRIBUTE_ALIGN (32);
 
-static int updateScaling = 1;
+static int UpdateVideo = 1;
 static int vmode_60hz = 0;
 
 u8 * gameScreenTex = NULL; // a GX texture screen capture of the game
@@ -219,7 +220,10 @@ static void SyncSpeed()
 {
 	now = gettime();
 	while (diff_usec(prev, now) < normaldiff)
+	{
 		now = gettime();
+		usleep(50);
+	}
 	prev = now;
 }
 
@@ -243,7 +247,6 @@ vbgetback (void *arg)
 {
 	while (1)
 	{
-		VIDEO_WaitVSync();
 		SyncSpeed();
 		LWP_SuspendThread (vbthread);
 	}
@@ -271,13 +274,6 @@ copy_to_xfb (u32 arg)
 {
 	if (copynow == GX_TRUE)
 	{
-		if(ScreenshotRequested)
-		{
-			ScreenshotRequested = 0;
-			TakeScreenshot();
-			ConfigRequested = 1;
-		}
-
 		GX_CopyDisp (xfb[whichfb], GX_TRUE);
 		GX_Flush ();
 		copynow = GX_FALSE;
@@ -440,9 +436,6 @@ UpdateScaling()
 	square[7] = square[10] = (-yscale) - GCSettings.yshift;
 	DCFlushRange (square, 32); // update memory BEFORE the GPU accesses it!
 	draw_init ();
-
-	if(updateScaling)
-		updateScaling--;
 }
 
 /****************************************************************************
@@ -568,7 +561,7 @@ static void SetupVideoMode()
 	if(CONF_GetAspectRatio() == CONF_ASPECT_16_9)
 	{
 		vmode->viWidth = VI_MAX_WIDTH_PAL-12;
-		vmode->viXOrigin = ((VI_MAX_WIDTH_PAL - vmode->viWidth) / 2) + 2;
+		vmode->viXOrigin = ((VI_MAX_WIDTH_PAL - vmode->viWidth) / 2);
 	}
 	#endif
 
@@ -676,8 +669,8 @@ ResetVideo_Emu ()
 	memset(texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2); // clear texture memory
 
 	// set aspect ratio
-	updateScaling = 5;
 	draw_init ();
+	UpdateScaling();
 }
 
 /****************************************************************************
@@ -695,9 +688,12 @@ void RenderFrame(unsigned char *XBuf)
 	// swap framebuffers
 	whichfb ^= 1;
 
-	// zoom has changed
-	if(updateScaling)
-		UpdateScaling();
+	// video has changed
+	if(UpdateVideo)
+	{
+		UpdateVideo = 0;
+		ResetVideo_Emu(); // reset video to emulator rendering settings
+	}
 
 	int width, height;
 
@@ -764,9 +760,31 @@ void RenderFrame(unsigned char *XBuf)
 	draw_square(view);
 	GX_DrawDone();
 
+	if(ScreenshotRequested)
+	{
+		if(GCSettings.render == 0) // we can't take a screenshot in Original mode
+		{
+			oldRenderMode = 0;
+			GCSettings.render = 2; // switch to unfiltered mode
+			UpdateVideo = 1; // request the switch
+		}
+		else
+		{
+			ScreenshotRequested = 0;
+			TakeScreenshot();
+			if(oldRenderMode != -1)
+			{
+				GCSettings.render = oldRenderMode;
+				oldRenderMode = -1;
+			}
+			ConfigRequested = 1;
+		}
+	}
+
 	// EFB is ready to be copied into XFB
 	VIDEO_SetNextFramebuffer(xfb[whichfb]);
 	VIDEO_Flush();
+
 	copynow = GX_TRUE;
 
 	// Return to caller, don't waste time waiting for vb
@@ -789,14 +807,14 @@ zoom (float speed)
 	else if (GCSettings.ZoomLevel > 2.0)
 		GCSettings.ZoomLevel = 2.0;
 
-	updateScaling = 5;	// update video
+	UpdateVideo = 1;	// update video
 }
 
 void
 zoom_reset ()
 {
 	GCSettings.ZoomLevel = 1.0;
-	updateScaling = 5;	// update video
+	UpdateVideo = 1;	// update video
 }
 
 /****************************************************************************
