@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.0.4
+                                  Version 3.0.5
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -31,6 +31,14 @@ Wii/GameCube.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.0.5]
+* Settings are now loaded from USB when loading the app from USB on HBC
+* Fixed original mode lockup bug
+* Fixed menu crashes caused by ogg player bugs
+* Fixed memory card saving verification bug
+* Fixed game savebrowser bugs
+* Miscellaneous code cleanup/corrections
 
 [3.0.4 - May 30, 2009]
 
