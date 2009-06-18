@@ -33,6 +33,8 @@ Wii/GameCube.
 `иХиииии ииииииииииииииии иииииииииииииии ииииииииииииииииииии иииииииииииии'
 
 [3.0.5]
+
+* Increase file browser listing to 10 entries, decrease font size
 * Settings are now loaded from USB when loading the app from USB on HBC
 * Fixed original mode lockup bug
 * Fixed menu crashes caused by ogg player bugs
