@@ -2349,19 +2349,19 @@ ButtonMappingWindow()
 	{
 		case CTRLR_GCPAD:
 			#ifdef HW_RVL
-			sprintf(msg, "Press any button on the GameCube Controller now. Press Home or the C-Stick in any direction to cancel.");
+			sprintf(msg, "Press any button on the GameCube Controller now. Press Home or the C-Stick in any direction to clear the existing mapping.");
 			#else
-			sprintf(msg, "Press any button on the GameCube Controller now. Press the C-Stick in any direction to cancel.");
+			sprintf(msg, "Press any button on the GameCube Controller now. Press the C-Stick in any direction to clear the existing mapping.");
 			#endif
 			break;
 		case CTRLR_WIIMOTE:
-			sprintf(msg, "Press any button on the Wiimote now. Press Home to cancel.");
+			sprintf(msg, "Press any button on the Wiimote now. Press Home to clear the existing mapping.");
 			break;
 		case CTRLR_CLASSIC:
-			sprintf(msg, "Press any button on the Classic Controller now. Press Home to cancel.");
+			sprintf(msg, "Press any button on the Classic Controller now. Press Home to clear the existing mapping.");
 			break;
 		case CTRLR_NUNCHUK:
-			sprintf(msg, "Press any button on the Wiimote or Nunchuk now. Press Home to cancel.");
+			sprintf(msg, "Press any button on the Wiimote or Nunchuk now. Press Home to clear the existing mapping.");
 			break;
 	}
 
@@ -2446,7 +2446,6 @@ static int MenuSettingsMappingsMap()
 {
 	int menu = MENU_NONE;
 	int ret,i,j;
-	u32 pressed;
 	OptionList options;
 
 	char menuTitle[100];
@@ -2549,10 +2548,7 @@ static int MenuSettingsMappingsMap()
 
 		if(ret >= 0)
 		{
-			pressed = ButtonMappingWindow(); // get a button selection from user
-
-			if (pressed > 0)
-				btnmap[mapMenuCtrlNES][mapMenuCtrl][ret] = pressed; // update mapping
+			btnmap[mapMenuCtrlNES][mapMenuCtrl][ret] = ButtonMappingWindow(); // get a button selection from user
 		}
 
 		if(backBtn.GetState() == STATE_CLICKED)
