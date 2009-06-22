@@ -74,6 +74,11 @@ HaltDeviceThread()
 {
 	deviceHalt = true;
 
+	#ifdef HW_RVL
+	if(inNetworkInit) // don't wait for network to initialize
+		return;
+	#endif
+
 	// wait for thread to finish
 	while(!LWP_ThreadIsSuspended(devicethread))
 		usleep(100);
@@ -119,8 +124,8 @@ devicecallback (void *arg)
 			}
 		}
 
-		InitializeNetwork(SILENT);
 		UpdateCheck();
+		InitializeNetwork(SILENT);
 #else
 		if(isMounted[METHOD_SD_SLOTA])
 		{
