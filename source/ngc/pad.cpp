@@ -191,8 +191,7 @@ void SetControllers()
  *
  * called by postRetraceCallback in InitGCVideo - scans pad and wpad
  ***************************************************************************/
-static void
-UpdatePads ()
+void UpdatePads()
 {
 	#ifdef HW_RVL
 	WPAD_ScanPads();
