@@ -102,7 +102,6 @@ ParseMCDirectory (int slot)
 	card_dir CardDir;
 	int CardError;
 	int entryNum = 0;
-	char tmpname[MAXPATHLEN];
 
 	// Try to mount the card
 	CardError = MountMC(slot, NOTSILENT);
@@ -128,8 +127,7 @@ ParseMCDirectory (int slot)
 			memset(&(browserList[entryNum]), 0, sizeof(BROWSERENTRY)); // clear the new entry
 
 			strncpy(browserList[entryNum].filename, (char *)CardDir.filename, MAXJOLIET);
-			StripExt(tmpname, (char *)CardDir.filename); // hide file extension
-			strncpy(browserList[entryNum].displayname, tmpname, MAXDISPLAY); // crop name for display
+			StripExt(browserList[entryNum].displayname, browserList[entryNum].filename); // hide file extension
 			browserList[entryNum].length = CardDir.filelen;
 
 			entryNum++;
