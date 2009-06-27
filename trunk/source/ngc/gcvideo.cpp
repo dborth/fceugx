@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wiiuse/wpad.h>
 #include <malloc.h>
 
 #include "driver.h"
@@ -439,39 +438,6 @@ UpdateScaling()
 }
 
 /****************************************************************************
- * UpdatePadsCB
- *
- * called by postRetraceCallback in InitGCVideo - scans gcpad and wpad
- ***************************************************************************/
-static void
-UpdatePadsCB ()
-{
-	#ifdef HW_RVL
-	WPAD_ScanPads();
-	#endif
-	PAD_ScanPads();
-
-	for(int i=3; i >= 0; i--)
-	{
-		#ifdef HW_RVL
-		memcpy(&userInput[i].wpad, WPAD_Data(i), sizeof(WPADData));
-		#endif
-
-		userInput[i].chan = i;
-		userInput[i].pad.btns_d = PAD_ButtonsDown(i);
-		userInput[i].pad.btns_u = PAD_ButtonsUp(i);
-		userInput[i].pad.btns_h = PAD_ButtonsHeld(i);
-		userInput[i].pad.stickX = PAD_StickX(i);
-		userInput[i].pad.stickY = PAD_StickY(i);
-		userInput[i].pad.substickX = PAD_SubStickX(i);
-		userInput[i].pad.substickY = PAD_SubStickY(i);
-		userInput[i].pad.triggerL = PAD_TriggerL(i);
-		userInput[i].pad.triggerR = PAD_TriggerR(i);
-	}
-}
-
-
-/****************************************************************************
  * SetupVideoMode
  *
  * Finds the optimal video mode, or uses the user-specified one
@@ -597,8 +563,7 @@ InitGCVideo ()
 	VIDEO_SetNextFramebuffer (xfb[0]);
 
 	// video callbacks
-	VIDEO_SetPostRetraceCallback ((VIRetraceCallback)UpdatePadsCB);
-	VIDEO_SetPreRetraceCallback ((VIRetraceCallback)copy_to_xfb);
+	VIDEO_SetPostRetraceCallback ((VIRetraceCallback)copy_to_xfb);
 
 	VIDEO_SetBlack (FALSE);
 	VIDEO_Flush ();
@@ -638,6 +603,8 @@ ResetVideo_Emu ()
 	else
 		while (VIDEO_GetNextField())
 			VIDEO_WaitVSync();
+
+	VIDEO_SetPreRetraceCallback(NULL);
 
 	GXColor background = {0, 0, 0, 255};
 	GX_SetCopyClear (background, 0x00ffffff);
@@ -865,6 +832,8 @@ ResetVideo_Menu ()
 	else
 		while (VIDEO_GetNextField())
 			VIDEO_WaitVSync();
+
+	VIDEO_SetPreRetraceCallback((VIRetraceCallback)UpdatePads);
 
 	// clears the bg to color and clears the z buffer
 	GXColor background = {0, 0, 0, 255};

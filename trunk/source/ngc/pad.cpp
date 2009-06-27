@@ -186,6 +186,38 @@ void SetControllers()
 	}
 }
 
+/****************************************************************************
+ * UpdatePads
+ *
+ * called by postRetraceCallback in InitGCVideo - scans pad and wpad
+ ***************************************************************************/
+static void
+UpdatePads ()
+{
+	#ifdef HW_RVL
+	WPAD_ScanPads();
+	#endif
+	PAD_ScanPads();
+
+	for(int i=3; i >= 0; i--)
+	{
+		#ifdef HW_RVL
+		memcpy(&userInput[i].wpad, WPAD_Data(i), sizeof(WPADData));
+		#endif
+
+		userInput[i].chan = i;
+		userInput[i].pad.btns_d = PAD_ButtonsDown(i);
+		userInput[i].pad.btns_u = PAD_ButtonsUp(i);
+		userInput[i].pad.btns_h = PAD_ButtonsHeld(i);
+		userInput[i].pad.stickX = PAD_StickX(i);
+		userInput[i].pad.stickY = PAD_StickY(i);
+		userInput[i].pad.substickX = PAD_SubStickX(i);
+		userInput[i].pad.substickY = PAD_SubStickY(i);
+		userInput[i].pad.triggerL = PAD_TriggerL(i);
+		userInput[i].pad.triggerR = PAD_TriggerR(i);
+	}
+}
+
 #ifdef HW_RVL
 
 /****************************************************************************
@@ -603,6 +635,8 @@ void GetJoy()
 	JSReturn = 0; // reset buttons pressed
 	unsigned char pad[4];
 	short i;
+
+	UpdatePads();
 
 	// Turbo mode
 	// RIGHT on c-stick and on classic ctrlr right joystick
