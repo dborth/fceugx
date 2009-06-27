@@ -393,7 +393,7 @@ ParseDirectory(int method)
 			}
 			else
 			{
-				StripExt(browserList[entryNum].displayname, filename); // hide file extension
+				StripExt(browserList[entryNum].displayname, browserList[entryNum].filename); // hide file extension
 			}
 
 			browserList[entryNum].length = filestat.st_size;
