@@ -85,6 +85,7 @@ void InitialiseAudio()
 {
 	#ifdef NO_SOUND
 	AUDIO_Init (NULL);
+	AUDIO_RegisterDMACallback(AudioSwitchBuffers);
 	#else
 	ASND_Init();
 	#endif
