@@ -66,7 +66,7 @@ void ResetControls(int consoleCtrl, int wiiCtrl)
 	nespadmap[i++] = 0; // insert coin for VS games, insert/eject/select disk for FDS
 
 	/*** Gamecube controller Padmap ***/
-	if(consoleCtrl == 0 || (consoleCtrl == CTRL_PAD && wiiCtrl == CTRLR_GCPAD))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && wiiCtrl == CTRLR_GCPAD))
 	{
 		i=0;
 		btnmap[CTRL_PAD][CTRLR_GCPAD][i++] = PAD_BUTTON_B;
@@ -83,7 +83,7 @@ void ResetControls(int consoleCtrl, int wiiCtrl)
 	}
 
 	/*** Wiimote Padmap ***/
-	if(consoleCtrl == 0 || (consoleCtrl == CTRL_PAD && wiiCtrl == CTRLR_WIIMOTE))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && wiiCtrl == CTRLR_WIIMOTE))
 	{
 		i=0;
 		btnmap[CTRL_PAD][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_1;
@@ -100,7 +100,7 @@ void ResetControls(int consoleCtrl, int wiiCtrl)
 	}
 
 	/*** Classic Controller Padmap ***/
-	if(consoleCtrl == 0 || (consoleCtrl == CTRL_PAD && wiiCtrl == CTRLR_CLASSIC))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && wiiCtrl == CTRLR_CLASSIC))
 	{
 		i=0;
 		btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_Y;
@@ -117,7 +117,7 @@ void ResetControls(int consoleCtrl, int wiiCtrl)
 	}
 
 	/*** Nunchuk + wiimote Padmap ***/
-	if(consoleCtrl == 0 || (consoleCtrl == CTRL_PAD && wiiCtrl == CTRLR_NUNCHUK))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && wiiCtrl == CTRLR_NUNCHUK))
 	{
 		i=0;
 		btnmap[CTRL_PAD][CTRLR_NUNCHUK][i++] = WPAD_NUNCHUK_BUTTON_C;
@@ -134,7 +134,7 @@ void ResetControls(int consoleCtrl, int wiiCtrl)
 	}
 
 	/*** Zapper : GC controller button mapping ***/
-	if(consoleCtrl == 0 || (consoleCtrl == CTRL_ZAPPER && wiiCtrl == CTRLR_GCPAD))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && wiiCtrl == CTRLR_GCPAD))
 	{
 		i=0;
 		btnmap[CTRL_ZAPPER][CTRLR_GCPAD][i++] = PAD_BUTTON_A; // shoot
@@ -142,7 +142,7 @@ void ResetControls(int consoleCtrl, int wiiCtrl)
 	}
 
 	/*** Zapper : wiimote button mapping ***/
-	if(consoleCtrl == 0 || (consoleCtrl == CTRL_ZAPPER && wiiCtrl == CTRLR_WIIMOTE))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && wiiCtrl == CTRLR_WIIMOTE))
 	{
 		i=0;
 		btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE][i++] = WPAD_BUTTON_B; // shoot
