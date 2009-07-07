@@ -287,13 +287,7 @@ UpdateGUI (void *arg)
 					Menu_DrawRectangle(0,0,screenwidth,screenheight,(GXColor){0, 0, 0, i},1);
 					Menu_Render();
 				}
-
-				if(ExitRequested)
-					ExitApp();
-				#ifdef HW_RVL
-				else if(ShutdownRequested)
-					ShutdownWii();
-				#endif
+				ExitApp();
 			}
 		}
 		usleep(THREAD_SLEEP);
@@ -462,6 +456,9 @@ CancelAction()
 void
 ShowProgress (const char *msg, int done, int total)
 {
+	if(!mainWindow)
+		return;
+
 	if(total < (256*1024))
 		return;
 	else if(done > total) // this shouldn't happen
@@ -490,6 +487,9 @@ ShowProgress (const char *msg, int done, int total)
 void
 ShowAction (const char *msg)
 {
+	if(!mainWindow)
+		return;
+
 	if(showProgress != 0)
 		CancelAction(); // wait for previous progress window to finish
 
@@ -1939,7 +1939,6 @@ static int MenuGameSettings()
 		else if(closeBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_EXIT;
-			SavePrefs(NOTSILENT);
 
 			exitSound->Play();
 			bgTopImg->SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_OUT, 15);
@@ -1958,9 +1957,6 @@ static int MenuGameSettings()
 			menu = MENU_GAME;
 		}
 	}
-
-	if(menu == MENU_GAME)
-		SavePrefs(NOTSILENT);
 
 	HaltGui();
 
@@ -3174,9 +3170,6 @@ static int MenuSettings()
 				DefaultSettings();
 		}
 	}
-
-	if(menu == MENU_GAMESELECTION)
-		SavePrefs(NOTSILENT);
 
 	HaltGui();
 	mainWindow->Remove(&w);
