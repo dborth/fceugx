@@ -12,6 +12,8 @@
 #ifndef _FCEUGX_H_
 #define _FCEUGX_H_
 
+#include <unistd.h>
+
 #define APPNAME			"FCE Ultra GX"
 #define APPVERSION		"3.0.5"
 #define PREF_FILE_NAME	"settings.xml"
