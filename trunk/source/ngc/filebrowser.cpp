@@ -485,8 +485,12 @@ int BrowserLoadFile(int method)
 				filesize = LoadSzFile(szpath, nesrom);
 				break;
 		}
+		if(filesize <= 0)
+		{
+			browser.selIndex = 0;
+			BrowserChangeFolder(method);
+		}
 	}
-	inSz = false;
 
 	if (filesize <= 0)
 	{
