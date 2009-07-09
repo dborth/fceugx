@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.0.5
+                                  Version 3.0.6
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -31,6 +31,18 @@ Wii/GameCube.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.0.6 - July 9, 2009]
+
+* Faster SMB/USB browsing
+* Last browsed folder is now remembered
+* Fixed controller mapping reset button
+* Fixed no sound on GameCube version
+* Directory names are no longer altered
+* Preferences now only saved on exit
+* Fixed on-screen keyboard glitches
+* RAM auto-saved on power-off from within a game
+* Prevent 7z lockups, better 7z error messages
 
 [3.0.5 - June 30, 2009]
 
