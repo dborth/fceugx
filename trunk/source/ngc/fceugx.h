@@ -15,7 +15,7 @@
 #include <unistd.h>
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.0.5"
+#define APPVERSION		"3.0.6"
 #define PREF_FILE_NAME	"settings.xml"
 
 #define NOTSILENT 0
