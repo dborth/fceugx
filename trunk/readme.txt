@@ -32,6 +32,12 @@ Wii/GameCube.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.0.7]
+
+* Fixed "No game saves found." message when there are actually saves.
+* Fixed shift key on keyboard
+* Text scrolling works again
+
 [3.0.6 - July 9, 2009]
 
 * Faster SMB/USB browsing
