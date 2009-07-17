@@ -122,7 +122,9 @@ void iNESGI(GI h) //bbit edited: removed static keyword
 		break;
 	case GI_CLOSE:
 		{
+			#ifndef GEKKO
 			FCEU_SaveGameSave(&iNESCart);
+			#endif
 
 			if(iNESCart.Close) iNESCart.Close();
 #ifdef _USE_SHARED_MEMORY_
@@ -696,7 +698,9 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode)
 
 	GameInfo->mappernum = MapperNo;
 	MapperInit();
+	#ifndef GEKKO
 	FCEU_LoadGameSave(&iNESCart);
+	#endif
 
 	strcpy(LoadedRomFName,name); //bbit edited: line added
 	GameInterface=iNESGI;
