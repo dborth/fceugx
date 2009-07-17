@@ -21,22 +21,11 @@
 #include <string.h>
 
 #include "fceugx.h"
+#include "fceusupport.h"
 #include "menu.h"
 #include "filebrowser.h"
 #include "memcardop.h"
 #include "fileop.h"
-
-extern "C" {
-#include "types.h"
-#include "fceu.h"
-#include "ppu.h"
-#include "cart.h"
-#include "x6502.h"
-#include "general.h"
-extern u32 iNESGameCRC32;
-extern CartInfo iNESCart;
-extern CartInfo UNIFCart;
-}
 
 static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
 {

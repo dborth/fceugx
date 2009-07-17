@@ -1,3 +1,6 @@
+#ifndef NSF_H
+#define NSF_H
+
 /* FCE Ultra - NES/Famicom Emulator
  *
  * Copyright notice for this file:
@@ -32,9 +35,9 @@ typedef struct {
                 uint8 SongName[32];
                 uint8 Artist[32];
                 uint8 Copyright[32];
-                uint8 NTSCspeed[2];              // Unused
+                uint8 NTSCspeed[2];        // Unused
                 uint8 BankSwitch[8];
-                uint8 PALspeed[2];               // Unused
+                uint8 PALspeed[2];         // Unused
                 uint8 VideoSystem;
                 uint8 SoundChip;
                 uint8 Expansion[4];
@@ -42,6 +45,9 @@ typedef struct {
         } NSF_HEADER;
 void NSF_init(void);
 void DrawNSF(uint8 *XBuf);
+extern NSF_HEADER NSFHeader; //mbg merge 6/29/06
 void NSFDealloc(void);
 void NSFDodo(void);
 void DoNSFFrame(void);
+
+#endif

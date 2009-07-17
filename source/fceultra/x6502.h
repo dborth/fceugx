@@ -22,13 +22,33 @@
 
 #include "x6502struct.h"
 
+extern X6502 X;
+
+
+//the opsize table is used to quickly grab the instruction sizes (in bytes)
+extern const uint8 opsize[256];
+
+//the optype table is a quick way to grab the addressing mode for any 6502 opcode
+extern const uint8 optype[256];
+
+//-----------
+//mbg 6/30/06 - some of this was removed to mimic XD
+//#ifdef FCEUDEF_DEBUGGER
 void X6502_Debug(void (*CPUHook)(X6502 *),
-                uint8 (*ReadHook)(X6502 *, unsigned int),
-                void (*WriteHook)(X6502 *, unsigned int, uint8));
+    uint8 (*ReadHook)(X6502 *, unsigned int),
+    void (*WriteHook)(X6502 *, unsigned int, uint8));
+
+//extern void (*X6502_Run)(int32 cycles);
+//#else
+//void X6502_Run(int32 cycles);
+//#endif
+void X6502_RunDebug(int32 cycles);
+#define X6502_Run(x) X6502_RunDebug(x)
+//------------
 
 extern uint32 timestamp;
-extern X6502 X;
-extern void (*X6502_Run)(int32 cycles);
+
+
 
 #define N_FLAG  0x80
 #define V_FLAG  0x40
@@ -39,7 +59,7 @@ extern void (*X6502_Run)(int32 cycles);
 #define Z_FLAG  0x02
 #define C_FLAG  0x01
 
-extern void FP_FASTAPASS(1) (*MapIRQHook)(int a);
+extern void (*MapIRQHook)(int a);
 
 #define NTSC_CPU 1789772.7272727272727272
 #define PAL_CPU  1662607.125
@@ -48,8 +68,8 @@ extern void FP_FASTAPASS(1) (*MapIRQHook)(int a);
 #define FCEU_IQEXT2     0x002
 /* ... */
 #define FCEU_IQRESET    0x020
-#define FCEU_IQNMI2	0x040	// Delayed NMI, gets converted to *_IQNMI
-#define FCEU_IQNMI	0x080
+#define FCEU_IQNMI2  0x040  // Delayed NMI, gets converted to *_IQNMI
+#define FCEU_IQNMI  0x080
 #define FCEU_IQDPCM     0x100
 #define FCEU_IQFCOUNT   0x200
 #define FCEU_IQTEMP     0x800
@@ -61,11 +81,11 @@ void X6502_Power(void);
 void TriggerNMI(void);
 void TriggerNMI2(void);
 
-uint8 FASTAPASS(1) X6502_DMR(uint32 A);
-void FASTAPASS(2) X6502_DMW(uint32 A, uint8 V);
+uint8 X6502_DMR(uint32 A);
+void X6502_DMW(uint32 A, uint8 V);
 
-void FASTAPASS(1) X6502_IRQBegin(int w);
-void FASTAPASS(1) X6502_IRQEnd(int w);
+void X6502_IRQBegin(int w);
+void X6502_IRQEnd(int w);
 
 #define _X6502H
 #endif

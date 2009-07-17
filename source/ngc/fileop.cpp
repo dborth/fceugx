@@ -23,7 +23,7 @@
 #include <ogc/usbstorage.h>
 
 #include "dvd.h"
-#include "common.h"
+#include "fceusupport.h"
 #include "fceugx.h"
 #include "fileop.h"
 #include "memcardop.h"

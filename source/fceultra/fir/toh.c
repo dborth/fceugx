@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#define MAX	512
+#define MAX        512
 
 main()
 {

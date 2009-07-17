@@ -21,7 +21,7 @@
 #include <di/di.h>
 #endif
 
-#include "common.h"
+#include "fceusupport.h"
 #include "fceugx.h"
 #include "fceuconfig.h"
 #include "pad.h"

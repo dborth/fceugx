@@ -14,6 +14,8 @@
 
 #include <unistd.h>
 
+#include "driver.h"
+
 #define APPNAME			"FCE Ultra GX"
 #define APPVERSION		"3.0.6"
 #define PREF_FILE_NAME	"settings.xml"
@@ -98,5 +100,6 @@ extern int ExitRequested;
 extern char appPath[];
 extern int appLoadMethod;
 extern int frameskip;
+extern bool romLoaded;
 
 #endif

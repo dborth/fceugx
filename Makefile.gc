@@ -21,7 +21,7 @@ BUILD		:=	build_gc
 SOURCES		:=	source/ngc/images source/ngc/sounds source/ngc/fonts \
 				source/ngc/gui source/ngc \
 				source/fceultra source/fceultra/boards source/fceultra/input \
-				source/fceultra/mappers source/fceultra/mbshare \
+				source/fceultra/utils source/fceultra/mappers source/fceultra/mbshare \
 				source/sz source/unzip
 INCLUDES	:=	source/fceultra source/ngc source/unzip
 
@@ -29,7 +29,7 @@ INCLUDES	:=	source/fceultra source/ngc source/unzip
 # options for code generation
 #---------------------------------------------------------------------------------
 CFLAGS  = -g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNGC -DNO_SOUND \
-		-DFCEU_VERSION_NUMERIC=9812 -DFRAMESKIP \
+		-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 	    -D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 	    -fomit-frame-pointer \
 		-Wno-unused-parameter -Wno-strict-aliasing

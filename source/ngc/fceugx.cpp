@@ -24,7 +24,7 @@
 #include "fceuload.h"
 #include "fceustate.h"
 #include "fceuram.h"
-#include "common.h"
+#include "fceusupport.h"
 #include "menu.h"
 #include "preferences.h"
 #include "fileop.h"
@@ -42,14 +42,9 @@
 
 #include "FreeTypeGX.h"
 
-extern "C" {
 #include "types.h"
-extern int cleanSFMDATA();
-extern void PowerNES(void);
-extern uint8 FDSBIOS[8192];
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
-}
 
 static uint8 *xbsave=NULL;
 static int fskipc = 0;
@@ -280,7 +275,6 @@ int main(int argc, char *argv[])
 	FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
 
 	memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
-	cleanSFMDATA(); // clear state data
 
 	FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
 	int currentTiming = 0;
@@ -354,49 +348,4 @@ int main(int argc, char *argv[])
 
 		} // emulation loop
     } // main loop
-}
-
-/****************************************************************************
- * FCEU Support Functions
- ****************************************************************************/
-// File Control
-FILE *FCEUD_UTF8fopen(const char *n, const char *m)
-{
-    return NULL;
-}
-
-// General Logging
-void FCEUD_PrintError(char *s)
-{
-}
-
-void FCEUD_Message(char *text)
-{
-}
-
-// main interface to FCE Ultra
-void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count)
-{
-    PlaySound(Buffer, Count); // play sound
-    RenderFrame(XBuf); // output video frame
-    GetJoy(); // check controller input
-}
-
-// Netplay
-int FCEUD_SendData(void *data, uint32 len)
-{
-    return 1;
-}
-
-int FCEUD_RecvData(void *data, uint32 len)
-{
-    return 0;
-}
-
-void FCEUD_NetworkClose(void)
-{
-}
-
-void FCEUD_NetplayText(uint8 *text)
-{
 }

@@ -27,7 +27,7 @@ typedef struct {
 /* slot */
 typedef struct {
 
-  OPLL_PATCH patch;  
+  OPLL_PATCH patch;
 
   e_int32 type ;          /* 0 : modulator 1 : carrier */
 
@@ -46,7 +46,7 @@ typedef struct {
   e_int32 block ;         /* Block */
   e_int32 volume ;        /* Current volume */
   e_int32 sustine ;       /* Sustine 1 = ON, 0 = OFF */
-  e_uint32 tll ;	      /* Total Level + Key scale level*/
+  e_uint32 tll ;              /* Total Level + Key scale level*/
   e_uint32 rks ;        /* Key scale offset (Rks) */
   e_int32 eg_mode ;       /* Current state */
   e_uint32 eg_phase ;   /* Phase */
