@@ -89,14 +89,24 @@ static int32 sqacc[2];
 static int32 lengthcount[4]; 
 static const uint8 lengthtable[0x20]=
 {
- 0x5*2,0x7f*2,0xA*2,0x1*2,0x14*2,0x2*2,0x28*2,0x3*2,0x50*2,0x4*2,0x1E*2,0x5*2,0x7*2,0x6*2,0x0E*2,0x7*2,
- 0x6*2,0x08*2,0xC*2,0x9*2,0x18*2,0xa*2,0x30*2,0xb*2,0x60*2,0xc*2,0x24*2,0xd*2,0x8*2,0xe*2,0x10*2,0xf*2
+	10,254, 20,  2, 40,  4, 80,  6, 160,  8, 60, 10, 14, 12, 26, 14,
+	12, 16, 24, 18, 48, 20, 96, 22, 192, 24, 72, 26, 16, 28, 32, 30
 };
 
-static const uint32 NoiseFreqTable[0x10]=
+
+static const uint32 NoiseFreqTableNTSC[0x10] = 
 {
- 2,4,8,0x10,0x20,0x30,0x40,0x50,0x65,0x7f,0xbe,0xfe,0x17d,0x1fc,0x3f9,0x7f2
+	4, 8, 16, 32, 64, 96, 128, 160, 202, 
+	254, 380, 508, 762, 1016, 2034, 4068
 };
+
+static const uint32 NoiseFreqTablePAL[0x10] = 
+{
+	4, 7, 14, 30, 60, 88, 118, 148, 188, 
+	236, 354, 472, 708,  944, 1890, 3778
+};
+
+static const uint32 *NoiseFreqTable = NoiseFreqTableNTSC;
 
 static const uint32 NTSCDMCTable[0x10]=
 {
@@ -104,10 +114,16 @@ static const uint32 NTSCDMCTable[0x10]=
  190,160,142,128,106, 84 ,72,54
 };
 
+/* Previous values for PAL DMC was value - 1,
+ * I am not certain if this is if FCEU handled
+ * PAL differently or not, the NTSC values are right,
+ * so I am assuming that the current value is handled
+ * the same way NTSC is handled. */
+
 static const uint32 PALDMCTable[0x10]=
 {
- 397, 353, 315, 297, 265, 235, 209, 198, 
- 176, 148, 131, 118, 98, 78, 66, 50, 
+	398, 354, 316, 298, 276, 236, 210, 198, 
+	176, 148, 132, 118,  98,  78,  66,  50
 };
 
 // $4010        -        Frequency
@@ -575,7 +591,7 @@ static INLINE void RDoSQ(int x)		//Int x decides if this is Square Wave 1 or 2
    
    //Modify Square wave volume based on channel volume modifiers
    //adelikat: Note: the formulat x = x * y /100 does not yield exact results, but is "close enough" and avoids the need for using double vales or implicit cohersion which are slower (we need speed here)
-   ampx = x ? FSettings.Square1Volume : FSettings.Square2Volume; // TODO OPTIMIZE ME!
+   ampx = x ? FSettings.Square2Volume : FSettings.Square1Volume; // TODO OPTIMIZE ME!
    if (ampx != 256) amp = (amp * ampx) / 256; // CaH4e3: fixed - setting up maximum volume for square2 caused complete mute square2 channel
          
    amp<<=24;
@@ -837,7 +853,9 @@ static void RDoTriangleNoisePCMLQ(void)
     if(noiseacc<=0)
     {
      rea2:
-     noiseacc+=NoiseFreqTable[PSG[0xE]&0xF]<<(16+2);
+        //used to added <<(16+2) when the noise table
+        //values were half.
+     noiseacc+=NoiseFreqTable[PSG[0xE]&0xF]<<(16+1);
      nreg=(nreg<<1)+(((nreg>>nshift)^(nreg>>14))&1);
      nreg&=0x7fff;
      noiseout=amptab[(nreg>>0xe)];
@@ -876,7 +894,9 @@ static void RDoTriangleNoisePCMLQ(void)
      if(noiseacc<=0)
      {
       area2:
-      noiseacc+=NoiseFreqTable[PSG[0xE]&0xF]<<(16+2);
+         //used to be added <<(16+2) when the noise table
+         //values were half.
+      noiseacc+=NoiseFreqTable[PSG[0xE]&0xF]<<(16+1);
       nreg=(nreg<<1)+(((nreg>>nshift)^(nreg>>14))&1);
       nreg&=0x7fff;
       noiseout=amptab[(nreg>>0xe)];
@@ -927,7 +947,7 @@ static void RDoNoise(void)
    if(!wlcount[3])
    {
     uint8 feedback;
-    wlcount[3]=NoiseFreqTable[PSG[0xE]&0xF]<<1;
+    wlcount[3]=NoiseFreqTable[PSG[0xE]&0xF];
     feedback=((nreg>>8)&1)^((nreg>>14)&1);
     nreg=(nreg<<1)+feedback;
     nreg&=0x7fff;
@@ -942,7 +962,7 @@ static void RDoNoise(void)
    if(!wlcount[3])
    {
     uint8 feedback;
-    wlcount[3]=NoiseFreqTable[PSG[0xE]&0xF]<<1;
+    wlcount[3]=NoiseFreqTable[PSG[0xE]&0xF];
     feedback=((nreg>>13)&1)^((nreg>>14)&1);
     nreg=(nreg<<1)+feedback;
     nreg&=0x7fff;
@@ -1063,25 +1083,32 @@ due to that whole MegaMan 2 Game Genie thing.
 
 void FCEUSND_Reset(void)
 {
-        int x;
-
+	int x;
+	
 	IRQFrameMode=0x0;
-        fhcnt=fhinc;
-        fcnt=0;
+	fhcnt=fhinc;
+	fcnt=0;
+	nreg=1;
 
-        nreg=1;
-        for(x=0;x<2;x++)
+	if (PAL)
+		NoiseFreqTable = NoiseFreqTablePAL;
+	else
+		NoiseFreqTable = NoiseFreqTableNTSC;
+
+	for(x=0;x<2;x++)
 	{
-         wlcount[x]=2048;
-	 if(nesincsize) // lq mode
-	  sqacc[x]=((uint32)2048<<17)/nesincsize;
-	 else
-	  sqacc[x]=1;
-	 sweepon[x]=0;
-	 curfreq[x]=0;
+		wlcount[x]=2048;
+		if(nesincsize) // lq mode
+			sqacc[x]=((uint32)2048<<17)/nesincsize;
+		else
+			sqacc[x]=1;
+		sweepon[x]=0;
+		curfreq[x]=0;
 	}
-  wlcount[2]=1;  //2048;
-        wlcount[3]=2048;
+	
+	wlcount[2]=1;  //2048;
+	wlcount[3]=2048;
+
 	DMCHaveDMA=DMCHaveSample=0;
 	SIRQStat=0x00;
 

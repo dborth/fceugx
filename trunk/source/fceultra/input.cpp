@@ -202,6 +202,9 @@ static void UpdateGP(int w, void *data, int arg)
 		joy[2]= FCEU_LuaUsingJoypad(2) ? (FCEU_LuaReadJoypad(2) | (*(uint32 *)joyports[0].ptr >> 16)) : *(uint32 *)joyports[0].ptr >> 16;
 		if (FCEU_LuaReadJoypadFalse(2))
 			joy[2] &= FCEU_LuaReadJoypadFalse(2);
+		#else // without this, there seems to be no input at all without Lua
+		joy[0] = *(uint32 *)joyports[0].ptr;;
+		joy[2] = *(uint32 *)joyports[0].ptr >> 16;
 		#endif
 	}
 	else
@@ -215,6 +218,9 @@ static void UpdateGP(int w, void *data, int arg)
 		joy[3]= FCEU_LuaUsingJoypad(3) ? (FCEU_LuaReadJoypad(3) | (*(uint32 *)joyports[1].ptr >> 24)) : *(uint32 *)joyports[1].ptr >> 24;
 		if (FCEU_LuaReadJoypadFalse(3))
 			joy[3] &= FCEU_LuaReadJoypadFalse(3);
+		#else // same goes for the other two pads
+		joy[1] = *(uint32 *)joyports[1].ptr >> 8;
+		joy[3] = *(uint32 *)joyports[1].ptr >> 24;
 		#endif
 	}
 
@@ -609,6 +615,7 @@ static void CloseRom(void);
 static void MovieSubtitleToggle(void);
 static void UndoRedoSavestate(void);
 static void FCEUI_DoExit(void);
+static void ToggleFullscreen(void);
 
 struct EMUCMDTABLE FCEUI_CommandTable[]=
 {
@@ -619,8 +626,6 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_SCREENSHOT,					EMUCMDTYPE_MISC,	FCEUI_SaveSnapshot,	  0, 0, "Screenshot", EMUCMDFLAG_TASEDIT },
 	{ EMUCMD_HIDE_MENU_TOGGLE,				EMUCMDTYPE_MISC,	FCEUD_HideMenuToggle, 0, 0, "Hide Menu Toggle", EMUCMDFLAG_TASEDIT },
 	{ EMUCMD_EXIT,							EMUCMDTYPE_MISC,	FCEUI_DoExit,			  0, 0, "Exit", 0},
-	//adelikat: CaH4e3, perhaps finding the true cause should be on the person who made the change?
-	//Also, removing the windows only function from this table.  This is a core file and should stay compatible with the SDL build
 	{ EMUCMD_SPEED_SLOWEST,					EMUCMDTYPE_SPEED,	CommandEmulationSpeed, 0, 0, "Slowest Speed", 0 },
 	{ EMUCMD_SPEED_SLOWER,					EMUCMDTYPE_SPEED,	CommandEmulationSpeed, 0, 0, "Speed Down", 0 },
 	{ EMUCMD_SPEED_NORMAL,					EMUCMDTYPE_SPEED,	CommandEmulationSpeed, 0, 0, "Normal Speed", 0 },
@@ -671,7 +676,7 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_MOVIE_PLAY_FROM_BEGINNING,		EMUCMDTYPE_MOVIE,	FCEUI_MoviePlayFromBeginning, 0, 0, "Play Movie From Beginning", 0 },
 	{ EMUCMD_MOVIE_STOP,					EMUCMDTYPE_MOVIE,	FCEUI_StopMovie, 0, 0, "Stop Movie", 0 },
 	{ EMUCMD_MOVIE_READONLY_TOGGLE,			EMUCMDTYPE_MOVIE,	FCEUI_MovieToggleReadOnly, 0, 0, "Toggle Read-Only", EMUCMDFLAG_TASEDIT },
-	{ EMUCMD_MOVIE_FRAME_DISPLAY_TOGGLE,	EMUCMDTYPE_MOVIE,	FCEUI_MovieToggleFrameDisplay, 0, 0, "Movie Frame Display Toggle", 0 },
+	{ EMUCMD_MOVIE_FRAME_DISPLAY_TOGGLE,	EMUCMDTYPE_MOVIE,	FCEUI_MovieToggleFrameDisplay, 0, 0, "Frame Display Toggle", 0 },
 
 	{ EMUCMD_MOVIE_INPUT_DISPLAY_TOGGLE,	EMUCMDTYPE_MISC,	FCEUI_ToggleInputDisplay, 0, 0, "Toggle Input Display", 0 },
 	{ EMUCMD_MOVIE_ICON_DISPLAY_TOGGLE,		EMUCMDTYPE_MISC,	FCEUD_ToggleStatusIcon, 0, 0, "Toggle Status Icon", 0 },
@@ -722,15 +727,12 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_OPENROM,						EMUCMDTYPE_TOOL,	OpenRom,		  0, 0,  "Open ROM", 0},
 	{ EMUCMD_CLOSEROM,						EMUCMDTYPE_TOOL,	CloseRom,		  0, 0,	 "Close ROM", 0},
 	{ EMUCMD_MISC_DISPLAY_MOVIESUBTITLES,	EMUCMDTYPE_MISC,	MovieSubtitleToggle,0,0,"Toggle Movie Subtitles", 0},
-	{ EMUCMD_MISC_UNDOREDOSAVESTATE,		EMUCMDTYPE_MISC,	UndoRedoSavestate,  0,0,"Undo/Redo Savestate",    0}
+	{ EMUCMD_MISC_UNDOREDOSAVESTATE,		EMUCMDTYPE_MISC,	UndoRedoSavestate,  0,0,"Undo/Redo Savestate",    0},
+	{ EMUCMD_MISC_TOGGLEFULLSCREEN,			EMUCMDTYPE_MISC,	ToggleFullscreen, 0, 0, "Toggle Fullscreen",	  0}
 };
 
 #define NUM_EMU_CMDS		(sizeof(FCEUI_CommandTable)/sizeof(FCEUI_CommandTable[0]))
 
-// jabberwoocky my son, don't be aware lol
-// this is much mindfucking thing i ever seen here
-// even when i fixed it, there is a lot of possibilities to break all key input stuff with one
-// unarranged command enumerator.
 static int execcmd, i;
 
 void FCEUI_HandleEmuCommands(TestCommandState* testfn)
@@ -948,5 +950,19 @@ static void FCEUI_DoExit(void)
 {
 #ifdef WIN32
 	DoFCEUExit();
+#endif
+}
+
+static void ToggleFullscreen(void)
+{
+#ifdef WIN32
+	extern int SetVideoMode(int fs);		//adelikat: Yeah, I know, hacky
+	extern void UpdateCheckedMenuItems();
+	
+	UpdateCheckedMenuItems();
+	changerecursive=1;
+	if(!SetVideoMode(fullscreen^1))
+		SetVideoMode(fullscreen);
+	changerecursive=0;
 #endif
 }
