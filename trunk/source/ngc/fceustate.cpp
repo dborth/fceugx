@@ -19,35 +19,13 @@
 #include <fat.h>
 #include "pngu/pngu.h"
 
-#include "types.h"
-#include "state.h"
-#include "x6502.h"
-
 #include "fceugx.h"
+#include "fceusupport.h"
 #include "menu.h"
 #include "filebrowser.h"
 #include "memcardop.h"
 #include "fileop.h"
 #include "gcvideo.h"
-
-extern "C" {
-/*** External functions ***/
-extern void FCEUPPU_SaveState(void);
-extern void FCEUSND_SaveState(void);
-extern void FCEUPPU_LoadState(int version);
-extern void FCEUSND_LoadState(int version);
-extern void FlipByteOrder(uint8 *src, uint32 count);
-extern void (*GameStateRestore)(int version);
-
-/*** External save structures ***/
-extern SFORMAT SFCPU[];
-extern SFORMAT SFCPUC[];
-extern SFORMAT FCEUPPU_STATEINFO[];
-extern SFORMAT FCEUCTRL_STATEINFO[];
-extern SFORMAT FCEUSND_STATEINFO[];
-extern SFORMAT SFMDATA[64];
-extern u32 iNESGameCRC32;
-}
 
 #define RLSB 0x80000000
 

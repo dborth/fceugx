@@ -18,7 +18,7 @@
 #include <malloc.h>
 
 #include "fceugx.h"
-#include "common.h"
+#include "fceusupport.h"
 #include "gcvideo.h"
 #include "menu.h"
 #include "preferences.h"

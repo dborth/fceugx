@@ -19,7 +19,7 @@
 #include <di/di.h>
 #endif
 
-#include "common.h"
+#include "fceusupport.h"
 #include "fceugx.h"
 #include "dvd.h"
 #include "menu.h"

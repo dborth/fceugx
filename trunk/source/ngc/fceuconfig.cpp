@@ -14,7 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
+#include "fceusupport.h"
 #include "fceugx.h"
 #include "pad.h"
 

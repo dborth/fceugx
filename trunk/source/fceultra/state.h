@@ -18,26 +18,59 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <stdio.h>
+enum ENUM_SSLOADPARAMS
+{
+	SSLOADPARAM_NOBACKUP,
+	SSLOADPARAM_BACKUP,
+};
 
-void FCEUSS_Save(char *);
-int FCEUSS_Load(char *);
-int FCEUSS_SaveFP(FILE *);
-int FCEUSS_LoadFP(FILE *);
+void FCEUSS_Save(const char *);
+bool FCEUSS_Load(const char *);
+
+ //zlib values: 0 (none) through 9 (max) or -1 (default)
+bool FCEUSS_SaveMS(std::ostream* outstream, int compressionLevel);
+
+bool FCEUSS_LoadFP(std::istream* is, ENUM_SSLOADPARAMS params);
 
 extern int CurrentState;
 void FCEUSS_CheckStates(void);
 
-typedef struct {
-           void *v;
-           uint32 s;
-	   char *desc;
-} SFORMAT;
+struct SFORMAT
+{
+	//a void* to the data or a void** to the data
+	void *v;
+
+	//size, plus flags
+	uint32 s;
+
+	//a string description of the element
+	char *desc;
+};
 
 void ResetExState(void (*PreSave)(void),void (*PostSave)(void));
 void AddExState(void *v, uint32 s, int type, char *desc);
 
+//indicates that the value is a multibyte integer that needs to be put in the correct byte order
 #define FCEUSTATE_RLSB            0x80000000
+
+//void*v is actually a void** which will be indirected before reading
+#define FCEUSTATE_INDIRECT            0x40000000
+
+//all FCEUSTATE flags together so that we can mask them out and get the size
+#define FCEUSTATE_FLAGS (FCEUSTATE_RLSB|FCEUSTATE_INDIRECT)
 
 void FCEU_DrawSaveStates(uint8 *XBuf);
 
+void CreateBackupSaveState(const char *fname); //backsup a savestate before overwriting it with a new one
+void BackupLoadState();				 //Makes a backup savestate before any loadstate
+void LoadBackup();					 //Loads the backupsavestate
+void RedoLoadState();				 //reloads a loadstate if backupsavestate was run
+void SwapSaveState();				 //Swaps a savestate with its backup state
+
+extern char lastSavestateMade[2048]; //Filename of last savestate used
+extern bool undoSS;					 //undo savestate flag
+extern bool redoSS;					 //redo savestate flag
+extern char lastLoadstateMade[2048]; //Filename of last state loaded
+extern bool undoLS;					 //undo loadstate flag
+extern bool redoLS;					 //redo savestate flag
+bool CheckBackupSaveStateExist();	 //Checks if backupsavestate exists

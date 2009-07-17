@@ -17,16 +17,12 @@
 #include <string.h>
 #include <malloc.h>
 
-#include "driver.h"
+#include "fceusupport.h"
 #include "gcvideo.h"
 #include "fceugx.h"
 #include "menu.h"
 #include "pad.h"
 #include "gui/gui.h"
-
-extern "C" {
-extern void FCEU_ResetPalette(void);
-}
 
 int FDSTimer = 0;
 u32 FrameTimer = 0;
@@ -287,14 +283,14 @@ copy_to_xfb (u32 arg)
 		switch(FDSSwitchRequested)
 		{
 			case 1:
-				FCEUI_FDSEject(); // eject disk
+//				FCEUI_FDSEject(); // eject disk
 				FDSSwitchRequested++;
 				break;
 			case 2:
 				if(FDSTimer > 60)
 				{
 					FCEUI_FDSSelect(); // select other side
-					FCEUI_FDSInsert(0); // insert disk
+					FCEUI_FDSInsert(); // insert disk
 					FDSSwitchRequested = 0;
 					FDSTimer = 0;
 				}

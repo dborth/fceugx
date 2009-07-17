@@ -13,6 +13,7 @@
 #include <math.h>
 
 #include "fceugx.h"
+#include "fceusupport.h"
 #include "pad.h"
 #include "gcaudio.h"
 #include "menu.h"
@@ -21,13 +22,6 @@
 #include "button_mapping.h"
 #include "gui/gui.h"
 #include "fceuload.h"
-
-extern "C" {
-#include "driver.h"
-#include "fceu.h"
-#include "input.h"
-extern INPUTC *FCEU_InitZapper(int w);
-}
 
 int rumbleRequest[4] = {0,0,0,0};
 GuiTrigger userInput[4];
@@ -161,9 +155,9 @@ void SetControllers()
 	InputDPR = &JSReturn;
 
 	if(GCSettings.Controller == CTRL_PAD4)
-		FCEUI_DisableFourScore(false);
+		FCEUI_SetInputFourscore(1);
 	else
-		FCEUI_DisableFourScore(true);
+		FCEUI_SetInputFourscore(0);
 
 	// set defaults
 	zapperdata[0]=NULL;

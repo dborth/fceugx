@@ -17,25 +17,9 @@
 #include <string.h>
 #include <malloc.h>
 
-extern "C" {
-#include "types.h"
-#include "git.h"
-#include "driver.h"
-#include "palette.h"
-#include "fceu.h"
-#include "sound.h"
-#include "file.h"
-
-extern int FDSLoad(const char *name, FCEUFILE *fp);
-extern int iNESLoad(const char *name, FCEUFILE *fp);
-extern int UNIFLoad(const char *name, FCEUFILE *fp);
-extern int NSFLoad(FCEUFILE *fp);
-extern uint8 FDSBIOS[8192];
-}
-
 #include "fceugx.h"
 #include "gcaudio.h"
-#include "common.h"
+#include "fceusupport.h"
 #include "pad.h"
 #include "menu.h"
 #include "fileop.h"
@@ -43,55 +27,51 @@ extern uint8 FDSBIOS[8192];
 
 bool romLoaded = false;
 
-extern FCEUGI *FCEUGameInfo;
-
 #define SAMPLERATE 48000
 
-FCEUFILE *fceufp = NULL;
-MEMWRAP *fceumem = NULL;
-unsigned char * fceuFileData = NULL;
+static FCEUFILE *fceufp = NULL;
+static memorystream* fceumem = NULL;
 
 static void MakeFCEUFile(char * membuffer, int length)
 {
 	if(fceufp != NULL)
 	{
-		free(fceuFileData);
-		free(fceumem);
-		free(fceufp);
-		fceuFileData = NULL;
-		fceumem = NULL;
+		delete fceufp;
 		fceufp = NULL;
 	}
 
-	fceufp =(FCEUFILE *)memalign(32,sizeof(FCEUFILE));
-	fceufp->type=3;
-	fceumem = (MEMWRAP *)memalign(32,sizeof(MEMWRAP));
-	fceumem->location=0;
-	fceumem->size=length;
-	fceuFileData = (unsigned char *)memalign(32,length);
-	memcpy(fceuFileData, membuffer, length);
-	fceumem->data=fceuFileData;
-	fceufp->fp = fceumem;
+	fceumem = new memorystream(membuffer, length); // we never need to delete this...?
+
+	fceufp = new FCEUFILE();
+	fceufp->size = length;
+	fceufp->stream = fceumem;
+	fceufp->filename = romFilename;
 }
 
 int GCMemROM(int method, int size)
 {
 	ResetGameLoaded();
 
-	/*** Allocate and clear GameInfo ***/
+	//AutosaveStatus[0] = AutosaveStatus[1] = 0;
+	//AutosaveStatus[2] = AutosaveStatus[3] = 0;
 
-	FCEUGameInfo = (FCEUGI *) memalign(32, sizeof(FCEUGI));
-	memset(FCEUGameInfo, 0, sizeof(FCEUGI));
+	CloseGame();
+	GameInfo = new FCEUGI();
+	memset(GameInfo, 0, sizeof(FCEUGI));
+
+	GameInfo->filename = strdup(romFilename);
+	//if(fceufp->archiveFilename != "") GameInfo->archiveFilename = strdup(fceufp->archiveFilename.c_str());
+	GameInfo->archiveCount = 0;
 
 	/*** Set some default values ***/
-	FCEUGameInfo->soundchan = 1;
-	FCEUGameInfo->soundrate = SAMPLERATE;
-	FCEUGameInfo->name = 0;
-	FCEUGameInfo->type = GIT_CART;
-	FCEUGameInfo->vidsys = GIV_USER;
-	FCEUGameInfo->input[0] = FCEUGameInfo->input[1] = -1;
-	FCEUGameInfo->inputfc = -1;
-	FCEUGameInfo->cspecial = 0;
+	GameInfo->soundchan = 1;
+	GameInfo->soundrate = SAMPLERATE;
+	GameInfo->name=0;
+	GameInfo->type=GIT_CART;
+	GameInfo->vidsys=GIV_USER;
+	GameInfo->input[0]=GameInfo->input[1]=SI_UNSET;
+	GameInfo->inputfc=SIFC_UNSET;
+	GameInfo->cspecial=SIS_NONE;
 
 	/*** Set internal sound information ***/
 	FCEUI_Sound(SAMPLERATE);
@@ -102,9 +82,9 @@ int GCMemROM(int method, int size)
 
 	nesGameType = 0;
 
-	if (iNESLoad(NULL, fceufp))
+	if (iNESLoad(romFilename, fceufp, 1))
 		nesGameType = 1;
-	else if (UNIFLoad(NULL, fceufp))
+	else if (UNIFLoad(romFilename, fceufp))
 		nesGameType = 2;
 	else if (NSFLoad(fceufp))
 		nesGameType = 3;
@@ -144,16 +124,30 @@ int GCMemROM(int method, int size)
 	if (nesGameType > 0)
 	{
 		FCEU_ResetVidSys();
+
+		if(GameInfo->type!=GIT_NSF)
+			if(FSettings.GameGenie)
+				OpenGenie();
 		PowerNES();
+
+		if(GameInfo->type!=GIT_NSF)
+			FCEU_LoadGamePalette();
+
 		FCEU_ResetPalette();
-		FCEU_ResetMessages(); // Save state, status messages, etc.
-		SetSoundVariables();
+		FCEU_ResetMessages();	// Save state, status messages, etc.
+
+		if(GameInfo->type!=GIT_NSF)
+			FCEU_LoadGameCheats(0);
+
 		ResetAudio();
 		romLoaded = true;
 		return 1;
 	}
 	else
 	{
+		delete GameInfo;
+		GameInfo = 0;
+
 		ErrorPrompt("Invalid game file!");
 		romLoaded = false;
 		return 0;
