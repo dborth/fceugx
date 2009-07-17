@@ -19,7 +19,7 @@ enum EMOVIE_FLAG
 	//an ARCHAIC flag which means the movie was recorded from a soft reset.
 	//WHY would you do this?? do not create any new movies with this flag
 	MOVIE_FLAG_FROM_RESET = (1<<1),
-
+	
 	MOVIE_FLAG_PAL = (1<<2),
 
 	//movie was recorded from poweron. the alternative is from a savestate (or from reset)
@@ -41,7 +41,6 @@ typedef struct
 	uint32 emu_version_used;				// 9813 = 0.98.13
 	MD5DATA md5_of_rom_used;
 	std::string name_of_rom_used;
-
 #ifndef GEKKO
 	std::vector<std::wstring> comments;
 #endif
@@ -93,7 +92,7 @@ class MovieRecord
 
 public:
 	ValueArray<uint8,4> joysticks;
-
+	
 	struct {
 		uint8 x,y,b,bogo;
 		uint64 zaphit;
@@ -133,7 +132,7 @@ public:
 	}
 
 	void clear();
-
+	
 	//a waste of memory in lots of cases..  maybe make it a pointer later?
 	std::vector<char> savestate;
 
@@ -143,7 +142,7 @@ public:
 	void dumpBinary(MovieData* md, std::ostream* os, int index);
 	void parseJoy(std::istream* is, uint8& joystate);
 	void dumpJoy(std::ostream* os, uint8 joystate);
-
+	
 	static const char mnemonics[8];
 
 private:
@@ -154,7 +153,7 @@ class MovieData
 {
 public:
 	MovieData();
-
+	
 
 	int version;
 	int emuVersion;
@@ -179,7 +178,7 @@ public:
 	int ports[3];
 	//whether fourscore is enabled
 	bool fourscore;
-
+	
 	//----TasEdit stuff---
 	int greenZoneCount;
 	//----
@@ -219,7 +218,7 @@ public:
 	int dump(std::ostream* os, bool binary);
 	void clearRecordRange(int start, int len);
 	void insertEmpty(int at, int frames);
-
+	
 	static bool loadSavestateFrom(std::vector<char>* buf);
 	static void dumpSavestateTo(std::vector<char>* buf, int compressionLevel);
 	void TryDumpIncremental();
@@ -246,10 +245,11 @@ extern bool autoMovieBackup;
 //--------------------------------------------------
 bool CheckFileExists(const char* filename);	//Receives a filename (fullpath) and checks to see if that file exists
 void FCEUI_MakeBackupMovie(bool dispMessage);
+void FCEUI_CreateMovieFile(std::string fn);
 #ifndef GEKKO
 void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author);
 #endif
-void FCEUI_LoadMovie(const char *fname, bool read_only, bool tasedit, int _stopframe);
+bool FCEUI_LoadMovie(const char *fname, bool read_only, bool tasedit, int _stopframe);
 void FCEUI_MoviePlayFromBeginning(void);
 void FCEUI_StopMovie(void);
 bool FCEUI_MovieGetInfo(FCEUFILE* fp, MOVIE_INFO& info, bool skipFrameCount = false);
@@ -263,7 +263,7 @@ std::string FCEUI_GetMovieName(void);
 void FCEUI_MovieToggleFrameDisplay();
 void FCEUI_ToggleInputDisplay(void);
 
-void LoadSubtitles(void);
+void LoadSubtitles(MovieData);
 void ProcessSubtitles(void);
 void FCEU_DisplaySubtitles(char *format, ...);
 

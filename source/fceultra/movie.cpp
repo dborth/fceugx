@@ -34,11 +34,12 @@
 
 #ifdef WIN32
 #include <windows.h>
+extern void AddRecentMovieFile(const char *filename);
 #endif
 
 using namespace std;
 
-#define MOVIE_VERSION           3
+#define MOVIE_VERSION           3 
 
 extern char FileBase[];
 extern bool AutoSS;		//Declared in fceu.cpp, keeps track if a auto-savestate has been made
@@ -105,7 +106,7 @@ void MovieData::clearRecordRange(int start, int len)
 void MovieData::insertEmpty(int at, int frames)
 {
 #ifndef GEKKO
-	if(at == -1)
+	if(at == -1) 
 	{
 		int currcount = records.size();
 		records.resize(records.size()+frames);
@@ -465,7 +466,7 @@ bool FCEUI_GetLagged(void)
 
 bool FCEUMOV_ShouldPause(void)
 {
-	if(pauseframe && currFrameCounter == pauseframe)
+	if(pauseframe && currFrameCounter == (pauseframe-1))	//adelikat: changed to pauseframe -1 to prevent an off by 1 error.  THis is probably the hackiest solution but I think it would cause some major restructuring to fix it properly.
 	{
 		pauseframe = 0; //only pause once!
 		return true;
@@ -529,7 +530,7 @@ static void LoadFM2_binarychunk(MovieData& movieData, std::istream* fp, int size
 }
 
 //yuck... another custom text parser.
-static bool LoadFM2(MovieData& movieData, std::istream* fp, int size, bool stopAfterHeader)
+bool LoadFM2(MovieData& movieData, std::istream* fp, int size, bool stopAfterHeader)
 {
 #ifndef GEKKO
 	//first, look for an fcm signature
@@ -780,11 +781,11 @@ void MovieData::dumpSavestateTo(std::vector<char>* buf, int compressionLevel)
 }
 
 //begin playing an existing movie
-void FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _pauseframe)
+bool FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _pauseframe)
 {
 #ifndef GEKKO
 	if(!tasedit && !FCEU_IsValidUI(FCEUI_PLAYMOVIE))
-		return;
+		return true;	//adelikat: file did not fail to load, so let's return true here, just do nothing
 
 	assert(fname);
 
@@ -796,17 +797,22 @@ void FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _paus
 	//--------------
 
 	currMovieData = MovieData();
-
+	
 	strcpy(curMovieFilename, fname);
 	FCEUFILE *fp = FCEU_fopen(fname,0,"rb",0);
-	if (!fp) return;
+	if (!fp) return false;
 	if(fp->isArchive() && !_read_only) {
 		FCEU_PrintError("Cannot open a movie in read+write from an archive.");
-		return;
+		return true;	//adelikat: file did not fail to load, so return true (false is only for file not exist/unable to open errors
 	}
 
+#ifdef WIN32
+	//Add to the recent movie menu
+	AddRecentMovieFile(fname);
+#endif
+
 	LoadFM2(currMovieData, fp->stream, INT_MAX, false);
-	LoadSubtitles();
+	LoadSubtitles(currMovieData);
 	delete fp;
 
 	freshMovie = true;	//Movie has been loaded, so it must be unaltered
@@ -818,7 +824,7 @@ void FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _paus
 	if(currMovieData.savestate.size() != 0)
 	{
 		bool success = MovieData::loadSavestateFrom(&currMovieData.savestate);
-		if(!success) return;
+		if(!success) return true;	//adelikat: I guess return true here?  False is only for a bad movie filename, if it got this far the file was god?
 	}
 
 	//if there is no savestate, we won't have this crucial piece of information at the start of the movie.
@@ -852,7 +858,7 @@ void FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _paus
 		else
 			FCEU_DispMessage("Replay started Read+Write.");
 	}
-
+	
 	#ifdef CREATE_AVI
 	if(LoggingEnabled)
 	{
@@ -860,6 +866,9 @@ void FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _paus
 	    LoggingEnabled = 2;
 	}
 	#endif
+	return true;
+#else
+	return false;
 #endif
 }
 
@@ -1326,16 +1335,16 @@ bool FCEUI_MovieGetInfo(FCEUFILE* fp, MOVIE_INFO& info, bool skipFrameCount)
 }
 
 //This function creates an array of frame numbers and corresponding strings for displaying subtitles
-void LoadSubtitles(void)
+void LoadSubtitles(MovieData moviedata)
 {
 #ifndef GEKKO
 	extern std::vector<string> subtitles;
-	for(uint32 i=0;i<currMovieData.subtitles.size();i++)
+	for(uint32 i=0; i < moviedata.subtitles.size() ; i++)
 	{
-		std::string& subtitle = currMovieData.subtitles[i];
+		std::string& subtitle = moviedata.subtitles[i];
 		size_t splitat = subtitle.find_first_of(' ');
 		std::string key, value;
-
+		
 		//If we can't split them, then don't process this one
 		if(splitat == std::string::npos)
 			{
@@ -1381,6 +1390,16 @@ void FCEU_DisplaySubtitles(char *format, ...)
 #endif
 }
 
+void FCEUI_CreateMovieFile(std::string fn)
+{
+#ifndef GEKKO
+	MovieData md = currMovieData;							//Get current movie data
+	std::fstream* outf = FCEUD_UTF8_fstream(fn, "wb");		//open/create file
+	md.dump(outf,false);									//dump movie data
+	delete outf;											//clean up, delete file object
+#endif
+}
+
 void FCEUI_MakeBackupMovie(bool dispMessage)
 {
 #ifndef GEKKO
@@ -1411,13 +1430,13 @@ void FCEUI_MakeBackupMovie(bool dispMessage)
 		backupFn.append(".bak");		 //add extension
 
 		exist = CheckFileExists(backupFn.c_str());	//Check if file exists
-
-		if (!exist)
+		
+		if (!exist) 
 			break;						//Yeah yeah, I should use a do loop or something
 		else
 		{
 			backupFn = tempFn;			//Before we loop again, reset the filename
-
+			
 			if (backNum == 999)			//If 999 exists, we have overflowed, let's handle that
 			{
 				backupFn.append("-001.bak"); //We are going to simply overwrite 001.bak
@@ -1426,15 +1445,11 @@ void FCEUI_MakeBackupMovie(bool dispMessage)
 			}
 		}
 	}
-
-	MovieData md = currMovieData;								//Get current movie data
-	std::fstream* outf = FCEUD_UTF8_fstream(backupFn, "wb");	//open/create file
-	md.dump(outf,false);										//dump movie data
-	delete outf;												//clean up, delete file object
-
+	FCEUI_CreateMovieFile(backupFn);
+		
 	//TODO, decide if fstream successfully opened the file and print error message if it doesn't
 
-	if (dispMessage)	//If we should inform the user
+	if (dispMessage)	//If we should inform the user 
 	{
 		if (overflow)
 			FCEUI_DispMessage("Backup overflow, overwriting %s",backupFn.c_str()); //Inform user of overflow
@@ -1448,24 +1463,24 @@ bool CheckFileExists(const char* filename)
 {
 #ifndef GEKKO
 	//This function simply checks to see if the given filename exists
-	string checkFilename;
+	string checkFilename; 
 
 	if (filename)
 		checkFilename = filename;
-
+			
 	//Check if this filename exists
 	fstream test;
 	test.open(checkFilename.c_str(),fstream::in);
-
+		
 	if (test.fail())
 	{
 		test.close();
-		return false;
+		return false; 
 	}
 	else
 	{
 		test.close();
-		return true;
+		return true; 
 	}
 #else
 	return false;

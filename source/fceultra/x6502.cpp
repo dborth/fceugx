@@ -29,7 +29,6 @@
 #endif
 
 #include "x6502abbrev.h"
-
 X6502 X;
 uint32 timestamp;
 void (*MapIRQHook)(int a);
