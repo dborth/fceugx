@@ -545,7 +545,9 @@ static void UNIFGI(GI h)
 		if(UNIFchrrama) memset(UNIFchrrama,0,8192);
 		break;
 	case GI_CLOSE:
+		#ifndef GEKKO
 		FCEU_SaveGameSave(&UNIFCart);
+		#endif
 		if(UNIFCart.Close)
 			UNIFCart.Close();
 		FreeUNIF();
@@ -591,8 +593,10 @@ int UNIFLoad(const char *name, FCEUFILE *fp)
 
 	if(!InitializeBoard())
 		goto aborto;
-
+	
+	#ifndef GEKKO
 	FCEU_LoadGameSave(&UNIFCart);
+	#endif
 	GameInterface=UNIFGI;
 	return 1;
 
