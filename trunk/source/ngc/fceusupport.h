@@ -1,8 +1,6 @@
 #ifndef _FCEUSUPPORT_H_
 #define _FCEUSUPPORT_H_
 
-extern unsigned char * nesrom;
-
 #include <gccore.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -23,6 +21,8 @@ extern unsigned char * nesrom;
 #include "file.h"
 #include "cheat.h"
 
+extern unsigned char * nesrom;
+
 extern int FDSLoad(const char *name, FCEUFILE *fp);
 extern int iNESLoad(const char *name, FCEUFILE *fp, int o);
 extern int UNIFLoad(const char *name, FCEUFILE *fp);
@@ -40,24 +40,6 @@ extern CartInfo UNIFCart;
 extern INPUTC *FCEU_InitZapper(int w);
 extern void FCEU_ResetPalette(void);
 
-/*** External functions ***/
-extern void FCEUPPU_SaveState(void);
-extern void FCEUSND_SaveState(void);
-extern void FCEUPPU_LoadState(int version);
-extern void FCEUSND_LoadState(int version);
-extern void FlipByteOrder(uint8 *src, uint32 count);
-extern void (*GameStateRestore)(int version);
-
-/*** External save structures ***/
-extern SFORMAT SFCPU[];
-extern SFORMAT SFCPUC[];
-extern SFORMAT FCEUPPU_STATEINFO[];
-extern SFORMAT FCEUCTRL_STATEINFO[];
-extern SFORMAT FCEUSND_STATEINFO[];
-extern SFORMAT SFMDATA[64];
-extern u32 iNESGameCRC32;
-
-extern int eoptions;
 #define EO_NO8LIM      1
 #define EO_SUBASE      2
 #define EO_CLIPSIDES   8

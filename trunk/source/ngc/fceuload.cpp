@@ -29,38 +29,15 @@ bool romLoaded = false;
 
 #define SAMPLERATE 48000
 
-static FCEUFILE *fceufp = NULL;
-static memorystream* fceumem = NULL;
-
-static void MakeFCEUFile(char * membuffer, int length)
-{
-	if(fceufp != NULL)
-	{
-		delete fceufp;
-		fceufp = NULL;
-	}
-
-	fceumem = new memorystream(membuffer, length); // we never need to delete this...?
-
-	fceufp = new FCEUFILE();
-	fceufp->size = length;
-	fceufp->stream = fceumem;
-	fceufp->filename = romFilename;
-}
-
 int GCMemROM(int method, int size)
 {
 	ResetGameLoaded();
-
-	//AutosaveStatus[0] = AutosaveStatus[1] = 0;
-	//AutosaveStatus[2] = AutosaveStatus[3] = 0;
 
 	CloseGame();
 	GameInfo = new FCEUGI();
 	memset(GameInfo, 0, sizeof(FCEUGI));
 
 	GameInfo->filename = strdup(romFilename);
-	//if(fceufp->archiveFilename != "") GameInfo->archiveFilename = strdup(fceufp->archiveFilename.c_str());
 	GameInfo->archiveCount = 0;
 
 	/*** Set some default values ***/
@@ -78,7 +55,12 @@ int GCMemROM(int method, int size)
 	FCEUI_SetSoundVolume(100); // 0-100
 	FCEUI_SetLowPass(0);
 
-	MakeFCEUFile((char *) nesrom, size);
+	memorystream * fceumem = new memorystream((char *) nesrom, size);
+
+	FCEUFILE * fceufp = new FCEUFILE();
+	fceufp->size = size;
+	fceufp->stream = fceumem;
+	fceufp->filename = romFilename;
 
 	nesGameType = 0;
 
@@ -120,6 +102,9 @@ int GCMemROM(int method, int size)
 		if (FDSLoad(NULL, fceufp))
 			nesGameType = 4;
 	}
+
+	//delete fceufp;
+	//delete fceumem;
 
 	if (nesGameType > 0)
 	{
