@@ -66,12 +66,10 @@ bool SaveState (char * filepath, int method, bool silent)
 		FreeSaveBuffer ();
 	}
 
-	std::vector<char> tmpbuffer(SAVEBUFFERSIZE);
-	memorystream save(&tmpbuffer);
-	FCEUSS_SaveMS(&save, Z_NO_COMPRESSION);
+	memorystream save(SAVEBUFFERSIZE);
+	FCEUSS_SaveMS(&save, Z_BEST_COMPRESSION);
 	save.sync();
-	save.trim();
-	datasize = save.size();
+	datasize = save.tellp();
 
 	if (datasize)
 	{
@@ -84,11 +82,7 @@ bool SaveState (char * filepath, int method, bool silent)
 			snprintf (comments[1], 32, romFilename);
 			SetMCSaveComments(comments);
 		}
-
-		AllocSaveBuffer ();
-		memcpy(savebuffer, save.buf(), datasize);
-		offset = SaveFile(filepath, datasize, method, silent);
-		FreeSaveBuffer ();
+		offset = SaveFile(save.buf(), filepath, datasize, method, silent);
 	}
 
 	if (offset > 0)

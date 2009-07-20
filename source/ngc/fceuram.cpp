@@ -56,7 +56,7 @@ bool SaveRAM (char * filepath, int method, bool silent)
 	int datasize = 0;
 	int offset = 0;
 
-	if(nesGameType == 4)
+	if(GameInfo->type == GIT_FDS)
 	{
 		if(!silent)
 			InfoPrompt("RAM saving is not available for FDS games!");
@@ -72,9 +72,9 @@ bool SaveRAM (char * filepath, int method, bool silent)
 	AllocSaveBuffer ();
 
 	// save game save to savebuffer
-	if(nesGameType == 1)
+	if(GameInfo->type == GIT_CART)
 		datasize = NGCFCEU_GameSave(&iNESCart, 0, method);
-	else if(nesGameType == 2)
+	else if(GameInfo->type == GIT_VSUNI)
 		datasize = NGCFCEU_GameSave(&UNIFCart, 0, method);
 
 	if (datasize)
@@ -129,7 +129,7 @@ bool LoadRAM (char * filepath, int method, bool silent)
 	int offset = 0;
 	bool retval = false;
 
-	if(nesGameType == 4) // RAM saves don't exist for FDS games
+	if(GameInfo->type == GIT_FDS) // RAM saves don't exist for FDS games
 		return false;
 
 	if(method == METHOD_AUTO)
@@ -144,9 +144,9 @@ bool LoadRAM (char * filepath, int method, bool silent)
 
 	if (offset > 0)
 	{
-		if(nesGameType == 1)
+		if(GameInfo->type == GIT_CART)
 			NGCFCEU_GameSave(&iNESCart, 1, method);
-		else if(nesGameType == 2)
+		else if(GameInfo->type == GIT_VSUNI)
 			NGCFCEU_GameSave(&UNIFCart, 1, method);
 
 		ResetNES();

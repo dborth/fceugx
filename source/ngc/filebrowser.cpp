@@ -41,7 +41,6 @@ static char szpath[MAXPATHLEN];
 static bool inSz = false;
 
 char romFilename[256];
-int nesGameType;
 
 /****************************************************************************
 * autoLoadMethod()

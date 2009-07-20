@@ -6,8 +6,7 @@
 #include "gcaudio.h"
 #include "gcvideo.h"
 #include "fceugx.h"
-
-extern int gametype;
+#include "menu.h"
 
 /**
  * Closes a game.  Frees memory, and deinitializes the drivers.
@@ -36,20 +35,14 @@ std::fstream* FCEUD_UTF8_fstream(const char *fn, const char *m)
 
 bool FCEUD_ShouldDrawInputAids()
 {
-	return false;
+	return GCSettings.crosshair;
 }
 
 // General Logging
-void FCEUD_PrintError(char *s)
-{
-}
-
 void FCEUD_PrintError(const char *errormsg)
 {
-}
-
-void FCEUD_Message(char *text)
-{
+	if(GuiLoaded())
+		ErrorPrompt(errormsg);
 }
 
 void FCEUD_Message(const char *text)

@@ -74,6 +74,14 @@ static char progressMsg[200];
 static int progressDone = 0;
 static int progressTotal = 0;
 
+bool GuiLoaded()
+{
+	if(mainWindow)
+		return true;
+	else
+		return false;
+}
+
 /****************************************************************************
  * ResumeGui
  *

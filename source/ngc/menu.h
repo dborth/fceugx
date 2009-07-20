@@ -14,6 +14,7 @@
 
 #include <ogcsys.h>
 
+bool GuiLoaded();
 void InitGUIThreads();
 void MainMenu (int menuitem);
 void ErrorPrompt(const char * msg);

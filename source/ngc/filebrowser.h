@@ -39,7 +39,6 @@ extern BROWSERENTRY * browserList;
 extern char rootdir[10];
 
 extern char romFilename[];
-extern int nesGameType;
 
 bool MakeFilePath(char filepath[], int type, int method, char * filename = NULL, int filenum = -2);
 int UpdateDirName(int method);
