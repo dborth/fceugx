@@ -95,13 +95,15 @@ int GCMemROM(int method, int size)
 					ErrorPrompt("FDS BIOS file is invalid!");
 				else
 					ErrorPrompt("FDS BIOS file not found!");
-				return 0; // BIOS not loaded, do not load game
 			}
 			free(tmpbuffer);
 		}
-		// load game
-		if (FDSLoad(romFilename, fceufp))
-			romLoaded = true;
+		if (FDSBIOS[1] != 0)
+		{
+			// load game
+			if (FDSLoad(romFilename, fceufp))
+				romLoaded = true;
+		}
 	}
 
 	delete fceufp;
