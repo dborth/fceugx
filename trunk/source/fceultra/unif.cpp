@@ -129,7 +129,7 @@ static int DoMirroring(FCEUFILE *fp)
 {
 	uint8 t;
 	t=FCEU_fgetc(fp);
-	mirrortodo=t; 
+	mirrortodo=t;
 
 	{
 		static char *stuffo[6]={"Horizontal","Vertical","$2000","$2400","\"Four-screen\"","Controlled by Mapper Hardware"};
@@ -266,7 +266,7 @@ static int LoadPRG(FCEUFILE *fp)
 	else
 		FCEU_printf("\n");
 
-	SetupCartPRGMapping(z,malloced[z],t,0); 
+	SetupCartPRGMapping(z,malloced[z],t,0);
 	return(1);
 }
 
@@ -463,13 +463,13 @@ int LoadUNIFChunks(FCEUFILE *fp)
 	for(;;)
 	{
 		t=FCEU_fread(&uchead,1,4,fp);
-		if(t<4) 
+		if(t<4)
 		{
 			if(t>0)
-				return 0; 
+				return 0;
 			return 1;
 		}
-		if(!(FCEU_read32le(&uchead.info,fp))) 
+		if(!(FCEU_read32le(&uchead.info,fp)))
 			return 0;
 		t=0;
 		x=0;
@@ -481,7 +481,7 @@ int LoadUNIFChunks(FCEUFILE *fp)
 				if(!bfunc[x].init(fp))
 					return 0;
 				t=1;
-				break;     
+				break;
 			}
 			x++;
 		}
@@ -557,10 +557,12 @@ static void UNIFGI(GI h)
 
 int UNIFLoad(const char *name, FCEUFILE *fp)
 {
+#ifndef GEKKO
 	FCEU_fseek(fp,0,SEEK_SET);
+#endif
 	FCEU_fread(&unhead,1,4,fp);
 	if(memcmp(&unhead,"UNIF",4))
-		return 0;        
+		return 0;
 
 	ResetCartMapping();
 
@@ -593,7 +595,7 @@ int UNIFLoad(const char *name, FCEUFILE *fp)
 
 	if(!InitializeBoard())
 		goto aborto;
-	
+
 	#ifndef GEKKO
 	FCEU_LoadGameSave(&UNIFCart);
 	#endif

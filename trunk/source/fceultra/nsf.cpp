@@ -156,15 +156,16 @@ static INLINE void BANKSET(uint32 A, uint32 bank)
 	bank&=NSFMaxBank;
 	if(NSFHeader.SoundChip&4)
 		memcpy(ExWRAM+(A-0x6000),NSFDATA+(bank<<12),4096);
-	else 
+	else
 		setprg4(A,bank);
 }
 
 int NSFLoad(FCEUFILE *fp)
 {
 	int x;
-
+#ifndef GEKKO
 	FCEU_fseek(fp,0,SEEK_SET);
+#endif
 	FCEU_fread(&NSFHeader,1,0x80,fp);
 	if(memcmp(NSFHeader.ID,"NESM\x1a",5))
 		return 0;
@@ -330,7 +331,7 @@ void NSF_init(void)
 	SetReadHandler(0x3ff0,0x3fff,NSF_read);
 
 
-	if(NSFHeader.SoundChip&1) { 
+	if(NSFHeader.SoundChip&1) {
 		NSFVRC6_Init();
 	} else if(NSFHeader.SoundChip&2) {
 		NSFVRC7_Init();
@@ -369,7 +370,7 @@ static DECLFW(NSF_write)
 		A&=0xF;
 		BANKSET((A*4096),V);
 		break;
-	} 
+	}
 }
 
 static DECLFR(NSF_read)
@@ -392,13 +393,13 @@ static DECLFR(NSF_read)
 				BWrite[0x4000+x](0x4000+x,0);
 			BWrite[0x4015](0x4015,0xF);
 
-			if(NSFHeader.SoundChip&4) 
+			if(NSFHeader.SoundChip&4)
 			{
 				BWrite[0x4017](0x4017,0xC0);  /* FDS BIOS writes $C0 */
 				BWrite[0x4089](0x4089,0x80);
 				BWrite[0x408A](0x408A,0xE8);
 			}
-			else 
+			else
 			{
 				memset(ExWRAM,0x00,8192);
 				BWrite[0x4017](0x4017,0xC0);
@@ -452,8 +453,8 @@ void DrawNSF(uint8 *XBuf)
 				y=142+((Bufpl[(x*l)>>8]*mul)>>14);
 				if(y<240)
 					XBuf[x+y*256]=3;
-			}   
-		}  
+			}
+		}
 		else if(special==1)
 		{
 			if(FSettings.SoundVolume)
@@ -492,7 +493,7 @@ void DrawNSF(uint8 *XBuf)
 				n=120+r*sin(t);
 
 				if(m<256 && n<240)
-					XBuf[m+n*256]=3; 
+					XBuf[m+n*256]=3;
 
 			}
 			for(x=128;x<256;x++)
@@ -532,9 +533,9 @@ void DrawNSF(uint8 *XBuf)
 		tmp=FCEU_GetJoyJoy();
 		if((tmp&JOY_RIGHT) && !(last&JOY_RIGHT))
 		{
-			if(CurrentSong<NSFHeader.TotalSongs) 
+			if(CurrentSong<NSFHeader.TotalSongs)
 			{
-				CurrentSong++;   
+				CurrentSong++;
 				SongReload=0xFF;
 			}
 		}
