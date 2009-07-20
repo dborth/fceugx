@@ -55,22 +55,35 @@ int GCMemROM(int method, int size)
 	FCEUI_SetSoundVolume(100); // 0-100
 	FCEUI_SetLowPass(0);
 
-	memorystream * fceumem = new memorystream((char *) nesrom, size);
-
 	FCEUFILE * fceufp = new FCEUFILE();
 	fceufp->size = size;
-	fceufp->stream = fceumem;
 	fceufp->filename = romFilename;
+	memorystream * fceumem;
 
 	romLoaded = false;
 
-	if (iNESLoad(romFilename, fceufp, 1))
-		romLoaded = true;
-	else if (UNIFLoad(romFilename, fceufp))
-		romLoaded = true;
-	else if (NSFLoad(fceufp))
-		romLoaded = true;
-	else
+	// for some reason FCEU_fseek(fp,0,SEEK_SET); fails, so we will do this
+	fceumem = new memorystream((char *) nesrom, size);
+	fceufp->stream = fceumem;
+	romLoaded = iNESLoad(romFilename, fceufp, 1);
+
+	if(!romLoaded)
+	{
+		delete fceumem;
+		fceumem = new memorystream((char *) nesrom, size);
+		fceufp->stream = fceumem;
+		romLoaded = UNIFLoad(romFilename, fceufp);
+	}
+
+	if(!romLoaded)
+	{
+		delete fceumem;
+		fceumem = new memorystream((char *) nesrom, size);
+		fceufp->stream = fceumem;
+		romLoaded = NSFLoad(fceufp);
+	}
+
+	if(!romLoaded)
 	{
 		// read FDS BIOS into FDSBIOS - should be 8192 bytes
 		if (FDSBIOS[1] == 0)
@@ -101,8 +114,11 @@ int GCMemROM(int method, int size)
 		if (FDSBIOS[1] != 0)
 		{
 			// load game
-			if (FDSLoad(romFilename, fceufp))
-				romLoaded = true;
+			delete fceumem;
+			fceumem = new memorystream((char *) nesrom, size);
+			fceufp->stream = fceumem;
+
+			romLoaded = FDSLoad(romFilename, fceufp);
 		}
 	}
 
