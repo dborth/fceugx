@@ -173,7 +173,7 @@ void SetControllers()
 	if(GCSettings.Controller == CTRL_ZAPPER)
 	{
 		int p;
-		if(nesGameType == 2) p = 0;
+		if(GameInfo->type == GIT_VSUNI) p = 0;
 		else p = 1;
 		zapperdata[p] = FCEU_InitZapper(p);
 		FCEUI_SetInput(p, SI_ZAPPER, myzappers[p], 1);
@@ -532,7 +532,7 @@ static unsigned char DecodeJoy( unsigned short pad )
 				}
 				else
 				{
-					if(nesGameType == 4) // FDS
+					if(GameInfo->type == GIT_FDS) // FDS
 					{
 						/* the commands shouldn't be issued in parallel so
 						 * we'll delay them so the virtual FDS has a chance
@@ -565,7 +565,12 @@ static unsigned char DecodeJoy( unsigned short pad )
 	// zapper enabled
 	if(GCSettings.Controller == CTRL_ZAPPER)
 	{
-		int z = 1; // NES port # (0 or 1)
+		int z; // NES port # (0 or 1)
+
+		if(GameInfo->type == GIT_VSUNI)
+			z = 0;
+		else
+			z = 1;
 
 		myzappers[z][2] = 0; // reset trigger to not pressed
 

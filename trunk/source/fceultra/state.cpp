@@ -341,7 +341,11 @@ bool FCEUSS_SaveMS(std::ostream* outstream, int compressionLevel)
 	//a temp memory stream. we'll dump some data here and then compress
 	//TODO - support dumping directly without compressing to save a buffer copy
 
+#ifdef GEKKO
+	memorystream ms(512*1024); // set aside some space, otherwise expand fails on Wii!
+#else
 	memorystream ms;
+#endif
 	std::ostream* os = (std::ostream*)&ms;
 
 	uint32 totalsize = 0;
@@ -386,7 +390,11 @@ bool FCEUSS_SaveMS(std::ostream* outstream, int compressionLevel)
 	if(SPreSave) SPostSave();
 
 	//save the length of the file
+#ifdef GEKKO
+	int len = ms.tellp();
+#else
 	int len = ms.size();
+#endif
 
 	//sanity check: len and totalsize should be the same
 	if(len != totalsize)

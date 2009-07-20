@@ -62,14 +62,14 @@ int GCMemROM(int method, int size)
 	fceufp->stream = fceumem;
 	fceufp->filename = romFilename;
 
-	nesGameType = 0;
+	romLoaded = false;
 
 	if (iNESLoad(romFilename, fceufp, 1))
-		nesGameType = 1;
+		romLoaded = true;
 	else if (UNIFLoad(romFilename, fceufp))
-		nesGameType = 2;
+		romLoaded = true;
 	else if (NSFLoad(fceufp))
-		nesGameType = 3;
+		romLoaded = true;
 	else
 	{
 		// read FDS BIOS into FDSBIOS - should be 8192 bytes
@@ -93,39 +93,38 @@ int GCMemROM(int method, int size)
 			{
 				if (biosSize > 0)
 					ErrorPrompt("FDS BIOS file is invalid!");
-
+				else
+					ErrorPrompt("FDS BIOS file not found!");
 				return 0; // BIOS not loaded, do not load game
 			}
 			free(tmpbuffer);
 		}
 		// load game
-		if (FDSLoad(NULL, fceufp))
-			nesGameType = 4;
+		if (FDSLoad(romFilename, fceufp))
+			romLoaded = true;
 	}
 
-	//delete fceufp;
-	//delete fceumem;
+	delete fceufp;
 
-	if (nesGameType > 0)
+	if (romLoaded)
 	{
 		FCEU_ResetVidSys();
 
-		if(GameInfo->type!=GIT_NSF)
-			if(FSettings.GameGenie)
-				OpenGenie();
+		//if(GameInfo->type!=GIT_NSF)
+		//	if(FSettings.GameGenie)
+		//		OpenGenie();
 		PowerNES();
 
-		if(GameInfo->type!=GIT_NSF)
-			FCEU_LoadGamePalette();
+		//if(GameInfo->type!=GIT_NSF)
+		//	FCEU_LoadGamePalette();
 
 		FCEU_ResetPalette();
 		FCEU_ResetMessages();	// Save state, status messages, etc.
 
-		if(GameInfo->type!=GIT_NSF)
-			FCEU_LoadGameCheats(0);
+		//if(GameInfo->type!=GIT_NSF)
+		//	FCEU_LoadGameCheats(0);
 
 		ResetAudio();
-		romLoaded = true;
 		return 1;
 	}
 	else
