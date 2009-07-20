@@ -283,7 +283,7 @@ copy_to_xfb (u32 arg)
 		switch(FDSSwitchRequested)
 		{
 			case 1:
-//				FCEUI_FDSEject(); // eject disk
+				FCEUI_FDSInsert(); // eject disk
 				FDSSwitchRequested++;
 				break;
 			case 2:
