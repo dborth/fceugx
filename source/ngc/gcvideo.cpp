@@ -283,14 +283,22 @@ copy_to_xfb (u32 arg)
 		switch(FDSSwitchRequested)
 		{
 			case 1:
-				FCEUI_FDSInsert(); // eject disk
 				FDSSwitchRequested++;
+				FCEUI_FDSInsert(); // eject disk
+				FDSTimer = 0;
 				break;
 			case 2:
 				if(FDSTimer > 60)
 				{
+					FDSSwitchRequested++;
+					FDSTimer = 0;
 					FCEUI_FDSSelect(); // select other side
 					FCEUI_FDSInsert(); // insert disk
+				}
+				break;
+			case 3:
+				if(FDSTimer > 200)
+				{
 					FDSSwitchRequested = 0;
 					FDSTimer = 0;
 				}
