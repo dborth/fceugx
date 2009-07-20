@@ -538,7 +538,8 @@ static unsigned char DecodeJoy( unsigned short pad )
 						 * we'll delay them so the virtual FDS has a chance
 						 * to process them
 						 */
-						FDSSwitchRequested = 1;
+						if(FDSSwitchRequested == 0)
+							FDSSwitchRequested = 1;
 					}
 					else
 						FCEUI_VSUniCoin(); // insert coin for VS Games
