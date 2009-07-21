@@ -24,6 +24,7 @@
 #include "fceusupport.h"
 #include "fceugx.h"
 #include "fceuconfig.h"
+#include "videofilter.h"
 #include "pad.h"
 #include "gcvideo.h"
 #include "filebrowser.h"
@@ -40,6 +41,7 @@
 #include "gui/gui.h"
 #include "menu.h"
 #include "fceuload.h"
+#include "filelist.h"
 
 #define THREAD_SLEEP 100
 
@@ -2867,6 +2869,7 @@ static int MenuSettingsVideo()
 
 	sprintf(options.name[i++], "Rendering");
 	sprintf(options.name[i++], "Scaling");
+	sprintf(options.name[i++], "Filtering");
 	sprintf(options.name[i++], "Cropping");
 	sprintf(options.name[i++], "Palette");
 	sprintf(options.name[i++], "Game Timing");
@@ -2942,35 +2945,37 @@ static int MenuSettingsVideo()
 		else
 			sprintf (options.value[1], "Default");
 
+		sprintf (options.value[2], "%s", GetFilterName((RenderFilter)GCSettings.FilterMethod));
+
 		switch(GCSettings.hideoverscan)
 		{
-			case 0: sprintf (options.value[2], "Off"); break;
-			case 1: sprintf (options.value[2], "Vertical"); break;
-			case 2: sprintf (options.value[2], "Horizontal"); break;
-			case 3: sprintf (options.value[2], "Both"); break;
+			case 0: sprintf (options.value[3], "Off"); break;
+			case 1: sprintf (options.value[3], "Vertical"); break;
+			case 2: sprintf (options.value[3], "Horizontal"); break;
+			case 3: sprintf (options.value[3], "Both"); break;
 		}
 
-		sprintf (options.value[3], "%s",
+		sprintf (options.value[4], "%s",
 			GCSettings.currpal ? palettes[GCSettings.currpal-1].name : "Default");
 
-		sprintf (options.value[4], "%s", GCSettings.timing == 1 ? "PAL" : "NTSC");
-		sprintf (options.value[5], "%.2f%%", GCSettings.ZoomLevel*100);
-		sprintf (options.value[6], "%d, %d", GCSettings.xshift, GCSettings.yshift);
-		sprintf (options.value[7], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
-		sprintf (options.value[8], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
+		sprintf (options.value[5], "%s", GCSettings.timing == 1 ? "PAL" : "NTSC");
+		sprintf (options.value[6], "%.2f%%", GCSettings.ZoomLevel*100);
+		sprintf (options.value[7], "%d, %d", GCSettings.xshift, GCSettings.yshift);
+		sprintf (options.value[8], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
+		sprintf (options.value[9], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
 
 		switch(GCSettings.videomode)
 		{
 			case 0:
-				sprintf (options.value[9], "Automatic (Recommended)"); break;
+				sprintf (options.value[10], "Automatic (Recommended)"); break;
 			case 1:
-				sprintf (options.value[9], "NTSC (480i)"); break;
+				sprintf (options.value[10], "NTSC (480i)"); break;
 			case 2:
-				sprintf (options.value[9], "Progressive (480p)"); break;
+				sprintf (options.value[10], "Progressive (480p)"); break;
 			case 3:
-				sprintf (options.value[9], "PAL (50Hz)"); break;
+				sprintf (options.value[10], "PAL (50Hz)"); break;
 			case 4:
-				sprintf (options.value[9], "PAL (60Hz)"); break;
+				sprintf (options.value[10], "PAL (60Hz)"); break;
 		}
 
 		ret = optionBrowser.GetClickedOption();
@@ -2988,36 +2993,43 @@ static int MenuSettingsVideo()
 				break;
 
 			case 2:
+				GCSettings.FilterMethod++;
+				if (GCSettings.FilterMethod >= NUM_FILTERS)
+					GCSettings.FilterMethod = 0;
+				break;
+
+			case 3:
 				GCSettings.hideoverscan++;
 				if (GCSettings.hideoverscan > 3)
 					GCSettings.hideoverscan = 0;
 				break;
 
-			case 3: // palette
+			case 4: // palette
 				if ( ++GCSettings.currpal > MAXPAL )
 					GCSettings.currpal = 0;
 				break;
 
-			case 4: // timing
+			case 5: // timing
 				GCSettings.timing ^= 1;
 				break;
 
-			case 5:
+			case 6:
 				ScreenZoomWindow();
 				break;
 
-			case 6:
+			case 7:
 				ScreenPositionWindow();
 				break;
 
-			case 7:
+			case 8:
 				GCSettings.crosshair ^= 1;
 				break;
 
-			case 8:
+			case 9:
 				GCSettings.spritelimit ^= 1;
 				break;
-			case 9:
+
+			case 10:
 				GCSettings.videomode++;
 				if(GCSettings.videomode > 4)
 					GCSettings.videomode = 0;

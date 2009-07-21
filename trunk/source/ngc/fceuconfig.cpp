@@ -16,6 +16,7 @@
 
 #include "fceusupport.h"
 #include "fceugx.h"
+#include "videofilter.h"
 #include "pad.h"
 
 struct SGCSettings GCSettings;
@@ -69,6 +70,7 @@ DefaultSettings ()
 	GCSettings.render = 2; // Unfiltered
 	GCSettings.widescreen = 0; // no aspect ratio correction
 	GCSettings.hideoverscan = 2; // hide both horizontal and vertical
+	GCSettings.FilterMethod = FILTER_NONE;	// no hq2x
 
 	GCSettings.xshift = 0; // horizontal video shift
 	GCSettings.yshift = 0; // vertical video shift

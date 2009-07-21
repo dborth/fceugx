@@ -16,10 +16,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
+#include <ogc/texconv.h>
 
 #include "fceusupport.h"
 #include "gcvideo.h"
 #include "fceugx.h"
+#include "videofilter.h"
 #include "menu.h"
 #include "pad.h"
 #include "gui/gui.h"
@@ -50,7 +52,8 @@ static Mtx view;
 static Mtx GXmodelView2D;
 
 /*** Texture memory ***/
-static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 2] ATTRIBUTE_ALIGN (32);
+static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 4] ATTRIBUTE_ALIGN (32);
+unsigned char filtermem[TEX_WIDTH * TEX_HEIGHT * 4] ATTRIBUTE_ALIGN (32);
 
 static int UpdateVideo = 1;
 static int vmode_60hz = 0;
@@ -60,6 +63,8 @@ u8 * gameScreenTex2 = NULL; // a GX texture screen capture of the game (copy)
 
 #define HASPECT 256
 #define VASPECT 240
+
+static int fscale = 1;
 
 // Need something to hold the PC palette
 struct pcpal {
@@ -412,11 +417,22 @@ UpdateScaling()
 {
 	int xscale, yscale;
 
+	fscale = GetFilterScale((RenderFilter)GCSettings.FilterMethod);
+
 	// update scaling
 	if (GCSettings.render == 0)	// original render mode
 	{
-		xscale = 640 / 2; // use GX scaler instead VI
-		yscale = 240 / 2;
+		if (GCSettings.FilterMethod != FILTER_NONE)
+		{
+			xscale = TEX_WIDTH;
+			yscale = TEX_HEIGHT;
+		}
+		else // no filtering
+		{
+			fscale = 1;
+			xscale = 640 / 2; // use GX scaler instead VI
+			yscale = TEX_HEIGHT / 2;
+		}
 	}
 	else // unfiltered and filtered mode
 	{
@@ -578,6 +594,7 @@ InitGCVideo ()
 	copynow = GX_FALSE;
 
 	StartGX ();
+	InitLUTs();	// init LUTs for hq2x
 	InitVideoThread ();
 	// Finally, the video is up and ready for use :)
 }
@@ -631,16 +648,17 @@ ResetVideo_Emu ()
 	guOrtho(p, rmode->efbHeight/2, -(rmode->efbHeight/2), -(rmode->fbWidth/2), rmode->fbWidth/2, 100, 1000); // matrix, t, b, l, r, n, f
 	GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
 
-	// reinitialize texture
-	GX_InvalidateTexAll ();
-	GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
-	if (!(GCSettings.render&1))
-		GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
-	memset(texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2); // clear texture memory
-
 	// set aspect ratio
 	draw_init ();
 	UpdateScaling();
+
+	// reinitialize texture
+	GX_InvalidateTexAll ();
+	GX_InitTexObj (&texobj, texturemem, TEX_WIDTH*fscale, TEX_HEIGHT*fscale, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
+	if (!(GCSettings.render&1))
+		GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
+	GX_LoadTexObj (&texobj, GX_TEXMAP0);
+	memset(texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2); // clear texture memory
 }
 
 /****************************************************************************
@@ -676,55 +694,62 @@ void RenderFrame(unsigned char *XBuf)
 	if(GCSettings.hideoverscan >= 2)
 		borderwidth = 8;
 
-	u16 *texture = (unsigned short *)texturemem + (borderheight << 8) + (borderwidth << 2);
-	u8 *src1 = XBuf + (borderheight << 8) + borderwidth;
-	u8 *src2 = XBuf + (borderheight << 8) + borderwidth + 256;
-	u8 *src3 = XBuf + (borderheight << 8) + borderwidth + 512;
-	u8 *src4 = XBuf + (borderheight << 8) + borderwidth + 768;
-
-	// clear texture objects
-	GX_InvalidateTexAll();
-
-	// fill the texture
-	for (height = 0; height < 240 - (borderheight << 1); height += 4)
+	if (GCSettings.FilterMethod != FILTER_NONE)
 	{
-		for (width = 0; width < 256 - (borderwidth << 1); width += 4)
+		FilterMethod ((uint8*) XBuf, 272, (uint8*) filtermem, TEX_WIDTH*fscale*2, TEX_WIDTH, TEX_HEIGHT);
+		MakeTexture565((char *)filtermem, (char *) texturemem, TEX_WIDTH*fscale, TEX_HEIGHT*fscale);
+	}
+	else
+	{
+		u16 *texture = (unsigned short *)texturemem + (borderheight << 8) + (borderwidth << 2);
+		u8 *src1 = XBuf + (borderheight << 8) + borderwidth;
+		u8 *src2 = XBuf + (borderheight << 8) + borderwidth + 256;
+		u8 *src3 = XBuf + (borderheight << 8) + borderwidth + 512;
+		u8 *src4 = XBuf + (borderheight << 8) + borderwidth + 768;
+
+		// fill the texture
+		for (height = 0; height < 240 - (borderheight << 1); height += 4)
 		{
-			// Row one
-			*texture++ = rgb565[*src1++];
-			*texture++ = rgb565[*src1++];
-			*texture++ = rgb565[*src1++];
-			*texture++ = rgb565[*src1++];
+			for (width = 0; width < 256 - (borderwidth << 1); width += 4)
+			{
+				// Row one
+				*texture++ = rgb565[*src1++];
+				*texture++ = rgb565[*src1++];
+				*texture++ = rgb565[*src1++];
+				*texture++ = rgb565[*src1++];
 
-			// Row two
-			*texture++ = rgb565[*src2++];
-			*texture++ = rgb565[*src2++];
-			*texture++ = rgb565[*src2++];
-			*texture++ = rgb565[*src2++];
+				// Row two
+				*texture++ = rgb565[*src2++];
+				*texture++ = rgb565[*src2++];
+				*texture++ = rgb565[*src2++];
+				*texture++ = rgb565[*src2++];
 
-			// Row three
-			*texture++ = rgb565[*src3++];
-			*texture++ = rgb565[*src3++];
-			*texture++ = rgb565[*src3++];
-			*texture++ = rgb565[*src3++];
+				// Row three
+				*texture++ = rgb565[*src3++];
+				*texture++ = rgb565[*src3++];
+				*texture++ = rgb565[*src3++];
+				*texture++ = rgb565[*src3++];
 
-			// Row four
-			*texture++ = rgb565[*src4++];
-			*texture++ = rgb565[*src4++];
-			*texture++ = rgb565[*src4++];
-			*texture++ = rgb565[*src4++];
+				// Row four
+				*texture++ = rgb565[*src4++];
+				*texture++ = rgb565[*src4++];
+				*texture++ = rgb565[*src4++];
+				*texture++ = rgb565[*src4++];
+			}
+			src1 += 768 + (borderwidth << 1); // line 4*N
+			src2 += 768 + (borderwidth << 1); // line 4*(N+1)
+			src3 += 768 + (borderwidth << 1); // line 4*(N+2)
+			src4 += 768 + (borderwidth << 1); // line 4*(N+3)
+
+			texture += (borderwidth << 3);
 		}
-		src1 += 768 + (borderwidth << 1); // line 4*N
-		src2 += 768 + (borderwidth << 1); // line 4*(N+1)
-		src3 += 768 + (borderwidth << 1); // line 4*(N+2)
-		src4 += 768 + (borderwidth << 1); // line 4*(N+3)
-
-		texture += (borderwidth << 3);
 	}
 
 	// load texture into GX
-	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 2);
-	GX_LoadTexObj (&texobj, GX_TEXMAP0);
+	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
+
+	// clear texture objects
+	GX_InvalidateTexAll();
 
 	// render textured quad
 	draw_square(view);
