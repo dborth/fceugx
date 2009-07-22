@@ -271,6 +271,10 @@ bool MakeFilePath(char filepath[], int type, int method, char * filename, int fi
 				sprintf(folder, GCSettings.LoadFolder);
 				sprintf(file, "disksys.rom");
 				break;
+			case FILE_CHEAT:
+				sprintf(folder, GCSettings.CheatFolder);
+				sprintf(file, "%s.cht", romFilename);
+				break;
 			case FILE_PREF:
 				sprintf(folder, appPath);
 				sprintf(file, "%s", PREF_FILE_NAME);
