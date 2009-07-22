@@ -1,7 +1,6 @@
 /****************************************************************************
- * Snes9x 1.51 Nintendo Wii/Gamecube Port
- *
- * Michniewski 2008
+ * FCE Ultra
+ * Nintendo Wii/Gamecube Port
  *
  * filter.h
  *

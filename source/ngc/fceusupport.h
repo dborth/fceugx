@@ -1,3 +1,14 @@
+/****************************************************************************
+ * FCE Ultra
+ * Nintendo Wii/Gamecube Port
+ *
+ * Tantric 2008-2009
+ *
+ * fceusupport.h
+ *
+ * FCEU Support Functions
+ ****************************************************************************/
+
 #ifndef _FCEUSUPPORT_H_
 #define _FCEUSUPPORT_H_
 
