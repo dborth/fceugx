@@ -54,6 +54,7 @@ static Mtx GXmodelView2D;
 /*** Texture memory ***/
 static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 4] ATTRIBUTE_ALIGN (32);
 unsigned char filtermem[TEX_WIDTH * TEX_HEIGHT * 4] ATTRIBUTE_ALIGN (32);
+unsigned char filtermem2[TEX_WIDTH * TEX_HEIGHT * 4] ATTRIBUTE_ALIGN (32);
 
 static int UpdateVideo = 1;
 static int vmode_60hz = 0;
@@ -669,6 +670,9 @@ ResetVideo_Emu ()
 
 void RenderFrame(unsigned char *XBuf)
 {
+	if(!XBuf)
+		return;
+
 	// Ensure previous vb has complete
 	while ((LWP_ThreadIsSuspended (vbthread) == 0) || (copynow == GX_TRUE))
 		usleep (50);
@@ -696,8 +700,16 @@ void RenderFrame(unsigned char *XBuf)
 
 	if (GCSettings.FilterMethod != FILTER_NONE)
 	{
-		FilterMethod ((uint8*) XBuf, 272, (uint8*) filtermem, TEX_WIDTH*fscale*2, TEX_WIDTH, TEX_HEIGHT);
-		MakeTexture565((char *)filtermem, (char *) texturemem, TEX_WIDTH*fscale, TEX_HEIGHT*fscale);
+		// convert to 16 bpp
+		uint8 *src = (uint8 *)XBuf;
+		uint16 * dst = (uint16 *)filtermem;
+
+		for (height = 0; height < TEX_HEIGHT; height++)
+			for (width = 0; width < TEX_WIDTH; width++)
+				*dst++ = rgb565[*src++];
+
+		FilterMethod ((uint8*) filtermem, TEX_WIDTH*2, (uint8*) filtermem2, TEX_WIDTH*fscale*2, TEX_WIDTH, TEX_HEIGHT);
+		MakeTexture565((char *)filtermem2, (char *) texturemem, TEX_WIDTH*fscale, TEX_HEIGHT*fscale);
 	}
 	else
 	{

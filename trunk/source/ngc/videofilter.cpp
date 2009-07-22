@@ -34,19 +34,6 @@ TFilterMethod FilterMethod = RenderPlain;
 // Functions:
 //
 
-bool
-GetFilterHiResSupport (RenderFilter filterID)
-{
-	switch(filterID)
-	{
-		case FILTER_NONE:
-			return true;
-
-		default:
-			return false;
-	}
-}
-
 const char*
 GetFilterName (RenderFilter filterID)
 {
@@ -224,16 +211,9 @@ void InitLUTs(void)
 
 	for (c = 0 ; c < (1<<NUMBITS) ; c++)
   	{
-//#ifdef R5G6B5
 		b = (int)((c & 0x1F)) << 3;
 		g = (int)((c & 0x7E0)) >> 3;
 		r = (int)((c & 0xF800)) >> 8;
-
-//#else
-//		b = (int)((c & 0x1F)) << 3;
-//		g = (int)((c & 0x3E0)) >> 2;
-//		r = (int)((c & 0x7C00)) >> 7;
-//#endif
 
 		RGBtoBright[c] = r+r+r + g+g+g + b+b;
 
@@ -242,7 +222,6 @@ void InitLUTs(void)
 		v = (int)( 0.439216f*r - 0.367788f*g - 0.071427f*b + 0.5f) + 128;
 
 		RGBtoYUV[c] = (y << 16) + (u << 8) + v;
-
 	}
 }
 
