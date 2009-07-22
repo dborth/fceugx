@@ -1,5 +1,5 @@
 /****************************************************************************
- * FCE Ultra 0.98.12
+ * FCE Ultra
  * Nintendo Wii/Gamecube Port
  *
  * michniewski August 2008

@@ -1,6 +1,14 @@
 /****************************************************************************
+ * FCE Ultra
+ * Nintendo Wii/Gamecube Port
+ *
+ * Tantric 2008-2009
+ *
+ * fceusupport.cpp
+ *
  * FCEU Support Functions
  ****************************************************************************/
+
 #include "fceusupport.h"
 #include "pad.h"
 #include "gcaudio.h"
