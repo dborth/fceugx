@@ -24,6 +24,7 @@
 #include "menu.h"
 #include "fileop.h"
 #include "filebrowser.h"
+#include "cheatmgr.h"
 
 bool romLoaded = false;
 
@@ -138,10 +139,7 @@ int GCMemROM(int method, int size)
 
 		FCEU_ResetPalette();
 		FCEU_ResetMessages();	// Save state, status messages, etc.
-
-		//if(GameInfo->type!=GIT_NSF)
-		//	FCEU_LoadGameCheats(0);
-
+		SetupCheats();
 		ResetAudio();
 		return 1;
 	}

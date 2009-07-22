@@ -23,6 +23,9 @@
 
 extern unsigned char * nesrom;
 
+void RebuildSubCheats(void);
+int AddCheatEntry(char *name, uint32 addr, uint8 val, int compare, int status, int type);
+
 extern int FDSLoad(const char *name, FCEUFILE *fp);
 extern int iNESLoad(const char *name, FCEUFILE *fp, int o);
 extern int UNIFLoad(const char *name, FCEUFILE *fp);

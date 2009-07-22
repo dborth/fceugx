@@ -157,14 +157,13 @@ void FCEU_PowerCheats()
 	RebuildSubCheats();
 }
 
-static int AddCheatEntry(char *name, uint32 addr, uint8 val, int compare, int status, int type);
 static void CheatMemErr(void)
 {
 	FCEUD_PrintError("Error allocating memory for cheat data.");
 }
 
 /* This function doesn't allocate any memory for "name" */
-static int AddCheatEntry(char *name, uint32 addr, uint8 val, int compare, int status, int type)
+int AddCheatEntry(char *name, uint32 addr, uint8 val, int compare, int status, int type)
 {
 	struct CHEATF *temp;
 	if(!(temp=(struct CHEATF *)malloc(sizeof(struct CHEATF))))
@@ -381,7 +380,7 @@ int FCEUI_AddCheat(const char *name, uint32 addr, uint8 val, int compare, int ty
 	}
 	savecheats=1;
 	RebuildSubCheats();
-	
+
 	return(1);
 }
 
@@ -944,7 +943,7 @@ void UpdateFrozenList(void)
 	//The purpose of this function is to keep an up to date list of addresses that are currently frozen
 	//and make these accessible to other dialogs that deal with memory addresses such as
 	//memwatch, hex editor, ramfilter, etc.
-	
+
 	int x;
 	FrozenAddresses.clear();		//Clear vector and repopulate
 	for(x=0;x<numsubcheats;x++)

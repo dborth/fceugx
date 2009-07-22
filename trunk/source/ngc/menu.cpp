@@ -42,6 +42,7 @@
 #include "menu.h"
 #include "fceuload.h"
 #include "filelist.h"
+#include "cheatmgr.h"
 
 #define THREAD_SLEEP 100
 
@@ -1873,7 +1874,7 @@ static int MenuGameSettings()
 	GuiImage controllerBtnIcon(&iconController);
 	GuiButton controllerBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	controllerBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	controllerBtn.SetPosition(0, 250);
+	controllerBtn.SetPosition(-125, 250);
 	controllerBtn.SetLabel(&controllerBtnTxt);
 	controllerBtn.SetImage(&controllerBtnImg);
 	controllerBtn.SetImageOver(&controllerBtnImgOver);
@@ -1934,7 +1935,7 @@ static int MenuGameSettings()
 	w.Append(&mappingBtn);
 	w.Append(&videoBtn);
 	w.Append(&controllerBtn);
-	//w.Append(&cheatsBtn);
+	w.Append(&cheatsBtn);
 	w.Append(&closeBtn);
 	w.Append(&backBtn);
 
@@ -1958,14 +1959,14 @@ static int MenuGameSettings()
 		{
 			ControllerWindow();
 		}
-		/*else if(cheatsBtn.GetState() == STATE_CLICKED)
+		else if(cheatsBtn.GetState() == STATE_CLICKED)
 		{
 			cheatsBtn.ResetState();
-			if(Cheat.num_cheats > 0)
+			if(numcheats > 0)
 				menu = MENU_GAMESETTINGS_CHEATS;
 			else
 				InfoPrompt("Cheats file not found!");
-		}*/
+		}
 		else if(closeBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_EXIT;
@@ -2000,16 +2001,22 @@ static int MenuGameSettings()
  * Displays a list of cheats available, and allows the user to enable/disable
  * them.
  ***************************************************************************/
-/*
+
 static int MenuGameCheats()
 {
 	int menu = MENU_NONE;
 	int ret;
 	u16 i = 0;
 	OptionList options;
+	char *name; // cheat name
+	int status; // cheat status (on/off)
 
-	for(i=0; i < Cheat.num_cheats; i++)
-		sprintf (options.name[i], "%s", Cheat.c[i].name);
+	for(i=0; i < numcheats; i++)
+	{
+		FCEUI_GetCheat(i,&name,NULL,NULL,NULL,&status,NULL);
+		sprintf (options.name[i], "%s", name);
+		sprintf (options.value[i], status ? "On" : "Off");
+	}
 
 	options.length = i;
 
@@ -2050,6 +2057,7 @@ static int MenuGameCheats()
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.SetPosition(0, 108);
 	optionBrowser.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	optionBrowser.SetCol2Position(350);
 
 	HaltGui();
 	GuiWindow w(screenwidth, screenheight);
@@ -2063,15 +2071,13 @@ static int MenuGameCheats()
 	{
 		usleep(THREAD_SLEEP);
 
-		for(i=0; i < Cheat.num_cheats; i++)
-			sprintf (options.value[i], "%s", Cheat.c[i].enabled == true ? "On" : "Off");
-
 		ret = optionBrowser.GetClickedOption();
 
-		if(Cheat.c[ret].enabled)
-			S9xDisableCheat(ret);
-		else
-			S9xEnableCheat(ret);
+		if(ret >= 0)
+		{
+			FCEUI_ToggleCheat(ret);
+			sprintf (options.value[ret], "%s", options.value[ret][1] == 'f' ? "On" : "Off");
+		}
 
 		if(backBtn.GetState() == STATE_CLICKED)
 		{
@@ -2084,7 +2090,6 @@ static int MenuGameCheats()
 	mainWindow->Remove(&titleTxt);
 	return menu;
 }
-*/
 
 /****************************************************************************
  * MenuSettingsMappings
@@ -3774,9 +3779,9 @@ MainMenu (int menu)
 			case MENU_GAMESETTINGS_VIDEO:
 				currentMenu = MenuSettingsVideo();
 				break;
-			/*case MENU_GAMESETTINGS_CHEATS:
+			case MENU_GAMESETTINGS_CHEATS:
 				currentMenu = MenuGameCheats();
-				break;*/
+				break;
 			case MENU_SETTINGS:
 				currentMenu = MenuSettings();
 				break;
