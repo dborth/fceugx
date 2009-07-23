@@ -1,13 +1,13 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.0.6
+                                  Version 3.0.7
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
 
-FCE Ultra GX is a modified port of the FCE Ultra 0.98.12 Nintendo Entertainment
+FCE Ultra GX is a modified port of the FCE Ultra Nintendo Entertainment
 system for x86 (Windows/Linux) PC's. With it you can play NES games on your 
 Wii/GameCube.
 
@@ -24,8 +24,9 @@ Wii/GameCube.
 * 16:9 widescreen support
 * Original/filtered/unfiltered video modes
 * Turbo Mode - up to 2x the normal speed
-* Zoom option to zoom in/out
-* NES Compatibility Based on v0.98.12
+* Cheat support (.CHT files)
+* IPS/UPS/PPF automatic patching support
+* NES Compatibility Based on FCEUX 2.1.0a
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
@@ -34,9 +35,13 @@ Wii/GameCube.
 
 [3.0.7]
 
+* Core upgraded to FCEUX 2.1.0a - improved game compatibility
+* Cheat support (.CHT files)
+* IPS/UPS/PPF automatic patching support
 * Fixed "No game saves found." message when there are actually saves.
 * Fixed shift key on keyboard
 * Text scrolling works again
+* Change default prompt window selection to "Cancel" button
 
 [3.0.6 - July 9, 2009]
 
@@ -301,21 +306,7 @@ can be changed under Controller Configuration ('Special' button).
 Compatibility is limited, so check that the game in question works on 
 FCE Ultra 0.98.12 for Windows before asking for help. 
 
--=[ Supported Mappers ]=-
- 
-Mappers are the way the Nintendo handles switching from ROM/VROM so the more
-that are supported the more games will work.
-
-000 . 112 . 113 . 114 . 117 .  15 . 151 . 16  . 17  .  18 . 180 . 182 . 184 . 187
-189 . 193 . 200 . 201 . 202 . 203 . 208 . 21  . 22  . 225 . 226 . 227 . 228 . 229  
- 23 . 230 . 231 . 232 . 234 . 235 . 240 . 241 . 242 . 244 . 246 . 248 .  24 .  26
- 25 . 255 . 32  . 33  . 40  . 41  . 42  . 43  . 46  . 50  . 51  . 57  .  58 .  59
-  6 .  60 . 61  . 62  . 65  . 67  . 68  . 69  . 71  . 72  . 73  . 75  .  76 .  77
- 79 .   8 . 80  . 82  . 83  . 85  . 86  . 88  . 89  . 91  . 92  . 95  .  97 .  99
-
 -[ Emulator Options ]-
-
-Screen Scaler - How to scale the screen: GX, Cheesy or 2x
 
 Palette - The colors used while viewing the game:
           Default . loopy . quor . chris . matt
