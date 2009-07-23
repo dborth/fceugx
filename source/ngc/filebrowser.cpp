@@ -32,6 +32,7 @@
 #include "gcunzip.h"
 #include "fceuram.h"
 #include "fceustate.h"
+#include "patch.h"
 
 BROWSERINFO browser;
 BROWSERENTRY * browserList = NULL; // list of files/folders in browser
@@ -501,6 +502,9 @@ int BrowserLoadFile(int method)
 	}
 	else
 	{
+		// load UPS/IPS/PPF patch
+		filesize = LoadPatch(method, filesize);
+
 		if(GCMemROM(method, filesize) > 0)
 		{
 			romLoaded = true;
