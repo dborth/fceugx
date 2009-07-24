@@ -2887,6 +2887,8 @@ static int MenuSettingsVideo()
 	sprintf(options.name[i++], "Video Mode");
 	options.length = i;
 
+	options.name[2][0] = 0; // hide hq2x since it's not working
+
 	for(i=0; i < options.length; i++)
 		options.value[i][0] = 0;
 

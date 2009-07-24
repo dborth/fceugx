@@ -33,9 +33,10 @@ Wii/GameCube.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[3.0.7]
+[3.0.7 - July 24, 2009]
 
 * Core upgraded to FCEUX 2.1.0a - improved game compatibility
+* State issues fixed - old state files are now invalid!
 * Cheat support (.CHT files)
 * IPS/UPS/PPF automatic patching support
 * Fixed "No game saves found." message when there are actually saves.
