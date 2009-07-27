@@ -205,8 +205,11 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	mainWindow->SetState(STATE_DISABLED);
 	mainWindow->Append(&promptWindow);
 	mainWindow->ChangeFocus(&promptWindow);
-	btn1.ResetState();
-	btn2.SetState(STATE_SELECTED);
+	if(btn2Label)
+	{
+		btn1.ResetState();
+		btn2.SetState(STATE_SELECTED);
+	}
 	ResumeGui();
 
 	while(choice == -1)
@@ -2079,6 +2082,7 @@ static int MenuGameCheats()
 		{
 			FCEUI_ToggleCheat(ret);
 			sprintf (options.value[ret], "%s", options.value[ret][1] == 'f' ? "On" : "Off");
+			optionBrowser.TriggerUpdate();
 		}
 
 		if(backBtn.GetState() == STATE_CLICKED)
@@ -2507,6 +2511,7 @@ static int MenuSettingsMappingsMap()
 	int menu = MENU_NONE;
 	int ret,i,j;
 	OptionList options;
+	bool firstRun = true;
 
 	char menuTitle[100];
 	char menuSubtitle[100];
@@ -2609,32 +2614,6 @@ static int MenuSettingsMappingsMap()
 	{
 		usleep(THREAD_SLEEP);
 
-		for(i=0; i < options.length; i++)
-		{
-			for(j=0; j < ctrlr_def[mapMenuCtrl].num_btns; j++)
-			{
-				if(btnmap[mapMenuCtrlNES][mapMenuCtrl][i] == 0)
-				{
-					options.value[i][0] = 0;
-				}
-				else if(btnmap[mapMenuCtrlNES][mapMenuCtrl][i] ==
-					ctrlr_def[mapMenuCtrl].map[j].btn)
-				{
-					if(strcmp(options.value[i], ctrlr_def[mapMenuCtrl].map[j].name) != 0)
-						sprintf(options.value[i], ctrlr_def[mapMenuCtrl].map[j].name);
-					break;
-				}
-			}
-		}
-
-		ret = optionBrowser.GetClickedOption();
-
-		if(ret >= 0)
-		{
-			// get a button selection from user
-			btnmap[mapMenuCtrlNES][mapMenuCtrl][ret] = ButtonMappingWindow();
-		}
-
 		if(backBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_CTRL;
@@ -2650,7 +2629,42 @@ static int MenuSettingsMappingsMap()
 				"No");
 
 			if(choice == 1)
+			{
 				ResetControls(mapMenuCtrlNES, mapMenuCtrl);
+				firstRun = true;
+			}
+		}
+
+		ret = optionBrowser.GetClickedOption();
+
+		if(ret >= 0)
+		{
+			// get a button selection from user
+			btnmap[mapMenuCtrlNES][mapMenuCtrl][ret] = ButtonMappingWindow();
+		}
+
+		if(ret >= 0 || firstRun)
+		{
+			firstRun = false;
+
+			for(i=0; i < options.length; i++)
+			{
+				for(j=0; j < ctrlr_def[mapMenuCtrl].num_btns; j++)
+				{
+					if(btnmap[mapMenuCtrlNES][mapMenuCtrl][i] == 0)
+					{
+						options.value[i][0] = 0;
+					}
+					else if(btnmap[mapMenuCtrlNES][mapMenuCtrl][i] ==
+						ctrlr_def[mapMenuCtrl].map[j].btn)
+					{
+						if(strcmp(options.value[i], ctrlr_def[mapMenuCtrl].map[j].name) != 0)
+							sprintf(options.value[i], ctrlr_def[mapMenuCtrl].map[j].name);
+						break;
+					}
+				}
+			}
+			optionBrowser.TriggerUpdate();
 		}
 	}
 	HaltGui();
@@ -2873,6 +2887,7 @@ static int MenuSettingsVideo()
 	int ret;
 	int i = 0;
 	OptionList options;
+	bool firstRun = true;
 
 	sprintf(options.name[i++], "Rendering");
 	sprintf(options.name[i++], "Scaling");
@@ -2938,55 +2953,6 @@ static int MenuSettingsVideo()
 	{
 		usleep(THREAD_SLEEP);
 
-		// don't allow original render mode if progressive video mode detected
-		if (GCSettings.render==0 && progressive)
-			GCSettings.render++;
-
-		if (GCSettings.render == 0)
-			sprintf (options.value[0], "Original");
-		else if (GCSettings.render == 1)
-			sprintf (options.value[0], "Filtered");
-		else if (GCSettings.render == 2)
-			sprintf (options.value[0], "Unfiltered");
-
-		if(GCSettings.widescreen)
-			sprintf (options.value[1], "16:9 Correction");
-		else
-			sprintf (options.value[1], "Default");
-
-		sprintf (options.value[2], "%s", GetFilterName((RenderFilter)GCSettings.FilterMethod));
-
-		switch(GCSettings.hideoverscan)
-		{
-			case 0: sprintf (options.value[3], "Off"); break;
-			case 1: sprintf (options.value[3], "Vertical"); break;
-			case 2: sprintf (options.value[3], "Horizontal"); break;
-			case 3: sprintf (options.value[3], "Both"); break;
-		}
-
-		sprintf (options.value[4], "%s",
-			GCSettings.currpal ? palettes[GCSettings.currpal-1].name : "Default");
-
-		sprintf (options.value[5], "%s", GCSettings.timing == 1 ? "PAL" : "NTSC");
-		sprintf (options.value[6], "%.2f%%", GCSettings.ZoomLevel*100);
-		sprintf (options.value[7], "%d, %d", GCSettings.xshift, GCSettings.yshift);
-		sprintf (options.value[8], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
-		sprintf (options.value[9], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
-
-		switch(GCSettings.videomode)
-		{
-			case 0:
-				sprintf (options.value[10], "Automatic (Recommended)"); break;
-			case 1:
-				sprintf (options.value[10], "NTSC (480i)"); break;
-			case 2:
-				sprintf (options.value[10], "Progressive (480p)"); break;
-			case 3:
-				sprintf (options.value[10], "PAL (50Hz)"); break;
-			case 4:
-				sprintf (options.value[10], "PAL (60Hz)"); break;
-		}
-
 		ret = optionBrowser.GetClickedOption();
 
 		switch (ret)
@@ -3043,6 +3009,61 @@ static int MenuSettingsVideo()
 				if(GCSettings.videomode > 4)
 					GCSettings.videomode = 0;
 				break;
+		}
+
+		if(ret >= 0 || firstRun)
+		{
+			firstRun = false;
+
+			// don't allow original render mode if progressive video mode detected
+			if (GCSettings.render==0 && progressive)
+				GCSettings.render++;
+
+			if (GCSettings.render == 0)
+				sprintf (options.value[0], "Original");
+			else if (GCSettings.render == 1)
+				sprintf (options.value[0], "Filtered");
+			else if (GCSettings.render == 2)
+				sprintf (options.value[0], "Unfiltered");
+
+			if(GCSettings.widescreen)
+				sprintf (options.value[1], "16:9 Correction");
+			else
+				sprintf (options.value[1], "Default");
+
+			sprintf (options.value[2], "%s", GetFilterName((RenderFilter)GCSettings.FilterMethod));
+
+			switch(GCSettings.hideoverscan)
+			{
+				case 0: sprintf (options.value[3], "Off"); break;
+				case 1: sprintf (options.value[3], "Vertical"); break;
+				case 2: sprintf (options.value[3], "Horizontal"); break;
+				case 3: sprintf (options.value[3], "Both"); break;
+			}
+
+			sprintf (options.value[4], "%s",
+				GCSettings.currpal ? palettes[GCSettings.currpal-1].name : "Default");
+
+			sprintf (options.value[5], "%s", GCSettings.timing == 1 ? "PAL" : "NTSC");
+			sprintf (options.value[6], "%.2f%%", GCSettings.ZoomLevel*100);
+			sprintf (options.value[7], "%d, %d", GCSettings.xshift, GCSettings.yshift);
+			sprintf (options.value[8], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
+			sprintf (options.value[9], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
+
+			switch(GCSettings.videomode)
+			{
+				case 0:
+					sprintf (options.value[10], "Automatic (Recommended)"); break;
+				case 1:
+					sprintf (options.value[10], "NTSC (480i)"); break;
+				case 2:
+					sprintf (options.value[10], "Progressive (480p)"); break;
+				case 3:
+					sprintf (options.value[10], "PAL (50Hz)"); break;
+				case 4:
+					sprintf (options.value[10], "PAL (60Hz)"); break;
+			}
+			optionBrowser.TriggerUpdate();
 		}
 
 		if(backBtn.GetState() == STATE_CLICKED)
@@ -3234,6 +3255,7 @@ static int MenuSettingsFile()
 	int menu = MENU_NONE;
 	int ret;
 	int i = 0;
+	bool firstRun = true;
 	OptionList options;
 	sprintf(options.name[i++], "Load Device");
 	sprintf(options.name[i++], "Save Device");
@@ -3244,7 +3266,6 @@ static int MenuSettingsFile()
 	sprintf(options.name[i++], "Auto Save");
 	sprintf(options.name[i++], "Verify MC Saves");
 	options.length = i;
-	options.name[4][0] = 0; // hide cheats folder (not implemented)
 
 	for(i=0; i < options.length; i++)
 		options.value[i][0] = 0;
@@ -3295,72 +3316,6 @@ static int MenuSettingsFile()
 	{
 		usleep(THREAD_SLEEP);
 
-		// some load/save methods are not implemented - here's where we skip them
-		// they need to be skipped in the order they were enumerated in snes9xGX.h
-
-		// no USB ports on GameCube
-		#ifdef HW_DOL
-		if(GCSettings.LoadMethod == METHOD_USB)
-			GCSettings.LoadMethod++;
-		if(GCSettings.SaveMethod == METHOD_USB)
-			GCSettings.SaveMethod++;
-		#endif
-
-		// saving to DVD is impossible
-		if(GCSettings.SaveMethod == METHOD_DVD)
-			GCSettings.SaveMethod++;
-
-		// disable SMB in GC mode (stalls out)
-		#ifdef HW_DOL
-		if(GCSettings.LoadMethod == METHOD_SMB)
-			GCSettings.LoadMethod++;
-		if(GCSettings.SaveMethod == METHOD_SMB)
-			GCSettings.SaveMethod++;
-		#endif
-
-		// disable MC saving in Wii mode - does not work for some reason!
-		#ifdef HW_RVL
-		if(GCSettings.SaveMethod == METHOD_MC_SLOTA)
-			GCSettings.SaveMethod++;
-		if(GCSettings.SaveMethod == METHOD_MC_SLOTB)
-			GCSettings.SaveMethod++;
-		options.name[7][0] = 0;
-		#endif
-
-		// correct load/save methods out of bounds
-		if(GCSettings.LoadMethod > 4)
-			GCSettings.LoadMethod = 0;
-		if(GCSettings.SaveMethod > 6)
-			GCSettings.SaveMethod = 0;
-
-		if (GCSettings.LoadMethod == METHOD_AUTO) sprintf (options.value[0],"Auto Detect");
-		else if (GCSettings.LoadMethod == METHOD_SD) sprintf (options.value[0],"SD");
-		else if (GCSettings.LoadMethod == METHOD_USB) sprintf (options.value[0],"USB");
-		else if (GCSettings.LoadMethod == METHOD_DVD) sprintf (options.value[0],"DVD");
-		else if (GCSettings.LoadMethod == METHOD_SMB) sprintf (options.value[0],"Network");
-
-		if (GCSettings.SaveMethod == METHOD_AUTO) sprintf (options.value[1],"Auto Detect");
-		else if (GCSettings.SaveMethod == METHOD_SD) sprintf (options.value[1],"SD");
-		else if (GCSettings.SaveMethod == METHOD_USB) sprintf (options.value[1],"USB");
-		else if (GCSettings.SaveMethod == METHOD_SMB) sprintf (options.value[1],"Network");
-		else if (GCSettings.SaveMethod == METHOD_MC_SLOTA) sprintf (options.value[1],"MC Slot A");
-		else if (GCSettings.SaveMethod == METHOD_MC_SLOTB) sprintf (options.value[1],"MC Slot B");
-
-		snprintf (options.value[2], 30, "%s", GCSettings.LoadFolder);
-		snprintf (options.value[3], 30, "%s", GCSettings.SaveFolder);
-		//snprintf (options.value[4], 30, "%s", GCSettings.CheatFolder);
-
-		if (GCSettings.AutoLoad == 0) sprintf (options.value[5],"Off");
-		else if (GCSettings.AutoLoad == 1) sprintf (options.value[5],"RAM");
-		else if (GCSettings.AutoLoad == 2) sprintf (options.value[5],"State");
-
-		if (GCSettings.AutoSave == 0) sprintf (options.value[6],"Off");
-		else if (GCSettings.AutoSave == 1) sprintf (options.value[6],"RAM");
-		else if (GCSettings.AutoSave == 2) sprintf (options.value[6],"State");
-		else if (GCSettings.AutoSave == 3) sprintf (options.value[6],"Both");
-
-		sprintf (options.value[7], "%s", GCSettings.VerifySaves == true ? "On" : "Off");
-
 		ret = optionBrowser.GetClickedOption();
 
 		switch (ret)
@@ -3402,6 +3357,79 @@ static int MenuSettingsFile()
 				break;
 		}
 
+		if(ret >= 0 || firstRun)
+		{
+			firstRun = false;
+
+			// some load/save methods are not implemented - here's where we skip them
+			// they need to be skipped in the order they were enumerated in snes9xGX.h
+
+			// no USB ports on GameCube
+			#ifdef HW_DOL
+			if(GCSettings.LoadMethod == METHOD_USB)
+				GCSettings.LoadMethod++;
+			if(GCSettings.SaveMethod == METHOD_USB)
+				GCSettings.SaveMethod++;
+			#endif
+
+			// saving to DVD is impossible
+			if(GCSettings.SaveMethod == METHOD_DVD)
+				GCSettings.SaveMethod++;
+
+			// disable SMB in GC mode (stalls out)
+			#ifdef HW_DOL
+			if(GCSettings.LoadMethod == METHOD_SMB)
+				GCSettings.LoadMethod++;
+			if(GCSettings.SaveMethod == METHOD_SMB)
+				GCSettings.SaveMethod++;
+			#endif
+
+			// disable MC saving in Wii mode - does not work for some reason!
+			#ifdef HW_RVL
+			if(GCSettings.SaveMethod == METHOD_MC_SLOTA)
+				GCSettings.SaveMethod++;
+			if(GCSettings.SaveMethod == METHOD_MC_SLOTB)
+				GCSettings.SaveMethod++;
+			options.name[7][0] = 0;
+			#endif
+
+			// correct load/save methods out of bounds
+			if(GCSettings.LoadMethod > 4)
+				GCSettings.LoadMethod = 0;
+			if(GCSettings.SaveMethod > 6)
+				GCSettings.SaveMethod = 0;
+
+			if (GCSettings.LoadMethod == METHOD_AUTO) sprintf (options.value[0],"Auto Detect");
+			else if (GCSettings.LoadMethod == METHOD_SD) sprintf (options.value[0],"SD");
+			else if (GCSettings.LoadMethod == METHOD_USB) sprintf (options.value[0],"USB");
+			else if (GCSettings.LoadMethod == METHOD_DVD) sprintf (options.value[0],"DVD");
+			else if (GCSettings.LoadMethod == METHOD_SMB) sprintf (options.value[0],"Network");
+
+			if (GCSettings.SaveMethod == METHOD_AUTO) sprintf (options.value[1],"Auto Detect");
+			else if (GCSettings.SaveMethod == METHOD_SD) sprintf (options.value[1],"SD");
+			else if (GCSettings.SaveMethod == METHOD_USB) sprintf (options.value[1],"USB");
+			else if (GCSettings.SaveMethod == METHOD_SMB) sprintf (options.value[1],"Network");
+			else if (GCSettings.SaveMethod == METHOD_MC_SLOTA) sprintf (options.value[1],"MC Slot A");
+			else if (GCSettings.SaveMethod == METHOD_MC_SLOTB) sprintf (options.value[1],"MC Slot B");
+
+			snprintf (options.value[2], 30, "%s", GCSettings.LoadFolder);
+			snprintf (options.value[3], 30, "%s", GCSettings.SaveFolder);
+			snprintf (options.value[4], 30, "%s", GCSettings.CheatFolder);
+
+			if (GCSettings.AutoLoad == 0) sprintf (options.value[5],"Off");
+			else if (GCSettings.AutoLoad == 1) sprintf (options.value[5],"RAM");
+			else if (GCSettings.AutoLoad == 2) sprintf (options.value[5],"State");
+
+			if (GCSettings.AutoSave == 0) sprintf (options.value[6],"Off");
+			else if (GCSettings.AutoSave == 1) sprintf (options.value[6],"RAM");
+			else if (GCSettings.AutoSave == 2) sprintf (options.value[6],"State");
+			else if (GCSettings.AutoSave == 3) sprintf (options.value[6],"Both");
+
+			sprintf (options.value[7], "%s", GCSettings.VerifySaves == true ? "On" : "Off");
+
+			optionBrowser.TriggerUpdate();
+		}
+
 		if(backBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_SETTINGS;
@@ -3423,6 +3451,7 @@ static int MenuSettingsMenu()
 	int menu = MENU_NONE;
 	int ret;
 	int i = 0;
+	bool firstRun = true;
 	OptionList options;
 
 	sprintf(options.name[i++], "Exit Action");
@@ -3480,49 +3509,6 @@ static int MenuSettingsMenu()
 	{
 		usleep(THREAD_SLEEP);
 
-		#ifdef HW_RVL
-		if (GCSettings.ExitAction == 1)
-			sprintf (options.value[0], "Return to Wii Menu");
-		else if (GCSettings.ExitAction == 2)
-			sprintf (options.value[0], "Power off Wii");
-		else if (GCSettings.ExitAction == 3)
-			sprintf (options.value[0], "Return to Loader");
-		else
-			sprintf (options.value[0], "Auto");
-		#else // GameCube
-		if(GCSettings.ExitAction > 1)
-			GCSettings.ExitAction = 0;
-		if (GCSettings.ExitAction == 0)
-			sprintf (options.value[0], "Return to Loader");
-		else
-			sprintf (options.value[0], "Reboot");
-
-		options.name[1][0] = 0; // Wiimote
-		options.name[2][0] = 0; // Music
-		options.name[3][0] = 0; // Sound Effects
-		options.name[4][0] = 0; // Rumble
-		#endif
-
-		if (GCSettings.WiimoteOrientation == 0)
-			sprintf (options.value[1], "Vertical");
-		else if (GCSettings.WiimoteOrientation == 1)
-			sprintf (options.value[1], "Horizontal");
-
-		if(GCSettings.MusicVolume > 0)
-			sprintf(options.value[2], "%d%%", GCSettings.MusicVolume);
-		else
-			sprintf(options.value[2], "Mute");
-
-		if(GCSettings.SFXVolume > 0)
-			sprintf(options.value[3], "%d%%", GCSettings.SFXVolume);
-		else
-			sprintf(options.value[3], "Mute");
-
-		if (GCSettings.Rumble == 1)
-			sprintf (options.value[4], "Enabled");
-		else
-			sprintf (options.value[4], "Disabled");
-
 		ret = optionBrowser.GetClickedOption();
 
 		switch (ret)
@@ -3551,6 +3537,56 @@ static int MenuSettingsMenu()
 				break;
 		}
 
+		if(ret >= 0 || firstRun)
+		{
+			firstRun = false;
+
+			#ifdef HW_RVL
+			if (GCSettings.ExitAction == 1)
+				sprintf (options.value[0], "Return to Wii Menu");
+			else if (GCSettings.ExitAction == 2)
+				sprintf (options.value[0], "Power off Wii");
+			else if (GCSettings.ExitAction == 3)
+				sprintf (options.value[0], "Return to Loader");
+			else
+				sprintf (options.value[0], "Auto");
+			#else // GameCube
+			if(GCSettings.ExitAction > 1)
+				GCSettings.ExitAction = 0;
+			if (GCSettings.ExitAction == 0)
+				sprintf (options.value[0], "Return to Loader");
+			else
+				sprintf (options.value[0], "Reboot");
+
+			options.name[1][0] = 0; // Wiimote
+			options.name[2][0] = 0; // Music
+			options.name[3][0] = 0; // Sound Effects
+			options.name[4][0] = 0; // Rumble
+			#endif
+
+			if (GCSettings.WiimoteOrientation == 0)
+				sprintf (options.value[1], "Vertical");
+			else if (GCSettings.WiimoteOrientation == 1)
+				sprintf (options.value[1], "Horizontal");
+
+			if(GCSettings.MusicVolume > 0)
+				sprintf(options.value[2], "%d%%", GCSettings.MusicVolume);
+			else
+				sprintf(options.value[2], "Mute");
+
+			if(GCSettings.SFXVolume > 0)
+				sprintf(options.value[3], "%d%%", GCSettings.SFXVolume);
+			else
+				sprintf(options.value[3], "Mute");
+
+			if (GCSettings.Rumble == 1)
+				sprintf (options.value[4], "Enabled");
+			else
+				sprintf (options.value[4], "Disabled");
+
+			optionBrowser.TriggerUpdate();
+		}
+
 		if(backBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_SETTINGS;
@@ -3573,6 +3609,7 @@ static int MenuSettingsNetwork()
 #ifdef HW_RVL
 	int ret;
 	int i = 0;
+	bool firstRun = true;
 	OptionList options;
 	sprintf(options.name[i++], "SMB Share IP");
 	sprintf(options.name[i++], "SMB Share Name");
@@ -3628,11 +3665,6 @@ static int MenuSettingsNetwork()
 	{
 		usleep(THREAD_SLEEP);
 
-		strncpy (options.value[0], GCSettings.smbip, 15);
-		strncpy (options.value[1], GCSettings.smbshare, 19);
-		strncpy (options.value[2], GCSettings.smbuser, 19);
-		strncpy (options.value[3], GCSettings.smbpwd, 19);
-
 		ret = optionBrowser.GetClickedOption();
 
 		switch (ret)
@@ -3652,6 +3684,18 @@ static int MenuSettingsNetwork()
 			case 3:
 				OnScreenKeyboard(GCSettings.smbpwd, 20);
 				break;
+		}
+
+		if(ret >= 0 || firstRun)
+		{
+			firstRun = false;
+
+			strncpy (options.value[0], GCSettings.smbip, 15);
+			strncpy (options.value[1], GCSettings.smbshare, 19);
+			strncpy (options.value[2], GCSettings.smbuser, 19);
+			strncpy (options.value[3], GCSettings.smbpwd, 19);
+
+			optionBrowser.TriggerUpdate();
 		}
 
 		if(backBtn.GetState() == STATE_CLICKED)
