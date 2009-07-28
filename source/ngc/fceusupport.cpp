@@ -68,9 +68,11 @@ ArchiveScanRecord FCEUD_ScanArchive(std::string fname) { return ArchiveScanRecor
 // main interface to FCE Ultra
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count)
 {
-    PlaySound(Buffer, Count); // play sound
-    RenderFrame(XBuf); // output video frame
-    GetJoy(); // check controller input
+	if(Buffer && Count > 0)
+		PlaySound(Buffer, Count); // play sound
+	if(XBuf)
+		RenderFrame(XBuf); // output video frame
+	GetJoy(); // check controller input
 }
 
 // Netplay

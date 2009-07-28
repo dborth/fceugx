@@ -670,9 +670,6 @@ ResetVideo_Emu ()
 
 void RenderFrame(unsigned char *XBuf)
 {
-	if(!XBuf)
-		return;
-
 	// Ensure previous vb has complete
 	while ((LWP_ThreadIsSuspended (vbthread) == 0) || (copynow == GX_TRUE))
 		usleep (50);
