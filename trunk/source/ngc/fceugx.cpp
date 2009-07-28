@@ -46,8 +46,10 @@
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
-static uint8 *xbsave=NULL;
 static int fskipc = 0;
+static uint8 *gfx=0;
+static int32 *sound=0;
+static int32 ssize=0;
 int ScreenshotRequested = 0;
 int ConfigRequested = 0;
 int ShutdownRequested = 0;
@@ -314,21 +316,12 @@ int main(int argc, char *argv[])
 
 		while(1) // emulation loop
 		{
-			uint8 *gfx;
-			int32 *sound;
-			int32 ssize;
-
 			#ifdef FRAMESKIP
 			fskipc=(fskipc+1)%(frameskip+1);
 			#endif
 
 			FCEUI_Emulate(&gfx, &sound, &ssize, fskipc);
-
-			if(!fskipc)
-			{
-				xbsave = gfx;
-				FCEUD_Update(gfx, sound, ssize);
-			}
+			FCEUD_Update(gfx, sound, ssize);
 
 			if(ResetRequested)
 			{
