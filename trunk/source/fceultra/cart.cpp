@@ -293,7 +293,7 @@ void setchr8r(int r, unsigned int V)
 	if(CHRram[r])
 		PPUCHRRAM|=(255);
 	else
-		PPUCHRRAM=0; 
+		PPUCHRRAM=0;
 }
 
 void setchr1(unsigned int A, unsigned int V)
@@ -429,11 +429,15 @@ void SetupCartMirroring(int m, int hard, uint8 *extra)
 	mirrorhard=hard;
 }
 
+#ifdef GEKKO
+uint8 *GENIEROM=0;
+#else
 static uint8 *GENIEROM=0;
+#endif
 
 void FixGenieMap(void);
 
-// Called when a game(file) is opened successfully. 
+// Called when a game(file) is opened successfully.
 void OpenGenie(void)
 {
 	FILE *fp;

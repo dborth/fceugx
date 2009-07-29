@@ -129,9 +129,9 @@ int GCMemROM(int method, int size)
 	{
 		FCEU_ResetVidSys();
 
-		//if(GameInfo->type!=GIT_NSF)
-		//	if(FSettings.GameGenie)
-		//		OpenGenie();
+		if(GameInfo->type!=GIT_NSF)
+			if(FSettings.GameGenie)
+				OpenGameGenie();
 		PowerNES();
 
 		//if(GameInfo->type!=GIT_NSF)
