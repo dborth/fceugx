@@ -274,7 +274,7 @@ int main(int argc, char *argv[])
 	if (!FCEUI_Initialize())
 		ExitApp();
 
-	FCEUI_SetGameGenie(0); // 0 - OFF, 1 - ON
+	FCEUI_SetGameGenie(1); // 0 - OFF, 1 - ON
 
 	memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
 

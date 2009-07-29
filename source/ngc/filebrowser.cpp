@@ -269,8 +269,12 @@ bool MakeFilePath(char filepath[], int type, int method, char * filename, int fi
 				break;
 
 			case FILE_FDSBIOS:
-				sprintf(folder, GCSettings.LoadFolder);
+				sprintf(folder, "fceugx");
 				sprintf(file, "disksys.rom");
+				break;
+			case FILE_GGROM:
+				sprintf(folder, "fceugx");
+				sprintf(file, "gg.rom");
 				break;
 			case FILE_CHEAT:
 				sprintf(folder, GCSettings.CheatFolder);

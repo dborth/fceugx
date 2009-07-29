@@ -10,5 +10,6 @@
  ***************************************************************************/
 
 void SetupCheats();
+void OpenGameGenie();
 
 extern int numcheats;

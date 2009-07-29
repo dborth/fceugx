@@ -110,7 +110,11 @@ static void CloseGame(void)
 
 		if(GameInfo->type!=GIT_NSF)
 		{
+			#ifdef GEKKO
+			FCEU_FlushGameCheats(0,1); // don't save cheats
+			#else
 			FCEU_FlushGameCheats(0,0);
+			#endif
 		}
 
 		GameInterface(GI_CLOSE);

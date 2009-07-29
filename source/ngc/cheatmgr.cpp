@@ -9,6 +9,8 @@
  * Cheat handling
  ***************************************************************************/
 
+#include <malloc.h>
+
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "fileop.h"
@@ -142,4 +144,51 @@ SetupCheats()
 		numcheats = LoadCheats(offset);
 
 	FreeSaveBuffer ();
+}
+
+void OpenGameGenie()
+{
+	if (GENIEROM) // already loaded
+	{
+		geniestage=1;
+		return;
+	}
+
+	int romSize = 0;
+	char * tmpbuffer = (char *) memalign(32, 512 * 1024);
+	if(!tmpbuffer)
+		return;
+	char filepath[1024];
+
+	if (MakeFilePath(filepath, FILE_GGROM, GCSettings.LoadMethod))
+	{
+		romSize = LoadFile(tmpbuffer, filepath, 0, GCSettings.LoadMethod, SILENT);
+	}
+
+	if (romSize > 0)
+	{
+		GENIEROM=(uint8 *)malloc(4096+1024);
+
+		if(tmpbuffer[0]==0x4E)  /* iNES ROM image */
+		{
+			memcpy(GENIEROM,tmpbuffer+16,4096);
+			memcpy(GENIEROM+4096,tmpbuffer+16400,256);
+		}
+		else
+		{
+			memcpy(GENIEROM,tmpbuffer,4352);
+		}
+
+		/* Workaround for the FCE Ultra CHR page size only being 1KB */
+		for(int x=0; x<4; x++)
+			memcpy(GENIEROM+4096+(x<<8),GENIEROM+4096,256);
+
+		geniestage=1;
+	}
+	else
+	{
+		free(GENIEROM);
+		GENIEROM=0;
+	}
+	free(tmpbuffer);
 }
