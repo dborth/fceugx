@@ -43,7 +43,7 @@ static int LoadCheats (int length)
 
 	while(linebreak != NULL)
 	{
-		char *tbuf=linebreak+1;
+		char *tbuf=linebreak;
 		int doc=0;
 
 		addr=val=compare=status=type=0;
