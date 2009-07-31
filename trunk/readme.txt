@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.0.7
+                                  Version 3.0.8
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -24,7 +24,7 @@ Wii/GameCube.
 * 16:9 widescreen support
 * Original/filtered/unfiltered video modes
 * Turbo Mode - up to 2x the normal speed
-* Cheat support (.CHT files)
+* Cheat support (.CHT files and Game Genie)
 * IPS/UPS/PPF automatic patching support
 * NES Compatibility Based on FCEUX 2.1.0a
 * Open Source!
@@ -32,6 +32,15 @@ Wii/GameCube.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.0.8 - July 31, 2009]
+
+* Fixed menu crash
+* Fixed turbo mode - reduced to frameskip of 1
+* Fixed .CHT file support
+* Added Game Genie support - required GG rom placed at /fceugx/gg.rom
+* FDS BIOS location changed to /fceugx/disksys.rom
+* DVD file limit of 2000 removed
 
 [3.0.7 - July 24, 2009]
 
