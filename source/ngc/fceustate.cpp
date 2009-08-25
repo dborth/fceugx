@@ -18,7 +18,7 @@
 #include <malloc.h>
 #include <fat.h>
 #include <zlib.h>
-#include "pngu/pngu.h"
+#include "pngu.h"
 
 #include "fceugx.h"
 #include "fceusupport.h"
