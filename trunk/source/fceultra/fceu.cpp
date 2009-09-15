@@ -292,7 +292,7 @@ static void AllocBuffers()
 	void win_AllocBuffers(uint8 **GameMemBlock, uint8 **RAM);
 	win_AllocBuffers(&GameMemBlock, &RAM);
 
-#else
+#else 
 
 	GameMemBlock = (uint8*)FCEU_gmalloc(131072);
 	RAM = (uint8*)FCEU_gmalloc(0x800);
@@ -304,7 +304,7 @@ static void FreeBuffers() {
 #ifdef _USE_SHARED_MEMORY_
 	void win_FreeBuffers(uint8 *GameMemBlock, uint8 *RAM);
 	win_FreeBuffers(GameMemBlock, RAM);
-#else
+#else 
 	FCEU_free(GameMemBlock);
 	FCEU_free(RAM);
 #endif
@@ -314,7 +314,7 @@ static void FreeBuffers() {
 uint8 PAL=0;
 
 static DECLFW(BRAML)
-{
+{  
 	RAM[A]=V;
 	#ifdef _S9XLUA_H
 	FCEU_LuaWriteInform();
@@ -361,7 +361,7 @@ void ResetGameLoaded(void)
 int UNIFLoad(const char *name, FCEUFILE *fp);
 int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode);
 int FDSLoad(const char *name, FCEUFILE *fp);
-int NSFLoad(FCEUFILE *fp);
+int NSFLoad(const char *name, FCEUFILE *fp);
 
 //char lastLoadedGameName [2048] = {0,}; // hack for movie WRAM clearing on record from poweron
 
@@ -424,7 +424,7 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode)
 		goto endlseq;*/
 	if(iNESLoad(name,fp,OverwriteVidMode))
 		goto endlseq;
-	if(NSFLoad(fp))
+	if(NSFLoad(name,fp))
 		goto endlseq;
 	if(UNIFLoad(name,fp))
 		goto endlseq;
@@ -612,7 +612,7 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	r = FCEUPPU_Loop(skip);
 
 	if (skip != 2) ssize=FlushEmulateSound(); //If skip = 2 we are skipping sound processing
-
+	
 #ifdef WIN32
 	//These Windows only dialogs need to be updated only once per frame so they are included here
 	UpdateCheatList();
@@ -631,12 +631,12 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 		*SoundBuf=0;
 		*SoundBufSize=0;
 	}
-	else
+	else 
 	{
 		*SoundBuf=WaveFinal;
 		*SoundBufSize=ssize;
 	}
-
+		
 	if (EmulationPaused&2 && ( !frameAdvanceLagSkip || !lagFlag) )
 	//Lots of conditions here.  EmulationPaused&2 must be true.  In addition frameAdvanceLagSkip or lagFlag must be false
 	{
@@ -646,12 +646,12 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 			if(soundoptions&SO_MUTEFA) //mute the frame advance if the user requested it
 				*SoundBufSize=0;       //keep sound muted
 		#endif
-
+		
 	}
-
+	
 	currMovieData.TryDumpIncremental();
-
-	if (lagFlag)
+	
+	if (lagFlag) 
 	{
 		lagCounter++;
 		justLagged = true;
@@ -663,8 +663,8 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 }
 
 void FCEUI_CloseGame(void)
-{
-	if(!FCEU_IsValidUI(FCEUI_CLOSEGAME))
+{	
+	if(!FCEU_IsValidUI(FCEUI_CLOSEGAME)) 
 		return;
 	CloseGame();
 }
@@ -701,7 +701,7 @@ void hand(X6502 *X, int type, unsigned int A)
 }
 
 int suppressAddPowerCommand=0; // hack... yeah, I know...
-void PowerNES(void)
+void PowerNES(void) 
 {
 	//void MapperInit();
 	//MapperInit();
@@ -740,7 +740,7 @@ void PowerNES(void)
 	extern int disableBatteryLoading;
 	if(disableBatteryLoading)
 		GameInterface(GI_RESETSAVE);
-
+		
 
 	timestampbase=0;
 	LagCounterReset();
@@ -757,9 +757,9 @@ void FCEU_ResetVidSys(void)
 	int w;
 
 	if(GameInfo->vidsys==GIV_NTSC)
-		w=0;
+		w=0; 
 	else if(GameInfo->vidsys==GIV_PAL)
-		w=1;
+		w=1;  
 	else
 		w=FSettings.PAL;
 
@@ -899,7 +899,7 @@ void UpdateAutosave(void)
 {
 	if(!EnableAutosave)
 		return;
-
+	
 	char * f;
 	AutosaveCounter = (AutosaveCounter + 1) % 256;
 	if(AutosaveCounter == 0)
@@ -1083,7 +1083,7 @@ bool FCEUXLoad(const char *name, FCEUFILE *fp)
 
 	cart->chrPages = head.VROM_size;
 
-	cart->mirroring = (head.ROM_type&1);
+	cart->mirroring = (head.ROM_type&1); 
 	if(head.ROM_type&8) cart->mirroring=2;
 
 	//skip trainer
@@ -1105,7 +1105,7 @@ bool FCEUXLoad(const char *name, FCEUFILE *fp)
 	ResetCartMapping();
 	SetupCartPRGMapping(0,(uint8*)cart->PRG,cart->prgSize,0);
 	SetupCartCHRMapping(0,(uint8*)cart->CHR,cart->chrSize,0);
-
+	
 	return true;
 }
 

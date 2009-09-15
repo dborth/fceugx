@@ -109,14 +109,18 @@ static DECLFR(NSFROMRead)
 
 static int doreset=0;
 static int NSFNMIFlags;
-static uint8 *NSFDATA=0;
-static int NSFMaxBank;
+uint8 *NSFDATA=0;
+int NSFMaxBank;
 
 static int NSFSize;
 static uint8 BSon;
+static uint8 BankCounter;
+
 static uint16 PlayAddr;
 static uint16 InitAddr;
 static uint16 LoadAddr;
+
+extern char LoadedRomFName[2048];
 
 NSF_HEADER NSFHeader; //mbg merge 6/29/06 - needs to be global
 
@@ -156,11 +160,11 @@ static INLINE void BANKSET(uint32 A, uint32 bank)
 	bank&=NSFMaxBank;
 	if(NSFHeader.SoundChip&4)
 		memcpy(ExWRAM+(A-0x6000),NSFDATA+(bank<<12),4096);
-	else
+	else 
 		setprg4(A,bank);
 }
 
-int NSFLoad(FCEUFILE *fp)
+int NSFLoad(const char *name, FCEUFILE *fp)
 {
 	int x;
 #ifndef GEKKO
@@ -188,7 +192,7 @@ int NSFLoad(FCEUFILE *fp)
 	NSFSize=FCEU_fgetsize(fp)-0x80;
 
 	NSFMaxBank=((NSFSize+(LoadAddr&0xfff)+4095)/4096);
-	NSFMaxBank=uppow2(NSFMaxBank);
+	NSFMaxBank=PRGsize[0]=uppow2(NSFMaxBank);
 
 	if(!(NSFDATA=(uint8 *)FCEU_malloc(NSFMaxBank*4096)))
 		return 0;
@@ -200,6 +204,30 @@ int NSFLoad(FCEUFILE *fp)
 	NSFMaxBank--;
 
 	BSon=0;
+	for(x=0;x<8;x++)
+	{
+		BSon|=NSFHeader.BankSwitch[x];
+	}
+
+	if(BSon==0)
+	{
+		BankCounter=0x00;
+   
+ 		if ((NSFHeader.LoadAddressHigh & 0x70) >= 0x70)
+		{
+			//Ice Climber, and other F000 base address tunes need this
+			BSon=0xFF;
+		}
+		else {
+			for(x=(NSFHeader.LoadAddressHigh & 0x70) / 0x10;x<8;x++)
+			{
+				NSFHeader.BankSwitch[x]=BankCounter;
+				BankCounter+=0x01; 
+			}
+			BSon=0;
+			}
+	}
+
 	for(x=0;x<8;x++)
 		BSon|=NSFHeader.BankSwitch[x];
 
@@ -225,6 +253,8 @@ int NSFLoad(FCEUFILE *fp)
 		GameInfo->vidsys=GIV_PAL;
 
 	GameInterface=NSFGI;
+
+	strcpy(LoadedRomFName,name);
 
 	FCEU_printf("NSF Loaded.  File information:\n\n");
 	FCEU_printf(" Name:       %s\n Artist:     %s\n Copyright:  %s\n\n",NSFHeader.SongName,NSFHeader.Artist,NSFHeader.Copyright);
@@ -331,7 +361,7 @@ void NSF_init(void)
 	SetReadHandler(0x3ff0,0x3fff,NSF_read);
 
 
-	if(NSFHeader.SoundChip&1) {
+	if(NSFHeader.SoundChip&1) { 
 		NSFVRC6_Init();
 	} else if(NSFHeader.SoundChip&2) {
 		NSFVRC7_Init();
@@ -370,7 +400,7 @@ static DECLFW(NSF_write)
 		A&=0xF;
 		BANKSET((A*4096),V);
 		break;
-	}
+	} 
 }
 
 static DECLFR(NSF_read)
@@ -393,13 +423,13 @@ static DECLFR(NSF_read)
 				BWrite[0x4000+x](0x4000+x,0);
 			BWrite[0x4015](0x4015,0xF);
 
-			if(NSFHeader.SoundChip&4)
+			if(NSFHeader.SoundChip&4) 
 			{
 				BWrite[0x4017](0x4017,0xC0);  /* FDS BIOS writes $C0 */
 				BWrite[0x4089](0x4089,0x80);
 				BWrite[0x408A](0x408A,0xE8);
 			}
-			else
+			else 
 			{
 				memset(ExWRAM,0x00,8192);
 				BWrite[0x4017](0x4017,0xC0);
@@ -453,8 +483,8 @@ void DrawNSF(uint8 *XBuf)
 				y=142+((Bufpl[(x*l)>>8]*mul)>>14);
 				if(y<240)
 					XBuf[x+y*256]=3;
-			}
-		}
+			}   
+		}  
 		else if(special==1)
 		{
 			if(FSettings.SoundVolume)
@@ -493,7 +523,7 @@ void DrawNSF(uint8 *XBuf)
 				n=120+r*sin(t);
 
 				if(m<256 && n<240)
-					XBuf[m+n*256]=3;
+					XBuf[m+n*256]=3; 
 
 			}
 			for(x=128;x<256;x++)
@@ -533,9 +563,9 @@ void DrawNSF(uint8 *XBuf)
 		tmp=FCEU_GetJoyJoy();
 		if((tmp&JOY_RIGHT) && !(last&JOY_RIGHT))
 		{
-			if(CurrentSong<NSFHeader.TotalSongs)
+			if(CurrentSong<NSFHeader.TotalSongs) 
 			{
-				CurrentSong++;
+				CurrentSong++;   
 				SongReload=0xFF;
 			}
 		}

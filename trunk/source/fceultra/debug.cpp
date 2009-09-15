@@ -624,10 +624,22 @@ void DebugCycle() {
 	else
 		vblankScanLines = 0;
 	
+	if (GameInfo->type==GIT_NSF)  
+	{
+		if ((_PC >= 0x3801) && (_PC <= 0x3824)) return;
+	}
+
 	if (numWPs || dbgstate.step || dbgstate.runline || dbgstate.stepout || watchpoint[64].flags || dbgstate.badopbreak) 
 		breakpoint();
 	if(debug_loggingCD) LogCDData();
+	
 	//mbg 6/30/06 - this was commented out when i got here. i dont understand it anyway
  	//if(logging || (hMemView && (EditingMode == 2))) LogInstruction();
-	FCEUD_TraceInstruction();
+ 
+//This needs to be windows only or else the linux build system will fail since logging is declared in a 
+//windows source file
+#ifdef WIN32
+	extern volatile int logging; //UGETAB: This is required to be an extern, because the info isn't set here
+	if(logging) FCEUD_TraceInstruction();
+#endif
 }

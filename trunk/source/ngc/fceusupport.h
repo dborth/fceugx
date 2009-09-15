@@ -40,7 +40,7 @@ int AddCheatEntry(char *name, uint32 addr, uint8 val, int compare, int status, i
 extern int FDSLoad(const char *name, FCEUFILE *fp);
 extern int iNESLoad(const char *name, FCEUFILE *fp, int o);
 extern int UNIFLoad(const char *name, FCEUFILE *fp);
-extern int NSFLoad(FCEUFILE *fp);
+extern int NSFLoad(const char *name, FCEUFILE *fp);
 extern uint8 FDSBIOS[8192];
 extern uint8 *GENIEROM;
 extern FCEUGI *GameInfo;

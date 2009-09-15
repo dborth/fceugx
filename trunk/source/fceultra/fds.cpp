@@ -35,12 +35,13 @@
 #include "cart.h"
 #include "netplay.h"
 #include "driver.h"
+#include "movie.h"
 
 //  TODO:  Add code to put a delay in between the time a disk is inserted
 //	and the when it can be successfully read/written to.  This should
 //	prevent writes to wrong places OR add code to prevent disk ejects
 //	when the virtual motor is on(mmm...virtual motor).
-extern int disableBatteryLoading;
+extern int disableBatteryLoading; 
 
 static DECLFR(FDSRead4030);
 static DECLFR(FDSRead4031);
@@ -68,7 +69,11 @@ static int32 IRQLatch,IRQCount;
 static uint8 IRQa;
 static void FDSClose(void);
 
+#ifdef GEKKO
 uint8 FDSBIOS[8192];
+#else
+static uint8 FDSBIOS[8192];
+#endif
 
 /* Original disk data backup, to help in creating save states. */
 static uint8 *diskdatao[8]={0,0,0,0,0,0,0,0};
@@ -94,7 +99,7 @@ void FDSGI(GI h)
 }
 
 static void FDSStateRestore(int version)
-{
+{ 
 	int x;
 
 	setmirror(((FDSRegs[5]&8)>>3)^1);
@@ -133,7 +138,7 @@ static void FDSInit(void)
 	SetReadHandler(0x4032,0x4032,FDSRead4032);
 	SetReadHandler(0x4033,0x4033,FDSRead4033);
 
-	SetWriteHandler(0x4020,0x4025,FDSWrite);
+	SetWriteHandler(0x4020,0x4025,FDSWrite); 
 
 	SetWriteHandler(0x6000,0xdfff,FDSRAMWrite);
 	SetReadHandler(0x6000,0xdfff,FDSRAMRead);
@@ -147,17 +152,22 @@ static void FDSInit(void)
 
 void FCEU_FDSInsert(void)
 {
+	if(FCEUI_EmulationPaused()) EmulationPaused |= 2;
+
+	if(FCEUMOV_Mode(MOVIEMODE_RECORD))
+		FCEUMOV_AddCommand(FCEUNPCMD_FDSINSERT);
+
 	if(TotalSides==0)
 	{
-		FCEU_DispMessage("Not FDS; can't eject disk.");
+		FCEU_DispMessage("Not FDS; can't eject disk.");  
 		return;
 	}
 	if(InDisk==255)
 	{
-		FCEU_DispMessage("Disk %d Side %s Inserted",SelectDisk>>1,(SelectDisk&1)?"B":"A");
+		FCEU_DispMessage("Disk %d Side %s Inserted",SelectDisk>>1,(SelectDisk&1)?"B":"A");  
 		InDisk=SelectDisk;
 	}
-	else
+	else   
 	{
 		FCEU_DispMessage("Disk %d Side %s Ejected",SelectDisk>>1,(SelectDisk&1)?"B":"A");
 		InDisk=255;
@@ -171,6 +181,11 @@ InDisk=255;
 */
 void FCEU_FDSSelect(void)
 {
+	if(FCEUI_EmulationPaused()) EmulationPaused |= 2;
+
+	if(FCEUMOV_Mode(MOVIEMODE_RECORD))
+		FCEUMOV_AddCommand(FCEUNPCMD_FDSSELECT);
+
 	if(TotalSides==0)
 	{
 		FCEU_DispMessage("Not FDS; can't select disk.");
@@ -198,14 +213,14 @@ static void FDSFix(int a)
 				IRQCount=IRQLatch=0;
 			}
 			else
-				IRQCount=IRQLatch;
+				IRQCount=IRQLatch; 
 			//IRQCount=IRQLatch; //0xFFFF;
 			X6502_IRQBegin(FCEU_IQEXT);
 			//printf("IRQ: %d\n",timestamp);
 			//   printf("IRQ: %d\n",scanline);
 		}
 	}
-	if(DiskSeekIRQ>0)
+	if(DiskSeekIRQ>0) 
 	{
 		DiskSeekIRQ-=a;
 		if(DiskSeekIRQ<=0)
@@ -250,14 +265,14 @@ static DECLFR(FDSRead4031)
 	return z;
 }
 static DECLFR(FDSRead4032)
-{
+{       
 	uint8 ret;
 
 	ret=X.DB&~7;
 	if(InDisk==255)
 		ret|=5;
 
-	if(InDisk==255 || !(FDSRegs[5]&1) || (FDSRegs[5]&2))
+	if(InDisk==255 || !(FDSRegs[5]&1) || (FDSRegs[5]&2))        
 		ret|=2;
 	return ret;
 }
@@ -356,7 +371,7 @@ static DECLFW(FDSSWrite)
 	A-=0x4080;
 	switch(A)
 	{
-	case 0x0:
+	case 0x0: 
 	case 0x4: if(V&0x80)
 				  amplitude[(A&0xF)>>2]=V&0x3F; //)>0x20?0x20:(V&0x3F);
 		break;
@@ -372,7 +387,7 @@ static DECLFW(FDSSWrite)
 		break;
 	}
 	//if(A>=0x7 && A!=0x8 && A<=0xF)
-	//if(A==0xA || A==0x9)
+	//if(A==0xA || A==0x9) 
 	//printf("$%04x:$%02x\n",A,V);
 	SPSG[A]=V;
 }
@@ -439,7 +454,7 @@ static INLINE void ClockRise(void)
 		b19shiftreg60=(SPSG[0x2]|((SPSG[0x3]&0xF)<<8));
 		b17latch76=(SPSG[0x6]|((SPSG[0x07]&0xF)<<8))+b17latch76;
 
-		if(!(SPSG[0x7]&0x80))
+		if(!(SPSG[0x7]&0x80)) 
 		{
 			int t=fdso.mwave[(b17latch76>>13)&0x1F]&7;
 			int t2=amplitude[1];
@@ -459,13 +474,13 @@ static INLINE void ClockRise(void)
 			b8shiftreg88=0x80 + adj;
 		}
 		else
-		{
+		{ 
 			b8shiftreg88=0x80;
 		}
 	}
 	else
 	{
-		b19shiftreg60<<=1;
+		b19shiftreg60<<=1;  
 		b8shiftreg88>>=1;
 	}
 	// b24adder66=(b24latch68+b19shiftreg60)&0x3FFFFFF;
@@ -495,7 +510,7 @@ dogk:
 		if(fdso.envcount<=0)
 		{
 			fdso.envcount+=SPSG[0xA]*3;
-			DoEnv();
+			DoEnv(); 
 		}
 	}
 	if(fdso.count>=32768) goto dogk;
@@ -702,7 +717,7 @@ static int SubLoad(FCEUFILE *fp)
 		}
 		else
 			return(0);
-	}
+	} 
 	else
 		TotalSides=header[4];
 
@@ -752,7 +767,7 @@ static void PostSave(void)
 
 		for(b=0; b<65500; b++)
 			diskdata[x][b] ^= diskdatao[x][b];
-	}
+	} 
 
 }
 
@@ -770,7 +785,7 @@ int FDSLoad(const char *name, FCEUFILE *fp)
 #ifndef GEKKO
 	fn = strdup(FCEU_MakeFName(FCEUMKF_FDSROM,0,0).c_str());
 
-	if(!(zp=FCEUD_UTF8fopen(fn,"rb")))
+	if(!(zp=FCEUD_UTF8fopen(fn,"rb")))  
 	{
 		FCEU_PrintError("FDS BIOS ROM image missing!");
 		FreeFDSMemory();
@@ -830,7 +845,7 @@ if (!disableBatteryLoading)
 
 	for(x=0;x<TotalSides;x++)
 	{
-		char temp[5];
+		char temp[5];  
 		sprintf(temp,"DDT%d",x);
 		AddExState(diskdata[x],65500,0,temp);
 	}
@@ -882,7 +897,7 @@ void FDSClose(void)
 
 	for(x=0;x<TotalSides;x++)
 	{
-		if(fwrite(diskdata[x],1,65500,fp)!=65500)
+		if(fwrite(diskdata[x],1,65500,fp)!=65500) 
 		{
 			FCEU_PrintError("Error saving FDS image!");
 			fclose(fp);

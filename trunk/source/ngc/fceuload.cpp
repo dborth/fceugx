@@ -81,7 +81,7 @@ int GCMemROM(int method, int size)
 		delete fceumem;
 		fceumem = new memorystream((char *) nesrom, size);
 		fceufp->stream = fceumem;
-		romLoaded = NSFLoad(fceufp);
+		romLoaded = NSFLoad(romFilename, fceufp);
 	}
 
 	if(!romLoaded)

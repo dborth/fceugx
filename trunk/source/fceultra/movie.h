@@ -65,6 +65,8 @@ enum EMOVIECMD
 {
 	MOVIECMD_RESET = 1,
 	MOVIECMD_POWER = 2,
+	MOVIECMD_FDS_INSERT = 4,
+	MOVIECMD_FDS_SELECT = 8
 };
 
 EMOVIEMODE FCEUMOV_Mode();
@@ -104,6 +106,8 @@ public:
 	uint8 commands;
 	bool command_reset() { return (commands&MOVIECMD_RESET)!=0; }
 	bool command_power() { return (commands&MOVIECMD_POWER)!=0; }
+	bool command_fds_insert() { return (commands&MOVIECMD_FDS_INSERT)!=0; }
+	bool command_fds_select() { return (commands&MOVIECMD_FDS_SELECT)!=0; }
 
 	void toggleBit(int joy, int bit)
 	{
