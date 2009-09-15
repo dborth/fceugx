@@ -25,7 +25,7 @@
 
 static uint8 reg[16], is153;
 static uint8 IRQa;
-static uint16 IRQCount, IRQLatch;
+static int16 IRQCount, IRQLatch;
 
 static uint8 *WRAM=NULL;
 static uint32 WRAMSIZE;
@@ -35,7 +35,7 @@ static SFORMAT StateRegs[]=
   {reg, 16, "REGS"},
   {&IRQa, 1, "IRQA"},
   {&IRQCount, 2, "IRQC"},
-  {&IRQLatch, 2, "IRQL"},
+  {&IRQLatch, 2, "IRQL"}, // need for Famicom Jump II - Saikyou no 7 Nin (J) [!]
   {0}
 };
 
@@ -75,18 +75,18 @@ static void BandaiSync(void)
     setprg16(0x8000,reg[8]);
     setprg16(0xC000,~0);
   }
-  switch(reg[9])
+  switch(reg[9]&3)
   {
     case 0: setmirror(MI_V); break;
     case 1: setmirror(MI_H); break;
     case 2: setmirror(MI_0); break;
     case 3: setmirror(MI_1); break;
-  }  
+  }
 }
 
 static DECLFW(BandaiWrite)
 {
-  A&=0x0F;  
+  A&=0x0F;
   if(A<0x0A)
   {
     reg[A&0x0F]=V;
@@ -96,9 +96,9 @@ static DECLFW(BandaiWrite)
     switch(A)
     {
       case 0x0A: X6502_IRQEnd(FCEU_IQEXT); IRQa=V&1; IRQCount=IRQLatch; break;
-      case 0x0B: IRQLatch&=0xFF00; IRQLatch|=V; break;
+      case 0x0B: IRQLatch&=0xFF00; IRQLatch|=V;  break;
       case 0x0C: IRQLatch&=0xFF; IRQLatch|=V<<8; break;
-      case 0x0D: break;// Serial EEPROM control port 
+      case 0x0D: break;// Serial EEPROM control port
     }
 }
 

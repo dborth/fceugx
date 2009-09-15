@@ -36,7 +36,11 @@
 #include "utils/endian.h"
 #include "utils/memory.h"
 #include "utils/md5.h"
+#ifdef GEKKO
 #include "unzip.h"
+#else
+#include "utils/unzip.h"
+#endif
 #include "driver.h"
 #include "types.h"
 #include "fceu.h"
@@ -603,7 +607,7 @@ std::string FCEU_MakeFName(int type, int id1, const char *cd1)
 				if(odirs[FCEUIOD_MOVIES])
 					sprintf(ret,"%s"PSS"%s-%d.fm2",odirs[FCEUIOD_MOVIES],FileBase, id1);
 				else
-					sprintf(ret,"%s"PSS"movie"PSS"%s-%d.fm2",BaseDirectory.c_str(),FileBase, id1);
+					sprintf(ret,"%s"PSS"movies"PSS"%s-%d.fm2",BaseDirectory.c_str(),FileBase, id1);
 				id1++;
 			} while (stat(ret, &fileInfo) == 0);
 			break;

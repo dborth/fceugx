@@ -75,6 +75,7 @@ static int SFEXINDEX;
 
 
 extern SFORMAT FCEUPPU_STATEINFO[];
+extern SFORMAT FCEU_NEWPPU_STATEINFO[];
 extern SFORMAT FCEUSND_STATEINFO[];
 extern SFORMAT FCEUCTRL_STATEINFO[];
 extern SFORMAT FCEUMOV_STATEINFO[];
@@ -248,6 +249,7 @@ static bool ReadStateChunks(std::istream* is, int32 totalsize)
 		{
 		case 1:if(!ReadStateChunk(is,SFCPU,size)) ret=false;break;
 		case 3:if(!ReadStateChunk(is,FCEUPPU_STATEINFO,size)) ret=false;break;
+		case 31:if(!ReadStateChunk(is,FCEU_NEWPPU_STATEINFO,size)) ret=false;break;
 		case 4:if(!ReadStateChunk(is,FCEUCTRL_STATEINFO,size)) ret=false;break;
 		case 7:
 			if(!FCEUMOV_ReadState(is,size)) {
@@ -355,6 +357,7 @@ bool FCEUSS_SaveMS(std::ostream* outstream, int compressionLevel)
 	totalsize=WriteStateChunk(os,1,SFCPU);
 	totalsize+=WriteStateChunk(os,2,SFCPUC);
 	totalsize+=WriteStateChunk(os,3,FCEUPPU_STATEINFO);
+	totalsize+=WriteStateChunk(os,31,FCEU_NEWPPU_STATEINFO);
 	totalsize+=WriteStateChunk(os,4,FCEUCTRL_STATEINFO);
 	totalsize+=WriteStateChunk(os,5,FCEUSND_STATEINFO);
 	if(FCEUMOV_Mode(MOVIEMODE_PLAY|MOVIEMODE_RECORD))
@@ -451,7 +454,7 @@ void FCEUSS_Save(const char *fname)
 		fn = strdup(FCEU_MakeFName(FCEUMKF_STATE,CurrentState,0).c_str());
 
 		//backup existing savestate first
-		if (CheckFileExists(fn))
+		if (CheckFileExists(fn)) 
 		{
 			CreateBackupSaveState(fn);		//Make a backup of previous savestate before overwriting it
 			strcpy(lastSavestateMade,fn);	//Remember what the last savestate filename was (for undoing later)
@@ -459,7 +462,7 @@ void FCEUSS_Save(const char *fname)
 		}
 		else
 			undoSS = false;					//so backup made so lastSavestateMade does have a backup file, so no undo
-
+		
 		st = FCEUD_UTF8_fstream(fn,"wb");
 		free(fn);
 	}
@@ -500,7 +503,7 @@ int FCEUSS_LoadFP_old(std::istream* is, ENUM_SSLOADPARAMS params)
 	//{
 	//	fn=FCEU_MakeFName(FCEUMKF_NPTEMP,0,0);
 	//	FILE *fp;
-	//
+	//	
 	//	if((fp=fopen(fn,"wb")))
 	//	{
 	//		if(FCEUSS_SaveFP(fp))
@@ -555,7 +558,7 @@ int FCEUSS_LoadFP_old(std::istream* is, ENUM_SSLOADPARAMS params)
 	if(x)
 	{
 		FCEUPPU_LoadState(stateversion);
-		FCEUSND_LoadState(stateversion);
+		FCEUSND_LoadState(stateversion);  
 		x=FCEUMOV_PostLoad();
 	}
 	if(fn)
@@ -564,7 +567,7 @@ int FCEUSS_LoadFP_old(std::istream* is, ENUM_SSLOADPARAMS params)
 		//{
 		//	* Oops!  Load the temporary savestate */
 		//	FILE *fp;
-		//
+		//		
 		//	if((fp=fopen(fn,"rb")))
 		//	{
 		//		FCEUSS_LoadFP(fp,SSLOADPARAM_NOBACKUP);
@@ -600,7 +603,7 @@ bool FCEUSS_LoadFP(std::istream* is, ENUM_SSLOADPARAMS params)
 		if(!ret && backup) FCEUSS_LoadFP(&msBackupSavestate,SSLOADPARAM_NOBACKUP);
 		return ret;
 	}
-
+		
 	int totalsize = FCEU_de32lsb(header + 4);
 	int stateversion = FCEU_de32lsb(header + 8);
 	int comprlen = FCEU_de32lsb(header + 12);
@@ -752,8 +755,8 @@ void ResetExState(void (*PreSave)(void), void (*PostSave)(void))
 			free(SFMDATA[x].desc);
 	}
 	// adelikat, 3/14/09:  had to add this to clear out the size parameter.  NROM(mapper 0) games were having savestate crashes if loaded after a non NROM game	because the size variable was carrying over and causing savestates to save too much data
-	SFMDATA[0].s = 0;
-
+	SFMDATA[0].s = 0;		
+	
 	SPreSave = PreSave;
 	SPostSave = PostSave;
 	SFEXINDEX=0;
@@ -814,7 +817,7 @@ void FCEUI_SaveState(const char *fname)
 	if(!FCEU_IsValidUI(FCEUI_SAVESTATE)) return;
 
 	StateShow=0;
-
+	
 	FCEUSS_Save(fname);
 }
 
@@ -833,10 +836,10 @@ void FCEUI_LoadState(const char *fname)
 	from this ;)).
 	*/
 	BackupLoadState();	//Backup the current state before loading a new one
-
+	
 	if (!movie_readonly && autoMovieBackup && freshMovie) //If auto-backup is on, movie has not been altered this session and the movie is in read+write mode
 	{
-		FCEUI_MakeBackupMovie(false);	//Backup the movie before the contents get altered, but do not display messages
+		FCEUI_MakeBackupMovie(false);	//Backup the movie before the contents get altered, but do not display messages						  
 	}
 	if(FCEUSS_Load(fname))
 	{
@@ -890,8 +893,8 @@ string GenerateBackupSaveStateFn(const char *fname)
 	string filename;
 	filename = fname;	//Convert fname to a string object
 	int x = filename.find_last_of("."); //Find file extension
-	filename.insert(x,"-bak");		//add "-bak" before the dot.
-
+	filename.insert(x,"-bak");		//add "-bak" before the dot.  
+	
 	return filename;
 }
 
@@ -910,15 +913,15 @@ void SwapSaveState()
 	//--------------------------------------------------------------------------------------------
 	//Both files must exist
 	//--------------------------------------------------------------------------------------------
-
-	if (!lastSavestateMade)
+	
+	if (!lastSavestateMade) 
 	{
 		FCEUI_DispMessage("Can't Undo");
 		FCEUI_printf("Undo savestate was attempted but unsuccessful because there was not a recently used savestate.\n");
 		return;		//If there is no last savestate, can't undo
 	}
 	string backup = GenerateBackupSaveStateFn(lastSavestateMade);	//Get filename of backup state
-	if (!CheckFileExists(backup.c_str()))
+	if (!CheckFileExists(backup.c_str())) 
 	{
 		FCEUI_DispMessage("Can't Undo");
 		FCEUI_printf("Undo savestate was attempted but unsuccessful because there was not a backup of the last used savestate.\n");
@@ -930,11 +933,11 @@ void SwapSaveState()
 	//--------------------------------------------------------------------------------------------
 	string temp = backup;					//Put backup filename in temp
 	temp.append("x");						//Add x
-
+	
 	rename(backup.c_str(),temp.c_str());		//rename backup file to temp file
 	rename(lastSavestateMade,backup.c_str());	//rename current as backup
 	rename(temp.c_str(),lastSavestateMade);		//rename backup as current
-
+	
 	undoSS = true;	//Just in case, if this was run, then there is definately a last savestate and backup
 	if (redoSS)				//This was a redo function, so if run again it will be an undo again
 		redoSS = false;
@@ -943,8 +946,8 @@ void SwapSaveState()
 
 	FCEUI_DispMessage("%s restored",backup.c_str());
 	FCEUI_printf("%s restored\n",backup.c_str());
-}
-
+}	
+	
 //------------------------------------------------------------------------------------------------------------------------------------------------------
 //*************************************************************************
 //Loadstate backup functions
@@ -957,7 +960,7 @@ string GetBackupFileName()
 	//particularly from unintentional loadstating
 	string filename;
 	int x;
-
+	
 	filename = strdup(FCEU_MakeFName(FCEUMKF_STATE,CurrentState,0).c_str());	//Generate normal savestate filename
 	x = filename.find_last_of(".");		//Find last dot
 	filename = filename.substr(0,x);	//Chop off file extension
@@ -971,11 +974,11 @@ bool CheckBackupSaveStateExist()
 	//This function simply checks to see if the backup loadstate exists, the backup loadstate is a special savestate
 	//That is made before loading any state, so that the user never loses his data
 	string filename = GetBackupFileName(); //Get backup savestate filename
-
+		
 	//Check if this filename exists
 	fstream test;
 	test.open(filename.c_str(),fstream::in);
-
+		
 	if (test.fail())
 	{
 		test.close();
