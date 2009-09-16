@@ -17,7 +17,7 @@
 #include "driver.h"
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.0.8"
+#define APPVERSION		"3.0.9"
 #define PREF_FILE_NAME	"settings.xml"
 
 #define NOTSILENT 0
