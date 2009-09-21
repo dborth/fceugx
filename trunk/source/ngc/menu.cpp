@@ -3043,7 +3043,7 @@ static int MenuSettingsVideo()
 			}
 
 			sprintf (options.value[4], "%s",
-				GCSettings.currpal ? palettes[GCSettings.currpal-1].name : "Default");
+				GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default");
 
 			sprintf (options.value[5], "%s", GCSettings.timing == 1 ? "PAL" : "NTSC");
 			sprintf (options.value[6], "%.2f%%", GCSettings.ZoomLevel*100);
