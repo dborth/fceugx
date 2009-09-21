@@ -17,6 +17,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <ogc/texconv.h>
+#include <ogc/lwp_watchdog.h>
 
 #include "fceusupport.h"
 #include "gcvideo.h"
@@ -78,12 +79,6 @@ static unsigned short rgb565[256];	// Texture map palette
 
 static long long prev;
 static long long now;
-
-extern "C"
-{
-long long gettime();
-u32 diff_usec(long long start,long long end);
-}
 
 /* New texture based scaler */
 typedef struct tagcamera
@@ -1109,8 +1104,25 @@ void SetPalette()
 }
 
 struct st_palettes palettes[] = {
-    /* The default NES palette must be the first entry in the array */
-    { "loopy", "Loopy's NES palette",
+	{ "asqrealc", "AspiringSquire's Real palette",
+		{ 0x6c6c6c, 0x00268e, 0x0000a8, 0x400094,
+			0x700070, 0x780040, 0x700000, 0x621600,
+			0x442400, 0x343400, 0x005000, 0x004444,
+			0x004060, 0x000000, 0x101010, 0x101010,
+			0xbababa, 0x205cdc, 0x3838ff, 0x8020f0,
+			0xc000c0, 0xd01474, 0xd02020, 0xac4014,
+			0x7c5400, 0x586400, 0x008800, 0x007468,
+			0x00749c, 0x202020, 0x101010, 0x101010,
+			0xffffff, 0x4ca0ff, 0x8888ff, 0xc06cff,
+			0xff50ff, 0xff64b8, 0xff7878, 0xff9638,
+			0xdbab00, 0xa2ca20, 0x4adc4a, 0x2ccca4,
+			0x1cc2ea, 0x585858, 0x101010, 0x101010,
+			0xffffff, 0xb0d4ff, 0xc4c4ff, 0xe8b8ff,
+			0xffb0ff, 0xffb8e8, 0xffc4c4, 0xffd4a8,
+			0xffe890, 0xf0f4a4, 0xc0ffc0, 0xacf4f0,
+			0xa0e8ff, 0xc2c2c2, 0x202020, 0x101010 }
+	},
+    { "loopy", "Loopy's palette",
         { 0x757575, 0x271b8f, 0x0000ab, 0x47009f,
             0x8f0077, 0xab0013, 0xa70000, 0x7f0b00,
             0x432f00, 0x004700, 0x005100, 0x003f17,
@@ -1128,7 +1140,7 @@ struct st_palettes palettes[] = {
             0xffe7a3, 0xe3ffa3, 0xabf3bf, 0xb3ffcf,
             0x9ffff3, 0x000000, 0x000000, 0x000000 }
     },
-    { "quor", "Quor's palette from Nestra 0.63",
+    { "quor", "Quor's palette",
         { 0x3f3f3f, 0x001f3f, 0x00003f, 0x1f003f,
             0x3f003f, 0x3f0020, 0x3f0000, 0x3f2000,
             0x3f3f00, 0x203f00, 0x003f00, 0x003f20,
@@ -1146,7 +1158,7 @@ struct st_palettes palettes[] = {
             0xffffc0, 0xe0ffc0, 0xc0ffc0, 0xc0ffe0,
             0xc0ffff, 0x000000, 0x000000, 0x000000 }
     },
-    { "chris", "Chris Covell's NES palette",
+    { "chris", "Chris Covell's palette",
         { 0x808080, 0x003DA6, 0x0012B0, 0x440096,
             0xA1005E, 0xC70028, 0xBA0600, 0x8C1700,
             0x5C2F00, 0x104500, 0x054A00, 0x00472E,
@@ -1164,7 +1176,7 @@ struct st_palettes palettes[] = {
             0xFFF79C, 0xD7E895, 0xA6EDAF, 0xA2F2DA,
             0x99FFFC, 0xDDDDDD, 0x111111, 0x111111 }
     },
-    { "matt", "Matthew Conte's NES palette",
+    { "matt", "Matthew Conte's palette",
         { 0x808080, 0x0000bb, 0x3700bf, 0x8400a6,
             0xbb006a, 0xb7001e, 0xb30000, 0x912600,
             0x7b2b00, 0x003e00, 0x00480d, 0x003c22,
@@ -1182,7 +1194,7 @@ struct st_palettes palettes[] = {
             0xffd9a2, 0xcce199, 0xaeeeb7, 0xaaf7ee,
             0xb3eeff, 0xdddddd, 0x111111, 0x111111 }
     },
-    { "pasofami", "Palette from PasoFami/99",
+    { "pasofami", "PasoFami/99 palette",
         { 0x7f7f7f, 0x0000ff, 0x0000bf, 0x472bbf,
             0x970087, 0xab0023, 0xab1300, 0x8b1700,
             0x533000, 0x007800, 0x006b00, 0x005b00,
@@ -1200,7 +1212,7 @@ struct st_palettes palettes[] = {
             0xfbdb7b, 0xd8f878, 0xb8f8b8, 0xb8f8d8,
             0x00ffff, 0xf8d8f8, 0x000000, 0x000000 }
     },
-    { "crashman", "CrashMan's NES palette",
+    { "crashman", "CrashMan's palette",
         { 0x585858, 0x001173, 0x000062, 0x472bbf,
             0x970087, 0x910009, 0x6f1100, 0x4c1008,
             0x371e00, 0x002f00, 0x005500, 0x004d15,
@@ -1218,7 +1230,7 @@ struct st_palettes palettes[] = {
             0xe0e01e, 0xd8f878, 0xc0e890, 0x95f7c8,
             0x98e0e8, 0xf8d8f8, 0x000000, 0x000000 }
     },
-    { "mess", "palette from MESS NES driver",
+    { "mess", "MESS palette",
         { 0x747474, 0x24188c, 0x0000a8, 0x44009c,
             0x8c0074, 0xa80010, 0xa40000, 0x7c0800,
             0x402c00, 0x004400, 0x005000, 0x003c14,
@@ -1308,7 +1320,6 @@ struct st_palettes palettes[] = {
             0xfbdb7b, 0xffa347, 0x8b1700, 0xffe3ab,
             0xb8f818, 0xab0023, 0x000000, 0x007800 }
     },
-    /* The default VS palette must be the last entry in the array */
     { "vs-smb", "VS SMB/VS Ice Climber palette",
         { 0xaf7f00, 0x0000ff, 0x008b8b, 0x472bbf,
             0x970087, 0xab0023, 0x0000ff, 0xe75f13,
