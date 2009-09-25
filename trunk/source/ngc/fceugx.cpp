@@ -18,6 +18,7 @@
 #include <fat.h>
 #include <wiiuse/wpad.h>
 #include <malloc.h>
+#include <sys/iosupport.h>
 
 #include "fceugx.h"
 #include "fceuconfig.h"
