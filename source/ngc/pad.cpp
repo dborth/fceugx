@@ -403,9 +403,8 @@ static void UpdateCursorPosition (int pad)
 /****************************************************************************
  * Convert GC Joystick Readings to JOY
  ****************************************************************************/
-static int RAPID_SKIP = 2; // frames to skip between rapid button presses
-static int RAPID_PRESS = 2; // number of rapid button presses to execute
-static int rapidbutton[4][2] = {{0}};
+
+extern int rapidAlternator;
 
 static unsigned char DecodeJoy( unsigned short pad )
 {
@@ -516,15 +515,15 @@ static unsigned char DecodeJoy( unsigned short pad )
 			// if zapper is on, ignore all buttons except START and SELECT
 			if(GCSettings.Controller != CTRL_ZAPPER || nespadmap[i] == JOY_START || nespadmap[i] == JOY_SELECT)
 			{
-				if(nespadmap[i] == RAPID_A)
+				if(rapidAlternator && nespadmap[i] == RAPID_A)
 				{
 					// activate rapid fire for A button
-					rapidbutton[pad][0] = RAPID_PRESS;
+					J |= JOY_A;
 				}
-				else if(nespadmap[i] == RAPID_B)
+				else if(rapidAlternator && nespadmap[i] == RAPID_B)
 				{
 					// activate rapid fire for B button
-					rapidbutton[pad][1] = RAPID_PRESS;
+					J |= JOY_B;
 				}
 				else if(nespadmap[i] > 0)
 				{
@@ -545,21 +544,6 @@ static unsigned char DecodeJoy( unsigned short pad )
 						FCEUI_VSUniCoin(); // insert coin for VS Games
 				}
 			}
-		}
-	}
-
-	// rapid fire buttons
-	if(FrameTimer % RAPID_SKIP == 0) // only press button every X frames
-	{
-		if(rapidbutton[pad][0] > 0) // rapid A
-		{
-			J |= JOY_A;
-			rapidbutton[pad][0]--;
-		}
-		if(rapidbutton[pad][1] > 0) // rapid B
-		{
-			J |= JOY_B;
-			rapidbutton[pad][1]--;
 		}
 	}
 
