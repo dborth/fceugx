@@ -124,20 +124,20 @@ SetupCheats()
 	char filepath[1024];
 	int offset = 0;
 
-	int method = GCSettings.SaveMethod;
+	int device = GCSettings.SaveMethod;
 
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(SILENT);
+	if(device == DEVICE_AUTO)
+		device = autoSaveMethod(SILENT);
 
-	if(method == METHOD_AUTO)
+	if(device == DEVICE_AUTO)
 		return;
 
-	if(!MakeFilePath(filepath, FILE_CHEAT, method))
+	if(!MakeFilePath(filepath, FILE_CHEAT))
 		return;
 
 	AllocSaveBuffer();
 
-	offset = LoadFile(filepath, method, SILENT);
+	offset = LoadFile(filepath, SILENT);
 
 	// load cheat file if present
 	if(offset > 0)
@@ -160,9 +160,9 @@ void OpenGameGenie()
 		return;
 	char filepath[1024];
 
-	if (MakeFilePath(filepath, FILE_GGROM, GCSettings.LoadMethod))
+	if (MakeFilePath(filepath, FILE_GGROM))
 	{
-		romSize = LoadFile(tmpbuffer, filepath, 0, GCSettings.LoadMethod, SILENT);
+		romSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
 	}
 
 	if (romSize > 0)

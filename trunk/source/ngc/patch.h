@@ -14,6 +14,6 @@
 
 #include "memfile.h"
 
-int LoadPatch(int method, int size);
+int LoadPatch(int size);
 
 #endif

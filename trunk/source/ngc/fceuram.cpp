@@ -27,7 +27,7 @@
 #include "memcardop.h"
 #include "fileop.h"
 
-static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
+static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 {
 	u32 offset = 0;
 
@@ -50,11 +50,15 @@ static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation, int method)
 	return offset;
 }
 
-bool SaveRAM (char * filepath, int method, bool silent)
+bool SaveRAM (char * filepath, bool silent)
 {
 	bool retval = false;
 	int datasize = 0;
 	int offset = 0;
+	int device;
+			
+	if(!FindDevice(filepath, &device))
+		return 0;
 
 	if(GameInfo->type == GIT_FDS)
 	{
@@ -63,23 +67,17 @@ bool SaveRAM (char * filepath, int method, bool silent)
 		return false;
 	}
 
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(silent);
-
-	if(method == METHOD_AUTO)
-		return false;
-
 	AllocSaveBuffer ();
 
 	// save game save to savebuffer
 	if(GameInfo->type == GIT_CART)
-		datasize = NGCFCEU_GameSave(&iNESCart, 0, method);
+		datasize = NGCFCEU_GameSave(&iNESCart, 0);
 	else if(GameInfo->type == GIT_VSUNI)
-		datasize = NGCFCEU_GameSave(&UNIFCart, 0, method);
+		datasize = NGCFCEU_GameSave(&UNIFCart, 0);
 
 	if (datasize)
 	{
-		if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
+		if(device == DEVICE_MC_SLOTA || device == DEVICE_MC_SLOTB)
 		{
 			// Set the comments
 			char comments[2][32];
@@ -89,7 +87,7 @@ bool SaveRAM (char * filepath, int method, bool silent)
 			SetMCSaveComments(comments);
 		}
 
-		offset = SaveFile(filepath, datasize, method, silent);
+		offset = SaveFile(filepath, datasize, silent);
 
 		if (offset > 0)
 		{
@@ -108,46 +106,38 @@ bool SaveRAM (char * filepath, int method, bool silent)
 }
 
 bool
-SaveRAMAuto (int method, bool silent)
+SaveRAMAuto (bool silent)
 {
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(silent);
-
-	if(method == METHOD_AUTO)
-		return false;
-
 	char filepath[1024];
 
-	if(!MakeFilePath(filepath, FILE_RAM, method, romFilename, 0))
+	if(!MakeFilePath(filepath, FILE_RAM, romFilename, 0))
 		return false;
 
-	return SaveRAM(filepath, method, silent);
+	return SaveRAM(filepath, silent);
 }
 
-bool LoadRAM (char * filepath, int method, bool silent)
+bool LoadRAM (char * filepath, bool silent)
 {
 	int offset = 0;
 	bool retval = false;
+	int device;
+			
+	if(!FindDevice(filepath, &device))
+		return 0;
 
 	if(GameInfo->type == GIT_FDS) // RAM saves don't exist for FDS games
 		return false;
 
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(silent); // we use 'Save' because we need R/W
-
-	if(method == METHOD_AUTO)
-		return false;
-
 	AllocSaveBuffer ();
 
-	offset = LoadFile(filepath, method, silent);
+	offset = LoadFile(filepath, silent);
 
 	if (offset > 0)
 	{
 		if(GameInfo->type == GIT_CART)
-			NGCFCEU_GameSave(&iNESCart, 1, method);
+			NGCFCEU_GameSave(&iNESCart, 1);
 		else if(GameInfo->type == GIT_VSUNI)
-			NGCFCEU_GameSave(&UNIFCart, 1, method);
+			NGCFCEU_GameSave(&UNIFCart, 1);
 
 		ResetNES();
 		retval = true;
@@ -163,36 +153,26 @@ bool LoadRAM (char * filepath, int method, bool silent)
 }
 
 bool
-LoadRAMAuto (int method, bool silent)
+LoadRAMAuto (bool silent)
 {
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(silent);
-
-	if(method == METHOD_AUTO)
-		return false;
-
 	char filepath[MAXPATHLEN];
-	char fullpath[MAXPATHLEN];
 	char filepath2[MAXPATHLEN];
-	char fullpath2[MAXPATHLEN];
 
 	// look for Auto save file
-	if(!MakeFilePath(filepath, FILE_RAM, method, romFilename, 0))
+	if(!MakeFilePath(filepath, FILE_RAM, romFilename, 0))
 		return false;
 
-	if (LoadRAM(filepath, method, silent))
+	if (LoadRAM(filepath, silent))
 		return true;
 
 	// look for file with no number or Auto appended
-	if(!MakeFilePath(filepath2, FILE_RAM, method, romFilename, -1))
+	if(!MakeFilePath(filepath2, FILE_RAM, romFilename, -1))
 		return false;
 
-	if(LoadRAM(filepath2, method, silent))
+	if(LoadRAM(filepath2, silent))
 	{
 		// rename this file - append Auto
-		sprintf(fullpath, "%s%s", rootdir, filepath); // add device to path
-		sprintf(fullpath2, "%s%s", rootdir, filepath2); // add device to path
-		rename(fullpath2, fullpath); // rename file (to avoid duplicates)
+		rename(filepath2, filepath); // rename file (to avoid duplicates)
 		return true;
 	}
 	return false;

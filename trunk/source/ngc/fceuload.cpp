@@ -30,7 +30,7 @@ bool romLoaded = false;
 
 #define SAMPLERATE 48000
 
-int GCMemROM(int method, int size)
+int GCMemROM(int size)
 {
 	ResetGameLoaded();
 
@@ -94,9 +94,9 @@ int GCMemROM(int method, int size)
 
 			char filepath[1024];
 
-			if (MakeFilePath(filepath, FILE_FDSBIOS, method))
+			if (MakeFilePath(filepath, FILE_FDSBIOS))
 			{
-				biosSize = LoadFile(tmpbuffer, filepath, 0, method, SILENT);
+				biosSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
 			}
 
 			if (biosSize == 8192)

@@ -9,7 +9,7 @@
  * Memory Based Load/Save State Manager
  ****************************************************************************/
 
-bool SaveState (char * filepath, int method, bool silent);
-bool SaveStateAuto (int method, bool silent);
-bool LoadState (char * filepath, int method, bool silent);
-bool LoadStateAuto (int method, bool silent);
+bool SaveState (char * filepath, bool silent);
+bool SaveStateAuto (bool silent);
+bool LoadState (char * filepath, bool silent);
+bool LoadStateAuto (bool silent);

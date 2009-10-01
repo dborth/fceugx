@@ -472,6 +472,9 @@ getentry (int entrycount, unsigned char dvdbuffer[])
 			browserList[entrycount].offset <<= 11;
 			browserList[entrycount].isdir = browserList[entrycount].isdir & 2;
 
+			if(browserList[entrycount].isdir)
+				browserList[entrycount].icon = ICON_FOLDER;
+
 			/*** Prepare for next entry ***/
 
 			diroffset += dvdbuffer[diroffset];
@@ -588,7 +591,7 @@ static bool SwitchDVDFolderR(char * dir, int maxDepth)
 
 		if(browserList[dirindex].isdir) // only parse directories
 		{
-			UpdateDirName(METHOD_DVD);
+			UpdateDirName();
 			ParseDVDdirectory();
 		}
 		else
@@ -667,7 +670,7 @@ LoadDVDFileOffset (unsigned char *buffer, int length)
 
 		if (IsZipFile (readbuffer))
 		{
-			result = UnZipBuffer (buffer, METHOD_DVD); // unzip from dvd
+			result = UnZipBuffer (buffer, DEVICE_DVD); // unzip from dvd
 		}
 		else
 		{
