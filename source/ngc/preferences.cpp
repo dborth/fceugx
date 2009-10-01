@@ -28,7 +28,7 @@
  * Prepare Preferences Data
  *
  * This sets up the save buffer for saving.
- ****************************************************************************/
+ ***************************************************************************/
 static mxml_node_t *xml = NULL;
 static mxml_node_t *data = NULL;
 static mxml_node_t *section = NULL;
@@ -71,8 +71,7 @@ static void createXMLController(unsigned int controller[], const char * name, co
 	mxmlElementSetAttr(item, "description", description);
 
 	// create buttons
-	int i;
-	for(i=0; i < MAXJP; i++)
+	for(int i=0; i < MAXJP; i++)
 	{
 		elem = mxmlNewElement(item, "button");
 		mxmlElementSetAttr(elem, "number", toStr(i));
@@ -108,14 +107,14 @@ static const char * XMLSaveCallback(mxml_node_t *node, int where)
 }
 
 static int
-preparePrefsData (int method)
+preparePrefsData ()
 {
 	xml = mxmlNewXML("1.0");
 	mxmlSetWrapMargin(0); // disable line wrapping
 
 	data = mxmlNewElement(xml, "file");
-	mxmlElementSetAttr(data, "app",APPNAME);
-	mxmlElementSetAttr(data, "version",APPVERSION);
+	mxmlElementSetAttr(data, "app", APPNAME);
+	mxmlElementSetAttr(data, "version", APPVERSION);
 
 	createXMLSection("File", "File Settings");
 
@@ -177,8 +176,11 @@ preparePrefsData (int method)
 }
 
 /****************************************************************************
- * Decode Preferences Data
- ****************************************************************************/
+ * loadXMLSetting
+ *
+ * Load XML elements into variables for an individual variable
+ ***************************************************************************/
+
 static void loadXMLSetting(char * var, const char * name, int maxsize)
 {
 	item = mxmlFindElement(xml, xml, "setting", "name", name, MXML_DESCEND);
@@ -210,6 +212,12 @@ static void loadXMLSetting(float * var, const char * name)
 	}
 }
 
+/****************************************************************************
+ * loadXMLController
+ *
+ * Load XML elements into variables for a controller mapping
+ ***************************************************************************/
+
 static void loadXMLController(unsigned int controller[], const char * name)
 {
 	item = mxmlFindElement(xml, xml, "controller", "name", name, MXML_DESCEND);
@@ -217,8 +225,7 @@ static void loadXMLController(unsigned int controller[], const char * name)
 	if(item)
 	{
 		// populate buttons
-		int i;
-		for(i=0; i < MAXJP; i++)
+		for(int i=0; i < MAXJP; i++)
 		{
 			elem = mxmlFindElement(item, xml, "button", "number", toStr(i), MXML_DESCEND);
 			if(elem)
@@ -231,8 +238,14 @@ static void loadXMLController(unsigned int controller[], const char * name)
 	}
 }
 
+/****************************************************************************
+ * decodePrefsData
+ *
+ * Decodes preferences - parses XML and loads preferences into the variables
+ ***************************************************************************/
+
 static bool
-decodePrefsData (int method)
+decodePrefsData ()
 {
 	bool result = false;
 
@@ -244,9 +257,9 @@ decodePrefsData (int method)
 		item = mxmlFindElement(xml, xml, "file", "version", NULL, MXML_DESCEND);
 		if(item) // a version entry exists
 		{
-			const char * version = (char *)mxmlElementGetAttr(item, "version");
+			const char * version = mxmlElementGetAttr(item, "version");
 
-			if(version)
+			if(version && strlen(version) == 5)
 			{
 				// this code assumes version in format X.X.X
 				// XX.X.X, X.XX.X, or X.X.XX will NOT work
@@ -314,6 +327,7 @@ decodePrefsData (int method)
 			loadXMLSetting(&GCSettings.Rumble, "Rumble");
 
 			// Controller Settings
+
 			loadXMLSetting(&GCSettings.Controller, "Controller");
 			loadXMLSetting(&GCSettings.crosshair, "crosshair");
 
@@ -326,30 +340,46 @@ decodePrefsData (int method)
 		}
 		mxmlDelete(xml);
 	}
-
 	return result;
 }
 
 /****************************************************************************
  * Save Preferences
  ***************************************************************************/
+static char prefpath[MAXPATHLEN] = { 0 };
+
 bool
 SavePrefs (bool silent)
 {
-	char filepath[1024];
+	char filepath[MAXPATHLEN];
 	int datasize;
 	int offset = 0;
-	int method = appLoadMethod;
-
-	// We'll save using the first available method (probably SD) since this
-	// is the method preferences will be loaded from by default
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(silent);
-
-	if(method == METHOD_AUTO)
-		return false;
-
-	if(!MakeFilePath(filepath, FILE_PREF, method))
+	int device = 0;
+	
+	if(prefpath[0] != 0)
+	{
+		strcpy(filepath, prefpath);
+		FindDevice(filepath, &device);
+	}
+	else if(appPath[0] != 0)
+	{
+		sprintf(filepath, "%s%s", appPath, PREF_FILE_NAME);
+		FindDevice(filepath, &device);
+	}
+	else
+	{
+		device = autoLoadMethod();
+		
+		if(device == 0)
+			return false;
+		
+		if(device == DEVICE_MC_SLOTA || device == DEVICE_MC_SLOTB)
+			sprintf(filepath, "%s%s", pathPrefix[device], PREF_FILE_NAME);
+		else
+			sprintf(filepath, "%sfceugx/%s", pathPrefix[device], PREF_FILE_NAME);
+	}
+	
+	if(device == 0)
 		return false;
 
 	if (!silent)
@@ -358,9 +388,9 @@ SavePrefs (bool silent)
 	FixInvalidSettings();
 
 	AllocSaveBuffer ();
-	datasize = preparePrefsData (method);
+	datasize = preparePrefsData ();
 
-	if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
+	if(device == DEVICE_MC_SLOTA || device == DEVICE_MC_SLOTB)
 	{
 		// Set the comments
 		char prefscomment[2][32];
@@ -370,7 +400,7 @@ SavePrefs (bool silent)
 		SetMCSaveComments(prefscomment);
 	}
 
-	offset = SaveFile(filepath, datasize, method, silent);
+	offset = SaveFile(filepath, datasize, silent);
 
 	FreeSaveBuffer ();
 
@@ -379,33 +409,34 @@ SavePrefs (bool silent)
 	if (offset > 0)
 	{
 		if (!silent)
-			InfoPrompt ("Preferences saved");
+			InfoPrompt("Preferences saved");
 		return true;
 	}
 	return false;
 }
 
 /****************************************************************************
- * Load Preferences from specified method
+ * Load Preferences from specified filepath
  ***************************************************************************/
 bool
-LoadPrefsFromMethod (int method)
+LoadPrefsFromMethod (char * filepath)
 {
 	bool retval = false;
-	char filepath[1024];
 	int offset = 0;
-
-	if(!MakeFilePath(filepath, FILE_PREF, method))
-		return false;
 
 	AllocSaveBuffer ();
 
-	offset = LoadFile(filepath, method, SILENT);
+	offset = LoadFile(filepath, SILENT);
 
 	if (offset > 0)
-		retval = decodePrefsData (method);
+		retval = decodePrefsData ();
 
 	FreeSaveBuffer ();
+	
+	if(retval)
+	{
+		strcpy(prefpath, filepath);
+	}
 
 	return retval;
 }
@@ -422,29 +453,28 @@ bool LoadPrefs()
 		return true;
 
 	bool prefFound = false;
+	char filepath[4][MAXPATHLEN];
+	int numDevices;
+	
+#ifdef HW_RVL
+	numDevices = 3;
+	sprintf(filepath[0], "%s/%s", appPath, PREF_FILE_NAME);
+	sprintf(filepath[1], "sd:/%s/%s", APPFOLDER, PREF_FILE_NAME);
+	sprintf(filepath[2], "usb:/%s/%s", APPFOLDER, PREF_FILE_NAME);
+#else
+	numDevices = 4;
+	sprintf(filepath[0], "carda:/%s/%s", APPFOLDER, PREF_FILE_NAME);
+	sprintf(filepath[1], "cardb:/%s/%s", APPFOLDER, PREF_FILE_NAME);
+	sprintf(filepath[2], "mca:/%s", PREF_FILE_NAME);
+	sprintf(filepath[3], "mcb:/%s", PREF_FILE_NAME);
+#endif
 
-	if(appLoadMethod == METHOD_SD)
+	for(int i=0; i<numDevices; i++)
 	{
-		if(ChangeInterface(METHOD_SD, SILENT))
-			prefFound = LoadPrefsFromMethod(METHOD_SD);
-	}
-	else if(appLoadMethod == METHOD_USB)
-	{
-		if(ChangeInterface(METHOD_USB, SILENT))
-			prefFound = LoadPrefsFromMethod(METHOD_USB);
-	}
-	else
-	{
-		if(ChangeInterface(METHOD_SD, SILENT))
-			prefFound = LoadPrefsFromMethod(METHOD_SD);
-		if(!prefFound && ChangeInterface(METHOD_USB, SILENT))
-			prefFound = LoadPrefsFromMethod(METHOD_USB);
-		if(!prefFound && TestMC(CARD_SLOTA, SILENT))
-			prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTA);
-		if(!prefFound && TestMC(CARD_SLOTB, SILENT))
-			prefFound = LoadPrefsFromMethod(METHOD_MC_SLOTB);
-		if(!prefFound && ChangeInterface(METHOD_SMB, SILENT))
-			prefFound = LoadPrefsFromMethod(METHOD_SMB);
+		prefFound = LoadPrefsFromMethod(filepath[i]);
+		
+		if(prefFound)
+			break;
 	}
 
 	prefLoaded = true; // attempted to load preferences

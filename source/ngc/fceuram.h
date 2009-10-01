@@ -9,7 +9,7 @@
  * Memory Based Load/Save RAM Manager
  ****************************************************************************/
 
-bool SaveRAM (char * filepath, int method, bool silent);
-bool SaveRAMAuto (int method, bool silent);
-bool LoadRAM (char * filepath, int method, bool silent);
-bool LoadRAMAuto (int method, bool silent);
+bool SaveRAM (char * filepath, bool silent);
+bool SaveRAMAuto (bool silent);
+bool LoadRAM (char * filepath, bool silent);
+bool LoadRAMAuto (bool silent);

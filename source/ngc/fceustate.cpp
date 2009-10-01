@@ -28,21 +28,19 @@
 #include "fileop.h"
 #include "gcvideo.h"
 
-bool SaveState (char * filepath, int method, bool silent)
+bool SaveState (char * filepath, bool silent)
 {
 	bool retval = false;
 	int datasize;
 	int offset = 0;
 	int imgSize = 0; // image screenshot bytes written
-
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(silent);
-
-	if(method == METHOD_AUTO)
-		return false;
+	int device;
+			
+	if(!FindDevice(filepath, &device))
+		return 0;
 
 	// save screenshot - I would prefer to do this from gameScreenTex
-	if(gameScreenTex2 != NULL && method != METHOD_MC_SLOTA && method != METHOD_MC_SLOTB)
+	if(gameScreenTex2 != NULL && device != DEVICE_MC_SLOTA && device != DEVICE_MC_SLOTB)
 	{
 		AllocSaveBuffer ();
 
@@ -60,7 +58,7 @@ bool SaveState (char * filepath, int method, bool silent)
 			strncpy(screenpath, filepath, 1024);
 			screenpath[strlen(screenpath)-4] = 0;
 			sprintf(screenpath, "%s.png", screenpath);
-			SaveFile(screenpath, imgSize, method, silent);
+			SaveFile(screenpath, imgSize, silent);
 		}
 
 		FreeSaveBuffer ();
@@ -73,7 +71,7 @@ bool SaveState (char * filepath, int method, bool silent)
 
 	if (datasize)
 	{
-		if(method == METHOD_MC_SLOTA || method == METHOD_MC_SLOTB)
+		if(device == DEVICE_MC_SLOTA || device == DEVICE_MC_SLOTB)
 		{
 			// Set the comments
 			char comments[2][32];
@@ -82,7 +80,7 @@ bool SaveState (char * filepath, int method, bool silent)
 			snprintf (comments[1], 32, romFilename);
 			SetMCSaveComments(comments);
 		}
-		offset = SaveFile(save.buf(), filepath, datasize, method, silent);
+		offset = SaveFile(save.buf(), filepath, datasize, silent);
 	}
 
 	if (offset > 0)
@@ -95,36 +93,28 @@ bool SaveState (char * filepath, int method, bool silent)
 }
 
 bool
-SaveStateAuto (int method, bool silent)
+SaveStateAuto (bool silent)
 {
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(silent);
-
-	if(method == METHOD_AUTO)
-		return false;
-
 	char filepath[1024];
 
-	if(!MakeFilePath(filepath, FILE_STATE, method, romFilename, 0))
+	if(!MakeFilePath(filepath, FILE_STATE, romFilename, 0))
 		return false;
 
-	return SaveState(filepath, method, silent);
+	return SaveState(filepath, silent);
 }
 
-bool LoadState (char * filepath, int method, bool silent)
+bool LoadState (char * filepath, bool silent)
 {
 	int offset = 0;
 	bool retval = false;
+	int device;
 
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(silent); // we use 'Save' because we need R/W
-
-	if(method == METHOD_AUTO)
-		return false;
+	if(!FindDevice(filepath, &device))
+		return 0;
 
 	AllocSaveBuffer ();
 
-	offset = LoadFile(filepath, method, silent);
+	offset = LoadFile(filepath, silent);
 
 	if (offset > 0)
 	{
@@ -143,18 +133,12 @@ bool LoadState (char * filepath, int method, bool silent)
 }
 
 bool
-LoadStateAuto (int method, bool silent)
+LoadStateAuto (bool silent)
 {
-	if(method == METHOD_AUTO)
-		method = autoSaveMethod(silent);
-
-	if(method == METHOD_AUTO)
-		return false;
-
 	char filepath[1024];
 
-	if(!MakeFilePath(filepath, FILE_STATE, method, romFilename, 0))
+	if(!MakeFilePath(filepath, FILE_STATE, romFilename, 0))
 		return false;
 
-	return LoadState(filepath, method, silent);
+	return LoadState(filepath, silent);
 }

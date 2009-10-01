@@ -82,8 +82,8 @@ DefaultSettings ()
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1;
 
-	GCSettings.LoadMethod = METHOD_AUTO; // Auto, SD, DVD, USB, Network (SMB)
-	GCSettings.SaveMethod = METHOD_AUTO; // Auto, SD, Memory Card Slot A, Memory Card Slot B, USB, Network (SMB)
+	GCSettings.LoadMethod = DEVICE_AUTO; // Auto, SD, DVD, USB, Network (SMB)
+	GCSettings.SaveMethod = DEVICE_AUTO; // Auto, SD, Memory Card Slot A, Memory Card Slot B, USB, Network (SMB)
 	sprintf (GCSettings.LoadFolder,"fceugx/roms"); // Path to game files
 	sprintf (GCSettings.SaveFolder,"fceugx/saves"); // Path to save files
 	sprintf (GCSettings.CheatFolder,"fceugx/cheats"); // Path to cheat files
