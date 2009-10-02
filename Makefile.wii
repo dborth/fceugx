@@ -32,7 +32,7 @@ CFLAGS  = -g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNGC \
 		-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 	    -D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 	    -fomit-frame-pointer \
-		-Wno-unused-parameter -Wno-strict-aliasing
+		-Wno-unused-parameter -Wno-strict-aliasing -Wno-write-strings
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
