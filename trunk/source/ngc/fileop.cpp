@@ -634,9 +634,7 @@ LoadFile (char * rbuffer, char *filepath, u32 length, bool silent)
 	u32 readsize = 0;
 	int retry = 1;
 	int device;
-	
-	printf("loading %s\n", filepath);
-	
+
 	if(!FindDevice(filepath, &device))
 		return 0;
 

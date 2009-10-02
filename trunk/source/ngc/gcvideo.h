@@ -25,6 +25,7 @@ void StopGX();
 void ResetVideo_Emu ();
 void RenderFrame(unsigned char *XBuf);
 void setFrameTimer();
+void SyncSpeed();
 void zoom (float speed);
 void zoom_reset ();
 void SetPalette();

@@ -624,9 +624,9 @@ void GetJoy()
 	// Turbo mode
 	// RIGHT on c-stick and on classic ctrlr right joystick
 	if(userInput[0].pad.substickX > 70 || userInput[0].WPAD_Stick(1,0) > 70)
-		frameskip = 1;
+		turbomode = 1;
 	else
-		frameskip = 0;
+		turbomode = 0;
 
 	// request to go back to menu
 	if(MenuRequested())
