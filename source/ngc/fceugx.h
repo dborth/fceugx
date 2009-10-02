@@ -104,6 +104,7 @@ extern int ShutdownRequested;
 extern int ExitRequested;
 extern char appPath[];
 extern int frameskip;
+extern int turbomode;
 extern bool romLoaded;
 
 #endif

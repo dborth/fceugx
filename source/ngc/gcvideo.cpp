@@ -199,7 +199,7 @@ static GXRModeObj *tvmodes[2] = {
  * change frame timings depending on whether ROM is NTSC or PAL
  ***************************************************************************/
 
-static long long normaldiff;
+static u32 normaldiff;
 
 void setFrameTimer()
 {
@@ -207,17 +207,28 @@ void setFrameTimer()
 		normaldiff = 20000; // 50hz
 	else
 		normaldiff = 16667; // 60hz
-
 	prev = gettime();
 }
 
-static void SyncSpeed()
+void SyncSpeed()
 {
 	now = gettime();
-	while (diff_usec(prev, now) < normaldiff)
+	
+	if(turbomode)
 	{
-		now = gettime();
-		usleep(50);
+		// do nothing
+	}
+	else if (diff_usec(prev, now) > normaldiff)
+	{
+		frameskip++;
+	}
+	else // ahead, so hold up
+	{	
+		while (diff_usec(prev, now) < normaldiff)
+		{
+			now = gettime();
+			usleep(50);
+		}
 	}
 	prev = now;
 }
@@ -242,7 +253,7 @@ vbgetback (void *arg)
 {
 	while (1)
 	{
-		SyncSpeed();
+		VIDEO_WaitVSync ();
 		LWP_SuspendThread (vbthread);
 	}
 

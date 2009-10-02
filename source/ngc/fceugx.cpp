@@ -52,6 +52,7 @@ extern void __exception_setreload(int t);
 }
 
 static int fskipc = 0;
+static int fskip = 0;
 static uint8 *gfx=0;
 static int32 *sound=0;
 static int32 ssize=0;
@@ -62,6 +63,7 @@ int ResetRequested = 0;
 int ExitRequested = 0;
 char appPath[1024] = { 0 };
 int frameskip = 0;
+int turbomode = 0;
 unsigned char * nesrom = NULL;
 
 /****************************************************************************
@@ -345,16 +347,46 @@ int main(int argc, char *argv[])
 		SetPalette();
 		FCEUI_DisableSpriteLimitation(GCSettings.spritelimit ^ 1);
 
+		fskip=0;
 		fskipc=0;
+		frameskip=0;
 
 		while(1) // emulation loop
 		{
-			#ifdef FRAMESKIP
-			fskipc=(fskipc+1)%(frameskip+1);
-			#endif
+			fskip = 0;
+			
+			if(turbomode)
+			{
+				fskip = 1;
+								
+				if(fskipc >= 18)
+				{
+					fskipc = 0;
+					fskip = 0;
+				}
+				else
+				{
+					fskipc++;
+				}
+			}
+			else if(frameskip > 0)
+			{
+				fskip = 1;
+				
+				if(fskipc >= frameskip)
+				{
+					fskipc = 0;
+					fskip = 0;
+				}
+				else
+				{
+					fskipc++;
+				}
+			}
 
-			FCEUI_Emulate(&gfx, &sound, &ssize, fskipc);
+			FCEUI_Emulate(&gfx, &sound, &ssize, fskip);
 			FCEUD_Update(gfx, sound, ssize);
+			SyncSpeed();
 
 			if(ResetRequested)
 			{
