@@ -504,7 +504,7 @@ int BrowserLoadSz()
 int BrowserLoadFile()
 {
 	char filepath[1024];
-	int filesize = 0;
+	size_t filesize = 0;
 	romLoaded = false;
 
 	int device;
