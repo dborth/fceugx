@@ -32,6 +32,8 @@ bool romLoaded = false;
 
 int GCMemROM(int size)
 {
+	bool biosError = false;
+
 	ResetGameLoaded();
 
 	CloseGame();
@@ -89,7 +91,7 @@ int GCMemROM(int size)
 		// read FDS BIOS into FDSBIOS - should be 8192 bytes
 		if (FDSBIOS[1] == 0)
 		{
-			int biosSize = 0;
+			size_t biosSize = 0;
 			char * tmpbuffer = (char *) memalign(32, 64 * 1024);
 
 			char filepath[1024];
@@ -105,6 +107,8 @@ int GCMemROM(int size)
 			}
 			else
 			{
+				biosError = true;
+
 				if (biosSize > 0)
 					ErrorPrompt("FDS BIOS file is invalid!");
 				else
@@ -148,7 +152,8 @@ int GCMemROM(int size)
 		delete GameInfo;
 		GameInfo = 0;
 
-		ErrorPrompt("Invalid game file!");
+		if(!biosError)
+			ErrorPrompt("Invalid game file!");
 		romLoaded = false;
 		return 0;
 	}

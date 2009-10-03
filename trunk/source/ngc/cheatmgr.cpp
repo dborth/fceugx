@@ -122,7 +122,7 @@ SetupCheats()
 		return;
 
 	char filepath[1024];
-	int offset = 0;
+	size_t offset = 0;
 
 	int device = GCSettings.SaveMethod;
 
@@ -154,7 +154,7 @@ void OpenGameGenie()
 		return;
 	}
 
-	int romSize = 0;
+	size_t romSize = 0;
 	char * tmpbuffer = (char *) memalign(32, 512 * 1024);
 	if(!tmpbuffer)
 		return;
