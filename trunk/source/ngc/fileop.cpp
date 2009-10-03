@@ -13,21 +13,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
 #include <ogcsys.h>
 #include <sys/dir.h>
 #include <sys/stat.h>
 #include <zlib.h>
+#include <malloc.h>
 #include <sdcard/wiisd_io.h>
 #include <sdcard/gcsd.h>
 #include <ogc/usbstorage.h>
+#include <di/di.h>
+#include <ogc/dvd.h>
+#include <iso9660.h>
 
-#include "dvd.h"
 #include "fceusupport.h"
 #include "fceugx.h"
 #include "fileop.h"
-#include "memcardop.h"
 #include "networkop.h"
+#include "memcardop.h"
 #include "gcunzip.h"
 #include "menu.h"
 #include "filebrowser.h"
@@ -43,9 +45,11 @@ bool isMounted[9] = { false, false, false, false, false, false, false, false, fa
 #ifdef HW_RVL
 	const DISC_INTERFACE* sd = &__io_wiisd;
 	const DISC_INTERFACE* usb = &__io_usbstorage;
+	const DISC_INTERFACE* dvd = &__io_wiidvd;
 #else
 	const DISC_INTERFACE* carda = &__io_gcsda;
 	const DISC_INTERFACE* cardb = &__io_gcsdb;
+	const DISC_INTERFACE* dvd = &__io_gcdvd;
 #endif
 
 // folder parsing thread
@@ -164,6 +168,16 @@ devicecallback (void *arg)
 			}
 		}
 #endif
+		if(isMounted[DEVICE_DVD])
+		{
+			if(!dvd->isInserted()) // check if the device was removed
+			{
+				printf("dvd removed!\n");
+				unmountRequired[DEVICE_DVD] = true;
+				isMounted[DEVICE_DVD] = false;
+			}
+		}
+
 		devsleep = 1000*1000; // 1 sec
 
 		while(devsleep > 0)
@@ -297,6 +311,45 @@ void MountAllFAT()
 	MountFAT(DEVICE_SD_SLOTA, SILENT);
 	MountFAT(DEVICE_SD_SLOTB, SILENT);
 #endif
+}
+
+/****************************************************************************
+ * MountDVD()
+ *
+ * Tests if a ISO9660 DVD is inserted and available, and mounts it
+ ***************************************************************************/
+bool MountDVD(bool silent)
+{
+	if(isMounted[DEVICE_DVD])
+		return true;
+	
+	ShowAction("Loading DVD...");
+
+	bool mounted = false;
+
+	if(unmountRequired[DEVICE_DVD])
+	{
+		unmountRequired[DEVICE_DVD] = false;
+		ISO9660_Unmount();
+	}
+
+	mounted = dvd->isInserted();
+
+	if(!mounted)
+	{
+		if(!silent)
+			ErrorPrompt("No disc inserted!");
+	}
+	else
+	{
+		mounted = ISO9660_Mount();
+
+		if(!mounted && !silent)
+			ErrorPrompt("Invalid DVD.");
+	}
+	CancelAction();
+	isMounted[DEVICE_DVD] = mounted;
+	return mounted;
 }
 
 bool FindDevice(char * filepath, int * device)
@@ -504,6 +557,7 @@ ParseDirectory(bool waitParse)
 	while(dirIter == NULL && retry == 1)
 	{
 		mounted = ChangeInterface(browser.dir, NOTSILENT);
+
 		if(mounted)
 			dirIter = diropen(browser.dir);
 		else
@@ -522,10 +576,10 @@ ParseDirectory(bool waitParse)
 		while(!IsDeviceRoot(browser.dir))
 		{
 			char * devEnd = strrchr(browser.dir, '/');
-			
+
 			if(devEnd == NULL)
 				break;
-			
+
 			devEnd[0] = 0; // strip remaining file listing
 			dirIter = diropen(browser.dir);
 			if (dirIter)
@@ -634,22 +688,14 @@ LoadFile (char * rbuffer, char *filepath, u32 length, bool silent)
 	u32 readsize = 0;
 	int retry = 1;
 	int device;
-
+	
 	if(!FindDevice(filepath, &device))
 		return 0;
 
-	switch(device)
-	{
-		case DEVICE_DVD:
-			return LoadDVDFile (rbuffer, StripDevice(filepath), length, silent);
-			break;
-		case DEVICE_MC_SLOTA:
-			return LoadMCFile (rbuffer, CARD_SLOTA, StripDevice(filepath), silent);
-			break;
-		case DEVICE_MC_SLOTB:
-			return LoadMCFile (rbuffer, CARD_SLOTB, StripDevice(filepath), silent);
-			break;
-	}
+	if(device == DEVICE_MC_SLOTA)
+		return LoadMCFile (rbuffer, CARD_SLOTA, StripDevice(filepath), silent);
+	else if(device == DEVICE_MC_SLOTB)
+		return LoadMCFile (rbuffer, CARD_SLOTB, StripDevice(filepath), silent);
 
 	// stop checking if devices were removed/inserted
 	// since we're loading a file
@@ -679,7 +725,7 @@ LoadFile (char * rbuffer, char *filepath, u32 length, bool silent)
 					{
 						if (IsZipFile (zipbuffer))
 						{
-							size = UnZipBuffer ((unsigned char *)rbuffer, device); // unzip
+							size = UnZipBuffer ((unsigned char *)rbuffer); // unzip
 						}
 						else
 						{
@@ -760,13 +806,10 @@ SaveFile (char * buffer, char *filepath, u32 datasize, bool silent)
 
 	ShowAction("Saving...");
 
-	if(device == DEVICE_MC_SLOTA || device == DEVICE_MC_SLOTB)
-	{
-		if(device == DEVICE_MC_SLOTA)
-			return SaveMCFile (buffer, CARD_SLOTA, StripDevice(filepath), datasize, silent);
-		else
-			return SaveMCFile (buffer, CARD_SLOTB, StripDevice(filepath), datasize, silent);
-	}
+	if(device == DEVICE_MC_SLOTA)
+		return SaveMCFile (buffer, CARD_SLOTA, StripDevice(filepath), datasize, silent);
+	else if(device == DEVICE_MC_SLOTB)
+		return SaveMCFile (buffer, CARD_SLOTB, StripDevice(filepath), datasize, silent);
 
 	// stop checking if devices were removed/inserted
 	// since we're saving a file
