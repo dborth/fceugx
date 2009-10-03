@@ -212,6 +212,9 @@ void setFrameTimer()
 
 void SyncSpeed()
 {
+	if(GCSettings.timing != vmode_60hz)
+		return; // same timing as game - no adjustment necessary
+	
 	now = gettime();
 	
 	if(turbomode)
