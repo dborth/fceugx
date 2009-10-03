@@ -32,7 +32,6 @@
 #include "networkop.h"
 #include "memcardop.h"
 #include "fileop.h"
-#include "dvd.h"
 #include "fceuram.h"
 #include "fceustate.h"
 #include "preferences.h"
