@@ -663,7 +663,7 @@ OpenGameList ()
 {
 	int device = GCSettings.LoadMethod;
 
-	if(device == DEVICE_AUTO)
+	if(device == DEVICE_AUTO && strlen(GCSettings.LoadFolder) > 0)
 		device = autoLoadMethod();
 
 	// change current dir to roms directory

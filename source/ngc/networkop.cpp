@@ -185,8 +185,13 @@ void InitializeNetwork(bool silent)
 {
 	// stop if we're already initialized, or if auto-init has failed before
 	// in which case, manual initialization is required
-	if(networkInit || !autoNetworkInit)
+	if(networkInit || (silent && !autoNetworkInit))
 		return;
+
+	int retry = 1;
+	char ip[16];
+	char msg[150];
+	s32 initResult;
 
 	if(!silent)
 		ShowAction ("Initializing network...");
@@ -198,25 +203,25 @@ void InitializeNetwork(bool silent)
 	{
 		inNetworkInit = true;
 
-		char ip[16];
-		s32 initResult = if_config(ip, NULL, NULL, true);
-
-		if(initResult == 0)
+		while(retry)
 		{
-			networkInit = true;
-		}
-		else
-		{
-			// do not automatically attempt a reconnection
-			autoNetworkInit = false;
-
 			if(!silent)
-			{
-				char msg[150];
-				sprintf(msg, "Unable to initialize network (Error #: %i)", initResult);
-				ErrorPrompt(msg);
-			}
+				ShowAction ("Initializing network...");
+
+			initResult = if_config(ip, NULL, NULL, true);
+
+			if(initResult == 0)
+				networkInit = true;
+
+			if(networkInit || silent)
+				break;
+
+			sprintf(msg, "Unable to initialize network (Error #: %i)", initResult);
+			retry = ErrorPromptRetry(msg);
 		}
+
+		// do not automatically attempt a reconnection
+		autoNetworkInit = false;
 		inNetworkInit = false;
 	}
 	if(!silent)
@@ -228,7 +233,6 @@ void CloseShare()
 	if(networkShareInit)
 		smbClose("smb");
 	networkShareInit = false;
-	networkInit = false; // trigger a network reinit
 }
 
 /****************************************************************************
@@ -243,6 +247,7 @@ ConnectShare (bool silent)
 	return false;
 	#endif
 
+	int retry = 1;
 	int chkS = (strlen(GCSettings.smbshare) > 0) ? 0:1;
 	int chkI = (strlen(GCSettings.smbip) > 0) ? 0:1;
 
@@ -272,26 +277,25 @@ ConnectShare (bool silent)
 	if(!networkInit)
 		InitializeNetwork(silent);
 
-	if(networkInit)
+	if(!networkInit)
+		return false;
+
+	while(retry)
 	{
-		if(!networkShareInit)
-		{
-			if(!silent)
-				ShowAction ("Connecting to network share...");
+		if(!silent)
+			ShowAction ("Connecting to network share...");
+		
+		if(smbInit(GCSettings.smbuser, GCSettings.smbpwd, GCSettings.smbshare, GCSettings.smbip))
+			networkShareInit = true;
 
-			if(smbInit(GCSettings.smbuser, GCSettings.smbpwd,
-					GCSettings.smbshare, GCSettings.smbip))
-			{
-				networkShareInit = true;
-			}
+		if(networkShareInit || silent)
+			break;
 
-			if(!silent)
-				CancelAction();
-		}
-
-		if(!networkShareInit && !silent)
-			ErrorPrompt("Failed to connect to network share.");
+		retry = ErrorPromptRetry("Failed to connect to network share.");
 	}
+
+	if(!silent)
+		CancelAction();
 
 	return networkShareInit;
 }

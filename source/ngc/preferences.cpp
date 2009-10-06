@@ -355,7 +355,7 @@ SavePrefs (bool silent)
 	int datasize;
 	int offset = 0;
 	int device = 0;
-	
+
 	if(prefpath[0] != 0)
 	{
 		strcpy(filepath, prefpath);
@@ -368,17 +368,17 @@ SavePrefs (bool silent)
 	}
 	else
 	{
-		device = autoLoadMethod();
-		
+		device = autoSaveMethod(silent);
+
 		if(device == 0)
 			return false;
 		
 		if(device == DEVICE_MC_SLOTA || device == DEVICE_MC_SLOTB)
 			sprintf(filepath, "%s%s", pathPrefix[device], PREF_FILE_NAME);
 		else
-			sprintf(filepath, "%sfceugx/%s", pathPrefix[device], PREF_FILE_NAME);
+			sprintf(filepath, "%s%s/%s", pathPrefix[device], APPFOLDER, PREF_FILE_NAME);
 	}
-	
+
 	if(device == 0)
 		return false;
 
@@ -455,7 +455,7 @@ bool LoadPrefs()
 	bool prefFound = false;
 	char filepath[4][MAXPATHLEN];
 	int numDevices;
-	
+
 #ifdef HW_RVL
 	numDevices = 3;
 	sprintf(filepath[0], "%s/%s", appPath, PREF_FILE_NAME);
