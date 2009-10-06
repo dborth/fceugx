@@ -781,6 +781,7 @@ LoadFile (char * rbuffer, char *filepath, size_t length, bool silent)
 					CancelAction();
 				}
 			}
+			fclose (file);
 		}
 	}
 
