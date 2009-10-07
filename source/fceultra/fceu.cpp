@@ -50,6 +50,10 @@
 #include "vsuni.h"
 #include "ines.h"
 
+#ifdef WIN32
+#include "drivers/win/pref.h"
+#endif
+
 #include <fstream>
 #include <sstream>
 
@@ -97,6 +101,18 @@ static void CloseGame(void)
 {
 	if(GameInfo)
 	{
+
+#ifdef WIN32
+// ################################## Start of SP CODE ###########################
+	extern char LoadedRomFName[2048];
+
+	if (storePreferences(LoadedRomFName))
+	{
+		FCEUD_PrintError("Couldn't store debugging data");
+	}
+// ################################## End of SP CODE ###########################
+#endif
+
 		if(FCEUnetplay)
 		{
 			FCEUD_NetworkClose();
@@ -443,6 +459,19 @@ endlseq:
 
 	FCEU_fclose(fp);
 
+#ifdef WIN32
+// ################################## Start of SP CODE ###########################
+		extern char LoadedRomFName[2048];
+		extern int loadDebugDataFailed;
+
+		if ((loadDebugDataFailed = loadPreferences(LoadedRomFName)))
+		{
+			FCEUD_PrintError("Couldn't load debugging data");
+		}
+
+// ################################## End of SP CODE ###########################
+#endif
+
 	FCEU_ResetVidSys();
 
 	if(GameInfo->type!=GIT_NSF)
@@ -666,6 +695,7 @@ void FCEUI_CloseGame(void)
 {	
 	if(!FCEU_IsValidUI(FCEUI_CLOSEGAME)) 
 		return;
+
 	CloseGame();
 }
 
