@@ -126,6 +126,7 @@ preparePrefsData ()
 	createXMLSetting("SaveFolder", "Save Folder", GCSettings.SaveFolder);
 	createXMLSetting("CheatFolder", "Cheats Folder", GCSettings.CheatFolder);
 	createXMLSetting("VerifySaves", "Verify Memory Card Saves", toStr(GCSettings.VerifySaves));
+	createXMLSetting("gamegenie", "Game Genie", toStr(GCSettings.gamegenie));
 
 	createXMLSection("Network", "Network Settings");
 
@@ -277,7 +278,8 @@ decodePrefsData ()
 					result = false;
 				else if(verMajor < 3) // less than version 3.0.0
 					result = false; // reset settings
-				else if(verMajor > curMajor || verMinor > curMinor || verPoint > curPoint) // some future version
+				else if((verMajor*100 + verMinor*10 + verPoint) > 
+						(curMajor*100 + curMinor*10 + curPoint)) // some future version
 					result = false; // reset settings
 				else
 					result = true;
@@ -296,6 +298,7 @@ decodePrefsData ()
 			loadXMLSetting(GCSettings.SaveFolder, "SaveFolder", sizeof(GCSettings.SaveFolder));
 			loadXMLSetting(GCSettings.CheatFolder, "CheatFolder", sizeof(GCSettings.CheatFolder));
 			loadXMLSetting(&GCSettings.VerifySaves, "VerifySaves");
+			loadXMLSetting(&GCSettings.gamegenie, "gamegenie");
 
 			// Network Settings
 

@@ -59,13 +59,13 @@ DefaultSettings ()
 {
 	ResetControls(); // controller button mappings
 
-	GCSettings.currpal = 0; // color palette
+	GCSettings.currpal = 1; // color palette
 	GCSettings.timing = 0; // 0 - NTSC, 1 - PAL
 	GCSettings.videomode = 0; // automatic video mode detection
 	GCSettings.Controller = CTRL_PAD2; // NES pad, Four Score, Zapper
 	GCSettings.crosshair = 1; // show zapper crosshair
 	GCSettings.spritelimit = 1; // enforce 8 sprite limit
-	GCSettings.currpal = 1;
+	GCSettings.gamegenie = 1;
 
 	GCSettings.ZoomLevel = 1.0; // zoom amount
 	GCSettings.render = 2; // Unfiltered
