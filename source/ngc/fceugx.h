@@ -17,7 +17,7 @@
 #include "driver.h"
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.0.9"
+#define APPVERSION		"3.1.0"
 #define APPFOLDER 		"fceugx"
 #define PREF_FILE_NAME	"settings.xml"
 
@@ -81,6 +81,7 @@ struct SGCSettings{
 	int		widescreen;
 	int		FilterMethod; // convert to RenderFilter
 	int		hideoverscan;
+	int		gamegenie;
 	int		currpal;
 	int		timing;
 	int		Controller;

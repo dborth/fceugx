@@ -3068,6 +3068,7 @@ static int MenuSettingsVideo()
 static int MenuSettings()
 {
 	int menu = MENU_NONE;
+	char s[10];
 
 	GuiText titleTxt("Settings", 28, (GXColor){255, 255, 255, 255});
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
@@ -3082,6 +3083,7 @@ static int MenuSettings()
 	GuiImageData iconFile(icon_settings_file_png);
 	GuiImageData iconMenu(icon_settings_menu_png);
 	GuiImageData iconNetwork(icon_settings_network_png);
+	GuiImageData iconCheats(icon_game_cheats_png);
 
 	GuiTrigger trigA;
 	if(GCSettings.WiimoteOrientation)
@@ -3135,7 +3137,7 @@ static int MenuSettings()
 	GuiImage networkBtnIcon(&iconNetwork);
 	GuiButton networkBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	networkBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	networkBtn.SetPosition(0, 250);
+	networkBtn.SetPosition(-125, 250);
 	networkBtn.SetLabel(&networkBtnTxt);
 	networkBtn.SetImage(&networkBtnImg);
 	networkBtn.SetImageOver(&networkBtnImgOver);
@@ -3144,6 +3146,29 @@ static int MenuSettings()
 	networkBtn.SetSoundClick(&btnSoundClick);
 	networkBtn.SetTrigger(&trigA);
 	networkBtn.SetEffectGrow();
+
+	if(!FindGameGenie()) sprintf(s, "DISABLED");
+	else if(GCSettings.gamegenie) sprintf(s, "ON");
+	else sprintf(s, "OFF");
+	GuiText cheatsBtnTxt("Game Genie", 24, (GXColor){0, 0, 0, 255});
+	GuiText cheatsBtnTxt2(s, 18, (GXColor){0, 0, 0, 255});
+	cheatsBtnTxt.SetPosition(0, -16);
+	cheatsBtnTxt2.SetPosition(0, +8);
+	GuiImage cheatsBtnImg(&btnLargeOutline);
+	GuiImage cheatsBtnImgOver(&btnLargeOutlineOver);
+	GuiImage cheatsBtnIcon(&iconCheats);
+	GuiButton cheatsBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
+	cheatsBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	cheatsBtn.SetPosition(125, 250);
+	cheatsBtn.SetLabel(&cheatsBtnTxt, 0);
+	cheatsBtn.SetLabel(&cheatsBtnTxt2, 1);
+	cheatsBtn.SetImage(&cheatsBtnImg);
+	cheatsBtn.SetImageOver(&cheatsBtnImgOver);
+	cheatsBtn.SetIcon(&cheatsBtnIcon);
+	cheatsBtn.SetSoundOver(&btnSoundOver);
+	cheatsBtn.SetSoundClick(&btnSoundClick);
+	cheatsBtn.SetTrigger(&trigA);
+	cheatsBtn.SetEffectGrow();
 
 	GuiText backBtnTxt("Go Back", 24, (GXColor){0, 0, 0, 255});
 	GuiImage backBtnImg(&btnOutline);
@@ -3183,6 +3208,7 @@ static int MenuSettings()
 	w.Append(&networkBtn);
 #endif
 
+	w.Append(&cheatsBtn);
 	w.Append(&backBtn);
 	w.Append(&resetBtn);
 
@@ -3205,6 +3231,22 @@ static int MenuSettings()
 		else if(networkBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_SETTINGS_NETWORK;
+		}
+		else if(cheatsBtn.GetState() == STATE_CLICKED)
+		{
+			cheatsBtn.ResetState();
+			
+			if(!FindGameGenie())
+			{
+				ErrorPrompt("Game Genie ROM not found!");
+			}
+			else
+			{
+				GCSettings.gamegenie ^= 1;
+				if (GCSettings.gamegenie) sprintf(s, "ON");
+				else sprintf(s, "OFF");
+				cheatsBtnTxt2.SetText(s);
+			}
 		}
 		else if(backBtn.GetState() == STATE_CLICKED)
 		{

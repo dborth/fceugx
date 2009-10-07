@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.0.9
+                                  Version 3.1.0
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -26,12 +26,20 @@ Wii/GameCube.
 * Turbo Mode - up to 2x the normal speed
 * Cheat support (.CHT files and Game Genie)
 * IPS/UPS/PPF automatic patching support
-* NES Compatibility Based on FCEUX 2.1.0a
+* NES Compatibility Based on FCEUX 2.1.1
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.1.0 - October 7, 2009]
+
+* New default palette - more accurate colors!
+* Revamped filebrowser and file I/O
+* New timing and frameskip code - allows PAL gamers to play NTSC games
+* Fixed FDS/Game Genie errors
+* Many, many other bug fixes
 
 [3.0.9 - September 16, 2009]
 

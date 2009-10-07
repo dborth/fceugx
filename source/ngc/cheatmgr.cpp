@@ -146,24 +146,20 @@ SetupCheats()
 	FreeSaveBuffer ();
 }
 
-void OpenGameGenie()
+bool FindGameGenie()
 {
-	if (GENIEROM) // already loaded
-	{
-		geniestage=1;
-		return;
-	}
+	if (GENIEROM)
+		return true;
 
-	size_t romSize = 0;
 	char * tmpbuffer = (char *) memalign(32, 512 * 1024);
 	if(!tmpbuffer)
-		return;
+		return false;
+
+	size_t romSize = 0;
 	char filepath[1024];
 
 	if (MakeFilePath(filepath, FILE_GGROM))
-	{
 		romSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
-	}
 
 	if (romSize > 0)
 	{
@@ -182,13 +178,19 @@ void OpenGameGenie()
 		/* Workaround for the FCE Ultra CHR page size only being 1KB */
 		for(int x=0; x<4; x++)
 			memcpy(GENIEROM+4096+(x<<8),GENIEROM+4096,256);
-
-		geniestage=1;
-	}
-	else
-	{
-		free(GENIEROM);
-		GENIEROM=0;
 	}
 	free(tmpbuffer);
+	
+	if(romSize > 0)
+		return true;
+	
+	return false;
+}
+
+void OpenGameGenie()
+{
+	if(!GCSettings.gamegenie)
+		geniestage=0;
+	else if (FindGameGenie())
+		geniestage=1;
 }

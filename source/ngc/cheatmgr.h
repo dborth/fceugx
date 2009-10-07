@@ -10,6 +10,7 @@
  ***************************************************************************/
 
 void SetupCheats();
+bool FindGameGenie();
 void OpenGameGenie();
 
 extern int numcheats;
