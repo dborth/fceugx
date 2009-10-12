@@ -266,6 +266,7 @@ UpdateGUI (void *arg)
 		if(guiHalt)
 			LWP_SuspendThread(guithread);
 
+		UpdatePads();
 		mainWindow->Draw();
 
 		#ifdef HW_RVL
@@ -840,6 +841,8 @@ static void WindowCredits(void * ptr)
 
 	while(!exit)
 	{
+		UpdatePads();
+
 		if(gameScreenImg)
 			gameScreenImg->Draw();
 		else
