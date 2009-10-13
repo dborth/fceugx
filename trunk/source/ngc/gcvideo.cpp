@@ -583,7 +583,6 @@ InitGCVideo ()
 	VIDEO_Init();
 	GXRModeObj *rmode = FindVideoMode();
 	SetupVideoMode(rmode);
-	StartGX ();
 	InitLUTs();	// init LUTs for hq2x
 	LWP_CreateThread (&vbthread, vbgetback, NULL, vbstack, TSTACK, 68);
 
