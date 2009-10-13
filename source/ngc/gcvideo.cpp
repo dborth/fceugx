@@ -373,27 +373,6 @@ draw_square (Mtx v)
 }
 
 /****************************************************************************
- * StartGX
- *
- * This function initialises GX and sets it up for use
- ***************************************************************************/
-static void
-StartGX ()
-{
-	GXColor background = { 0, 0, 0, 0xff };
-
-	/*** Clear out FIFO area ***/
-	memset (&gp_fifo, 0, DEFAULT_FIFO_SIZE);
-
-	/*** Initialise GX ***/
-	GX_Init (&gp_fifo, DEFAULT_FIFO_SIZE);
-	GX_SetCopyClear (background, 0x00ffffff);
-
-	GX_SetDispCopyGamma (GX_GM_1_0);
-	GX_SetCullMode (GX_CULL_NONE);
-}
-
-/****************************************************************************
  * StopGX
  *
  * Stops GX (when exiting)
@@ -607,6 +586,14 @@ InitGCVideo ()
 	StartGX ();
 	InitLUTs();	// init LUTs for hq2x
 	LWP_CreateThread (&vbthread, vbgetback, NULL, vbstack, TSTACK, 68);
+
+	// Initialize GX
+	GXColor background = { 0, 0, 0, 0xff };
+	memset (&gp_fifo, 0, DEFAULT_FIFO_SIZE);
+	GX_Init (&gp_fifo, DEFAULT_FIFO_SIZE);
+	GX_SetCopyClear (background, 0x00ffffff);
+	GX_SetDispCopyGamma (GX_GM_1_0);
+	GX_SetCullMode (GX_CULL_NONE);
 }
 
 /****************************************************************************
