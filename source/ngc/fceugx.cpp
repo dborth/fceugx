@@ -259,9 +259,8 @@ int main(int argc, char *argv[])
 	#endif
 
 	InitDeviceThread();
-	VIDEO_Init();
+	InitGCVideo (); // Initialize video
 	SetupPads();
-	InitGCVideo (); // Initialise video
 	ResetVideo_Menu (); // change to menu video mode
 
 	#ifdef HW_RVL
