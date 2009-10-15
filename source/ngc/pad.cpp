@@ -235,7 +235,6 @@ SetupPads()
 }
 
 #ifdef HW_RVL
-
 /****************************************************************************
  * ShutoffRumble
  ***************************************************************************/
@@ -273,149 +272,69 @@ void DoRumble(int i)
 		WPAD_Rumble(i, 0); // rumble off
 	}
 }
-
-s8 WPAD_StickX(u8 chan,u8 right)
-{
-	float mag = 0.0;
-	float ang = 0.0;
-	WPADData *data = WPAD_Data(chan);
-
-	switch (data->exp.type)
-	{
-		case WPAD_EXP_NUNCHUK:
-		case WPAD_EXP_GUITARHERO3:
-			if (right == 0)
-			{
-				mag = data->exp.nunchuk.js.mag;
-				ang = data->exp.nunchuk.js.ang;
-			}
-			break;
-
-		case WPAD_EXP_CLASSIC:
-			if (right == 0)
-			{
-				mag = data->exp.classic.ljs.mag;
-				ang = data->exp.classic.ljs.ang;
-			}
-			else
-			{
-				mag = data->exp.classic.rjs.mag;
-				ang = data->exp.classic.rjs.ang;
-			}
-			break;
-
-		default:
-			break;
-	}
-
-	/* calculate X value (angle need to be converted into radian) */
-	if (mag > 1.0) mag = 1.0;
-	else if (mag < -1.0) mag = -1.0;
-	double val = mag * sin((PI * ang)/180.0f);
-
-	return (s8)(val * 128.0f);
-}
-
-s8 WPAD_StickY(u8 chan, u8 right)
-{
-	float mag = 0.0;
-	float ang = 0.0;
-	WPADData *data = WPAD_Data(chan);
-
-	switch (data->exp.type)
-	{
-		case WPAD_EXP_NUNCHUK:
-		case WPAD_EXP_GUITARHERO3:
-			if (right == 0)
-			{
-				mag = data->exp.nunchuk.js.mag;
-				ang = data->exp.nunchuk.js.ang;
-			}
-			break;
-
-			case WPAD_EXP_CLASSIC:
-			if (right == 0)
-			{
-				mag = data->exp.classic.ljs.mag;
-				ang = data->exp.classic.ljs.ang;
-			}
-			else
-			{
-				mag = data->exp.classic.rjs.mag;
-				ang = data->exp.classic.rjs.ang;
-			}
-			break;
-
-		default:
-			break;
-	}
-
-	/* calculate X value (angle need to be converted into radian) */
-	if (mag > 1.0) mag = 1.0;
-	else if (mag < -1.0) mag = -1.0;
-	double val = mag * cos((PI * ang)/180.0f);
-
-	return (s8)(val * 128.0f);
-}
 #endif
 
 // hold zapper cursor positions
 static int pos_x = 0;
 static int pos_y = 0;
 
-static void UpdateCursorPosition (int pad)
+static void UpdateCursorPosition (int chan)
 {
 	#define ZAPPERPADCAL 20
 
 	// gc left joystick
-	signed char pad_x = PAD_StickX (pad);
-	signed char pad_y = PAD_StickY (pad);
 
-	if (pad_x > ZAPPERPADCAL){
-		pos_x += (pad_x*1.0)/ZAPPERPADCAL;
+	if (userInput[chan].pad.stickX > ZAPPERPADCAL)
+	{
+		pos_x += (userInput[chan].pad.stickX*1.0)/ZAPPERPADCAL;
 		if (pos_x > 256) pos_x = 256;
 	}
-	if (pad_x < -ZAPPERPADCAL){
-		pos_x -= (pad_x*-1.0)/ZAPPERPADCAL;
+	if (userInput[chan].pad.stickX < -ZAPPERPADCAL)
+	{
+		pos_x -= (userInput[chan].pad.stickX*-1.0)/ZAPPERPADCAL;
 		if (pos_x < 0) pos_x = 0;
 	}
 
-	if (pad_y < -ZAPPERPADCAL){
-		pos_y += (pad_y*-1.0)/ZAPPERPADCAL;
+	if (userInput[chan].pad.stickY < -ZAPPERPADCAL)
+	{
+		pos_y += (userInput[chan].pad.stickY*-1.0)/ZAPPERPADCAL;
 		if (pos_y > 224) pos_y = 224;
 	}
-	if (pad_y > ZAPPERPADCAL){
-		pos_y -= (pad_y*1.0)/ZAPPERPADCAL;
+	if (userInput[chan].pad.stickY > ZAPPERPADCAL)
+	{
+		pos_y -= (userInput[chan].pad.stickY*1.0)/ZAPPERPADCAL;
 		if (pos_y < 0) pos_y = 0;
 	}
 
 #ifdef HW_RVL
-	struct ir_t ir;		// wiimote ir
-	WPAD_IR(pad, &ir);
-	if (ir.valid)
+	if (userInput[chan].wpad->ir.valid)
 	{
-		pos_x = (ir.x * 256) / 640;
-		pos_y = (ir.y * 224) / 480;
+		pos_x = (userInput[chan].wpad->ir.x * 256) / 640;
+		pos_y = (userInput[chan].wpad->ir.y * 224) / 480;
 	}
 	else
 	{
-		signed char wm_ax = WPAD_StickX (pad, 0);
-		signed char wm_ay = WPAD_StickY (pad, 0);
+		s8 wm_ax = userInput[chan].WPAD_StickX(0);
+		s8 wm_ay = userInput[chan].WPAD_StickY(0);
 
-		if (wm_ax > ZAPPERPADCAL){
+		if (wm_ax > ZAPPERPADCAL)
+		{
 			pos_x += (wm_ax*1.0)/ZAPPERPADCAL;
 			if (pos_x > 256) pos_x = 256;
 		}
-		if (wm_ax < -ZAPPERPADCAL){
+		if (wm_ax < -ZAPPERPADCAL)
+		{
 			pos_x -= (wm_ax*-1.0)/ZAPPERPADCAL;
 			if (pos_x < 0) pos_x = 0;
 		}
 
-		if (wm_ay < -ZAPPERPADCAL){
+		if (wm_ay < -ZAPPERPADCAL)
+		{
 			pos_y += (wm_ay*-1.0)/ZAPPERPADCAL;
 			if (pos_y > 224) pos_y = 224;
 		}
-		if (wm_ay > ZAPPERPADCAL){
+		if (wm_ay > ZAPPERPADCAL)
+		{
 			pos_y -= (wm_ay*1.0)/ZAPPERPADCAL;
 			if (pos_y < 0) pos_y = 0;
 		}
@@ -429,23 +348,20 @@ static void UpdateCursorPosition (int pad)
 
 extern int rapidAlternator;
 
-static unsigned char DecodeJoy( unsigned short pad )
+static unsigned char DecodeJoy(unsigned short chan)
 {
-	signed char pad_x = PAD_StickX (pad);
-	signed char pad_y = PAD_StickY (pad);
-	u32 jp = PAD_ButtonsHeld (pad);
+	s8 pad_x = userInput[chan].pad.stickX;
+	s8 pad_y = userInput[chan].pad.stickY;
+	u32 jp = userInput[chan].pad.btns_h;
 	unsigned char J = 0;
 
 	#ifdef HW_RVL
-	signed char wm_ax = 0;
-	signed char wm_ay = 0;
-	u32 wp = 0;
-	wm_ax = WPAD_StickX ((u8)pad, 0);
-	wm_ay = WPAD_StickY ((u8)pad, 0);
-	wp = WPAD_ButtonsHeld (pad);
+	s8 wm_ax = userInput[0].WPAD_StickX(0);
+	s8 wm_ay = userInput[0].WPAD_StickY(0);
+	u32 wp = userInput[0].wpad->btns_h;
 
 	u32 exp_type;
-	if ( WPAD_Probe(pad, &exp_type) != 0 ) exp_type = WPAD_EXP_NONE;
+	if ( WPAD_Probe(chan, &exp_type) != 0 ) exp_type = WPAD_EXP_NONE;
 	#endif
 
 	/***
@@ -646,7 +562,7 @@ void GetJoy()
 
 	// Turbo mode
 	// RIGHT on c-stick and on classic ctrlr right joystick
-	if(userInput[0].pad.substickX > 70 || userInput[0].WPAD_Stick(1,0) > 70)
+	if(userInput[0].pad.substickX > 70 || userInput[0].WPAD_StickX(1) > 70)
 		turbomode = 1;
 	else
 		turbomode = 0;
