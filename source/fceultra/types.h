@@ -22,11 +22,6 @@
 #ifndef __FCEU_TYPES
 #define __FCEU_TYPES
 
-#define FCEU_NAME "FCEUX"
-#define FCEU_VERSION_STRING "2.1.2-interim"
-#define FCEU_VERSION_NUMERIC 21020
-#define FCEU_NAME_AND_VERSION FCEU_NAME " " FCEU_VERSION_STRING
-
 ///causes the code fragment argument to be compiled in if the build includes debugging
 #ifdef FCEUDEF_DEBUGGER
 #define DEBUG(X) X;
@@ -129,5 +124,9 @@ typedef void (*writefunc)(uint32 A, uint8 V);
 typedef uint8 (*readfunc)(uint32 A);
 
 #include "utils/endian.h"
+
+#ifndef CTASSERT
+#define CTASSERT(x)  typedef char __assert ## y[(x) ? 1 : -1];
+#endif
 
 #endif
