@@ -6,14 +6,29 @@
 static uint8 reg[9], VRAM_switch;
 static int32 irq_enable, irq_counter, irq_latch, irq_clock; 
 
+static SFORMAT StateRegs[]=
+{
+  { reg, sizeof(reg), "MAPPER_REGS" },
+  { &VRAM_switch, sizeof(VRAM_switch), "MAPPER_VRAMSWITCH" },
+  { &irq_enable, sizeof(irq_enable), "MAPPER_IRQ_ENABLE" },
+  { &irq_counter, sizeof(irq_counter), "MAPPER_IRQ_COUNTER" },
+  { &irq_latch, sizeof(irq_latch), "MAPPER_IRQ_LATCH" },
+  { &irq_clock, sizeof(irq_clock), "MAPPER_IRQ_CLOCK" },
+  { 0 }
+};
+
 static void Mapper253_IRQHook(int cycles)
 {
+    //basically, this happens at every frame
+    //0x72 is 114 cycles, so like one scanline
+    //happens for 0xff scanlines so 256 scanlines (frame)
     if( irq_enable & 0x02 ) 
     {
         if( (irq_clock+=cycles) >= 0x72 ) 
         {
             irq_clock -= 0x72;
-            if( irq_counter == 0xFF ) 
+            
+            if( irq_counter == 0xFF)  
             {
                 irq_counter = irq_latch;
                 irq_enable = (irq_enable & 0x01) * 3;
@@ -40,22 +55,20 @@ static void	SetBank_PPUSUB(int bank, int page)
     }
     if ((page == 4) || (page == 5)) 
     {
-        printf("Page in 4 5: %d\n", page);
-        if(VRAM_switch == 0)
-            setchr1( bank << 10, page ); //CHR-ROM
-        else 
-            setchr1( bank << 10, page ); //CHR-RAM
+        // [ES-1064] Qi Long Zhu (C).NES game uses CHR-RAM for these pages
+        //and doesn't seem to set VRAM switch so use
+        //CHR-RAM as default for now
+        /*if (VRAM_switch == 0)
+            setchr1(bank << 10, page); //CHR-ROM
+        else*/
+            setvramb1(&CHRRAM[page << 10], page << 10, 0); //CHR-RAM
     } 
     else 
-	{
-		printf("Page: %d\n", page);
         setchr1(bank << 10, page);
-	}
 }
 
 static DECLFW(Mapper253_Write)
 {
-    printf("Address: 0x%X V: 0x%X\n", A, V);
     if (A == 0x8010) //8kb select at 0x8000
     {
         setprg8(0x8000, V);
@@ -86,6 +99,7 @@ static DECLFW(Mapper253_Write)
                 setmirror(MI_1);
                 break;
         }
+        return;
     }
 
     switch (A & 0xF00C)
@@ -169,9 +183,6 @@ static DECLFW(Mapper253_Write)
             }
             X6502_IRQEnd(FCEU_IQEXT);
             break;
-        default:
-			break;
-            //printf("Not handled 0x%X 0x%X", A, V);
     }
 }
 
@@ -207,5 +218,6 @@ void Mapper253_Init(CartInfo *info)
     info->Close = Mapper253_Close;
     SetWriteHandler(0x8000, 0xFFFF, Mapper253_Write);
     SetReadHandler(0x8000, 0xFFFF, CartBR);
+    AddExState(StateRegs, ~0, 0, 0);
 }
 
