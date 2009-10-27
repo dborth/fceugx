@@ -245,6 +245,7 @@ void ShutoffRumble()
 	{
 		WPAD_Rumble(i, 0);
 		rumbleCount[i] = 0;
+		rumbleRequest[i] = 0;
 	}
 }
 
