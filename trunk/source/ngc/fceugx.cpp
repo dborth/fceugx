@@ -282,15 +282,9 @@ int main(int argc, char *argv[])
 #endif
 
 	MountAllFAT(); // Initialize libFAT for SD and USB
-
 	DefaultSettings(); // Set defaults
-
-	// Audio
 	InitialiseAudio();
-
-	// Initialize font system
-	InitFreeType((u8*)font_ttf, font_ttf_size);
-
+	InitFreeType((u8*)font_ttf, font_ttf_size); // Initialize font system
 	InitGUIThreads();
 
 	// allocate memory to store rom
