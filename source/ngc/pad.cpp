@@ -357,9 +357,9 @@ static unsigned char DecodeJoy(unsigned short chan)
 	unsigned char J = 0;
 
 	#ifdef HW_RVL
-	s8 wm_ax = userInput[0].WPAD_StickX(0);
-	s8 wm_ay = userInput[0].WPAD_StickY(0);
-	u32 wp = userInput[0].wpad->btns_h;
+	s8 wm_ax = userInput[chan].WPAD_StickX(0);
+	s8 wm_ay = userInput[chan].WPAD_StickY(0);
+	u32 wp = userInput[chan].wpad->btns_h;
 
 	u32 exp_type;
 	if ( WPAD_Probe(chan, &exp_type) != 0 ) exp_type = WPAD_EXP_NONE;
