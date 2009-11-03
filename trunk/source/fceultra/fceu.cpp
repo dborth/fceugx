@@ -66,6 +66,8 @@
 #include "drivers/win/main.h"
 #include "drivers/win/cheat.h"
 #include "drivers/win/texthook.h"
+#include "drivers/win/ram_search.h"
+#include "drivers/win/ramwatch.h"
 #include "drivers/win/memwatch.h"
 #include "drivers/win/tracer.h"
 #else
@@ -244,11 +246,9 @@ readfunc GetReadHandler(int32 a)
 	else
 		return ARead[a];
 }
-
 void SetReadHandler(int32 start, int32 end, readfunc func)
 {
 	int32 x;
-
 	if(!func)
 		func=ANull;
 
@@ -333,7 +333,7 @@ static DECLFW(BRAML)
 {  
 	RAM[A]=V;
 	#ifdef _S9XLUA_H
-	FCEU_LuaWriteInform();
+	CallRegisteredLuaMemHook(A, 1, V, LUAMEMHOOK_WRITE);
 	#endif
 }
 
@@ -341,7 +341,7 @@ static DECLFW(BRAMH)
 {
 	RAM[A&0x7FF]=V;
 	#ifdef _S9XLUA_H
-	FCEU_LuaWriteInform();
+	CallRegisteredLuaMemHook(A&0x7FF, 1, V, LUAMEMHOOK_WRITE);
 	#endif
 }
 
@@ -487,6 +487,10 @@ endlseq:
 
 	if(GameInfo->type!=GIT_NSF)
 		FCEU_LoadGameCheats(0);
+
+#if defined (WIN32) || defined (WIN64)
+	DoDebuggerRunCheck(); //Can't safely do it in loadPreferences
+#endif
 
 	return GameInfo;
 }
@@ -637,15 +641,25 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 
 	FCEU_UpdateInput();
 	lagFlag = 1;
+
+#ifdef _S9XLUA_H
+	CallRegisteredLuaFunctions(LUACALL_BEFOREEMULATION);
+#endif
+
 	if(geniestage!=1) FCEU_ApplyPeriodicCheats();
 	r = FCEUPPU_Loop(skip);
 
 	if (skip != 2) ssize=FlushEmulateSound(); //If skip = 2 we are skipping sound processing
-	
+
+#ifdef _S9XLUA_H
+	CallRegisteredLuaFunctions(LUACALL_AFTEREMULATION);
+#endif
+
 #ifdef WIN32
 	//These Windows only dialogs need to be updated only once per frame so they are included here
 	UpdateCheatList();
 	UpdateTextHooker();
+	Update_RAM_Search(); // Update_RAM_Watch() is also called.
 	RamChange();
 	UpdateLogWindow();
 	//FCEUI_AviVideoUpdate(XBuf);
