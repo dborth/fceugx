@@ -26,7 +26,7 @@ Wii/GameCube.
 * Turbo Mode - up to 2x the normal speed
 * Cheat support (.CHT files and Game Genie)
 * IPS/UPS/PPF automatic patching support
-* NES Compatibility Based on FCEUX 2.1.1
+* NES Compatibility Based on FCEUX 2.1.2
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
