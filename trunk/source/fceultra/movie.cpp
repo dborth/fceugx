@@ -8,6 +8,7 @@
 #include <limits.h>
 #include <stdarg.h>
 
+
 #include "version.h"
 #include "types.h"
 #include "utils/endian.h"
@@ -344,7 +345,7 @@ MovieData::MovieData()
 	: version(MOVIE_VERSION)
 	, emuVersion(FCEU_VERSION_NUMERIC)
 	, palFlag(false)
-	, rerecordCount(1)
+	, rerecordCount(0)
 	, binaryFlag(false)
 	, greenZoneCount(0)
 {
@@ -723,19 +724,26 @@ static void poweron(bool shouldDisableBatteryLoading)
 void FCEUMOV_EnterTasEdit()
 {
 #ifndef GEKKO
-	//stop any current movie activity
-	FCEUI_StopMovie();
+	if (movieMode == MOVIEMODE_INACTIVE)
+	{
+		//stop any current movie activity
+		FCEUI_StopMovie();
 
-	//clear the current movie
-	currFrameCounter = 0;
-	currMovieData = MovieData();
-	currMovieData.guid.newGuid();
-	currMovieData.palFlag = FCEUI_GetCurrentVidSystem(0,0)!=0;
-	currMovieData.romChecksum = GameInfo->MD5;
-	currMovieData.romFilename = FileBase;
+		//clear the current movie
+		currFrameCounter = 0;
+		currMovieData = MovieData();
+		currMovieData.guid.newGuid();
+		currMovieData.palFlag = FCEUI_GetCurrentVidSystem(0,0)!=0;
+		currMovieData.romChecksum = GameInfo->MD5;
+		currMovieData.romFilename = FileBase;
 
-	//reset the rom
-	poweron(false);
+		//reset the rom
+		poweron(false);
+	} else {
+		FCEUI_StopMovie();
+
+		currMovieData.greenZoneCount=currFrameCounter;
+	}
 
 	//todo - think about this
 	//ResetInputTypes();
@@ -747,7 +755,7 @@ void FCEUMOV_EnterTasEdit()
 
 	//and enter tasedit mode
 	movieMode = MOVIEMODE_TASEDIT;
-
+	
 	currMovieData.TryDumpIncremental();
 
 	FCEU_DispMessage("Tasedit engaged");
