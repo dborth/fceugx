@@ -424,8 +424,8 @@ UpdateScaling()
 	if (GCSettings.widescreen)
 		xscale = (3*xscale)/4;
 
-	xscale *= GCSettings.ZoomLevel;
-	yscale *= GCSettings.ZoomLevel;
+	xscale *= GCSettings.zoomHor;
+	yscale *= GCSettings.zoomVert;
 
 	// update vertex position matrix
 	square[0] = square[9] = (-xscale) + GCSettings.xshift;
@@ -783,32 +783,6 @@ void RenderFrame(unsigned char *XBuf)
 
 	// Return to caller, don't waste time waiting for vb
 	LWP_ResumeThread (vbthread);
-}
-
-/****************************************************************************
- * Zoom Functions
- ***************************************************************************/
-void
-zoom (float speed)
-{
-	if (GCSettings.ZoomLevel > 1)
-		GCSettings.ZoomLevel += (speed / -100.0);
-	else
-		GCSettings.ZoomLevel += (speed / -200.0);
-
-	if (GCSettings.ZoomLevel < 0.5)
-		GCSettings.ZoomLevel = 0.5;
-	else if (GCSettings.ZoomLevel > 2.0)
-		GCSettings.ZoomLevel = 2.0;
-
-	UpdateVideo = 1;	// update video
-}
-
-void
-zoom_reset ()
-{
-	GCSettings.ZoomLevel = 1.0;
-	UpdateVideo = 1;	// update video
 }
 
 /****************************************************************************
