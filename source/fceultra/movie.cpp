@@ -689,7 +689,7 @@ void FCEUI_StopMovie()
 #endif
 }
 
-static void poweron(bool shouldDisableBatteryLoading)
+void poweron(bool shouldDisableBatteryLoading)
 {
 	//// make a for-movie-recording power-on clear the game's save data, too
 	//extern char lastLoadedGameName [2048];

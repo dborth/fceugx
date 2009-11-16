@@ -80,6 +80,9 @@ bool redoLS = false;		  //This will be true if a backupstate was loaded, meaning
 
 bool internalSaveLoad = false;
 
+bool backupSavestates = true;
+bool compressSavestates = true;  //By default FCEUX compresses savestates when a movie is inactive.
+
 #define SFMDATA_SIZE (64)
 static SFORMAT SFMDATA[SFMDATA_SIZE];
 static int SFEXINDEX;
@@ -422,7 +425,7 @@ bool FCEUSS_SaveMS(std::ostream* outstream, int compressionLevel)
 	int error = Z_OK;
 	uint8* cbuf = (uint8*)ms.buf();
 	uLongf comprlen = -1;
-	if(compressionLevel != Z_NO_COMPRESSION)
+	if(compressionLevel != Z_NO_COMPRESSION && compressSavestates)
 	{
 		//worst case compression.
 		//zlib says "0.1% larger than sourceLen plus 12 bytes"
@@ -468,7 +471,7 @@ void FCEUSS_Save(const char *fname)
 		strcpy(fn, FCEU_MakeFName(FCEUMKF_STATE,CurrentState,0).c_str());
 
 		//backup existing savestate first
-		if (CheckFileExists(fn)) 
+		if (CheckFileExists(fn) && backupSavestates)	//adelikat:  If the files exists and we are allowed to make backup savestates
 		{
 			CreateBackupSaveState(fn);		//Make a backup of previous savestate before overwriting it
 			strcpy(lastSavestateMade,fn);	//Remember what the last savestate filename was (for undoing later)
@@ -900,7 +903,7 @@ void FCEUI_LoadState(const char *fname)
 	information expected in newer save states, desynchronization won't occur(at least not
 	from this ;)).
 	*/
-	BackupLoadState();	//Backup the current state before loading a new one
+	if (backupSavestates) BackupLoadState();	//If allowed, backup the current state before loading a new one
 	
 	if (!movie_readonly && autoMovieBackup && freshMovie) //If auto-backup is on, movie has not been altered this session and the movie is in read+write mode
 	{
