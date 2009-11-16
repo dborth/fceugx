@@ -17,7 +17,7 @@
 #include "driver.h"
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.1.0"
+#define APPVERSION		"3.1.1"
 #define APPFOLDER 		"fceugx"
 #define PREF_FILE_NAME	"settings.xml"
 
@@ -74,7 +74,8 @@ struct SGCSettings{
 	char	smbpwd[20];
 	char	smbshare[20];
 
-	float	ZoomLevel; // zoom amount
+	float	zoomHor; // horizontal zoom amount
+	float	zoomVert; // vertical zoom amount
 	int		VerifySaves;
 	int		render;		// 0 - original, 1 - filtered, 2 - unfiltered
 	int		videomode; // 0 - automatic, 1 - NTSC (480i), 2 - Progressive (480p), 3 - PAL (50Hz), 4 - PAL (60Hz)

@@ -141,7 +141,8 @@ preparePrefsData ()
 	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
 	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
 	createXMLSetting("spritelimit", "Sprite Limit", toStr(GCSettings.spritelimit));
-	createXMLSetting("ZoomLevel", "Zoom Level", FtoStr(GCSettings.ZoomLevel));
+	createXMLSetting("zoomHor", "Horizontal Zoom Level", FtoStr(GCSettings.zoomHor));
+	createXMLSetting("zoomVert", "Vertical Zoom Level", FtoStr(GCSettings.zoomVert));
 	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
 	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
 	createXMLSetting("FilterMethod", "Filter Method", toStr(GCSettings.FilterMethod));
@@ -313,7 +314,8 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.currpal, "currpal");
 			loadXMLSetting(&GCSettings.timing, "timing");
 			loadXMLSetting(&GCSettings.spritelimit, "spritelimit");
-			loadXMLSetting(&GCSettings.ZoomLevel, "ZoomLevel");
+			loadXMLSetting(&GCSettings.zoomHor, "zoomHor");
+			loadXMLSetting(&GCSettings.zoomVert, "zoomVert");
 			loadXMLSetting(&GCSettings.render, "render");
 			loadXMLSetting(&GCSettings.widescreen, "widescreen");
 			loadXMLSetting(&GCSettings.FilterMethod, "FilterMethod");
