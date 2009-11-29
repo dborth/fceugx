@@ -24,7 +24,6 @@
 #include "fceusupport.h"
 #include "menu.h"
 #include "filebrowser.h"
-#include "memcardop.h"
 #include "fileop.h"
 #include "gcvideo.h"
 
@@ -40,7 +39,7 @@ bool SaveState (char * filepath, bool silent)
 		return 0;
 
 	// save screenshot - I would prefer to do this from gameScreenTex
-	if(gameScreenTex2 != NULL && device != DEVICE_MC_SLOTA && device != DEVICE_MC_SLOTB)
+	if(gameScreenTex2 != NULL)
 	{
 		AllocSaveBuffer ();
 
@@ -70,18 +69,7 @@ bool SaveState (char * filepath, bool silent)
 	datasize = save.tellp();
 
 	if (datasize)
-	{
-		if(device == DEVICE_MC_SLOTA || device == DEVICE_MC_SLOTB)
-		{
-			// Set the comments
-			char comments[2][32];
-			memset(comments, 0, 64);
-			sprintf (comments[0], "%s State", APPNAME);
-			snprintf (comments[1], 32, romFilename);
-			SetMCSaveComments(comments);
-		}
 		offset = SaveFile(save.buf(), filepath, datasize, silent);
-	}
 
 	if (offset > 0)
 	{
