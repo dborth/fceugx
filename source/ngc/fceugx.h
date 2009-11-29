@@ -25,7 +25,7 @@
 #define SILENT 1
 
 const char pathPrefix[9][8] =
-{ "", "sd:/", "usb:/", "dvd:/", "smb:/", "mca:/", "mcb:/", "carda:/", "cardb:/" };
+{ "", "sd:/", "usb:/", "dvd:/", "smb:/", "carda:/", "cardb:/" };
 
 enum {
 	DEVICE_AUTO,
@@ -33,8 +33,6 @@ enum {
 	DEVICE_USB,
 	DEVICE_DVD,
 	DEVICE_SMB,
-	DEVICE_MC_SLOTA,
-	DEVICE_MC_SLOTB,
 	DEVICE_SD_SLOTA,
 	DEVICE_SD_SLOTB
 };
@@ -76,7 +74,6 @@ struct SGCSettings{
 
 	float	zoomHor; // horizontal zoom amount
 	float	zoomVert; // vertical zoom amount
-	int		VerifySaves;
 	int		render;		// 0 - original, 1 - filtered, 2 - unfiltered
 	int		videomode; // 0 - automatic, 1 - NTSC (480i), 2 - Progressive (480p), 3 - PAL (50Hz), 4 - PAL (60Hz)
 	int		widescreen;

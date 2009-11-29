@@ -24,7 +24,6 @@
 #include "fceusupport.h"
 #include "menu.h"
 #include "filebrowser.h"
-#include "memcardop.h"
 #include "fileop.h"
 
 static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
@@ -77,16 +76,6 @@ bool SaveRAM (char * filepath, bool silent)
 
 	if (datasize)
 	{
-		if(device == DEVICE_MC_SLOTA || device == DEVICE_MC_SLOTB)
-		{
-			// Set the comments
-			char comments[2][32];
-			memset(comments, 0, 64);
-			sprintf (comments[0], "%s RAM", APPNAME);
-			snprintf (comments[1], 32, romFilename);
-			SetMCSaveComments(comments);
-		}
-
 		offset = SaveFile(filepath, datasize, silent);
 
 		if (offset > 0)
