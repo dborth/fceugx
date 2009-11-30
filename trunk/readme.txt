@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.1.0
+                                  Version 3.1.1
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -32,6 +32,16 @@ Wii/GameCube.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.1.1 - November 30, 2009]
+
+* Mapper fixes - several more games work now (Fire Emblem, 76-in-1, etc)
+* Fixed SMB
+* Added separate horizontal/vertical zoom options
+* Improved scrolling timing - the more you scroll, the fast it goes
+* Fixed reset button on Wii console - now you can reset multiple times
+* Reduce memory fragmentation - fixes out of memory crashes
+* Other minor code optimizations
 
 [3.1.0 - October 7, 2009]
 
