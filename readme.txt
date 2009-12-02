@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.1.1
+                                  Version 3.1.2
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -19,7 +19,7 @@ Wii/GameCube.
 * Zapper support
 * Auto Load/Save Game States and RAM
 * Custom controller configurations
-* SD, USB, DVD (requires DVDx), SMB, GC Memory Card, Zip, and 7z support
+* SD, USB, DVD (requires DVDx), SMB, Zip, and 7z support
 * Custom controller configurations
 * 16:9 widescreen support
 * Original/filtered/unfiltered video modes
@@ -32,6 +32,10 @@ Wii/GameCube.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.1.2 - December 2, 2009]
+
+* Fixed SMB (for real this time!)
 
 [3.1.1 - November 30, 2009]
 
