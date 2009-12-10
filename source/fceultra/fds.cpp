@@ -779,7 +779,7 @@ int FDSLoad(const char *name, FCEUFILE *fp)
 #ifndef GEKKO
 	FCEU_fseek(fp,0,SEEK_SET);
 #endif
-	if(!SubLoad(fp))
+	if(!SubLoad(fp)) 
 		return(0);
 
 #ifndef GEKKO
@@ -787,7 +787,7 @@ int FDSLoad(const char *name, FCEUFILE *fp)
 
 	if(!(zp=FCEUD_UTF8fopen(fn,"rb")))  
 	{
-		FCEU_PrintError("FDS BIOS ROM image missing!");
+		FCEU_PrintError("FDS BIOS ROM image missing: %s", FCEU_MakeFName(FCEUMKF_FDSROM,0,0).c_str());
 		FreeFDSMemory();
 		free(fn);
 		return 0;
@@ -834,6 +834,10 @@ if (!disableBatteryLoading)
 #endif
 	}
 
+#ifndef GEKKO
+	extern char LoadedRomFName[2048];
+	strcpy(LoadedRomFName,name); //For the debugger list
+#endif
 	GameInfo->type=GIT_FDS;
 	GameInterface=FDSGI;
 
