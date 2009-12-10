@@ -488,7 +488,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 	}
 
 	// zapper enabled
-	if(GCSettings.Controller == CTRL_ZAPPER && chan == 0)
+	if(GCSettings.Controller == CTRL_ZAPPER)
 	{
 		int z; // NES port # (0 or 1)
 
