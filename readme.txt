@@ -287,9 +287,7 @@ Unzip the archive. You will find the following folders inside:
 
 apps			Contains Homebrew Channel ready files
 				(see Homebrew Channel instructions below)
-				
-gamecube		Contains GameCube DOL file (not required for Wii)
-				
+
 fceugx			Contains the directory structure required for storing
 				roms and saves (see below)
 
