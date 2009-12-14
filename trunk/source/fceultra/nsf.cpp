@@ -167,9 +167,8 @@ static INLINE void BANKSET(uint32 A, uint32 bank)
 int NSFLoad(const char *name, FCEUFILE *fp)
 {
 	int x;
-#ifndef GEKKO
+
 	FCEU_fseek(fp,0,SEEK_SET);
-#endif
 	FCEU_fread(&NSFHeader,1,0x80,fp);
 	if(memcmp(NSFHeader.ID,"NESM\x1a",5))
 		return 0;

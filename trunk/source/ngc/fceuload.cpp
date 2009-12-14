@@ -17,6 +17,8 @@
 #include <string.h>
 #include <malloc.h>
 
+#include "file.h"
+
 #include "fceugx.h"
 #include "gcaudio.h"
 #include "fceusupport.h"
@@ -61,28 +63,19 @@ int GCMemROM(int size)
 	FCEUFILE * fceufp = new FCEUFILE();
 	fceufp->size = size;
 	fceufp->filename = romFilename;
-	memorystream * fceumem;
-
-	romLoaded = false;
-
-	// for some reason FCEU_fseek(fp,0,SEEK_SET); fails, so we will do this
-	fceumem = new memorystream((char *) nesrom, size);
+	fceufp->mode = FCEUFILE::READ; // read only
+	memorystream * fceumem = new memorystream((char *) nesrom, size);
 	fceufp->stream = fceumem;
+
 	romLoaded = iNESLoad(romFilename, fceufp, 1);
 
 	if(!romLoaded)
 	{
-		delete fceumem;
-		fceumem = new memorystream((char *) nesrom, size);
-		fceufp->stream = fceumem;
 		romLoaded = UNIFLoad(romFilename, fceufp);
 	}
 
 	if(!romLoaded)
 	{
-		delete fceumem;
-		fceumem = new memorystream((char *) nesrom, size);
-		fceufp->stream = fceumem;
 		romLoaded = NSFLoad(romFilename, fceufp);
 	}
 
@@ -118,11 +111,6 @@ int GCMemROM(int size)
 		}
 		if (FDSBIOS[1] != 0)
 		{
-			// load game
-			delete fceumem;
-			fceumem = new memorystream((char *) nesrom, size);
-			fceufp->stream = fceumem;
-
 			romLoaded = FDSLoad(romFilename, fceufp);
 		}
 	}
