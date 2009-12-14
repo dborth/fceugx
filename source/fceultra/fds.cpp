@@ -776,9 +776,9 @@ int FDSLoad(const char *name, FCEUFILE *fp)
 	FILE *zp;
 	int x;
 	char *fn;
-#ifndef GEKKO
+
 	FCEU_fseek(fp,0,SEEK_SET);
-#endif
+
 	if(!SubLoad(fp)) 
 		return(0);
 

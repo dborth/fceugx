@@ -556,9 +556,7 @@ static void UNIFGI(GI h)
 
 int UNIFLoad(const char *name, FCEUFILE *fp)
 {
-#ifndef GEKKO
 	FCEU_fseek(fp,0,SEEK_SET);
-#endif
 	FCEU_fread(&unhead,1,4,fp);
 	if(memcmp(&unhead,"UNIF",4))
 		return 0;        

@@ -184,11 +184,7 @@ private:
 		if(!myBuf && !usevec)
 			throw new std::runtime_error("memory_streambuf is not expandable");
 
-		size_t newcapacity;
-		if(upto == 0)
-			newcapacity = capacity + capacity/2 + 2;
-		else
-			newcapacity = std::max(upto,capacity);
+		size_t newcapacity = std::max(upto,capacity);
 
 		if(newcapacity == capacity) return;
 

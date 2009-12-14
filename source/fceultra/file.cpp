@@ -424,8 +424,10 @@ int FCEU_fseek(FCEUFILE *fp, long offset, int whence)
 	//else
 	//	return fseek((FILE *)fp->fp,offset,whence);
 
-	fp->stream->seekg(offset,(std::ios_base::seekdir)whence);
-	fp->stream->seekp(offset,(std::ios_base::seekdir)whence);
+	if(fp->mode == FCEUFILE::READ || fp->mode == FCEUFILE::READWRITE)
+		fp->stream->seekg(offset,(std::ios_base::seekdir)whence);
+	if(fp->mode == FCEUFILE::WRITE || fp->mode == FCEUFILE::READWRITE)
+		fp->stream->seekp(offset,(std::ios_base::seekdir)whence);
 
 	return FCEU_ftell(fp);
 }
