@@ -403,6 +403,10 @@ void MovieData::installValue(std::string& key, std::string& val)
 			StringToBytes(val,&savestate[0],len); // decodes either base64 or hex
 		}
 	}
+	else if (key == "length")
+	{
+		installInt(val, loadFrameCount);
+	}
 #endif
 }
 
@@ -427,12 +431,16 @@ int MovieData::dump(std::ostream *os, bool binary)
 
 	for(uint32 i=0;i<subtitles.size();i++)
 		*os << "subtitle " << subtitles[i] << endl;
-
+	
 	if(binary)
 		*os << "binary 1" << endl;
-
+		
 	if(savestate.size() != 0)
 		*os << "savestate " << BytesToString(&savestate[0],savestate.size()) << endl;
+
+	if(FCEUMOV_Mode(MOVIEMODE_TASEDIT))
+		*os << "length " << this->records.size() << endl;
+
 	if(binary)
 	{
 		//put one | to start the binary dump
@@ -449,6 +457,54 @@ int MovieData::dump(std::ostream *os, bool binary)
 #else
 	return 0;
 #endif
+}
+
+int MovieData::dumpGreenzone(std::ostream *os, bool binary)
+{
+#ifdef GEKKO
+	return 0;
+#endif
+	int start = os->tellp();
+	int frame, size;
+	for (int i=0; i<(int)records.size(); ++i)
+	{
+		if (records[i].savestate.empty())
+			continue;
+		frame=i;
+		size=records[i].savestate.size();
+		write32le(frame, os);
+		write32le(size, os);
+
+		os->write(&records[i].savestate[0], size);
+	}
+	frame=-1;
+	size=currMovieData.greenZoneCount;
+	write32le(frame, os);
+	write32le(size, os);
+
+	int end= os->tellp();
+
+	return end-start;
+}
+
+int MovieData::loadGreenzone(std::istream *is, bool binary)
+{
+#ifdef GEKKO
+	return 0;
+#endif
+	int frame, size;
+	while(1)
+	{
+		if (!read32le((uint32 *)&frame, is)) {size=0; break;}
+		if (!read32le((uint32 *)&size, is)) {size=0; break;} 
+		if (frame==-1) break;
+		int pos = is->tellg();
+		FCEUSS_LoadFP(is, SSLOADPARAM_NOBACKUP);
+		is->seekg(pos+size);
+	}
+	greenZoneCount=size;
+
+	return 1;
 }
 
 int FCEUMOV_GetFrame(void)
@@ -524,6 +580,9 @@ static void LoadFM2_binarychunk(MovieData& movieData, std::istream* fp, int size
 	int todo = std::min(size, flen);
 
 	int numRecords = todo/recordsize;
+	if (movieData.loadFrameCount!=-1 && movieData.loadFrameCount<numRecords)
+		numRecords=movieData.loadFrameCount;
+
 	movieData.records.resize(numRecords);
 	for(int i=0;i<numRecords;i++)
 	{
@@ -536,6 +595,10 @@ static void LoadFM2_binarychunk(MovieData& movieData, std::istream* fp, int size
 bool LoadFM2(MovieData& movieData, std::istream* fp, int size, bool stopAfterHeader)
 {
 #ifndef GEKKO
+    std::string a("length"), b("-1");
+	// Non-TAS projects consume until EOF
+	movieData.installValue(a, b);
+
 	//first, look for an fcm signature
 	char fcmbuf[3];
 	std::ios::pos_type curr = fp->tellg();
