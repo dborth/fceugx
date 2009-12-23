@@ -102,6 +102,7 @@ extern int ConfigRequested;
 extern int ShutdownRequested;
 extern int ExitRequested;
 extern char appPath[];
+extern char loadedFile[];
 extern int frameskip;
 extern int turbomode;
 extern bool romLoaded;

@@ -481,6 +481,8 @@ int BrowserLoadFile()
 	if(!IsValidROM())
 		goto done;
 
+	strcpy(loadedFile, browserList[browser.selIndex].filename);
+
 	// store the filename (w/o ext) - used for ram/state naming
 	StripExt(romFilename, browserList[browser.selIndex].filename);
 
