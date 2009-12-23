@@ -17,7 +17,7 @@
 #include "driver.h"
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.1.2"
+#define APPVERSION		"3.1.3"
 #define APPFOLDER 		"fceugx"
 #define PREF_FILE_NAME	"settings.xml"
 
@@ -67,7 +67,7 @@ struct SGCSettings{
 	char	SaveFolder[MAXPATHLEN]; // Path to save files
 	char	CheatFolder[MAXPATHLEN]; // Path to cheat files
 
-	char	smbip[16];
+	char	smbip[80];
 	char	smbuser[20];
 	char	smbpwd[20];
 	char	smbshare[20];
