@@ -147,19 +147,12 @@ bool DownloadUpdate()
 	// since we're saving a file
 	HaltDeviceThread();
 
-	// find devoptab name
-	char dev[10];
-	int i;
-	for(i=0; i < 8; i++)
-	{
-		dev[i] = appPath[i];
-		if(appPath[i] == '/') break;
-	}
-	dev[i+1] = 0;
+	int device;
+	FindDevice(appPath, &device);
 
 	FILE * hfile;
 	char updateFile[50];
-	sprintf(updateFile, "%s%s Update.zip", dev, APPNAME);
+	sprintf(updateFile, "%s%s Update.zip", pathPrefix[device], APPNAME);
 	hfile = fopen (updateFile, "wb");
 
 	if (hfile > 0)
@@ -169,7 +162,7 @@ bool DownloadUpdate()
 		fclose (hfile);
 	}
 
-	result = unzipArchive(updateFile, dev);
+	result = unzipArchive(updateFile, (char *)pathPrefix[device]);
 	remove(updateFile); // delete update file
 
 	// go back to checking if devices were inserted/removed
