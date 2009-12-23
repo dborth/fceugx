@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.1.2
+                                  Version 3.1.3
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -32,6 +32,16 @@ Wii/GameCube.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.1.3 - December 23, 2009]
+
+* Fixed major file loading issue, more games load now
+* File browser now scrolls down to the last game when returning to browser
+* Auto update for those using USB now works
+* Fixed scrollbar up/down buttons
+* Fixed zapper
+* Updates from FCEUX
+* Minor optimizations
 
 [3.1.2 - December 2, 2009]
 
