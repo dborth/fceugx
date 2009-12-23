@@ -186,6 +186,7 @@ public:
 	
 	//----TasEdit stuff---
 	int greenZoneCount;
+	int loadFrameCount;
 	//----
 
 	int getNumRecords() { return records.size(); }
@@ -221,6 +222,9 @@ public:
 	void truncateAt(int frame);
 	void installValue(std::string& key, std::string& val);
 	int dump(std::ostream* os, bool binary);
+	int dumpGreenzone(std::ostream *os, bool binary);
+	int loadGreenzone(std::istream *is, bool binary);
+
 	void clearRecordRange(int start, int len);
 	void insertEmpty(int at, int frames);
 	
