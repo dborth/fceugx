@@ -151,6 +151,12 @@ bool FindGameGenie()
 	if (GENIEROM)
 		return true;
 
+	if(GCSettings.LoadMethod == DEVICE_AUTO)
+		GCSettings.LoadMethod = autoLoadMethod();
+
+	if(GCSettings.LoadMethod == DEVICE_AUTO)
+		return false;
+
 	char * tmpbuffer = (char *) memalign(32, 512 * 1024);
 	if(!tmpbuffer)
 		return false;
@@ -158,8 +164,13 @@ bool FindGameGenie()
 	size_t romSize = 0;
 	char filepath[1024];
 
-	if (MakeFilePath(filepath, FILE_GGROM))
+	sprintf (filepath, "%s%s/gg.rom", pathPrefix[GCSettings.LoadMethod], APPFOLDER);
+	romSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
+	if(romSize == 0 && strlen(appPath) > 0)
+	{
+		sprintf (filepath, "%s/gg.rom", appPath);
 		romSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
+	}
 
 	if (romSize > 0)
 	{

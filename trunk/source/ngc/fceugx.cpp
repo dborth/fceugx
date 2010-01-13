@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
 	InitGUIThreads();
 
 	// allocate memory to store rom
-	nesrom = (unsigned char *)memalign(32,1024*1024*3); // 3 MB should be plenty
+	nesrom = (unsigned char *)memalign(32,1024*1024*4); // 4 MB should be plenty
 
 	/*** Minimal Emulation Loop ***/
 	if (!FCEUI_Initialize())

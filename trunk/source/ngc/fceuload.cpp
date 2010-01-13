@@ -89,8 +89,11 @@ int GCMemROM(int size)
 
 			char filepath[1024];
 
-			if (MakeFilePath(filepath, FILE_FDSBIOS))
+			sprintf (filepath, "%s%s/disksys.rom", pathPrefix[GCSettings.LoadMethod], APPFOLDER);
+			biosSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
+			if(biosSize == 0 && strlen(appPath) > 0)
 			{
+				sprintf (filepath, "%s/disksys.rom", appPath);
 				biosSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
 			}
 

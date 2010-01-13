@@ -292,16 +292,6 @@ bool MakeFilePath(char filepath[], int type, char * filename, int filenum)
 				}
 				break;
 
-			case FILE_FDSBIOS:
-				sprintf(folder, "fceugx");
-				sprintf(file, "disksys.rom");
-				break;
-
-			case FILE_GGROM:
-				sprintf(folder, "fceugx");
-				sprintf(file, "gg.rom");
-				break;
-
 			case FILE_CHEAT:
 				sprintf(folder, GCSettings.CheatFolder);
 				sprintf(file, "%s.cht", romFilename);
@@ -353,7 +343,7 @@ static bool IsValidROM()
 {
 	// file size should be between 8K and 3MB
 	if(browserList[browser.selIndex].length < (1024*8) ||
-		browserList[browser.selIndex].length > (1024*1024*3))
+		browserList[browser.selIndex].length > (1024*1024*4))
 	{
 		ErrorPrompt("Invalid file size!");
 		return false;
