@@ -21,7 +21,6 @@
 #include <sys/iosupport.h>
 
 #include "fceugx.h"
-#include "fceuconfig.h"
 #include "fceuload.h"
 #include "fceustate.h"
 #include "fceuram.h"
