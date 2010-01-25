@@ -107,7 +107,7 @@ GuiSaveBrowser::GuiSaveBrowser(int w, int h, SaveList * s, int a)
 		saveBtn[i]->SetImageOver(saveBgOverImg[i]);
 		saveBtn[i]->SetIcon(savePreviewImg[i]);
 		saveBtn[i]->SetAlignment(ALIGN_LEFT, ALIGN_TOP);
-		saveBtn[i]->SetPosition(257*(i % 2),87*(i/2));
+		saveBtn[i]->SetPosition(257*(i % 2),87*(i>>1));
 		saveBtn[i]->SetTrigger(trigA);
 		saveBtn[i]->SetState(STATE_DISABLED);
 		saveBtn[i]->SetEffectGrow();
@@ -257,7 +257,7 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 		if(selectedItem == 0)
 		{
 			if((listOffset - 2 >= 0 && action == 0) ||
-				(listOffset - 2 >= -2 && action == 1))
+				(listOffset >= 0 && action == 1))
 			{
 				// move list up by 1
 				listOffset -= 2;
@@ -295,7 +295,7 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 		if(selectedItem < 2)
 		{
 			if((listOffset - 2 >= 0 && action == 0) ||
-				(listOffset - 2 >= -2 && action == 1))
+				(listOffset >= 0 && action == 1))
 			{
 				// move list up by 1
 				listOffset -= 2;
@@ -321,8 +321,8 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 		{
 			saveDate[0]->SetText(NULL);
 			saveDate[1]->SetText(NULL);
-			saveTime[0]->SetText("New RAM");
-			saveTime[1]->SetText("New State");
+			saveTime[0]->SetText("New SRAM");
+			saveTime[1]->SetText("New Snapshot");
 			saveType[0]->SetText(NULL);
 			saveType[1]->SetText(NULL);
 			savePreviewImg[0]->SetImage(gameSaveBlank);
@@ -348,10 +348,10 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 			saveDate[i]->SetText(saves->date[listOffset+i]);
 			saveTime[i]->SetText(saves->time[listOffset+i]);
 
-			if(saves->type[listOffset+i] == FILE_RAM)
-				sprintf(savetext, "RAM");
+			if(saves->type[listOffset+i] == FILE_SRAM)
+				sprintf(savetext, "SRAM");
 			else
-				sprintf(savetext, "State");
+				sprintf(savetext, "Snapshot");
 
 			len = strlen(saves->filename[listOffset+i]);
 			if(len > 10 &&
