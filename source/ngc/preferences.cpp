@@ -420,7 +420,11 @@ DefaultSettings ()
 	GCSettings.MusicVolume = 40;
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1;
+#ifdef HW_RVL
 	GCSettings.language = CONF_GetLanguage();
+#else
+	GCSettings.language = LANG_ENGLISH;
+#endif
 
 	GCSettings.LoadMethod = DEVICE_AUTO; // Auto, SD, DVD, USB, Network (SMB)
 	GCSettings.SaveMethod = DEVICE_AUTO; // Auto, SD, USB, Network (SMB)
