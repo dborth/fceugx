@@ -321,8 +321,8 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 		{
 			saveDate[0]->SetText(NULL);
 			saveDate[1]->SetText(NULL);
-			saveTime[0]->SetText("New SRAM");
-			saveTime[1]->SetText("New Snapshot");
+			saveTime[0]->SetText("New RAM");
+			saveTime[1]->SetText("New State");
 			saveType[0]->SetText(NULL);
 			saveType[1]->SetText(NULL);
 			savePreviewImg[0]->SetImage(gameSaveBlank);
@@ -348,10 +348,10 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 			saveDate[i]->SetText(saves->date[listOffset+i]);
 			saveTime[i]->SetText(saves->time[listOffset+i]);
 
-			if(saves->type[listOffset+i] == FILE_SRAM)
-				sprintf(savetext, "SRAM");
+			if(saves->type[listOffset+i] == FILE_RAM)
+				sprintf(savetext, "RAM");
 			else
-				sprintf(savetext, "Snapshot");
+				sprintf(savetext, "State");
 
 			len = strlen(saves->filename[listOffset+i]);
 			if(len > 10 &&
