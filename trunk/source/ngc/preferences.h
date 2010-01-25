@@ -9,5 +9,7 @@
  * Preferences save/load preferences utilities
  ****************************************************************************/
 
+void FixInvalidSettings();
+void DefaultSettings();
 bool SavePrefs (bool silent);
 bool LoadPrefs ();
