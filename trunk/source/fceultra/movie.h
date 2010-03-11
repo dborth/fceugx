@@ -42,9 +42,8 @@ typedef struct
 	uint32 emu_version_used;				// 9813 = 0.98.13
 	MD5DATA md5_of_rom_used;
 	std::string name_of_rom_used;
-#ifndef GEKKO
+
 	std::vector<std::wstring> comments;
-#endif
 	std::vector<std::string> subtitles;
 } MOVIE_INFO;
 
@@ -162,15 +161,14 @@ public:
 
 	int version;
 	int emuVersion;
+	int fds;
 	//todo - somehow force mutual exclusion for poweron and reset (with an error in the parser)
 	bool palFlag;
 	MD5DATA romChecksum;
 	std::string romFilename;
 	std::vector<char> savestate;
 	std::vector<MovieRecord> records;
-#ifndef GEKKO
 	std::vector<std::wstring> comments;
-#endif
 	std::vector<std::string> subtitles;
 	//this is the RERECORD COUNT. please rename variable.
 	int rerecordCount;
@@ -256,9 +254,7 @@ extern int pauseframe;
 bool CheckFileExists(const char* filename);	//Receives a filename (fullpath) and checks to see if that file exists
 void FCEUI_MakeBackupMovie(bool dispMessage);
 void FCEUI_CreateMovieFile(std::string fn);
-#ifndef GEKKO
 void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author);
-#endif
 bool FCEUI_LoadMovie(const char *fname, bool read_only, bool tasedit, int _stopframe);
 void FCEUI_MoviePlayFromBeginning(void);
 void FCEUI_StopMovie(void);

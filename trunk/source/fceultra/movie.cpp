@@ -129,6 +129,12 @@ void MovieData::TryDumpIncremental()
 	if(movieMode == MOVIEMODE_TASEDIT)
 	{
 		//only log the savestate if we are appending to the green zone
+		if (turbo && pauseframe!=-1 && currFrameCounter<currMovieData.records.size())
+		{
+			if (turbo && pauseframe-256>currFrameCounter && ((currFrameCounter-pauseframe)&0xff))
+				return;
+			MovieData::dumpSavestateTo(&currMovieData.records[currFrameCounter].savestate,Z_DEFAULT_COMPRESSION);
+		}
 		if(currFrameCounter == currMovieData.greenZoneCount)
 		{
 			if(currFrameCounter == (int)currMovieData.records.size() || currMovieData.records.size()==0)
@@ -140,16 +146,19 @@ void MovieData::TryDumpIncremental()
 			currMovieData.greenZoneCount++;
 		} else if (currFrameCounter < currMovieData.greenZoneCount || !movie_readonly)
 		{
-			if (turbo && pauseframe-256>currFrameCounter && ((currFrameCounter-pauseframe)&0xff))
-				return;
 			MovieData::dumpSavestateTo(&currMovieData.records[currFrameCounter].savestate,Z_DEFAULT_COMPRESSION);
+		} else if (currFrameCounter > currMovieData.greenZoneCount && currMovieData.greenZoneCount<currMovieData.records.size())
+		{
+			/* May be required in some malformed TAS projects. */
+			MovieData::dumpSavestateTo(&currMovieData.records[currFrameCounter].savestate,Z_DEFAULT_COMPRESSION);
+			currMovieData.greenZoneCount= currFrameCounter+1;
 		}
 	}
 #endif
 }
 
 void MovieRecord::clear()
-{
+{ 
 #ifndef GEKKO
 	commands = 0;
 	*(uint32*)&joysticks = 0;
@@ -370,7 +379,9 @@ void MovieData::installValue(std::string& key, std::string& val)
 {
 #ifndef GEKKO
 	//todo - use another config system, or drive this from a little data structure. because this is gross
-	if(key == "version")
+	if(key == "FDS")
+		installInt(val,fds);
+	else if(key == "version")
 		installInt(val,version);
 	else if(key == "emuVersion")
 		installInt(val,emuVersion);
@@ -430,6 +441,7 @@ int MovieData::dump(std::ostream *os, bool binary)
 	*os << "port0 " << ports[0] << endl;
 	*os << "port1 " << ports[1] << endl;
 	*os << "port2 " << ports[2] << endl;
+	*os << "FDS " << isFDS << endl;
 
 	for(uint32 i=0;i<comments.size();i++)
 		*os << "comment " << wcstombs(comments[i]) << endl;
@@ -960,11 +972,11 @@ static void openRecordingMovie(const char* fname)
 #endif
 }
 
-#ifndef GEKKO
 //begin recording a new movie
 //TODO - BUG - the record-from-another-savestate doesnt work.
 void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author)
 {
+#ifndef GEKKO
 	if(!FCEU_IsValidUI(FCEUI_RECORDMOVIE))
 		return;
 
@@ -1006,8 +1018,8 @@ void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author)
 	currRerecordCount = 0;
 
 	FCEU_DispMessage("Movie recording started.");
-}
 #endif
+}
 
 static int _currCommand = 0;
 
