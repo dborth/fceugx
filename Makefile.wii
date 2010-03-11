@@ -19,7 +19,7 @@ TARGET		:=	fceugx-wii
 TARGETDIR   :=  executables
 BUILD		:=	build_wii
 SOURCES		:=	source/ngc/images source/ngc/sounds source/ngc/fonts source/ngc/lang \
-				source/ngc/gui source/ngc \
+				source/ngc/gui source/ngc/utils source/ngc \
 				source/fceultra source/fceultra/boards source/fceultra/input \
 				source/fceultra/utils source/fceultra/mappers source/fceultra/mbshare \
 				source/sz source/unzip
@@ -40,7 +40,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--cref
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-ldb -ldi -liso9660 -lpng -lmxml \
+LIBS	:=	-ldi -liso9660 -lpng -lmxml \
 			-lfat -lwiiuse -lz -lbte -lasnd -logc -lvorbisidec -lfreetype -ltinysmb
 
 #---------------------------------------------------------------------------------
@@ -89,7 +89,8 @@ export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(sFILES:.s=.o) $(SFILES:.S=.o) \
 					$(TTFFILES:.ttf=.ttf.o) $(LANGFILES:.lang=.lang.o) \
 					$(PNGFILES:.png=.png.o) \
-					$(OGGFILES:.ogg=.ogg.o) $(PCMFILES:.pcm=.pcm.o)
+					$(OGGFILES:.ogg=.ogg.o) $(PCMFILES:.pcm=.pcm.o) \
+					$(CURDIR)/source/ngc/utils/ehcmodule.elf.o
 
 #---------------------------------------------------------------------------------
 # build a list of include paths
