@@ -20,6 +20,8 @@
 #include <malloc.h>
 #include <sys/iosupport.h>
 
+#include "utils/usb2storage.h"
+#include "utils/mload.h"
 #include "fceugx.h"
 #include "fceuload.h"
 #include "fceustate.h"
@@ -186,6 +188,48 @@ static void ipl_set_config(unsigned char c)
 #endif
 
 /****************************************************************************
+ * IOS 202
+ ***************************************************************************/
+#ifdef HW_RVL
+static bool FindIOS(u32 ios)
+{
+	s32 ret;
+	u32 n;
+
+	u64 *titles = NULL;
+	u32 num_titles=0;
+
+	ret = ES_GetNumTitles(&num_titles);
+	if (ret < 0)
+		return false;
+
+	if(num_titles < 1) 
+		return false;
+
+	titles = (u64 *)memalign(32, num_titles * sizeof(u64) + 32);
+	if (!titles)
+		return false;
+
+	ret = ES_GetTitles(titles, num_titles);
+	if (ret < 0)
+	{
+		free(titles);
+		return false;
+	}
+		
+	for(n=0; n < num_titles; n++)
+	{
+		if((titles[n] & 0xFFFFFFFF)==ios) 
+		{
+			free(titles); 
+			return true;
+		}
+	}
+    free(titles); 
+	return false;
+}
+#endif
+/****************************************************************************
  * USB Gecko Debugging
  ***************************************************************************/
 
@@ -254,7 +298,16 @@ int main(int argc, char *argv[])
 	#endif
 
 	#ifdef HW_RVL
-	DI_Init();	// first
+	// try to load IOS 202
+	if(IOS_GetVersion() != 202 && FindIOS(202))
+		IOS_ReloadIOS(202);
+	
+	DI_LoadDVDX(false);
+	DI_Init();
+	
+	// load usb2 driver
+	if(mload_init() >= 0 && load_ehci_module())
+		USB2Enable(true);
 	#endif
 
 	InitDeviceThread();
