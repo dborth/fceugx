@@ -43,6 +43,8 @@
 //	when the virtual motor is on(mmm...virtual motor).
 extern int disableBatteryLoading; 
 
+bool isFDS = false;	//flag for determining if a FDS game is loaded, movie.cpp needs this
+
 static DECLFR(FDSRead4030);
 static DECLFR(FDSRead4031);
 static DECLFR(FDSRead4032);
@@ -806,7 +808,7 @@ int FDSLoad(const char *name, FCEUFILE *fp)
 	fclose(zp);
 #endif
 
-if (!disableBatteryLoading)
+	if (!disableBatteryLoading)
 	{
 		FCEUFILE *tp;
 		char *fn=strdup(FCEU_MakeFName(FCEUMKF_FDS,0,0).c_str());
@@ -818,7 +820,7 @@ if (!disableBatteryLoading)
 			memcpy(diskdatao[x],diskdata[x],65500);
 		}
 #ifndef GEKKO
-		if((tp=FCEU_fopen(fn,0,"rb",0)))
+		if((tp=FCEU_fopen(fn,0,"wb",0)))
 		{
 			FreeFDSMemory();
 			if(!SubLoad(tp))
@@ -833,13 +835,13 @@ if (!disableBatteryLoading)
 		free(fn);
 #endif
 	}
-
 #ifndef GEKKO
 	extern char LoadedRomFName[2048];
 	strcpy(LoadedRomFName,name); //For the debugger list
 #endif
 	GameInfo->type=GIT_FDS;
 	GameInterface=FDSGI;
+	isFDS = true;
 
 	SelectDisk=0;
 	InDisk=255;
@@ -888,6 +890,7 @@ void FDSClose(void)
 #endif
 	FILE *fp;
 	int x;
+	isFDS = false;
 	char *fn=strdup(FCEU_MakeFName(FCEUMKF_FDS,0,0).c_str());
 
 	if(!DiskWritten) return;
