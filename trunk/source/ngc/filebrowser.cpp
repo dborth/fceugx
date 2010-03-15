@@ -548,7 +548,6 @@ int BrowserChangeFolder()
 	if(browser.dir[0] != 0)
 		ParseDirectory();
 
-
 	if(browser.numEntries == 0)
 	{
 		browser.dir[0] = 0;
