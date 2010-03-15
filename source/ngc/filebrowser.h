@@ -50,6 +50,7 @@ enum
 };
 
 extern char romFilename[];
+extern bool loadingFile;
 
 bool MakeFilePath(char filepath[], int type, char * filename = NULL, int filenum = -2);
 int UpdateDirName();
