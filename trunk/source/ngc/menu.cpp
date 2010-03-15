@@ -3619,8 +3619,11 @@ static int MenuSettingsMenu()
 				break;
 			case 5:
 				GCSettings.language++;
-				if(GCSettings.language > LANG_KOREAN)
-					GCSettings.language = 0;
+
+				if(GCSettings.language == LANG_ITALIAN)
+					GCSettings.language++;
+				else if(GCSettings.language > LANG_DUTCH)
+					GCSettings.language = LANG_ENGLISH;
 				break;
 		}
 
