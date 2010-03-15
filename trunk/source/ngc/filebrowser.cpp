@@ -39,6 +39,7 @@ static char szpath[MAXPATHLEN];
 static bool inSz = false;
 
 char romFilename[256];
+bool loadingFile = false;
 
 /****************************************************************************
 * autoLoadMethod()
@@ -475,6 +476,8 @@ int BrowserLoadFile()
 
 	// store the filename (w/o ext) - used for ram/state naming
 	StripExt(romFilename, browserList[browser.selIndex].filename);
+	
+	loadingFile = true;
 
 	if(!inSz)
 	{
@@ -493,6 +496,8 @@ int BrowserLoadFile()
 			BrowserChangeFolder();
 		}
 	}
+	
+	loadingFile = false;
 
 	if (filesize <= 0)
 	{
