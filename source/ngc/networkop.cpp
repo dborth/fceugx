@@ -235,6 +235,7 @@ void CloseShare()
 	if(networkShareInit)
 		smbClose("smb");
 	networkShareInit = false;
+	isMounted[DEVICE_SMB] = false;
 }
 
 /****************************************************************************
@@ -272,9 +273,6 @@ ConnectShare (bool silent)
 		}
 		return false;
 	}
-
-	if(unmountRequired[DEVICE_SMB])
-		CloseShare();
 
 	if(!networkInit)
 		InitializeNetwork(silent);
