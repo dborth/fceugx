@@ -192,7 +192,6 @@ void InitializeNetwork(bool silent)
 
 	int retry = 1;
 	char ip[16];
-	char msg[150];
 	s32 initResult;
 
 	if(!silent)
@@ -218,8 +217,7 @@ void InitializeNetwork(bool silent)
 			if(networkInit || silent)
 				break;
 
-			sprintf(msg, "Unable to initialize network (Error #: %i)", initResult);
-			retry = ErrorPromptRetry(msg);
+			retry = ErrorPromptRetry("Unable to initialize network!");
 		}
 
 		// do not automatically attempt a reconnection
