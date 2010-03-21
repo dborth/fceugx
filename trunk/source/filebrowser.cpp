@@ -19,8 +19,8 @@
 #include <di/di.h>
 #endif
 
-#include "fceusupport.h"
 #include "fceugx.h"
+#include "fceusupport.h"
 #include "menu.h"
 #include "filebrowser.h"
 #include "networkop.h"

@@ -18,19 +18,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "driver.h"
-#include "fceu.h"
-#include "input.h"
-#include "types.h"
-#include "state.h"
-#include "ppu.h"
-#include "cart.h"
-#include "x6502.h"
-#include "git.h"
-#include "palette.h"
-#include "sound.h"
-#include "file.h"
-#include "cheat.h"
+#include "fceultra/driver.h"
+#include "fceultra/fceu.h"
+#include "fceultra/input.h"
+#include "fceultra/types.h"
+#include "fceultra/state.h"
+#include "fceultra/ppu.h"
+#include "fceultra/cart.h"
+#include "fceultra/x6502.h"
+#include "fceultra/git.h"
+#include "fceultra/palette.h"
+#include "fceultra/sound.h"
+#include "fceultra/file.h"
+#include "fceultra/cheat.h"
 
 extern unsigned char * nesrom;
 

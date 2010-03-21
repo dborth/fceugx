@@ -18,9 +18,9 @@
 #include <unistd.h>
 #include <malloc.h>
 
+#include "fceugx.h"
 #include "videofilter.h"
 #include "gcvideo.h"
-#include "fceugx.h"
 #include "menu.h"
 
 #define NUMBITS (16)

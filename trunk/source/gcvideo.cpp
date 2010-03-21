@@ -19,9 +19,9 @@
 #include <ogc/texconv.h>
 #include <ogc/lwp_watchdog.h>
 
+#include "fceugx.h"
 #include "fceusupport.h"
 #include "gcvideo.h"
-#include "fceugx.h"
 #include "videofilter.h"
 #include "menu.h"
 #include "pad.h"

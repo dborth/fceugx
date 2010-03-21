@@ -37,7 +37,7 @@
 #include "utils/memory.h"
 #include "utils/md5.h"
 #ifdef GEKKO
-#include "unzip.h"
+#include "utils/unzip/unzip.h"
 #else
 #include "utils/unzip.h"
 #endif

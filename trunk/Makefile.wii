@@ -18,12 +18,11 @@ include $(DEVKITPPC)/wii_rules
 TARGET		:=	fceugx-wii
 TARGETDIR   :=  executables
 BUILD		:=	build_wii
-SOURCES		:=	source/ngc/images source/ngc/sounds source/ngc/fonts source/ngc/lang \
-				source/ngc/gui source/ngc/utils source/ngc \
+SOURCES		:=	source source/images source/sounds source/fonts source/lang \
+				source/gui source/utils source/utils/sz source/utils/unzip \
 				source/fceultra source/fceultra/boards source/fceultra/input \
-				source/fceultra/utils source/fceultra/mappers source/fceultra/mbshare \
-				source/sz source/unzip
-INCLUDES	:=	source/fceultra source/ngc source/unzip
+				source/fceultra/utils source/fceultra/mappers source/fceultra/mbshare
+INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------
 # options for code generation
@@ -90,7 +89,7 @@ export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(TTFFILES:.ttf=.ttf.o) $(LANGFILES:.lang=.lang.o) \
 					$(PNGFILES:.png=.png.o) \
 					$(OGGFILES:.ogg=.ogg.o) $(PCMFILES:.pcm=.pcm.o) \
-					$(CURDIR)/source/ngc/utils/ehcmodule.elf.o
+					$(CURDIR)/source/utils/ehcmodule.elf.o
 
 #---------------------------------------------------------------------------------
 # build a list of include paths

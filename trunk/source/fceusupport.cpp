@@ -9,11 +9,11 @@
  * FCEU Support Functions
  ****************************************************************************/
 
+#include "fceugx.h"
 #include "fceusupport.h"
 #include "pad.h"
 #include "gcaudio.h"
 #include "gcvideo.h"
-#include "fceugx.h"
 #include "menu.h"
 
 /**

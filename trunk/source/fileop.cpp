@@ -25,8 +25,8 @@
 #include <ogc/dvd.h>
 #include <iso9660.h>
 
-#include "fceusupport.h"
 #include "fceugx.h"
+#include "fceusupport.h"
 #include "fileop.h"
 #include "networkop.h"
 #include "gcunzip.h"

@@ -18,7 +18,6 @@
 #include <malloc.h>
 #include <fat.h>
 #include <zlib.h>
-#include "pngu.h"
 
 #include "fceugx.h"
 #include "fceusupport.h"
@@ -26,6 +25,7 @@
 #include "filebrowser.h"
 #include "fileop.h"
 #include "gcvideo.h"
+#include "utils/pngu.h"
 
 bool SaveState (char * filepath, bool silent)
 {
