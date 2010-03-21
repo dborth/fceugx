@@ -20,8 +20,8 @@
 #include "gcvideo.h"
 #include "filebrowser.h"
 #include "button_mapping.h"
-#include "gui/gui.h"
 #include "fceuload.h"
+#include "gui/gui.h"
 
 int rumbleRequest[4] = {0,0,0,0};
 GuiTrigger userInput[4];

@@ -18,12 +18,11 @@ include $(DEVKITPPC)/gamecube_rules
 TARGET		:=	fceugx-gc
 TARGETDIR   :=  executables
 BUILD		:=	build_gc
-SOURCES		:=	source/ngc/images source/ngc/sounds source/ngc/fonts source/ngc/lang \
-				source/ngc/gui source/ngc \
+SOURCES		:=	source source/images source/sounds source/fonts source/lang \
+				source/gui source/utils source/utils/sz \
 				source/fceultra source/fceultra/boards source/fceultra/input \
-				source/fceultra/utils source/fceultra/mappers source/fceultra/mbshare \
-				source/sz source/unzip
-INCLUDES	:=	source/fceultra source/ngc source/unzip
+				source/fceultra/utils source/fceultra/mappers source/fceultra/mbshare
+INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------
 # options for code generation

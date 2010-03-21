@@ -15,8 +15,9 @@
 #include "fceusupport.h"
 #include "fileop.h"
 #include "filebrowser.h"
-#include "cheat.h"
 #include "menu.h"
+
+#include "fceultra/cheat.h"
 
 int numcheats = 0;
 

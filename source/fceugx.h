@@ -14,7 +14,7 @@
 
 #include <unistd.h>
 
-#include "driver.h"
+#include "fceultra/driver.h"
 
 #define APPNAME			"FCE Ultra GX"
 #define APPVERSION		"3.1.3"

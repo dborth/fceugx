@@ -20,8 +20,10 @@
 #include <malloc.h>
 #include <sys/iosupport.h>
 
-#include "utils/usb2storage.h"
-#include "utils/mload.h"
+#ifdef HW_RVL
+#include <di/di.h>
+#endif
+
 #include "fceugx.h"
 #include "fceuload.h"
 #include "fceustate.h"
@@ -37,14 +39,11 @@
 #include "pad.h"
 #include "filelist.h"
 #include "gui/gui.h"
+#include "utils/usb2storage.h"
+#include "utils/mload.h"
+#include "utils/FreeTypeGX.h"
 
-#ifdef HW_RVL
-#include <di/di.h>
-#endif
-
-#include "FreeTypeGX.h"
-
-#include "types.h"
+#include "fceultra/types.h"
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 

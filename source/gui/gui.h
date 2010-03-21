@@ -41,14 +41,15 @@
 #include <math.h>
 #include <asndlib.h>
 #include <wiiuse/wpad.h>
-#include "pngu.h"
-#include "FreeTypeGX.h"
+
 #include "fceugx.h"
 #include "gcvideo.h"
 #include "filelist.h"
 #include "fileop.h"
 #include "pad.h"
-#include "oggplayer.h"
+#include "../utils/pngu.h"
+#include "../utils/FreeTypeGX.h"
+#include "../utils/oggplayer.h"
 
 extern FreeTypeGX *fontSystem[];
 

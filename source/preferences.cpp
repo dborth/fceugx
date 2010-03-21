@@ -16,11 +16,11 @@
 #include <ogcsys.h>
 #include <mxml.h>
 
+#include "fceugx.h"
 #include "button_mapping.h"
 #include "filebrowser.h"
 #include "menu.h"
 #include "fileop.h"
-#include "fceugx.h"
 #include "videofilter.h"
 #include "pad.h"
 

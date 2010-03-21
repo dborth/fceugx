@@ -21,8 +21,8 @@
 #include <di/di.h>
 #endif
 
-#include "fceusupport.h"
 #include "fceugx.h"
+#include "fceusupport.h"
 #include "videofilter.h"
 #include "pad.h"
 #include "gcvideo.h"
@@ -34,13 +34,13 @@
 #include "fceustate.h"
 #include "preferences.h"
 #include "button_mapping.h"
-#include "gettext.h"
 #include "filelist.h"
-#include "gui/gui.h"
 #include "menu.h"
 #include "fceuload.h"
 #include "filelist.h"
 #include "cheatmgr.h"
+#include "gui/gui.h"
+#include "utils/gettext.h"
 
 #define THREAD_SLEEP 100
 
