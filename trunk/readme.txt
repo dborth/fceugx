@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.1.3
+                                  Version 3.1.4
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -19,19 +19,31 @@ Wii/GameCube.
 * Zapper support
 * Auto Load/Save Game States and RAM
 * Custom controller configurations
-* SD, USB, DVD (requires DVDx), SMB, Zip, and 7z support
+* SD, USB, DVD, SMB, Zip, and 7z support
 * Custom controller configurations
 * 16:9 widescreen support
 * Original/filtered/unfiltered video modes
 * Turbo Mode - up to 2x the normal speed
 * Cheat support (.CHT files and Game Genie)
 * IPS/UPS/PPF automatic patching support
-* NES Compatibility Based on FCEUX 2.1.2
+* NES Compatibility Based on FCEUX 2.1.2+
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.1.4 - March 30, 2010]
+
+* DVD / USB 2.0 support via IOS 202. DVDx support has been dropped. It is
+  highly recommended to install IOS 202 via the included installer
+* Multi-language support (only French translation is fully complete)
+* Thank you to everyone who submitted translations
+* SMB improvements/bug fixes
+* Minor video & input performance optimizations
+* Synced with official FCEUX (various game fixes)
+* ROMs larger than 3 MB now load
+* Now also searches in application path for gg.rom and disksys.rom
 
 [3.1.3 - December 23, 2009]
 
