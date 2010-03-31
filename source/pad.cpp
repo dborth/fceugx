@@ -11,6 +11,7 @@
 
 #include <gccore.h>
 #include <math.h>
+#include <ogc/lwp_watchdog.h>
 
 #include "fceugx.h"
 #include "fceusupport.h"
@@ -185,13 +186,27 @@ void SetControllers()
  *
  * Scans pad and wpad
  ***************************************************************************/
+static int padsConnected = 0;
+static u64 prev, now;
+
 void
 UpdatePads()
 {
 	#ifdef HW_RVL
 	WPAD_ScanPads();
 	#endif
-	PAD_ScanPads();
+
+	now = gettime();
+
+	if(!padsConnected && diff_usec(prev, now) < 2000000)
+		return;
+
+	prev = now;
+
+	padsConnected = PAD_ScanPads();
+
+	if(!padsConnected)
+		return;
 
 	for(int i=3; i >= 0; i--)
 	{
