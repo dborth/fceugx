@@ -9,8 +9,8 @@
  * Main menu flow control
  ****************************************************************************/
 
-#ifndef _NGCMENU_
-#define _NGCMENU_
+#ifndef _MENU_H
+#define _MENU_H
 
 #include <ogcsys.h>
 

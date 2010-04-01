@@ -26,7 +26,7 @@
 #include "filebrowser.h"
 #include "fileop.h"
 
-static u32 NGCFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
+static u32 WiiFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 {
 	u32 offset = 0;
 
@@ -70,9 +70,9 @@ bool SaveRAM (char * filepath, bool silent)
 
 	// save game save to savebuffer
 	if(GameInfo->type == GIT_CART)
-		datasize = NGCFCEU_GameSave(&iNESCart, 0);
+		datasize = WiiFCEU_GameSave(&iNESCart, 0);
 	else if(GameInfo->type == GIT_VSUNI)
-		datasize = NGCFCEU_GameSave(&UNIFCart, 0);
+		datasize = WiiFCEU_GameSave(&UNIFCart, 0);
 
 	if (datasize)
 	{
@@ -124,9 +124,9 @@ bool LoadRAM (char * filepath, bool silent)
 	if (offset > 0)
 	{
 		if(GameInfo->type == GIT_CART)
-			NGCFCEU_GameSave(&iNESCart, 1);
+			WiiFCEU_GameSave(&iNESCart, 1);
 		else if(GameInfo->type == GIT_VSUNI)
-			NGCFCEU_GameSave(&UNIFCart, 1);
+			WiiFCEU_GameSave(&UNIFCart, 1);
 
 		ResetNES();
 		retval = true;
