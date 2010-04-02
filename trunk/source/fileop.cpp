@@ -39,8 +39,8 @@
 unsigned char savebuffer[SAVEBUFFERSIZE] ATTRIBUTE_ALIGN(32);
 static mutex_t bufferLock = LWP_MUTEX_NULL;
 FILE * file; // file pointer - the only one we should ever use!
-bool unmountRequired[9] = { false, false, false, false, false, false, false, false, false };
-bool isMounted[9] = { false, false, false, false, false, false, false, false, false };
+bool unmountRequired[7] = { false, false, false, false, false, false, false };
+bool isMounted[7] = { false, false, false, false, false, false, false };
 
 #ifdef HW_RVL
 	const DISC_INTERFACE* sd = &__io_wiisd;
@@ -83,6 +83,7 @@ ResumeDeviceThread()
 void
 HaltDeviceThread()
 {
+#ifdef HW_RVL
 	deviceHalt = true;
 
 	#ifdef HW_RVL
@@ -93,6 +94,7 @@ HaltDeviceThread()
 	// wait for thread to finish
 	while(!LWP_ThreadIsSuspended(devicethread))
 		usleep(THREAD_SLEEP);
+#endif
 }
 
 /****************************************************************************
@@ -109,12 +111,14 @@ HaltParseThread()
 		usleep(THREAD_SLEEP);
 }
 
+
 /****************************************************************************
  * devicecallback
  *
  * This checks our devices for changes (SD/USB removed) and
  * initializes the network in the background
  ***************************************************************************/
+#ifdef HW_RVL
 static int devsleep = 1*1000*1000;
 
 static void *
@@ -130,7 +134,6 @@ devicecallback (void *arg)
 
 	while (1)
 	{
-#ifdef HW_RVL
 		if(isMounted[DEVICE_SD])
 		{
 			if(!sd->isInserted()) // check if the device was removed
@@ -151,24 +154,7 @@ devicecallback (void *arg)
 
 		UpdateCheck();
 		InitializeNetwork(SILENT);
-#else
-		if(isMounted[DEVICE_SD_SLOTA])
-		{
-			if(!carda->isInserted()) // check if the device was removed
-			{
-				unmountRequired[DEVICE_SD_SLOTA] = true;
-				isMounted[DEVICE_SD_SLOTA] = false;
-			}
-		}
-		if(isMounted[DEVICE_SD_SLOTB])
-		{
-			if(!cardb->isInserted()) // check if the device was removed
-			{
-				unmountRequired[DEVICE_SD_SLOTB] = true;
-				isMounted[DEVICE_SD_SLOTB] = false;
-			}
-		}
-#endif
+
 		if(isMounted[DEVICE_DVD])
 		{
 			if(!dvd->isInserted()) // check if the device was removed
@@ -190,6 +176,7 @@ devicecallback (void *arg)
 	}
 	return NULL;
 }
+#endif
 
 static void *
 parsecallback (void *arg)
@@ -212,7 +199,9 @@ parsecallback (void *arg)
 void
 InitDeviceThread()
 {
+#ifdef HW_RVL
 	LWP_CreateThread (&devicethread, devicecallback, NULL, NULL, 0, 40);
+#endif
 	LWP_CreateThread (&parsethread, parsecallback, NULL, NULL, 0, 80);
 }
 
@@ -292,10 +281,14 @@ static bool MountFAT(int device, int silent)
 		if(mounted || silent)
 			break;
 
+#ifdef HW_RVL
 		if(device == DEVICE_SD)
 			retry = ErrorPromptRetry("SD card not found!");
 		else
 			retry = ErrorPromptRetry("USB drive not found!");
+#else
+		retry = ErrorPromptRetry("SD card not found!");
+#endif
 	}
 
 	isMounted[device] = mounted;
@@ -370,7 +363,7 @@ bool FindDevice(char * filepath, int * device)
 {
 	if(!filepath || filepath[0] == 0)
 		return false;
-	
+
 	if(strncmp(filepath, "sd:", 3) == 0)
 	{
 		*device = DEVICE_SD;
@@ -381,24 +374,24 @@ bool FindDevice(char * filepath, int * device)
 		*device = DEVICE_USB;
 		return true;
 	}
-	else if(strncmp(filepath, "dvd:", 4) == 0)
-	{
-		*device = DEVICE_DVD;
-		return true;
-	}
 	else if(strncmp(filepath, "smb:", 4) == 0)
 	{
 		*device = DEVICE_SMB;
 		return true;
 	}
-	else if(strncmp(filepath, "carda:", 5) == 0)
+	else if(strncmp(filepath, "carda:", 6) == 0)
 	{
 		*device = DEVICE_SD_SLOTA;
 		return true;
 	}
-	else if(strncmp(filepath, "cardb:", 5) == 0)
+	else if(strncmp(filepath, "cardb:", 6) == 0)
 	{
 		*device = DEVICE_SD_SLOTB;
+		return true;
+	}
+	else if(strncmp(filepath, "dvd:", 4) == 0)
+	{
+		*device = DEVICE_DVD;
 		return true;
 	}
 	return false;
@@ -430,16 +423,23 @@ bool ChangeInterface(int device, bool silent)
 
 	switch(device)
 	{
+#ifdef HW_RVL
 		case DEVICE_SD:
 		case DEVICE_USB:
+#else
+		case DEVICE_SD_SLOTA:
+		case DEVICE_SD_SLOTB:
+#endif
 			mounted = MountFAT(device, silent);
 			break;
 		case DEVICE_DVD:
 			mounted = MountDVD(silent);
 			break;
+#ifdef HW_RVL
 		case DEVICE_SMB:
 			mounted = ConnectShare(silent);
 			break;
+#endif
 	}
 
 	return mounted;
@@ -459,7 +459,7 @@ void CreateAppPath(char * origpath)
 {
 	if(!origpath || origpath[0] == 0)
 		return;
-	
+
 	char * path = strdup(origpath); // make a copy so we don't mess up original
 
 	if(!path)
@@ -506,7 +506,7 @@ bool ParseDirEntries()
 			i--;
 			continue;
 		}
-		
+
 		if(!AddBrowserEntry())
 		{
 			i=0;
@@ -538,12 +538,12 @@ bool ParseDirEntries()
 	{
 		qsort(browserList, browser.numEntries+i, sizeof(BROWSERENTRY), FileSortCallback);
 	}
-	
+
 	// try to find and select the last loaded file
 	if(selectLoadedFile == 1 && res != 0 && loadedFile[0] != 0 && browser.dir[0] != 0)
 	{
 		int indexFound = -1;
-
+		
 		for(int j=1; j < browser.numEntries + i; j++)
 		{
 			if(strcmp(browserList[j].filename, loadedFile) == 0)
@@ -610,7 +610,7 @@ ParseDirectory(bool waitParse)
 	if (dirIter == NULL)
 	{
 		char * devEnd = strrchr(browser.dir, '/');
-		
+
 		while(!IsDeviceRoot(browser.dir))
 		{
 			devEnd[0] = 0; // strip slash
@@ -642,12 +642,12 @@ ParseDirectory(bool waitParse)
 
 	parseHalt = false;
 	ParseDirEntries(); // index first 20 entries
+
 	LWP_ResumeThread(parsethread); // index remaining entries
 
 	if(waitParse) // wait for complete parsing
 	{
-		ShowAction("Loading...");
-
+    ShowAction("Loading...");
 		while(!LWP_ThreadIsSuspended(parsethread))
 			usleep(THREAD_SLEEP);
 
