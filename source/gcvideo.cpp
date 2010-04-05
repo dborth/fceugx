@@ -594,9 +594,6 @@ InitGCVideo ()
 	GX_SetCopyClear (background, 0x00ffffff);
 	GX_SetDispCopyGamma (GX_GM_1_0);
 	GX_SetCullMode (GX_CULL_NONE);
-	GX_SetDrawDoneCallback(VIDEO_Flush);
-	GX_CopyDisp (xfb[whichfb], GX_TRUE); // reset xfb
-	GX_Flush();
 }
 
 /****************************************************************************
@@ -664,8 +661,6 @@ ResetVideo_Emu ()
 
 void RenderFrame(unsigned char *XBuf)
 {
-	GX_WaitDrawDone();
-	
 	// Ensure previous vb has complete
 	while ((LWP_ThreadIsSuspended (vbthread) == 0) || (copynow == GX_TRUE))
 		usleep (50);
@@ -758,7 +753,7 @@ void RenderFrame(unsigned char *XBuf)
 
 	// render textured quad
 	draw_square(view);
-	GX_SetDrawDone();
+	GX_DrawDone();
 
 	if(ScreenshotRequested)
 	{
@@ -783,6 +778,7 @@ void RenderFrame(unsigned char *XBuf)
 
 	// EFB is ready to be copied into XFB
 	VIDEO_SetNextFramebuffer(xfb[whichfb]);
+	VIDEO_Flush();
 
 	copynow = GX_TRUE;
 
@@ -888,20 +884,16 @@ ResetVideo_Menu ()
  *
  * Renders everything current sent to GX, and flushes video
  ***************************************************************************/
-static bool firstFrame = true;
-
 void Menu_Render()
 {
-	if(!firstFrame)
-		GX_WaitDrawDone();
 	whichfb ^= 1; // flip framebuffer
 	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate(GX_TRUE);
 	GX_CopyDisp(xfb[whichfb],GX_TRUE);
-	GX_SetDrawDone();
+	GX_DrawDone();
 	VIDEO_SetNextFramebuffer(xfb[whichfb]);
+	VIDEO_Flush();
 	VIDEO_WaitVSync();
-	firstFrame = false;
 }
 
 /****************************************************************************
@@ -1306,3 +1298,4 @@ struct st_palettes palettes[] = {
             0xb8f818, 0xf8d8f8, 0x000000, 0x007800 }
     }
 };
+
