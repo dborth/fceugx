@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.1.4
+                                  Version 3.1.5
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -26,12 +26,18 @@ Wii/GameCube.
 * Turbo Mode - up to 2x the normal speed
 * Cheat support (.CHT files and Game Genie)
 * IPS/UPS/PPF automatic patching support
-* NES Compatibility Based on FCEUX 2.1.2+
+* NES Compatibility Based on FCEUX 2.1.3
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.1.5 - April 9, 2010]
+
+* Most 3rd party controllers should work now (you're welcome!)
+* Translation updates (German and Dutch)
+* Other minor changes
 
 [3.1.4 - March 30, 2010]
 
