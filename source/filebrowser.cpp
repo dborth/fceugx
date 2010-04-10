@@ -510,6 +510,10 @@ int BrowserLoadFile()
 	}
 	else
 	{
+		// store the filename (w/o ext) - used for ram/state naming
+		StripExt(romFilename, browserList[browser.selIndex].filename);
+		strcpy(loadedFile, browserList[browser.selIndex].filename);
+		
 		// load UPS/IPS/PPF patch
 		filesize = LoadPatch(filesize);
 
@@ -524,11 +528,6 @@ int BrowserLoadFile()
 				LoadStateAuto(SILENT);
 
 			ResetNES();
-
-			// store the filename (w/o ext) - used for ram/state naming
-			StripExt(romFilename, browserList[browser.selIndex].filename);
-			strcpy(loadedFile, browserList[browser.selIndex].filename);
-
 			ResetBrowser();
 		}
 	}
