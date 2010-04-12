@@ -368,7 +368,7 @@ int main(int argc, char *argv[])
 		else
 			MainMenu(MENU_GAME);
 
-		if(currentTiming != GCSettings.timing)
+		if(currentTiming != GCSettings.timing && GCSettings.timing != 2)
 			FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
 
 		currentTiming = GCSettings.timing;
