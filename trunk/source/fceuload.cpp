@@ -50,7 +50,7 @@ int GCMemROM(int size)
 	GameInfo->soundrate = SAMPLERATE;
 	GameInfo->name=0;
 	GameInfo->type=GIT_CART;
-	GameInfo->vidsys=GIV_USER;
+	GameInfo->vidsys=(EGIV)GCSettings.timing;
 	GameInfo->input[0]=GameInfo->input[1]=SI_UNSET;
 	GameInfo->inputfc=SIFC_UNSET;
 	GameInfo->cspecial=SIS_NONE;

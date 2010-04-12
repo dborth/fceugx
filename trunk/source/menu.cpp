@@ -3051,7 +3051,9 @@ static int MenuSettingsVideo()
 				break;
 
 			case 5: // timing
-				GCSettings.timing ^= 1;
+				GCSettings.timing++;
+				if(GCSettings.timing > 2)
+					GCSettings.timing = 0;
 				break;
 
 			case 6:
@@ -3110,7 +3112,13 @@ static int MenuSettingsVideo()
 			sprintf (options.value[4], "%s",
 				GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default");
 
-			sprintf (options.value[5], "%s", GCSettings.timing == 1 ? "PAL" : "NTSC");
+			switch(GCSettings.timing)
+			{
+				case 0: sprintf (options.value[5], "NTSC"); break;
+				case 1: sprintf (options.value[5], "PAL"); break;
+				case 2: sprintf (options.value[5], "Automatic"); break;
+			}
+
 			sprintf (options.value[6], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
 			sprintf (options.value[7], "%d, %d", GCSettings.xshift, GCSettings.yshift);
 			sprintf (options.value[8], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
@@ -3133,6 +3141,7 @@ static int MenuSettingsVideo()
 		}
 
 		if(backBtn.GetState() == STATE_CLICKED)
+		
 		{
 			menu = MENU_GAMESETTINGS;
 		}

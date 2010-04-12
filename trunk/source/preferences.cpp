@@ -380,8 +380,8 @@ void FixInvalidSettings()
 		GCSettings.Controller = CTRL_PAD2;
 	if(!(GCSettings.render >= 0 && GCSettings.render < 3))
 		GCSettings.render = 2;
-	if(GCSettings.timing != 0 && GCSettings.timing != 1)
-		GCSettings.timing = 0;
+	if(GCSettings.timing < 0 || GCSettings.timing > 2)
+		GCSettings.timing = 2;
 	if(!(GCSettings.videomode >= 0 && GCSettings.videomode < 5))
 		GCSettings.videomode = 0;
 }
@@ -398,7 +398,7 @@ DefaultSettings ()
 	ResetControls(); // controller button mappings
 
 	GCSettings.currpal = 1; // color palette
-	GCSettings.timing = 0; // 0 - NTSC, 1 - PAL
+	GCSettings.timing = 2; // 0 - NTSC, 1 - PAL, 2 - Automatic
 	GCSettings.videomode = 0; // automatic video mode detection
 	GCSettings.Controller = CTRL_PAD2; // NES pad, Four Score, Zapper
 	GCSettings.crosshair = 1; // show zapper crosshair

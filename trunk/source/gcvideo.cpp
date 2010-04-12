@@ -203,7 +203,7 @@ static u32 normaldiff;
 
 void setFrameTimer()
 {
-	if (GCSettings.timing == 1) // PAL
+	if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1) // PAL
 		normaldiff = 20000; // 50hz
 	else
 		normaldiff = 16667; // 60hz
@@ -212,16 +212,14 @@ void setFrameTimer()
 
 void SyncSpeed()
 {
-	if(GCSettings.timing != vmode_60hz)
-		return; // same timing as game - no adjustment necessary
-	
 	now = gettime();
+	u32 diff = diff_usec(prev, now);
 	
 	if(turbomode)
 	{
 		// do nothing
 	}
-	else if (diff_usec(prev, now) > normaldiff)
+	else if (diff > normaldiff)
 	{
 		frameskip++;
 	}
@@ -609,7 +607,7 @@ ResetVideo_Emu ()
 
 	// change current VI mode if using original render mode
 	if (GCSettings.render == 0)
-		rmode = tvmodes[GCSettings.timing];
+		rmode = tvmodes[FCEUI_GetCurrentVidSystem(NULL, NULL)];
 	else
 		rmode = FindVideoMode();
 
