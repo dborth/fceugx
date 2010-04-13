@@ -866,6 +866,7 @@ SaveFile (char * buffer, char *filepath, size_t datasize, bool silent)
 		if(!written)
 		{
 			unmountRequired[device] = true;
+			if(silent) break;
 			retry = ErrorPromptRetry("Error saving file!");
 		}
 	}
