@@ -66,11 +66,10 @@ static void AudioSwitchBuffers()
 {
 	if ( !ConfigRequested )
 	{
+		whichab ^= 1;
 		int len = MixerCollect( soundbuffer[whichab], 3840 );
 		DCFlushRange(soundbuffer[whichab], len);
 		AUDIO_InitDMA((u32)soundbuffer[whichab], len);
-		AUDIO_StartDMA();
-		whichab ^= 1;
 		IsPlaying = 1;
 	}
 	else IsPlaying = 0;
@@ -119,6 +118,13 @@ SwitchAudioMode(int mode)
 		ASND_Pause(1);
 		AUDIO_StopDMA();
 		AUDIO_RegisterDMACallback(AudioSwitchBuffers);
+		
+		memset(soundbuffer[0],0,3840);
+		memset(soundbuffer[1],0,3840);
+		DCFlushRange(soundbuffer[0],3840);
+		DCFlushRange(soundbuffer[1],3840);
+		AUDIO_InitDMA((u32)soundbuffer[whichab],3200);
+		AUDIO_StartDMA();
 		#endif
 	}
 	else // menu
