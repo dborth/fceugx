@@ -1384,10 +1384,12 @@ static int MenuGame()
 		#endif
 
 		w.SetEffect(EFFECT_FADE, 15);
-		AutoSave();
 	}
 
 	ResumeGui();
+	
+	if(lastMenu == MENU_NONE)
+		AutoSave();
 
 	while(menu == MENU_NONE)
 	{
@@ -3982,10 +3984,6 @@ MainMenu (int menu)
 	ShutoffRumble();
 	#endif
 
-	// wait for keys to be depressed
-	while(MenuRequested())
-		usleep(100);
-
 	CancelAction();
 	HaltGui();
 
@@ -4029,5 +4027,12 @@ MainMenu (int menu)
 	{
 		free(gameScreenTex2);
 		gameScreenTex2 = NULL;
+	}
+	
+	// wait for keys to be depressed
+	while(MenuRequested())
+	{
+		UpdatePads();
+		usleep(THREAD_SLEEP);
 	}
 }
