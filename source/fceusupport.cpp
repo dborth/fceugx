@@ -100,13 +100,22 @@ void FCEUD_NetplayText(uint8 *text)
 DUMMY(FCEUD_HideMenuToggle)
 DUMMY(FCEUD_TurboOn)
 DUMMY(FCEUD_TurboOff)
+DUMMY(FCEUD_TurboToggle)
 DUMMY(FCEUD_SaveStateAs)
 DUMMY(FCEUD_LoadStateFrom)
 DUMMY(FCEUD_MovieRecordTo)
 DUMMY(FCEUD_MovieReplayFrom)
 DUMMY(FCEUD_ToggleStatusIcon)
+DUMMY(FCEUD_DebugBreakpoint)
+DUMMY(FCEUD_SoundToggle)
 DUMMY(FCEUD_AviRecordTo)
 DUMMY(FCEUD_AviStop)
 void FCEUI_AviVideoUpdate(const unsigned char* buffer) { }
 int FCEUD_ShowStatusIcon(void) { return 0; }
 bool FCEUI_AviIsRecording(void) { return 0; }
+bool FCEUI_AviDisableMovieMessages() { return true; }
+const char *FCEUD_GetCompilerString() { return NULL; }
+void FCEUI_UseInputPreset(int preset) { }
+void FCEUD_SoundVolumeAdjust(int n) { }
+void FCEUD_SetEmulationSpeed(int cmd) { }
+void FCEUI_UseInputPreset(int preset) { }
