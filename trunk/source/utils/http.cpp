@@ -10,6 +10,8 @@
  * Written by dhewg/bushing, modified by Tantric
  ***************************************************************************/
 
+#ifdef HW_RVL
+
 #include <malloc.h>
 #include <string.h>
 #include <stdio.h>
@@ -431,4 +433,4 @@ bool http_request(const char *url, FILE * hfile, u8 * buffer,
 	result = HTTPR_OK;
 	return true;
 }
-
+#endif
