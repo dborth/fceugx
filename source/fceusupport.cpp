@@ -118,4 +118,3 @@ const char *FCEUD_GetCompilerString() { return NULL; }
 void FCEUI_UseInputPreset(int preset) { }
 void FCEUD_SoundVolumeAdjust(int n) { }
 void FCEUD_SetEmulationSpeed(int cmd) { }
-void FCEUI_UseInputPreset(int preset) { }
