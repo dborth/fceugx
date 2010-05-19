@@ -121,7 +121,7 @@ static camera cam = { {0.0F, 0.0F, 0.0F},
 static GXRModeObj PAL_240p =
 {
 	VI_TVMODE_PAL_DS,       // viDisplayMode
-	640,             // fbWidth
+	512,             // fbWidth
 	240,             // efbHeight
 	240,             // xfbHeight
 	(VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
@@ -158,7 +158,7 @@ static GXRModeObj PAL_240p =
 static GXRModeObj NTSC_240p =
 {
 	VI_TVMODE_EURGB60_DS,      // viDisplayMode
-	640,             // fbWidth
+	512,             // fbWidth
 	240,             // efbHeight
 	240,             // xfbHeight
 	(VI_MAX_WIDTH_NTSC - 640)/2,	// viXOrigin
@@ -407,7 +407,7 @@ UpdateScaling()
 		else // no filtering
 		{
 			fscale = 1;
-			xscale = 640 / 2; // use GX scaler instead VI
+			xscale = 512 / 2; // use GX scaler instead VI
 			yscale = TEX_HEIGHT / 2;
 		}
 	}
@@ -417,10 +417,9 @@ UpdateScaling()
 		yscale = vmode->efbHeight / 2;
 	}
 
-	// aspect ratio scaling (change width scale)
-	// yes its pretty cheap and ugly, but its easy!
+	// match the original console's width for "widescreen" to prevent flickering
 	if (GCSettings.widescreen)
-		xscale = (3*xscale)/4;
+		xscale = 256;
 
 	xscale *= GCSettings.zoomHor;
 	yscale *= GCSettings.zoomVert;
