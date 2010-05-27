@@ -212,6 +212,9 @@ void setFrameTimer()
 
 void SyncSpeed()
 {
+	if((vmode_60hz && normaldiff == 16667) || (!vmode_60hz && normaldiff == 20000))
+		return; // same timing as game - no adjustment necessary 
+
 	now = gettime();
 	u32 diff = diff_usec(prev, now);
 	
