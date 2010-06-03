@@ -341,6 +341,7 @@ int main(int argc, char *argv[])
 	DefaultSettings(); // Set defaults
 	InitialiseAudio();
 	InitFreeType((u8*)font_ttf, font_ttf_size); // Initialize font system
+	gameScreenPng = (u8 *)malloc(50*1024);
 	InitGUIThreads();
 
 	// allocate memory to store rom
