@@ -21,7 +21,6 @@
 #include "filebrowser.h"
 #include "menu.h"
 #include "fileop.h"
-#include "videofilter.h"
 #include "pad.h"
 
 struct SGCSettings GCSettings;
@@ -146,7 +145,6 @@ preparePrefsData ()
 	createXMLSetting("zoomVert", "Vertical Zoom Level", FtoStr(GCSettings.zoomVert));
 	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
 	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
-	createXMLSetting("FilterMethod", "Filter Method", toStr(GCSettings.FilterMethod));
 	createXMLSetting("hideoverscan", "Video Cropping", toStr(GCSettings.hideoverscan));
 	createXMLSetting("xshift", "Horizontal Video Shift", toStr(GCSettings.xshift));
 	createXMLSetting("yshift", "Vertical Video Shift", toStr(GCSettings.yshift));
@@ -319,7 +317,6 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.zoomVert, "zoomVert");
 			loadXMLSetting(&GCSettings.render, "render");
 			loadXMLSetting(&GCSettings.widescreen, "widescreen");
-			loadXMLSetting(&GCSettings.FilterMethod, "FilterMethod");
 			loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
 			loadXMLSetting(&GCSettings.xshift, "xshift");
 			loadXMLSetting(&GCSettings.yshift, "yshift");
@@ -407,7 +404,6 @@ DefaultSettings ()
 
 	GCSettings.render = 2; // Unfiltered
 	GCSettings.hideoverscan = 2; // hide both horizontal and vertical
-	GCSettings.FilterMethod = FILTER_NONE;	// no hq2x
 
 	GCSettings.widescreen = 0; // no aspect ratio correction
 	GCSettings.zoomHor = 1.0; // horizontal zoom level

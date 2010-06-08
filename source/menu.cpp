@@ -23,7 +23,6 @@
 
 #include "fceugx.h"
 #include "fceusupport.h"
-#include "videofilter.h"
 #include "pad.h"
 #include "gcvideo.h"
 #include "filebrowser.h"
@@ -2917,7 +2916,6 @@ static int MenuSettingsVideo()
 
 	sprintf(options.name[i++], "Rendering");
 	sprintf(options.name[i++], "Scaling");
-	sprintf(options.name[i++], "Filtering");
 	sprintf(options.name[i++], "Cropping");
 	sprintf(options.name[i++], "Palette");
 	sprintf(options.name[i++], "Game Timing");
@@ -2927,8 +2925,6 @@ static int MenuSettingsVideo()
 	sprintf(options.name[i++], "Sprite Limit");
 	sprintf(options.name[i++], "Video Mode");
 	options.length = i;
-
-	options.name[2][0] = 0; // hide hq2x since it's not working
 
 	for(i=0; i < options.length; i++)
 		options.value[i][0] = 0;
@@ -2989,45 +2985,39 @@ static int MenuSettingsVideo()
 				break;
 
 			case 2:
-				GCSettings.FilterMethod++;
-				if (GCSettings.FilterMethod >= NUM_FILTERS)
-					GCSettings.FilterMethod = 0;
-				break;
-
-			case 3:
 				GCSettings.hideoverscan++;
 				if (GCSettings.hideoverscan > 3)
 					GCSettings.hideoverscan = 0;
 				break;
 
-			case 4: // palette
+			case 3: // palette
 				if ( ++GCSettings.currpal > MAXPAL )
 					GCSettings.currpal = 0;
 				break;
 
-			case 5: // timing
+			case 4: // timing
 				GCSettings.timing++;
 				if(GCSettings.timing > 2)
 					GCSettings.timing = 0;
 				break;
 
-			case 6:
+			case 5:
 				ScreenZoomWindow();
 				break;
 
-			case 7:
+			case 6:
 				ScreenPositionWindow();
 				break;
 
-			case 8:
+			case 7:
 				GCSettings.crosshair ^= 1;
 				break;
 
-			case 9:
+			case 8:
 				GCSettings.spritelimit ^= 1;
 				break;
 
-			case 10:
+			case 9:
 				GCSettings.videomode++;
 				if(GCSettings.videomode > 4)
 					GCSettings.videomode = 0;
@@ -3054,43 +3044,41 @@ static int MenuSettingsVideo()
 			else
 				sprintf (options.value[1], "Default");
 
-			sprintf (options.value[2], "%s", GetFilterName((RenderFilter)GCSettings.FilterMethod));
-
 			switch(GCSettings.hideoverscan)
 			{
-				case 0: sprintf (options.value[3], "Off"); break;
-				case 1: sprintf (options.value[3], "Vertical"); break;
-				case 2: sprintf (options.value[3], "Horizontal"); break;
-				case 3: sprintf (options.value[3], "Both"); break;
+				case 0: sprintf (options.value[2], "Off"); break;
+				case 1: sprintf (options.value[2], "Vertical"); break;
+				case 2: sprintf (options.value[2], "Horizontal"); break;
+				case 3: sprintf (options.value[2], "Both"); break;
 			}
 
-			sprintf (options.value[4], "%s",
+			sprintf (options.value[3], "%s",
 				GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default");
 
 			switch(GCSettings.timing)
 			{
-				case 0: sprintf (options.value[5], "NTSC"); break;
-				case 1: sprintf (options.value[5], "PAL"); break;
-				case 2: sprintf (options.value[5], "Automatic"); break;
+				case 0: sprintf (options.value[4], "NTSC"); break;
+				case 1: sprintf (options.value[4], "PAL"); break;
+				case 2: sprintf (options.value[4], "Automatic"); break;
 			}
 
-			sprintf (options.value[6], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
-			sprintf (options.value[7], "%d, %d", GCSettings.xshift, GCSettings.yshift);
-			sprintf (options.value[8], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
-			sprintf (options.value[9], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
+			sprintf (options.value[5], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
+			sprintf (options.value[6], "%d, %d", GCSettings.xshift, GCSettings.yshift);
+			sprintf (options.value[7], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
+			sprintf (options.value[8], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
 
 			switch(GCSettings.videomode)
 			{
 				case 0:
-					sprintf (options.value[10], "Automatic (Recommended)"); break;
+					sprintf (options.value[9], "Automatic (Recommended)"); break;
 				case 1:
-					sprintf (options.value[10], "NTSC (480i)"); break;
+					sprintf (options.value[9], "NTSC (480i)"); break;
 				case 2:
-					sprintf (options.value[10], "Progressive (480p)"); break;
+					sprintf (options.value[9], "Progressive (480p)"); break;
 				case 3:
-					sprintf (options.value[10], "PAL (50Hz)"); break;
+					sprintf (options.value[9], "PAL (50Hz)"); break;
 				case 4:
-					sprintf (options.value[10], "PAL (60Hz)"); break;
+					sprintf (options.value[9], "PAL (60Hz)"); break;
 			}
 			optionBrowser.TriggerUpdate();
 		}
@@ -3840,7 +3828,7 @@ MainMenu (int menu)
 		{
 			gameScreenPngSize = PNGU_EncodeFromGXTexture(pngContext, vmode->fbWidth, vmode->efbHeight, gameScreenTex, 0);
 			PNGU_ReleaseImageContext(pngContext);
-			DCFlushRange(gameScreenPng, 50*1024);
+			DCFlushRange(gameScreenPng, 512*1024);
 		}
 		
 		gameScreenImg = new GuiImage(gameScreenTex, vmode->fbWidth, vmode->efbHeight);
