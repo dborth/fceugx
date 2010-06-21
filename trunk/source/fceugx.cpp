@@ -320,6 +320,7 @@ int main(int argc, char *argv[])
 	InitGCVideo (); // Initialize video
 	SetupPads();
 	ResetVideo_Menu (); // change to menu video mode
+	MountAllFAT(); // Initialize libFAT for SD and USB
 
 	#ifdef HW_RVL
 	// Wii Power/Reset buttons
@@ -339,7 +340,6 @@ int main(int argc, char *argv[])
 		CreateAppPath(argv[0]);
 #endif
 
-	MountAllFAT(); // Initialize libFAT for SD and USB
 	DefaultSettings(); // Set defaults
 	InitialiseAudio();
 	InitFreeType((u8*)font_ttf, font_ttf_size); // Initialize font system
