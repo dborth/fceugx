@@ -366,14 +366,14 @@ static bool IsValidROM()
 
 		if (p != NULL)
 		{
+			char * zippedFilename = NULL;
+
 			if(stricmp(p, ".zip") == 0 && !inSz)
 			{
 				// we need to check the file extension of the first file in the archive
-				char * zippedFilename = GetFirstZipFilename ();
+				zippedFilename = GetFirstZipFilename ();
 
-				if(zippedFilename == NULL) // we don't want to run strlen on NULL
-					p = NULL;
-				else if(strlen(zippedFilename) > 4)
+				if(zippedFilename && strlen(zippedFilename) > 4)
 					p = strrchr(zippedFilename, '.');
 				else
 					p = NULL;
@@ -390,9 +390,11 @@ static bool IsValidROM()
 					stricmp(p, ".unif") == 0
 				)
 				{
+					if(zippedFilename) free(zippedFilename);
 					return true;
 				}
 			}
+			if(zippedFilename) free(zippedFilename);
 		}
 	}
 	ErrorPrompt("Unknown file type!");

@@ -373,8 +373,11 @@ int main(int argc, char *argv[])
 		else
 			MainMenu(MENU_GAME);
 
-		if(currentTiming != GCSettings.timing && GCSettings.timing != 2)
-			FCEUI_SetVidSystem(GCSettings.timing); // causes a small 'pop' in the audio
+		if(currentTiming != GCSettings.timing)
+		{
+			GameInfo->vidsys=(EGIV)GCSettings.timing;
+			FCEU_ResetVidSys(); // causes a small 'pop' in the audio
+		}
 
 		currentTiming = GCSettings.timing;
 		ConfigRequested = 0;

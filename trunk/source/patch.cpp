@@ -6,7 +6,7 @@
  *
  * patch.cpp
  *
- * IPS/UPS/PPF patch support
+ * IPS/UPS patch support
  ***************************************************************************/
 
 #include <zlib.h>
