@@ -344,6 +344,7 @@ int main(int argc, char *argv[])
 	InitialiseAudio();
 	InitFreeType((u8*)font_ttf, font_ttf_size); // Initialize font system
 	gameScreenPng = (u8 *)malloc(512*1024);
+	browserList = (BROWSERENTRY *)malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
 	InitGUIThreads();
 
 	// allocate memory to store rom
