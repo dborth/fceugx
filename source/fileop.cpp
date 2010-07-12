@@ -539,7 +539,6 @@ bool ParseDirEntries()
 
 		if(!AddBrowserEntry())
 		{
-			i=0;
 			parseHalt = true;
 			break;
 		}
@@ -561,6 +560,7 @@ bool ParseDirEntries()
 		{
 			StripExt(browserList[browser.numEntries+i].displayname, browserList[browser.numEntries+i].filename); // hide file extension
 		}
+		i++;
 	}
 
 	// Sort the file list
