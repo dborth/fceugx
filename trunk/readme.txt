@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                                  Version 3.1.8
+                                  Version 3.1.9
                          http://code.google.com/p/fceugc   
                                (Under GPL License)
  
@@ -32,6 +32,15 @@ Wii/GameCube.
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.1.9 - July 14, 2010]
+
+* Fixed 16:9 correction in Original mode
+* Fixed PAL/NTSC timing switching issue
+* Ability to use both USB ports (requires updated IOS 202 - WARNING: older 
+  versions of IOS 202 are NO LONGER supported)
+* Hide non-ROM files
+* Other minor improvements
 
 [3.1.8 - June 20, 2010]
 
