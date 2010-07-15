@@ -530,9 +530,9 @@ bool ParseDirEntries()
 			if(ext == NULL)
 				continue;
 
-			if(	stricmp(p, "nes") != 0 && stricmp(p, "fds") != 0 &&
-				stricmp(p, "nsf") != 0 && stricmp(p, "unf") != 0 &&
-				stricmp(p, "nez") != 0 && stricmp(p, "unif") != 0 &&
+			if(	stricmp(ext, "nes") != 0 && stricmp(ext, "fds") != 0 &&
+				stricmp(ext, "nsf") != 0 && stricmp(ext, "unf") != 0 &&
+				stricmp(ext, "nez") != 0 && stricmp(ext, "unif") != 0 &&
 				stricmp(ext, "zip") != 0 && stricmp(ext, "7z") != 0)
 				continue;
 		}
