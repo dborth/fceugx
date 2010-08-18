@@ -87,11 +87,6 @@ HaltDeviceThread()
 #ifdef HW_RVL
 	deviceHalt = true;
 
-	#ifdef HW_RVL
-	if(inNetworkInit) // don't wait for network to initialize
-		return;
-	#endif
-
 	// wait for thread to finish
 	while(!LWP_ThreadIsSuspended(devicethread))
 		usleep(THREAD_SLEEP);
@@ -120,19 +115,11 @@ HaltParseThread()
  * initializes the network in the background
  ***************************************************************************/
 #ifdef HW_RVL
-static int devsleep = 1*1000*1000;
+static int devsleep;
 
 static void *
 devicecallback (void *arg)
 {
-	while(devsleep > 0)
-	{
-		if(deviceHalt)
-			LWP_SuspendThread(devicethread);
-		usleep(THREAD_SLEEP);
-		devsleep -= THREAD_SLEEP;
-	}
-
 	while (1)
 	{
 		if(isMounted[DEVICE_SD])
@@ -153,9 +140,6 @@ devicecallback (void *arg)
 			}
 		}
 
-		UpdateCheck();
-		InitializeNetwork(SILENT);
-
 		if(isMounted[DEVICE_DVD])
 		{
 			if(!dvd->isInserted()) // check if the device was removed
@@ -174,6 +158,7 @@ devicecallback (void *arg)
 			usleep(THREAD_SLEEP);
 			devsleep -= THREAD_SLEEP;
 		}
+		UpdateCheck();
 	}
 	return NULL;
 }
@@ -765,7 +750,7 @@ LoadFile (char * rbuffer, char *filepath, size_t length, bool silent)
 	HaltParseThread();
 
 	// open the file
-	while(!size && retry)
+	while(retry)
 	{
 		if(!ChangeInterface(device, silent))
 			break;
@@ -793,6 +778,7 @@ LoadFile (char * rbuffer, char *filepath, size_t length, bool silent)
 			{
 				unmountRequired[device] = true;
 				retry = ErrorPromptRetry("Error reading file!");
+				fclose (file);
 				continue;
 			}
 
@@ -820,6 +806,7 @@ LoadFile (char * rbuffer, char *filepath, size_t length, bool silent)
 				CancelAction();
 			}
 		}
+		retry = 0;
 		fclose (file);
 	}
 
