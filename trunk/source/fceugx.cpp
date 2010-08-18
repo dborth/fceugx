@@ -151,13 +151,11 @@ void ExitApp()
 #ifdef HW_RVL
 void ShutdownCB()
 {
-	if(!inNetworkInit)
-		ShutdownRequested = 1;
+	ShutdownRequested = 1;
 }
 void ResetCB()
 {
-	if(!inNetworkInit)
-		ResetRequested = 1;
+	ResetRequested = 1;
 }
 #endif
 
@@ -327,6 +325,7 @@ int main(int argc, char *argv[])
 	if(version != 58 && preferred > 0 && version != (u32)preferred && __di_check_ahbprot() != 1)
 		IOS_ReloadIOS(preferred);
 
+	StartNetworkThread();
 	DI_Init();
 #endif
 
