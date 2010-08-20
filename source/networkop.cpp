@@ -186,8 +186,9 @@ static u8 netstack[8192] ATTRIBUTE_ALIGN (32);
 
 static void * netcb (void *arg)
 {
-	s32 res = 0;
+	s32 res;
 	int retry;
+	int wait;
 
 	while(netHalt != 2)
 	{
@@ -195,14 +196,19 @@ static void * netcb (void *arg)
 
 		while (retry)
 		{
-			if (net_init_async(NULL, NULL) != 0)
+			net_deinit();
+			res = net_init_async(NULL, NULL);
+
+			if(res != 0)
 				break; // failed
 
 			res = net_get_status();
-			while (res == -EBUSY)
+			wait = 500; // only wait 10 sec
+			while (res == -EBUSY && wait > 0)
 			{
 				usleep(20000);
 				res = net_get_status();
+				wait--;
 			}
 
 			if (res != -EAGAIN && res != -ETIMEDOUT)
@@ -213,7 +219,7 @@ static void * netcb (void *arg)
 			continue;
 		}
 
-		if (res >= 0)
+		if (res == 0)
 		{
 			networkInit = true;
 
@@ -222,7 +228,6 @@ static void * netcb (void *arg)
 			if (hostip.s_addr)
 				strcpy(wiiIP, inet_ntoa(hostip));
 		}
-
 		LWP_SuspendThread(networkthread);
 	}
 	return NULL;
