@@ -8,7 +8,7 @@
 #include <limits.h>
 #include <stdarg.h>
 
-
+#include "emufile.h"
 #include "version.h"
 #include "types.h"
 #include "utils/endian.h"
@@ -27,7 +27,6 @@
 #endif
 #include "utils/guid.h"
 #include "utils/memory.h"
-#include "utils/memorystream.h"
 #include "utils/xstring.h"
 #include <sstream>
 
@@ -37,6 +36,9 @@
 
 #ifdef WIN32
 #include <windows.h>
+#include "./drivers/win/common.h"
+#include "./drivers/win/tasedit.h"
+#include "./drivers/win/window.h"
 extern void AddRecentMovieFile(const char *filename);
 #endif
 
@@ -53,6 +55,7 @@ std::vector<string> subtitleMessages;	//Messages of subtitles
 bool subtitlesOnAVI = false;
 bool autoMovieBackup = false; //Toggle that determines if movies should be backed up automatically before altering them
 bool freshMovie = false;	  //True when a movie loads, false when movie is altered.  Used to determine if a movie has been altered since opening
+bool movieFromPoweron = true;
 
 // Function declarations------------------------
 
@@ -66,8 +69,6 @@ bool freshMovie = false;	  //True when a movie loads, false when movie is altere
 //todo - consider a MemoryBackedFile class..
 //..a lot of work.. instead lets just read back from the current fcm
 
-//todo - handle case where read+write is requested, but the file is actually readonly (could be confusing)
-
 //todo - could we, given a field size, over-read from an inputstream and then parse out an integer?
 //that would be faster than several reads, perhaps.
 
@@ -75,12 +76,11 @@ bool freshMovie = false;	  //True when a movie loads, false when movie is altere
 bool suppressMovieStop=false;
 
 //----movie engine main state
-
 EMOVIEMODE movieMode = MOVIEMODE_INACTIVE;
 
 //this should not be set unless we are in MOVIEMODE_RECORD!
 //FILE* fpRecordingMovie = 0;
-std::ostream* osRecordingMovie = 0;
+EMUFILE* osRecordingMovie = NULL;
 
 int currFrameCounter;
 uint32 cur_input_display = 0;
@@ -88,6 +88,7 @@ int pauseframe = -1;
 bool movie_readonly = true;
 int input_display = 0;
 int frame_display = 0;
+bool fullSaveStateLoads = false;	//Option for loading a savestates full contents in read+write mode instead of up to the frame count in the savestate (useful as a recovery option)
 
 SFORMAT FCEUMOV_STATEINFO[]={
 	{ &currFrameCounter, 4|FCEUSTATE_RLSB, "FCNT"},
@@ -96,19 +97,82 @@ SFORMAT FCEUMOV_STATEINFO[]={
 
 char curMovieFilename[512] = {0};
 MovieData currMovieData;
+MovieData defaultMovieData;
 int currRerecordCount;
+
+#ifdef GEKKO
+void MovieData::clearRecordRange(int start, int len) { }
+void MovieData::insertEmpty(int at, int frames) { }
+void MovieData::TryDumpIncremental() { }
+MovieRecord::MovieRecord() { }
+void MovieRecord::clear() { }
+bool MovieRecord::Compare(MovieRecord& compareRec) { return false; }
+void MovieRecord::dumpJoy(EMUFILE* os, uint8 joystate) { }
+void MovieRecord::parseJoy(EMUFILE* is, uint8& joystate) { }
+void MovieRecord::parse(MovieData* md, EMUFILE* is) { }
+bool MovieRecord::parseBinary(MovieData* md, EMUFILE* is) { return false; }
+void MovieRecord::dumpBinary(MovieData* md, EMUFILE* os, int index) { }
+void MovieRecord::dump(MovieData* md, EMUFILE* os, int index) { }
+MovieData::MovieData() { }
+void MovieData::truncateAt(int frame) { }
+void MovieData::installValue(std::string& key, std::string& val) { }
+int MovieData::dump(EMUFILE *os, bool binary) { return 0; }
+int MovieData::dumpGreenzone(EMUFILE *os, bool binary) { return 0; }
+int MovieData::loadGreenzone(EMUFILE *is, bool binary) { return 0; }
+int FCEUMOV_GetFrame(void) { return 0; }
+int FCEUI_GetLagCount(void) { return 0; }
+bool FCEUI_GetLagged(void) { return false; }
+bool FCEUMOV_ShouldPause(void) { return false; }
+EMOVIEMODE FCEUMOV_Mode() { return movieMode; }
+bool FCEUMOV_Mode(EMOVIEMODE modemask) { return false; }
+bool FCEUMOV_Mode(int modemask) { return false; }
+bool LoadFM2(MovieData& movieData, EMUFILE* fp, int size, bool stopAfterHeader) { return false; }
+void FCEUI_StopMovie() { }
+void poweron(bool shouldDisableBatteryLoading) { }
+void FCEUMOV_EnterTasEdit() { }
+void FCEUMOV_ExitTasEdit() { }
+bool FCEUMOV_FromPoweron() { return false; }
+bool MovieData::loadSavestateFrom(std::vector<uint8>* buf) { return false; }
+void MovieData::dumpSavestateTo(std::vector<uint8>* buf, int compressionLevel) { }
+bool MovieData::loadTasSavestate(int frame) { return false; }
+void MovieData::storeTasSavestate(int frame, int compression_level) { }
+bool FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _pauseframe) { return false; }
+void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author) { }
+void FCEUMOV_AddInputState() { }
+void FCEUMOV_AddCommand(int cmd) { }
+void FCEU_DrawMovies(uint8 *XBuf) { }
+void FCEU_DrawLagCounter(uint8 *XBuf) { }
+int FCEUMOV_WriteState(EMUFILE* os) { return 0; }
+bool CheckTimelines(MovieData& stateMovie, MovieData& currMovie, int& errorFr) { return false; }
+bool FCEUMOV_ReadState(EMUFILE* is, uint32 size) { return false; }
+void FCEUMOV_PreLoad(void) { }
+bool FCEUMOV_PostLoad(void) { return false; }
+void FCEUI_MovieToggleFrameDisplay(void) { }
+void FCEUI_ToggleInputDisplay(void) { }
+int FCEUI_GetMovieLength() { return 0; }
+int FCEUI_GetMovieRerecordCount() { return 0; }
+bool FCEUI_GetMovieToggleReadOnly() { return false; }
+void FCEUI_SetMovieToggleReadOnly(bool which) { }
+void FCEUI_MovieToggleReadOnly() { }
+void FCEUI_MoviePlayFromBeginning(void) { }
+string FCEUI_GetMovieName(void) { return curMovieFilename; }
+bool FCEUI_MovieGetInfo(FCEUFILE* fp, MOVIE_INFO& info, bool skipFrameCount) { return false; }
+void LoadSubtitles(MovieData &moviedata) { }
+void ProcessSubtitles(void) { }
+void FCEU_DisplaySubtitles(char *format, ...) { }
+void FCEUI_CreateMovieFile(std::string fn) { }
+void FCEUI_MakeBackupMovie(bool dispMessage) { }
+
+#else
 
 void MovieData::clearRecordRange(int start, int len)
 {
-#ifndef GEKKO
 	for(int i=0;i<len;i++)
 		records[i+start].clear();
-#endif
 }
 
 void MovieData::insertEmpty(int at, int frames)
 {
-#ifndef GEKKO
 	if(at == -1) 
 	{
 		int currcount = records.size();
@@ -120,20 +184,18 @@ void MovieData::insertEmpty(int at, int frames)
 		records.insert(records.begin()+at,frames,MovieRecord());
 		clearRecordRange(at,frames);
 	}
-#endif
 }
 
 void MovieData::TryDumpIncremental()
 {
-#ifndef GEKKO
 	if(movieMode == MOVIEMODE_TASEDIT)
 	{
 		//only log the savestate if we are appending to the green zone
-		if (turbo && pauseframe!=-1 && currFrameCounter<currMovieData.records.size())
+		if (turbo && pauseframe!=-1 && static_cast<unsigned int>(currFrameCounter)<currMovieData.records.size())
 		{
 			if (turbo && pauseframe-256>currFrameCounter && ((currFrameCounter-pauseframe)&0xff))
 				return;
-			MovieData::dumpSavestateTo(&currMovieData.records[currFrameCounter].savestate,Z_DEFAULT_COMPRESSION);
+			currMovieData.storeTasSavestate(currFrameCounter, Z_DEFAULT_COMPRESSION);
 		}
 		if(currFrameCounter == currMovieData.greenZoneCount)
 		{
@@ -142,34 +204,84 @@ void MovieData::TryDumpIncremental()
 				currMovieData.insertEmpty(-1,1);
 			}
 			
-			MovieData::dumpSavestateTo(&currMovieData.records[currFrameCounter].savestate,Z_DEFAULT_COMPRESSION);
-			currMovieData.greenZoneCount++;
+			currMovieData.storeTasSavestate(currFrameCounter, Z_DEFAULT_COMPRESSION);
+			currMovieData.greenZoneCount=currFrameCounter+1;
 		} else if (currFrameCounter < currMovieData.greenZoneCount || !movie_readonly)
 		{
-			MovieData::dumpSavestateTo(&currMovieData.records[currFrameCounter].savestate,Z_DEFAULT_COMPRESSION);
-		} else if (currFrameCounter > currMovieData.greenZoneCount && currMovieData.greenZoneCount<currMovieData.records.size())
+			currMovieData.storeTasSavestate(currFrameCounter, Z_DEFAULT_COMPRESSION);
+		} else if (currFrameCounter > currMovieData.greenZoneCount && static_cast<unsigned int>(currMovieData.greenZoneCount)<currMovieData.records.size())
 		{
 			/* May be required in some malformed TAS projects. */
-			MovieData::dumpSavestateTo(&currMovieData.records[currFrameCounter].savestate,Z_DEFAULT_COMPRESSION);
+			currMovieData.storeTasSavestate(currFrameCounter, Z_DEFAULT_COMPRESSION);
 			currMovieData.greenZoneCount= currFrameCounter+1;
 		}
 	}
-#endif
+}
+
+MovieRecord::MovieRecord()
+{
+	joysticks.data[0] = 0;
+	joysticks.data[1] = 0;
+	joysticks.data[2] = 0;
+	joysticks.data[3] = 0;
+
+	commands = 0;
+
+	zappers[0].b = 0;
+	zappers[0].bogo = 0;
+	zappers[0].x = 0;
+	zappers[0].y = 0;
+	zappers[0].zaphit = 0;
+
+	zappers[1].b = 0;
+	zappers[1].bogo = 0;
+	zappers[1].x = 0;
+	zappers[1].y = 0;
+	zappers[1].zaphit = 0;
 }
 
 void MovieRecord::clear()
 { 
-#ifndef GEKKO
 	commands = 0;
 	*(uint32*)&joysticks = 0;
 	memset(zappers,0,sizeof(zappers));
-#endif
+}
+
+bool MovieRecord::Compare(MovieRecord& compareRec)
+{
+	//Joysticks, Zappers, and commands
+
+	if (this->joysticks != compareRec.joysticks) 
+		return false;
+	
+	//if (this->commands != compareRec.commands) 
+	//	return false;
+
+	//if new commands are ever recordable, they need to be added here if we go with this method
+	if(this->command_reset() != compareRec.command_reset()) return false;
+	if(this->command_power() != compareRec.command_power()) return false;
+	if(this->command_fds_insert() != compareRec.command_fds_insert()) return false;
+	if(this->command_fds_select() != compareRec.command_fds_select()) return false;
+	
+	if (this->zappers[0].x != compareRec.zappers[0].x) return false;
+	if (this->zappers[0].y != compareRec.zappers[0].y) return false;
+	if (this->zappers[0].zaphit != compareRec.zappers[0].zaphit) return false;
+	if (this->zappers[0].b != compareRec.zappers[0].b) return false;
+	if (this->zappers[0].bogo != compareRec.zappers[0].bogo) return false;
+
+	if (this->zappers[1].x != compareRec.zappers[1].x) return false;
+	if (this->zappers[1].y != compareRec.zappers[1].y) return false;
+	if (this->zappers[1].zaphit != compareRec.zappers[1].zaphit) return false;
+	if (this->zappers[1].b != compareRec.zappers[1].b) return false;
+	if (this->zappers[1].bogo != compareRec.zappers[1].bogo) return false;
+
+
+	return true;
 }
 
 const char MovieRecord::mnemonics[8] = {'A','B','S','T','U','D','L','R'};
-void MovieRecord::dumpJoy(std::ostream* os, uint8 joystate)
+void MovieRecord::dumpJoy(EMUFILE* os, uint8 joystate)
 {
-#ifndef GEKKO
 	//these are mnemonics for each joystick bit.
 	//since we usually use the regular joypad, these will be more helpful.
 	//but any character other than ' ' or '.' should count as a set bit
@@ -180,44 +292,40 @@ void MovieRecord::dumpJoy(std::ostream* os, uint8 joystate)
 		char mnemonic = mnemonics[bit];
 		//if the bit is set write the mnemonic
 		if(joystate & bitmask)
-			os->put(mnemonic);
+			os->fwrite(&mnemonic,1);
 		else //otherwise write an unset bit
-			os->put('.');
+			write8le('.',os);
 	}
-#endif
 }
 
-void MovieRecord::parseJoy(std::istream* is, uint8& joystate)
+void MovieRecord::parseJoy(EMUFILE* is, uint8& joystate)
 {
-#ifndef GEKKO
 	char buf[8];
-	is->read(buf,8);
+	is->fread(buf,8);
 	joystate = 0;
 	for(int i=0;i<8;i++)
 	{
 		joystate <<= 1;
 		joystate |= ((buf[i]=='.'||buf[i]==' ')?0:1);
 	}
-#endif
 }
 
-void MovieRecord::parse(MovieData* md, std::istream* is)
+void MovieRecord::parse(MovieData* md, EMUFILE* is)
 {
-#ifndef GEKKO
 	//by the time we get in here, the initial pipe has already been extracted
 
 	//extract the commands
 	commands = uint32DecFromIstream(is);
 	//*is >> commands;
-	is->get(); //eat the pipe
+	is->fgetc(); //eat the pipe
 
 	//a special case: if fourscore is enabled, parse four gamepads
 	if(md->fourscore)
 	{
-		parseJoy(is,joysticks[0]); is->get(); //eat the pipe
-		parseJoy(is,joysticks[1]); is->get(); //eat the pipe
-		parseJoy(is,joysticks[2]); is->get(); //eat the pipe
-		parseJoy(is,joysticks[3]); is->get(); //eat the pipe
+		parseJoy(is,joysticks[0]); is->fgetc(); //eat the pipe
+		parseJoy(is,joysticks[1]); is->fgetc(); //eat the pipe
+		parseJoy(is,joysticks[2]); is->fgetc(); //eat the pipe
+		parseJoy(is,joysticks[3]); is->fgetc(); //eat the pipe
 	}
 	else
 	{
@@ -233,154 +341,148 @@ void MovieRecord::parse(MovieData* md, std::istream* is)
 				zappers[port].bogo = uint32DecFromIstream(is);
 				zappers[port].zaphit = uint64DecFromIstream(is);
 			}
-
-			is->get(); //eat the pipe
+			
+			is->fgetc(); //eat the pipe
 		}
 	}
 
 	//(no fcexp data is logged right now)
-	is->get(); //eat the pipe
+	is->fgetc(); //eat the pipe
 
 	//should be left at a newline
-#endif
 }
 
 
-bool MovieRecord::parseBinary(MovieData* md, std::istream* is)
+bool MovieRecord::parseBinary(MovieData* md, EMUFILE* is)
 {
-#ifndef GEKKO
-	commands = (uint8)is->get();
+	commands = (uint8)is->fgetc();
 
 	//check for eof
-	if(is->gcount() != 1) return false;
+	if(is->eof()) return false;
 
 	if(md->fourscore)
 	{
-		is->read((char*)&joysticks,4);
+		is->fread((char*)&joysticks,4);
 	}
 	else
 	{
 		for(int port=0;port<2;port++)
 		{
 			if(md->ports[port] == SI_GAMEPAD)
-				joysticks[port] = (uint8)is->get();
+				joysticks[port] = (uint8)is->fgetc();
 			else if(md->ports[port] == SI_ZAPPER)
 			{
-				zappers[port].x = (uint8)is->get();
-				zappers[port].y = (uint8)is->get();
-				zappers[port].b = (uint8)is->get();
-				zappers[port].bogo = (uint8)is->get();
+				zappers[port].x = (uint8)is->fgetc();
+				zappers[port].y = (uint8)is->fgetc();
+				zappers[port].b = (uint8)is->fgetc();
+				zappers[port].bogo = (uint8)is->fgetc();
 				read64le(&zappers[port].zaphit,is);
 			}
 		}
 	}
+
 	return true;
-#else
-	return false;
-#endif
 }
 
 
-void MovieRecord::dumpBinary(MovieData* md, std::ostream* os, int index)
+void MovieRecord::dumpBinary(MovieData* md, EMUFILE* os, int index)
 {
-#ifndef GEKKO
-	os->put(commands);
+	write8le(commands,os);
 	if(md->fourscore)
 	{
-		os->put(joysticks[0]);
-		os->put(joysticks[1]);
-		os->put(joysticks[2]);
-		os->put(joysticks[3]);
+		for(int i=0;i<4;i++)
+			os->fwrite(&joysticks[i],sizeof(joysticks[i]));
 	}
 	else
 	{
 		for(int port=0;port<2;port++)
 		{
 			if(md->ports[port] == SI_GAMEPAD)
-				os->put(joysticks[port]);
+				os->fwrite(&joysticks[port],sizeof(joysticks[port]));
 			else if(md->ports[port] == SI_ZAPPER)
 			{
-				os->put(zappers[port].x);
-				os->put(zappers[port].y);
-				os->put(zappers[port].b);
-				os->put(zappers[port].bogo);
+				write8le(zappers[port].x,os);
+				write8le(zappers[port].y,os);
+				write8le(zappers[port].b,os);
+				write8le(zappers[port].bogo,os);
 				write64le(zappers[port].zaphit, os);
 			}
 		}
 	}
-#endif
 }
 
-void MovieRecord::dump(MovieData* md, std::ostream* os, int index)
+void MovieRecord::dump(MovieData* md, EMUFILE* os, int index)
 {
-#ifndef GEKKO
+	if (false/*currMovieData.binaryFlag*/)
+	{
+		dumpBinary(md, os, index);
+		return;
+	}
 	//dump the misc commands
 	//*os << '|' << setw(1) << (int)commands;
-	os->put('|');
+	os->fputc('|');
 	putdec<uint8,1,true>(os,commands);
 
 	//a special case: if fourscore is enabled, dump four gamepads
 	if(md->fourscore)
 	{
-		os->put('|');
-		dumpJoy(os,joysticks[0]); os->put('|');
-		dumpJoy(os,joysticks[1]); os->put('|');
-		dumpJoy(os,joysticks[2]); os->put('|');
-		dumpJoy(os,joysticks[3]); os->put('|');
+		os->fputc('|');
+		dumpJoy(os,joysticks[0]); os->fputc('|');
+		dumpJoy(os,joysticks[1]); os->fputc('|');
+		dumpJoy(os,joysticks[2]); os->fputc('|');
+		dumpJoy(os,joysticks[3]); os->fputc('|');
 	}
 	else
 	{
 		for(int port=0;port<2;port++)
 		{
-			os->put('|');
+			os->fputc('|');
 			if(md->ports[port] == SI_GAMEPAD)
 				dumpJoy(os, joysticks[port]);
 			else if(md->ports[port] == SI_ZAPPER)
 			{
-				putdec<uint8,3,true>(os,zappers[port].x); os->put(' ');
-				putdec<uint8,3,true>(os,zappers[port].y); os->put(' ');
-				putdec<uint8,1,true>(os,zappers[port].b); os->put(' ');
-				putdec<uint8,1,true>(os,zappers[port].bogo); os->put(' ');
+				putdec<uint8,3,true>(os,zappers[port].x); os->fputc(' ');
+				putdec<uint8,3,true>(os,zappers[port].y); os->fputc(' ');
+				putdec<uint8,1,true>(os,zappers[port].b); os->fputc(' ');
+				putdec<uint8,1,true>(os,zappers[port].bogo); os->fputc(' ');
 				putdec<uint64,20,false>(os,zappers[port].zaphit);
 			}
 		}
-		os->put('|');
+		os->fputc('|');
 	}
-
+	
 	//(no fcexp data is logged right now)
-	os->put('|');
+	os->fputc('|');
 
 	//each frame is on a new line
-	os->put('\n');
-#endif
+	os->fputc('\n');
 }
 
 MovieData::MovieData()
 	: version(MOVIE_VERSION)
 	, emuVersion(FCEU_VERSION_NUMERIC)
 	, palFlag(false)
+	, PPUflag(false)
 	, rerecordCount(0)
 	, binaryFlag(false)
 	, greenZoneCount(0)
+	, microphone(false)
 {
-#ifndef GEKKO
 	memset(&romChecksum,0,sizeof(MD5DATA));
-#endif
 }
 
 void MovieData::truncateAt(int frame)
 {
-#ifndef GEKKO
 	records.resize(frame);
-#endif
 }
 
 void MovieData::installValue(std::string& key, std::string& val)
 {
-#ifndef GEKKO
 	//todo - use another config system, or drive this from a little data structure. because this is gross
 	if(key == "FDS")
 		installInt(val,fds);
+	else if(key == "NewPPU")
+		installBool(val,PPUflag);
 	else if(key == "version")
 		installInt(val,version);
 	else if(key == "emuVersion")
@@ -397,6 +499,8 @@ void MovieData::installValue(std::string& key, std::string& val)
 		guid = FCEU_Guid::fromString(val);
 	else if(key == "fourscore")
 		installBool(val,fourscore);
+	else if(key == "microphone")
+		installBool(val,microphone);
 	else if(key == "port0")
 		installInt(val,ports[0]);
 	else if(key == "port1")
@@ -423,45 +527,45 @@ void MovieData::installValue(std::string& key, std::string& val)
 	{
 		installInt(val, loadFrameCount);
 	}
-#endif
 }
 
-int MovieData::dump(std::ostream *os, bool binary)
+int MovieData::dump(EMUFILE *os, bool binary)
 {
-#ifndef GEKKO
-	int start = os->tellp();
-	*os << "version " << version << endl;
-	*os << "emuVersion " << emuVersion << endl;
-	*os << "rerecordCount " << rerecordCount << endl;
-	*os << "palFlag " << (palFlag?1:0) << endl;
-	*os << "romFilename " << romFilename << endl;
-	*os << "romChecksum " << BytesToString(romChecksum.data,MD5DATA::size) << endl;
-	*os << "guid " << guid.toString() << endl;
-	*os << "fourscore " << (fourscore?1:0) << endl;
-	*os << "port0 " << ports[0] << endl;
-	*os << "port1 " << ports[1] << endl;
-	*os << "port2 " << ports[2] << endl;
-	*os << "FDS " << isFDS << endl;
+	int start = os->ftell();
+	os->fprintf("version %d\n", version);
+	os->fprintf("emuVersion %d\n", emuVersion);
+	os->fprintf("rerecordCount %d\n", rerecordCount);
+	os->fprintf("palFlag %d\n" , (palFlag?1:0) );
+	os->fprintf("romFilename %s\n" , romFilename.c_str() );
+	os->fprintf("romChecksum %s\n" , BytesToString(romChecksum.data,MD5DATA::size).c_str() );
+	os->fprintf("guid %s\n" , guid.toString().c_str() );
+	os->fprintf("fourscore %d\n" , (fourscore?1:0) );
+	os->fprintf("microphone %d\n" , (microphone?1:0) );
+	os->fprintf("port0 %d\n" , ports[0] );
+	os->fprintf("port1 %d\n" , ports[1] );
+	os->fprintf("port2 %d\n" , ports[2] );
+	os->fprintf("FDS %d\n" , isFDS?1:0 );
+	os->fprintf("NewPPU %d\n" , newppu?1:0 );
 
 	for(uint32 i=0;i<comments.size();i++)
-		*os << "comment " << wcstombs(comments[i]) << endl;
+		os->fprintf("comment %s\n" , wcstombs(comments[i]).c_str() );
 
 	for(uint32 i=0;i<subtitles.size();i++)
-		*os << "subtitle " << subtitles[i] << endl;
+		os->fprintf("subtitle %s\n" , subtitles[i].c_str() );
 	
 	if(binary)
-		*os << "binary 1" << endl;
+		os->fprintf("binary 1\n" );
 		
 	if(savestate.size() != 0)
-		*os << "savestate " << BytesToString(&savestate[0],savestate.size()) << endl;
+		os->fprintf("savestate %s\n" , BytesToString(&savestate[0],savestate.size()).c_str() );
 
 	if(FCEUMOV_Mode(MOVIEMODE_TASEDIT))
-		*os << "length " << this->records.size() << endl;
+		os->fprintf("length %d\n" , this->records.size() );
 
 	if(binary)
 	{
 		//put one | to start the binary dump
-		os->put('|');
+		os->fputc('|');
 		for(int i=0;i<(int)records.size();i++)
 			records[i].dumpBinary(this,os,i);
 	}
@@ -469,60 +573,53 @@ int MovieData::dump(std::ostream *os, bool binary)
 		for(int i=0;i<(int)records.size();i++)
 			records[i].dump(this,os,i);
 
-	int end = os->tellp();
+	int end = os->ftell();
 	return end-start;
-#else
-	return 0;
-#endif
 }
 
-int MovieData::dumpGreenzone(std::ostream *os, bool binary)
+int MovieData::dumpGreenzone(EMUFILE *os, bool binary)
 {
-#ifdef GEKKO
-	return 0;
-#endif
-	int start = os->tellp();
+	int start = os->ftell();
 	int frame, size;
-	for (int i=0; i<(int)records.size(); ++i)
+	for (int i=0; i<(int)savestates.size(); ++i)
 	{
-		if (records[i].savestate.empty())
+		if (savestates[i].empty())
 			continue;
 		frame=i;
-		size=records[i].savestate.size();
+		size=savestates[i].size();
 		write32le(frame, os);
 		write32le(size, os);
 
-		os->write(&records[i].savestate[0], size);
+		os->fwrite(&savestates[i][0], size);
 	}
 	frame=-1;
 	size=currMovieData.greenZoneCount;
 	write32le(frame, os);
 	write32le(size, os);
 
-	int end= os->tellp();
+	int end= os->ftell();
 
 	return end-start;
 }
 
-int MovieData::loadGreenzone(std::istream *is, bool binary)
+int MovieData::loadGreenzone(EMUFILE *is, bool binary)
 {
-#ifdef GEKKO
-	return 0;
-#endif
 	int frame, size;
 	while(1)
 	{
 		if (!read32le((uint32 *)&frame, is)) {size=0; break;}
 		if (!read32le((uint32 *)&size, is)) {size=0; break;} 
 		if (frame==-1) break;
-		int pos = is->tellg();
+		int pos = is->ftell();
 		FCEUSS_LoadFP(is, SSLOADPARAM_NOBACKUP);
-		is->seekg(pos+size);
+		storeTasSavestate(frame, Z_DEFAULT_COMPRESSION);
+		is->fseek(pos+size,SEEK_SET);
 	}
 	greenZoneCount=size;
 
 	return 1;
 }
+
 
 int FCEUMOV_GetFrame(void)
 {
@@ -568,9 +665,8 @@ bool FCEUMOV_Mode(int modemask)
 	return FCEUMOV_Mode((EMOVIEMODE)modemask);
 }
 
-static void LoadFM2_binarychunk(MovieData& movieData, std::istream* fp, int size)
+static void LoadFM2_binarychunk(MovieData& movieData, EMUFILE* fp, int size)
 {
-#ifndef GEKKO
 	int recordsize = 1; //1 for the command
 	if(movieData.fourscore)
 		recordsize += 4; //4 joysticks
@@ -587,11 +683,11 @@ static void LoadFM2_binarychunk(MovieData& movieData, std::istream* fp, int size
 	}
 
 	//find out how much remains in the file
-	int curr = fp->tellg();
-	fp->seekg(0,std::ios::end);
-	int end = fp->tellg();
+	int curr = fp->ftell();
+	fp->fseek(0,SEEK_END);
+	int end = fp->ftell();
 	int flen = end-curr;
-	fp->seekg(curr,std::ios::beg);
+	fp->fseek(curr,SEEK_SET);
 
 	//the amount todo is the min of the limiting size we received and the remaining contents of the file
 	int todo = std::min(size, flen);
@@ -605,22 +701,20 @@ static void LoadFM2_binarychunk(MovieData& movieData, std::istream* fp, int size
 	{
 		movieData.records[i].parseBinary(&movieData,fp);
 	}
-#endif
 }
 
 //yuck... another custom text parser.
-bool LoadFM2(MovieData& movieData, std::istream* fp, int size, bool stopAfterHeader)
+bool LoadFM2(MovieData& movieData, EMUFILE* fp, int size, bool stopAfterHeader)
 {
-#ifndef GEKKO
     std::string a("length"), b("-1");
 	// Non-TAS projects consume until EOF
 	movieData.installValue(a, b);
 
 	//first, look for an fcm signature
 	char fcmbuf[3];
-	std::ios::pos_type curr = fp->tellg();
-	fp->read(fcmbuf,3);
-	fp->seekg(curr);
+	std::ios::pos_type curr = fp->ftell();
+	fp->fread(fcmbuf,3);
+	fp->fseek(curr,SEEK_SET);
 	if(!strncmp(fcmbuf,"FCM",3)) {
 		FCEU_PrintError("FCM File format is no longer supported. Please use Tools > Convert FCM");
 		return false;
@@ -628,11 +722,11 @@ bool LoadFM2(MovieData& movieData, std::istream* fp, int size, bool stopAfterHea
 
 	//movie must start with "version 3"
 	char buf[9];
-	curr = fp->tellg();
-	fp->read(buf,9);
-	fp->seekg(curr);
+	curr = fp->ftell();
+	fp->fread(buf,9);
+	fp->fseek(curr,SEEK_SET);
 	if(fp->fail()) return false;
-	if(memcmp(buf,"version 3",9))
+	if(memcmp(buf,"version 3",9)) 
 		return false;
 
 	std::string key,value;
@@ -645,7 +739,7 @@ bool LoadFM2(MovieData& movieData, std::istream* fp, int size, bool stopAfterHea
 		bool iswhitespace, isrecchar, isnewline;
 		int c;
 		if(size--<=0) goto bail;
-		c = fp->get();
+		c = fp->fgetc();
 		if(c == -1)
 			goto bail;
 		iswhitespace = (c==' '||c=='\t');
@@ -661,7 +755,7 @@ bool LoadFM2(MovieData& movieData, std::istream* fp, int size, bool stopAfterHea
 		case NEWLINE:
 			if(isnewline) goto done;
 			if(iswhitespace) goto done;
-			if(isrecchar)
+			if(isrecchar) 
 				goto dorecord;
 			//must be a key
 			key = "";
@@ -674,9 +768,9 @@ bool LoadFM2(MovieData& movieData, std::istream* fp, int size, bool stopAfterHea
 				if (stopAfterHeader) return true;
 				int currcount = movieData.records.size();
 				movieData.records.resize(currcount+1);
-				int preparse = fp->tellg();
+				int preparse = fp->ftell();
 				movieData.records[currcount].parse(&movieData, fp);
-				int postparse = fp->tellg();
+				int postparse = fp->ftell();
 				size -= (postparse-preparse);
 				state = NEWLINE;
 				break;
@@ -713,52 +807,54 @@ bool LoadFM2(MovieData& movieData, std::istream* fp, int size, bool stopAfterHea
 		done: ;
 		if(bail) break;
 	}
-	return true;
-#else
-	return false;
-#endif
-}
 
-static void closeRecordingMovie()
-{
-#ifndef GEKKO
-	if(osRecordingMovie)
-	{
-		delete osRecordingMovie;
-		osRecordingMovie = 0;
-	}
-#endif
+	return true;
 }
 
 /// Stop movie playback.
 static void StopPlayback()
 {
-#ifndef GEKKO
 	FCEU_DispMessageOnMovie("Movie playback stopped.");
 	movieMode = MOVIEMODE_INACTIVE;
-#endif
+}
+
+// Stop movie playback without closing the movie.
+static void FinishPlayback()
+{
+	extern int closeFinishedMovie;
+	if (closeFinishedMovie)
+		StopPlayback();
+	else
+	{
+		FCEU_DispMessage("Movie finished playing.",0);
+		movieMode = MOVIEMODE_FINISHED;
+	}
+}
+
+static void closeRecordingMovie()
+{
+	if(osRecordingMovie)
+	{
+		delete osRecordingMovie;
+		osRecordingMovie = 0;
+	}
 }
 
 /// Stop movie recording
 static void StopRecording()
 {
-#ifndef GEKKO
-	FCEU_DispMessage("Movie recording stopped.");
-
+	FCEU_DispMessage("Movie recording stopped.",0);
 	movieMode = MOVIEMODE_INACTIVE;
-
+	
 	closeRecordingMovie();
-#endif
 }
-
 
 void FCEUI_StopMovie()
 {
-#ifndef GEKKO
 	if(suppressMovieStop)
 		return;
-
-	if(movieMode == MOVIEMODE_PLAY)
+	
+	if(movieMode == MOVIEMODE_PLAY || movieMode == MOVIEMODE_FINISHED)
 		StopPlayback();
 	else if(movieMode == MOVIEMODE_RECORD)
 		StopRecording();
@@ -766,6 +862,9 @@ void FCEUI_StopMovie()
 	curMovieFilename[0] = 0;			//No longer a current movie filename
 	freshMovie = false;					//No longer a fresh movie loaded
 	if (bindSavestate) AutoSS = false;	//If bind movies to savestates is true, then there is no longer a valid auto-save to load
+
+#ifdef WIN32
+	SetMainWindowText();
 #endif
 }
 
@@ -791,24 +890,27 @@ void poweron(bool shouldDisableBatteryLoading)
 	//suppressMovieStop=false;
 	//if(shouldDisableBatteryLoading) disableBatteryLoading=0;
 	//suppressAddPowerCommand=0;
-#ifndef GEKKO
+
 	extern int disableBatteryLoading;
 	disableBatteryLoading = 1;
 	PowerNES();
 	disableBatteryLoading = 0;
-#endif
 }
 
 
 
 void FCEUMOV_EnterTasEdit()
 {
-#ifndef GEKKO
+	//If no movie, start a new project, currMovieData will serve as the "main branch" file, so give it a filename and save that into the project
+	//Dump all header info int ot the project file
+
+	//Else use the currentmovie to create a new project
+
+	//BIG TODO: Why is this tasedit stuff in movie.cpp? Let's movie it out, it is win32 only anyway
 	if (movieMode == MOVIEMODE_INACTIVE)
 	{
 		//stop any current movie activity
 		FCEUI_StopMovie();
-
 		//clear the current movie
 		currFrameCounter = 0;
 		currMovieData = MovieData();
@@ -819,68 +921,82 @@ void FCEUMOV_EnterTasEdit()
 
 		//reset the rom
 		poweron(false);
-	} else {
+	} 
+	else 
+	{
 		FCEUI_StopMovie();
-
 		currMovieData.greenZoneCount=currFrameCounter;
 	}
 
 	//todo - think about this
 	//ResetInputTypes();
 	//todo - maybe this instead
-	//FCEUD_SetInput(currMovieData.fourscore,(ESI)currMovieData.ports[0],(ESI)currMovieData.ports[1],(ESIFC)currMovieData.ports[2]);
+	//FCEUD_SetInput(currMovieData.fourscore,currMovieData.microphone,(ESI)currMovieData.ports[0],(ESI)currMovieData.ports[1],(ESIFC)currMovieData.ports[2]);
 
-	//pause the emulator
-	FCEUI_SetEmulationPaused(1);
+#ifdef WIN32
+	CreateProject(currMovieData);
+#endif
+
+	FCEUI_SetEmulationPaused(1); //pause the emulator
 
 	//and enter tasedit mode
 	movieMode = MOVIEMODE_TASEDIT;
-	
 	currMovieData.TryDumpIncremental();
-
-	FCEU_DispMessage("Tasedit engaged");
-#endif
+	FCEU_DispMessage("Tasedit engaged",0);
 }
 
 void FCEUMOV_ExitTasEdit()
 {
-#ifndef GEKKO
 	movieMode = MOVIEMODE_INACTIVE;
-	FCEU_DispMessage("Tasedit disengaged");
+	FCEU_DispMessage("Tasedit disengaged",0);
 	currMovieData = MovieData();
-#endif
 }
 
-bool MovieData::loadSavestateFrom(std::vector<char>* buf)
+bool FCEUMOV_FromPoweron()
 {
-#ifndef GEKKO
-	memorystream ms(buf);
+	return movieFromPoweron;
+}
+bool MovieData::loadSavestateFrom(std::vector<uint8>* buf)
+{
+	EMUFILE_MEMORY ms(buf);
 	return FCEUSS_LoadFP(&ms,SSLOADPARAM_BACKUP);
-#else
-	return false;
-#endif
 }
 
-void MovieData::dumpSavestateTo(std::vector<char>* buf, int compressionLevel)
+void MovieData::dumpSavestateTo(std::vector<uint8>* buf, int compressionLevel)
 {
-#ifndef GEKKO
-	memorystream ms(buf);
+	EMUFILE_MEMORY ms(buf);
 	FCEUSS_SaveMS(&ms,compressionLevel);
 	ms.trim();
-#endif
+}
+
+bool MovieData::loadTasSavestate(int frame)
+{
+	if (frame<0 || frame>=(int)currMovieData.records.size())
+		return false;
+	if ((int)savestates.size()<=frame || savestates[frame].empty())
+		return false;
+
+	return MovieData::loadSavestateFrom(&savestates[frame]);
+}
+
+void MovieData::storeTasSavestate(int frame, int compression_level)
+{
+	if ((int)savestates.size()<=frame)
+		savestates.resize(frame+1);
+
+	MovieData::dumpSavestateTo(&savestates[frame],compression_level);
 }
 
 //begin playing an existing movie
 bool FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _pauseframe)
 {
-#ifndef GEKKO
 	if(!tasedit && !FCEU_IsValidUI(FCEUI_PLAYMOVIE))
 		return true;	//adelikat: file did not fail to load, so let's return true here, just do nothing
 
 	assert(fname);
 
 	//mbg 6/10/08 - we used to call StopMovie here, but that cleared curMovieFilename and gave us crashes...
-	if(movieMode == MOVIEMODE_PLAY)
+	if(movieMode == MOVIEMODE_PLAY || movieMode == MOVIEMODE_FINISHED)
 		StopPlayback();
 	else if(movieMode == MOVIEMODE_RECORD)
 		StopRecording();
@@ -897,11 +1013,18 @@ bool FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _paus
 	}
 
 #ifdef WIN32
-	//Add to the recent movie menu
-	AddRecentMovieFile(fname);
+	//Fix relative path if necessary and then add to the recent movie menu
+	extern std::string BaseDirectory;
+
+	string name = fname;
+	if (IsRelativePath(fname))
+	{
+		name = ConvertRelativePath(name);
+	}
+	AddRecentMovieFile(name.c_str());
 #endif
 
-	LoadFM2(currMovieData, fp->stream, INT_MAX, false);
+	LoadFM2(currMovieData, fp->stream, fp->size, false);
 	LoadSubtitles(currMovieData);
 	delete fp;
 
@@ -913,8 +1036,11 @@ bool FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _paus
 	//WE NEED TO LOAD A SAVESTATE
 	if(currMovieData.savestate.size() != 0)
 	{
+		movieFromPoweron = false;
 		bool success = MovieData::loadSavestateFrom(&currMovieData.savestate);
 		if(!success) return true;	//adelikat: I guess return true here?  False is only for a bad movie filename, if it got this far the file was god?
+	} else {
+		movieFromPoweron = true;
 	}
 
 	//if there is no savestate, we won't have this crucial piece of information at the start of the movie.
@@ -925,7 +1051,7 @@ bool FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _paus
 		FCEUI_SetVidSystem(0);
 
 	//force the input configuration stored in the movie to apply
-	FCEUD_SetInput(currMovieData.fourscore,(ESI)currMovieData.ports[0],(ESI)currMovieData.ports[1],(ESIFC)currMovieData.ports[2]);
+	FCEUD_SetInput(currMovieData.fourscore,currMovieData.microphone,(ESI)currMovieData.ports[0],(ESI)currMovieData.ports[1],(ESIFC)currMovieData.ports[2]);
 
 	//stuff that should only happen when we're ready to positively commit to the replay
 	if(tasedit)
@@ -944,39 +1070,43 @@ bool FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _paus
 		currRerecordCount = currMovieData.rerecordCount;
 
 		if(movie_readonly)
-			FCEU_DispMessage("Replay started Read-Only.");
+			FCEU_DispMessage("Replay started Read-Only.",0);
 		else
-			FCEU_DispMessage("Replay started Read+Write.");
+			FCEU_DispMessage("Replay started Read+Write.",0);
 	}
 	
+#ifdef WIN32
+	SetMainWindowText();
+#endif
+
 	#ifdef CREATE_AVI
 	if(LoggingEnabled)
 	{
-	    FCEU_DispMessage("Video recording enabled.\n");
+	    FCEU_DispMessage("Video recording enabled.\n",0);
 	    LoggingEnabled = 2;
 	}
 	#endif
+	
 	return true;
-#else
-	return false;
-#endif
 }
 
 static void openRecordingMovie(const char* fname)
 {
-#ifndef GEKKO
 	osRecordingMovie = FCEUD_UTF8_fstream(fname, "wb");
 	if(!osRecordingMovie)
 		FCEU_PrintError("Error opening movie output file: %s",fname);
 	strcpy(curMovieFilename, fname);
+#ifdef WIN32
+	//Add to the recent movie menu
+	AddRecentMovieFile(fname);
 #endif
 }
+
 
 //begin recording a new movie
 //TODO - BUG - the record-from-another-savestate doesnt work.
 void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author)
 {
-#ifndef GEKKO
 	if(!FCEU_IsValidUI(FCEUI_RECORDMOVIE))
 		return;
 
@@ -997,16 +1127,19 @@ void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author)
 	currMovieData.romChecksum = GameInfo->MD5;
 	currMovieData.romFilename = FileBase;
 	currMovieData.fourscore = FCEUI_GetInputFourscore();
+	currMovieData.microphone = FCEUI_GetInputMicrophone();
 	currMovieData.ports[0] = joyports[0].type;
 	currMovieData.ports[1] = joyports[1].type;
 	currMovieData.ports[2] = portFC.type;
 
 	if(flags & MOVIE_FLAG_FROM_POWERON)
 	{
+		movieFromPoweron = true;
 		poweron(true);
 	}
 	else
 	{
+		movieFromPoweron = false;
 		MovieData::dumpSavestateTo(&currMovieData.savestate,Z_BEST_COMPRESSION);
 	}
 
@@ -1016,9 +1149,8 @@ void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author)
 	movieMode = MOVIEMODE_RECORD;
 	movie_readonly = false;
 	currRerecordCount = 0;
-
-	FCEU_DispMessage("Movie recording started.");
-#endif
+	
+	FCEU_DispMessage("Movie recording started.",0);
 }
 
 static int _currCommand = 0;
@@ -1027,7 +1159,6 @@ static int _currCommand = 0;
 //either dumps the current joystick state or loads one state from the movie
 void FCEUMOV_AddInputState()
 {
-#ifndef GEKKO
 	//todo - for tasedit, either dump or load depending on whether input recording is enabled
 	//or something like that
 	//(input recording is just like standard read+write movie recording with input taken from gamepad)
@@ -1055,9 +1186,9 @@ void FCEUMOV_AddInputState()
 	else if(movieMode == MOVIEMODE_PLAY)
 	{
 		//stop when we run out of frames
-		if(currFrameCounter == currMovieData.records.size())
+		if(currFrameCounter >= (int)currMovieData.records.size())
 		{
-			StopPlayback();
+			FinishPlayback();
 		}
 		else
 		{
@@ -1093,7 +1224,7 @@ void FCEUMOV_AddInputState()
 		if(FCEUMOV_ShouldPause() && FCEUI_EmulationPaused()==0)
 		{
 			FCEUI_ToggleEmulationPause();
-			FCEU_DispMessage("Paused at specified movie frame");
+			FCEU_DispMessage("Paused at specified movie frame",0);
 		}
 		
 	}
@@ -1106,6 +1237,11 @@ void FCEUMOV_AddInputState()
 		mr.commands = _currCommand;
 		_currCommand = 0;
 
+		//Adelikat: in normal mode, this is done at the time of loading a savestate in read+write mode
+		//If the user chooses it can be delayed to here
+		if (fullSaveStateLoads && (currFrameCounter < (int)currMovieData.records.size()))
+			currMovieData.truncateAt(currFrameCounter);
+
 		mr.dump(&currMovieData, osRecordingMovie,currMovieData.records.size());
 		currMovieData.records.push_back(mr);
 	}
@@ -1114,14 +1250,12 @@ void FCEUMOV_AddInputState()
 
 	extern uint8 joy[4];
 	memcpy(&cur_input_display,joy,4);
-#endif
 }
 
 
-//TODO
+//TODO 
 void FCEUMOV_AddCommand(int cmd)
 {
-#ifndef GEKKO
 	// do nothing if not recording a movie
 	if(movieMode != MOVIEMODE_RECORD)
 		return;
@@ -1135,64 +1269,87 @@ void FCEUMOV_AddCommand(int cmd)
 	}
 
 	_currCommand |= cmd;
-#endif
 }
 
 void FCEU_DrawMovies(uint8 *XBuf)
 {
-#ifndef GEKKO
 	if(frame_display && movieMode != MOVIEMODE_TASEDIT)
 	{
 		char counterbuf[32] = {0};
-
+		int color = 0x20;
 		if(movieMode == MOVIEMODE_PLAY)
 			sprintf(counterbuf,"%d/%d",currFrameCounter,currMovieData.records.size());
-		else if(movieMode == MOVIEMODE_RECORD)
-			sprintf(counterbuf,"%d",currMovieData.records.size());
+		else if(movieMode == MOVIEMODE_RECORD) 
+			sprintf(counterbuf,"%d",currFrameCounter);
+		else if (movieMode == MOVIEMODE_FINISHED)
+		{
+			sprintf(counterbuf,"%d/%d (finished)",currFrameCounter,currMovieData.records.size());
+			color = 0x17; //Show red to get attention
+		}
 		else
 			sprintf(counterbuf,"%d (no movie)",currFrameCounter);
 
 		if(counterbuf[0])
-			DrawTextTrans(ClipSidesOffset+XBuf+FCEU_TextScanlineOffsetFromBottom(30)+1, 256, (uint8*)counterbuf, 0x20+0x80);
+			DrawTextTrans(ClipSidesOffset+XBuf+FCEU_TextScanlineOffsetFromBottom(30)+1, 256, (uint8*)counterbuf, color+0x80);
 	}
-#endif
 }
 
 void FCEU_DrawLagCounter(uint8 *XBuf)
 {
-#ifndef GEKKO
 	uint8 color;
-
+	
 	if (lagFlag) color = 0x16+0x80; //If currently lagging display red
 	else color = 0x2A+0x80;         //else display green
 
 	if(lagCounterDisplay)
 	{
-		char counterbuf[32] = {0};
+		char counterbuf[32] = {0};	
 		sprintf(counterbuf,"%d",lagCounter);
-
+		
 		if(counterbuf[0])
 			DrawTextTrans(ClipSidesOffset+XBuf+FCEU_TextScanlineOffsetFromBottom(40)+1, 256, (uint8*)counterbuf, color); //0x20+0x80
 	}
-#endif
 }
 
-int FCEUMOV_WriteState(std::ostream* os)
+int FCEUMOV_WriteState(EMUFILE* os)
 {
-#ifndef GEKKO
 	//we are supposed to dump the movie data into the savestate
-	if(movieMode == MOVIEMODE_RECORD || movieMode == MOVIEMODE_PLAY)
+	if(movieMode == MOVIEMODE_RECORD || movieMode == MOVIEMODE_PLAY || movieMode == MOVIEMODE_FINISHED)
 		return currMovieData.dump(os, true);
-	else
-#endif
-		return 0;
+	else return 0;
 }
+
+bool CheckTimelines(MovieData& stateMovie, MovieData& currMovie, int& errorFr)
+{
+	bool isInTimeline = true;
+	int length;
+
+	//First check, make sure we are checking is for a post-movie savestate, we just want to adjust the length for now, we will handle this situation later in another function
+	if (currFrameCounter <= stateMovie.getNumRecords())
+		length = currFrameCounter;							//Note: currFrameCounter corresponds to the framecounter in the savestate
+	else if (currFrameCounter > currMovie.getNumRecords())  //Now that we know the length of the records of the savestate we plan to load, let's match the length against the movie
+		length = currMovie.getNumRecords();				    //If length < currMovie records then this is a "future" event from the current movie, againt we will handle this situation later, we just want to find the right number of frames to compare
+	else
+		length = stateMovie.getNumRecords();
+
+	for (int x = 0; x < length; x++)
+	{
+		if (!stateMovie.records[x].Compare(currMovie.records[x]))
+		{
+			isInTimeline = false;
+			errorFr = x;
+			break;
+		}
+	}
+
+	return isInTimeline;
+}
+
 
 static bool load_successful;
 
-bool FCEUMOV_ReadState(std::istream* is, uint32 size)
+bool FCEUMOV_ReadState(EMUFILE* is, uint32 size)
 {
-#ifndef GEKKO
 	load_successful = false;
 
 	//a little rule: cant load states in read+write mode with a movie from an archive.
@@ -1203,39 +1360,69 @@ bool FCEUMOV_ReadState(std::istream* is, uint32 size)
 	}
 
 	MovieData tempMovieData = MovieData();
-	std::ios::pos_type curr = is->tellg();
+	std::ios::pos_type curr = is->ftell();
 	if(!LoadFM2(tempMovieData, is, size, false)) {
-		is->seekg((uint32)curr+size);
+		is->fseek((uint32)curr+size,SEEK_SET);
 		extern bool FCEU_state_loading_old_format;
 		if(FCEU_state_loading_old_format) {
-			if(movieMode == MOVIEMODE_PLAY || movieMode == MOVIEMODE_RECORD) {
-				FCEUI_StopMovie();
+			if(movieMode == MOVIEMODE_PLAY || movieMode == MOVIEMODE_RECORD || movieMode == MOVIEMODE_FINISHED) {
+				//FCEUI_StopMovie();  //No reason to stop the movie, nothing destructive has happened yet.			
 				FCEU_PrintError("You have tried to use an old savestate while playing a movie. This is unsupported (since the old savestate has old-format movie data in it which can't be converted on the fly)");
 			}
 		}
 		return false;
 	}
 
-	//complex TAS logic for when a savestate is loaded:
 	//----------------
-	//if we are playing or recording and toggled read-only:
-	//  then, the movie we are playing must match the guid of the one stored in the savestate or else error.
-	//  the savestate is assumed to be in the same timeline as the current movie.
-	//  if the current movie is not long enough to get to the savestate's frame#, then it is an error.
-	//  the movie contained in the savestate will be discarded.
-	//  the emulator will be put into play mode.
-	//if we are playing or recording and toggled read+write
-	//  then, the movie we are playing must match the guid of the one stored in the savestate or else error.
-	//  the movie contained in the savestate will be loaded into memory
-	//  the frames in the movie after the savestate frame will be discarded
-	//  the in-memory movie will have its rerecord count incremented
-	//  the in-memory movie will be dumped to disk as fcm.
-	//  the emulator will be put into record mode.
-	//if we are doing neither:
-	//  then, we must discard this movie and just load the savestate
+	//complex TAS logic for loadstate
+	//fully conforms to the savestate logic documented in the Laws of TAS
+	//http://tasvideos.org/LawsOfTAS/OnSavestates.html
+	//----------------
+		
+	/*
+	Playback or Recording + Read-only
 
+    * Check that GUID of movie and savestate-movie must match or else error
+          o on error: a message informing that the savestate doesn't belong to this movie. This is a GUID mismatch error. Give user a choice to load it anyway.
+                + failstate: if use declines, loadstate attempt canceled, movie can resume as if not attempted if user has backup savstates enabled else stop movie
+    * Check that movie and savestate-movie are in same timeline. If not then this is a wrong timeline error.
+          o on error: a message informing that the savestate doesn't belong to this movie
+                + failstate: loadstate attempt canceled, movie can resume as if not attempted if user has backup savestates enabled else stop movie
+    * Check that savestate-movie is not greater than movie. If not then this is a future event error and is not allowed in read-only
+          o on error: message informing that the savestate is from a frame after the last frame of the movie
+                + failstate - loadstate attempt cancelled, movie can resume if user has backup savesattes enabled, else stop movie
+    * Check that savestate framcount <= savestate movie length. If not this is a post-movie savestate
+          o on post-movie: See post-movie event section. 
+    * All error checks have passed, state will be loaded
+    * Movie contained in the savestate will be discarded
+    * Movie is now in Playback mode 
 
-	if(movieMode == MOVIEMODE_PLAY || movieMode == MOVIEMODE_RECORD)
+	Playback, Recording + Read+write
+
+    * Check that GUID of movie and savestate-movie must match or else error
+          o on error: a message informing that the savestate doesn't belong to this movie. This is a GUID mismatch error. Give user a choice to load it anyway.
+                + failstate: if use declines, loadstate attempt canceled, movie can resume as if not attempted (stop movie if resume fails)canceled, movie can resume if backup savestates enabled else stopmovie
+    * Check that savestate framcount <= savestate movie length. If not this is a post-movie savestate
+          o on post-movie: See post-movie event section. 
+    * savestate passed all error checks and will now be loaded in its entirety and replace movie (note: there will be no truncation yet)
+    * current framecount will be set to savestate framecount
+    * on the next frame of input, movie will be truncated to framecount
+          o (note: savestate-movie can be a future event of the movie timeline, or a completely new timeline and it is still allowed) 
+    * Rerecord count of movie will be incremented
+    * Movie is now in record mode 
+
+	Post-movie savestate event
+
+    * Whan a savestate is loaded and is determined that the savestate-movie length is less than the savestate framecount then it is a post-movie savestate. These occur when a savestate was made during Movie Finished mode. 
+	* If read+write, the entire savestate movie will be loaded and replace current movie.
+    * If read-only, the savestate movie will be discarded
+    * Mode will be switched to Move Finished
+    * Savestate will be loaded
+    * Current framecount changes to savestate framecount
+    * User will have control of input as if Movie inactive mode 
+	*/
+
+	if(movieMode == MOVIEMODE_PLAY || movieMode == MOVIEMODE_RECORD || movieMode == MOVIEMODE_FINISHED)
 	{
 		//handle moviefile mismatch
 		if(tempMovieData.guid != currMovieData.guid)
@@ -1246,9 +1433,24 @@ bool FCEUMOV_ReadState(std::istream* is, uint32 size)
 				extern HWND pwindow;
 				int result = MessageBox(pwindow,msg.c_str(),"Error loading savestate",MB_OKCANCEL);
 				if(result == IDCANCEL)
+				{
+					if (!backupSavestates) //If backups are disabled we can just resume normally since we can't restore so stop movie and inform user
+					{
+						FCEU_PrintError("Unable to restore backup, movie playback stopped.");
+						FCEUI_StopMovie();
+					}
+
 					return false;
+				}
 			#else
+				if (!backupSavestates) //If backups are disabled we can just resume normally since we can't restore so stop movie and inform user
+				{
+					FCEU_PrintError("Mismatch between savestate's movie and current movie.\ncurrent: %s\nsavestate: %s\nUnable to restore backup, movie playback stopped.\n",currMovieData.guid.toString().c_str(),tempMovieData.guid.toString().c_str());
+					FCEUI_StopMovie();
+				}
+				else
 				FCEU_PrintError("Mismatch between savestate's movie and current movie.\ncurrent: %s\nsavestate: %s\n",currMovieData.guid.toString().c_str(),tempMovieData.guid.toString().c_str());
+
 				return false;
 			#endif
 		}
@@ -1257,43 +1459,97 @@ bool FCEUMOV_ReadState(std::istream* is, uint32 size)
 
 		if(movie_readonly)
 		{
-			//if the frame counter is longer than our current movie, then error
-			if(currFrameCounter > (int)currMovieData.records.size())
+			int errorFrame = 0;
+			bool sameTimeline =  CheckTimelines(tempMovieData, currMovieData, errorFrame);
+
+			if (sameTimeline)
 			{
-				FCEU_PrintError("Savestate is from a frame (%d) after the final frame in the movie (%d). This is not permitted.", currFrameCounter, currMovieData.records.size()-1);
+				//if we made it this far, then the savestate has identical movie data but we want to know now if the state frame count is greater than current movie size and make this error
+				
+				//currFrameCounter at this point represents the savestate framecount
+				if(currFrameCounter > (int)currMovieData.records.size())
+				{
+					//TODO: turn frame counter to red to get attention
+					if (! (currFrameCounter > (int)tempMovieData.records.size() ) ) //This seemingly redundant check is necessary in order to not flag a post movie savestate as an error
+					{
+						if (!backupSavestates)	//If backups are disabled we can just resume normally since we can't restore so stop movie and inform user
+						{
+							FCEU_PrintError("Error: Savestate is from a frame (%d) after the final frame in the movie (%d). This is not permitted.\nUnable to restore backup, movie playback stopped.", currFrameCounter, currMovieData.records.size()-1);
+							FCEUI_StopMovie();
+						}
+						else
+						FCEU_PrintError("Savestate is from a frame (%d) after the final frame in the movie (%d). This is not permitted.", currFrameCounter, currMovieData.records.size()-1);
+
+						return false;
+					}
+				}
+				else
+				{
+					//Final test, if the savestate frame count is > savestate movie length, this was a post movie savestate
+					//currFrameCounter is currently savestate frame counter (not savestate movie size
+					if (currFrameCounter > (int)tempMovieData.records.size())
+					{
+						FinishPlayback();
+					}
+					else
+					{
+						//Finally, this is a savestate file for this movie
+						movieMode = MOVIEMODE_PLAY;
+					}
+
+				}
+				
+			}
+			else
+			{
+				//Wrong timeline, do apprioriate logic here
+				
+				if (!backupSavestates)	//If backups are disabled we can just resume normally since we can't restore so stop movie and inform user
+				{
+					FCEU_PrintError("Error: Savestate not in the same timeline as movie!\nFrame %d branches from current timeline\nUnable to restore backup, movie playback stopped.", errorFrame);
+					FCEUI_StopMovie();
+				}
+				else
+				FCEU_PrintError("Error: Savestate not in the same timeline as movie!\nFrame %d branches from current timeline", errorFrame);
+
 				return false;
 			}
-			movieMode = MOVIEMODE_PLAY;
 		}
-		else
+		else //Read + write
 		{
-			//truncate before we copy, just to save some time
-			tempMovieData.truncateAt(currFrameCounter);
-			currMovieData = tempMovieData;
-
-			#ifdef _S9XLUA_H
-			if(!FCEU_LuaRerecordCountSkip())
+			if (currFrameCounter > (int)tempMovieData.records.size())
+			{
+				//This is a post movie savestate, handle it differently
+				//Recplae movie contents but then switch to movie finished mode
+				currMovieData = tempMovieData;	
+				openRecordingMovie(curMovieFilename);
+				currMovieData.dump(osRecordingMovie, false/*currMovieData.binaryFlag*/);
+				FinishPlayback();
+			}
+			else
+			{
+				//truncate before we copy, just to save some time, unless the user selects a full copy option
+				if (!fullSaveStateLoads)
+					tempMovieData.truncateAt(currFrameCounter); //we can only assume this here since we have checked that the frame counter is not greater than the movie data
+				currMovieData = tempMovieData;				
+#ifdef _S9XLUA_H
+				if(!FCEU_LuaRerecordCountSkip())
+					currRerecordCount++;
+#else
 				currRerecordCount++;
-			#endif
+#endif
+				currMovieData.rerecordCount = currRerecordCount;
+				openRecordingMovie(curMovieFilename);
+				currMovieData.dump(osRecordingMovie, false/*currMovieData.binaryFlag*/);
+				movieMode = MOVIEMODE_RECORD;
 
-			currMovieData.rerecordCount = currRerecordCount;
-
-			openRecordingMovie(curMovieFilename);
-			currMovieData.dump(osRecordingMovie, false);
-			movieMode = MOVIEMODE_RECORD;
+			}
 		}
 	}
-
+	
 	load_successful = true;
 
-	//// Maximus: Show the last input combination entered from the
-	//// movie within the state
-	//if(current!=0) // <- mz: only if playing or recording a movie
-	//	memcpy(&cur_input_display, joop, 4);
 	return true;
-#else
-	return false;
-#endif
 }
 
 void FCEUMOV_PreLoad(void)
@@ -1335,20 +1591,12 @@ void FCEUI_ToggleInputDisplay(void)
 
 int FCEUI_GetMovieLength()
 {
-#ifndef GEKKO
 	return currMovieData.records.size();
-#else
-	return 0;
-#endif
 }
 
 int FCEUI_GetMovieRerecordCount()
 {
-#ifndef GEKKO
 	return currMovieData.rerecordCount;
-#else
-	return 0;
-#endif
 }
 
 bool FCEUI_GetMovieToggleReadOnly()
@@ -1358,51 +1606,74 @@ bool FCEUI_GetMovieToggleReadOnly()
 
 void FCEUI_SetMovieToggleReadOnly(bool which)
 {
-#ifndef GEKKO
 	if (which)	//If set to readonly
 	{
 		if (!movie_readonly)	//If not already set
 		{
 			movie_readonly = true;
-			FCEU_DispMessage("Movie is now Read-Only.");
+			FCEU_DispMessage("Movie is now Read-Only.",0);
 		}
 		else					//Else restate message
-			FCEU_DispMessage("Movie is Read-Only.");
+			FCEU_DispMessage("Movie is Read-Only.",0);
 	}
 	else		//If set to read+write
 	{
 		if (movie_readonly)		//If not already set
 		{
 			movie_readonly = false;
-			FCEU_DispMessage("Movie is now Read+Write.");
+			FCEU_DispMessage("Movie is now Read+Write.",0);
 		}
 		else					//Else restate message
-			FCEU_DispMessage("Movie is Read+Write.");
+			FCEU_DispMessage("Movie is Read+Write.",0);
 	}
-#endif
 }
 void FCEUI_MovieToggleReadOnly()
 {
-#ifndef GEKKO
+	char message[260];
+	
 	if(movie_readonly)
-		FCEU_DispMessage("Movie is now Read+Write.");
+		strcpy(message, "Movie is now Read+Write");
 	else
-		FCEU_DispMessage("Movie is now Read-Only.");
-
+	{
+		strcpy(message, "Movie is now Read-Only");
+	}
+	
+	if(movieMode == MOVIEMODE_INACTIVE)
+		strcat(message, " (no movie)");
+	else if (movieMode == MOVIEMODE_FINISHED)
+		strcat(message, " (finished)");
+	
+	FCEU_DispMessage(message,0);
 	movie_readonly = !movie_readonly;
-#endif
 }
 
 void FCEUI_MoviePlayFromBeginning(void)
 {
-#ifndef GEKKO
-	if (movieMode != MOVIEMODE_INACTIVE)
+	if (movieMode != MOVIEMODE_INACTIVE && movieMode != MOVIEMODE_TASEDIT)
 	{
-		char *fname = strdup(curMovieFilename);
-		FCEUI_LoadMovie(fname, true, false, 0);
-		FCEU_DispMessage("Movie is now Read-Only. Playing from beginning.");
-		free(fname);
+		if (currMovieData.savestate.empty())
+		{
+			movie_readonly=true;
+			poweron(true);	
+			currFrameCounter=0;
+			movieMode = MOVIEMODE_PLAY;
+			FCEU_DispMessage("Movie is now Read-Only. Playing from beginning.",0);
+		}
+		else
+		{
+			string str = curMovieFilename;
+			FCEUI_StopMovie();
+			if (FCEUI_LoadMovie(str.c_str(),1, 0, 0))
+			{
+				movieMode = MOVIEMODE_PLAY;
+				movie_readonly=true;
+				FCEU_DispMessage("Movie is now Read-Only. Playing from beginning.",0);
+			}
+			//currMovieData.loadSavestateFrom(&currMovieData.savestate); //TODO: make something like this work instead so it doesn't have to reload		
+		}
 	}
+#ifdef WIN32
+	SetMainWindowText();
 #endif
 }
 
@@ -1413,14 +1684,15 @@ string FCEUI_GetMovieName(void)
 
 bool FCEUI_MovieGetInfo(FCEUFILE* fp, MOVIE_INFO& info, bool skipFrameCount)
 {
-#ifndef GEKKO
 	MovieData md;
-	if(!LoadFM2(md, fp->stream, INT_MAX, skipFrameCount))
+	if(!LoadFM2(md, fp->stream, fp->size, skipFrameCount))
 		return false;
-
+	
 	info.movie_version = md.version;
 	info.poweron = md.savestate.size()==0;
+	info.reset = false; //Soft-reset isn't used from starting movies anymore, so this will be false, better for FCEUFILE to have that info (as |1| on the first frame indicates it
 	info.pal = md.palFlag;
+	info.ppuflag = md.PPUflag;
 	info.nosynchack = true;
 	info.num_frames = md.records.size();
 	info.md5_of_rom_used = md.romChecksum;
@@ -1429,16 +1701,13 @@ bool FCEUI_MovieGetInfo(FCEUFILE* fp, MOVIE_INFO& info, bool skipFrameCount)
 	info.rerecord_count = md.rerecordCount;
 	info.comments = md.comments;
 	info.subtitles = md.subtitles;
+
 	return true;
-#else
-	return false;
-#endif
 }
 
 //This function creates an array of frame numbers and corresponding strings for displaying subtitles
-void LoadSubtitles(MovieData moviedata)
+void LoadSubtitles(MovieData &moviedata)
 {
-#ifndef GEKKO
 	extern std::vector<string> subtitles;
 	for(uint32 i=0; i < moviedata.subtitles.size() ; i++)
 	{
@@ -1460,13 +1729,12 @@ void LoadSubtitles(MovieData moviedata)
 				subtitleMessages.push_back(value);
 			}
 	}
-#endif
+
 }
 
 //Every frame, this will be called to determine if a subtitle should be displayed, which one, and then to display it
 void ProcessSubtitles(void)
 {
-#ifndef GEKKO
 	if (movieMode == MOVIEMODE_INACTIVE) return;
 
 	for(uint32 i=0;i<currMovieData.subtitles.size();i++)
@@ -1474,12 +1742,10 @@ void ProcessSubtitles(void)
 		if (currFrameCounter == subtitleFrames[i])
 			FCEU_DisplaySubtitles("%s",subtitleMessages[i].c_str());
 	}
-#endif
 }
 
 void FCEU_DisplaySubtitles(char *format, ...)
 {
-#ifndef GEKKO
 	va_list ap;
 
 	va_start(ap,format);
@@ -1488,22 +1754,19 @@ void FCEU_DisplaySubtitles(char *format, ...)
 
 	subtitleMessage.howlong = 300;
 	subtitleMessage.isMovieMessage = subtitlesOnAVI;
-#endif
+	subtitleMessage.linesFromBottom = 0;
 }
 
 void FCEUI_CreateMovieFile(std::string fn)
 {
-#ifndef GEKKO
 	MovieData md = currMovieData;							//Get current movie data
-	std::fstream* outf = FCEUD_UTF8_fstream(fn, "wb");		//open/create file
+	EMUFILE* outf = FCEUD_UTF8_fstream(fn, "wb");		//open/create file
 	md.dump(outf,false);									//dump movie data
 	delete outf;											//clean up, delete file object
-#endif
 }
 
 void FCEUI_MakeBackupMovie(bool dispMessage)
 {
-#ifndef GEKKO
 	//This function generates backup movie files
 	string currentFn;					//Current movie fillename
 	string backupFn;					//Target backup filename
@@ -1553,37 +1816,9 @@ void FCEUI_MakeBackupMovie(bool dispMessage)
 	if (dispMessage)	//If we should inform the user 
 	{
 		if (overflow)
-			FCEUI_DispMessage("Backup overflow, overwriting %s",backupFn.c_str()); //Inform user of overflow
+			FCEUI_DispMessage("Backup overflow, overwriting %s",0,backupFn.c_str()); //Inform user of overflow
 		else
-			FCEUI_DispMessage("%s created",backupFn.c_str()); //Inform user of backup filename
+			FCEUI_DispMessage("%s created",0,backupFn.c_str()); //Inform user of backup filename
 	}
-#endif
 }
-
-bool CheckFileExists(const char* filename)
-{
-#ifndef GEKKO
-	//This function simply checks to see if the given filename exists
-	string checkFilename; 
-
-	if (filename)
-		checkFilename = filename;
-			
-	//Check if this filename exists
-	fstream test;
-	test.open(checkFilename.c_str(),fstream::in);
-		
-	if (test.fail())
-	{
-		test.close();
-		return false; 
-	}
-	else
-	{
-		test.close();
-		return true; 
-	}
-#else
-	return false;
 #endif
-}

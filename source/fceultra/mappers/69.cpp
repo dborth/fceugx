@@ -39,7 +39,7 @@ static DECLFR(SUN5AWRAM)
 {
  if((sungah&0xC0)==0x40)
   return X.DB;
- return CartBR(A);
+ return CartBROB(A);
 }
 
 static DECLFW(Mapper69_SWL)

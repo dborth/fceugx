@@ -135,7 +135,11 @@ void DrawMessage(bool beforeMovie)
 
 		uint8 *t;
 		guiMessage.howlong--;
-		t=XBuf+FCEU_TextScanlineOffsetFromBottom(20)+1;
+
+		if (guiMessage.linesFromBottom > 0) 
+			t=XBuf+FCEU_TextScanlineOffsetFromBottom(guiMessage.linesFromBottom)+1;
+		else
+			t=XBuf+FCEU_TextScanlineOffsetFromBottom(20)+1;
 
 		/*
 		FCEU palette:
@@ -336,7 +340,7 @@ void FCEU_DrawRecordingStatus(uint8* XBuf)
 			drawstatus(XBuf-ClipSidesOffset,2,28,0);
 			hasPlayRecIcon = true;
 		}
-		else if(FCEUMOV_Mode(MOVIEMODE_PLAY))
+		else if(FCEUMOV_Mode(MOVIEMODE_PLAY|MOVIEMODE_FINISHED))
 		{
 			drawstatus(XBuf-ClipSidesOffset,1,28,0);
 			hasPlayRecIcon = true;

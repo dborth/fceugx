@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
+#include <gctypes.h>
 
 #include "fceultra/file.h"
 
@@ -64,7 +65,7 @@ int GCMemROM(int size)
 	fceufp->size = size;
 	fceufp->filename = romFilename;
 	fceufp->mode = FCEUFILE::READ; // read only
-	memorystream * fceumem = new memorystream((char *) nesrom, size);
+	EMUFILE_MEMFILE *fceumem = new EMUFILE_MEMFILE(nesrom, size);
 	fceufp->stream = fceumem;
 
 	romLoaded = iNESLoad(romFilename, fceufp, 1);

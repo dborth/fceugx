@@ -19,6 +19,7 @@ ConnectShare (bool silent)
 
 #else
 
+#include <gccore.h>
 #include <network.h>
 #include <malloc.h>
 #include <ogc/lwp_watchdog.h>

@@ -9,12 +9,15 @@
  * FCEU Support Functions
  ****************************************************************************/
 
+#include <gctypes.h>
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "pad.h"
 #include "gcaudio.h"
 #include "gcvideo.h"
 #include "menu.h"
+
+bool turbo = false;
 
 /**
  * Closes a game.  Frees memory, and deinitializes the drivers.
@@ -36,7 +39,7 @@ FILE *FCEUD_UTF8fopen(const char *n, const char *m)
     return NULL;
 }
 
-std::fstream* FCEUD_UTF8_fstream(const char *fn, const char *m)
+EMUFILE_FILE* FCEUD_UTF8_fstream(const char *n, const char *m)
 {
 	return NULL;
 }

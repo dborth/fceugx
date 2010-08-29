@@ -85,6 +85,7 @@ bool justLagged = false;
 bool frameAdvanceLagSkip = false; //If this is true, frame advance will skip over lag frame (i.e. it will emulate 2 frames instead of 1)
 bool AutoSS = false;		//Flagged true when the first auto-savestate is made while a game is loaded, flagged false on game close
 bool movieSubtitles = true; //Toggle for displaying movie subtitles
+bool DebuggerWasUpdated = false; //To prevent the debugger from updating things without being updated.
 
 FCEUGI::FCEUGI()
 : filename(0)
@@ -99,20 +100,53 @@ FCEUGI::~FCEUGI()
 	if(archiveFilename) delete archiveFilename;
 }
 
+bool CheckFileExists(const char* filename)
+{
+	//This function simply checks to see if the given filename exists
+	if (!filename) return false;
+	fstream test;
+	test.open(filename,fstream::in);
+		
+	if (test.fail())
+	{
+		test.close();
+		return false; 
+	}
+	else
+	{
+		test.close();
+		return true; 
+	}
+}
+
+void FCEU_TogglePPU(void)
+{
+	newppu ^= 1;
+	if (newppu)
+	{
+		FCEU_DispMessage("New PPU loaded", 0);
+		FCEUI_printf("New PPU loaded");
+	}
+	else
+	{
+		FCEU_DispMessage("Old PPU loaded", 0);
+		FCEUI_printf("Old PPU loaded");
+	}
+}
+
 static void FCEU_CloseGame(void)
 {
 	if(GameInfo)
 	{
 
 #ifdef WIN32
-// ################################## Start of SP CODE ###########################
+//SP CODE
 	extern char LoadedRomFName[2048];
 
 	if (storePreferences(LoadedRomFName))
 	{
 		FCEUD_PrintError("Couldn't store debugging data");
 	}
-// ################################## End of SP CODE ###########################
 #endif
 
 		if(FCEUnetplay)
@@ -128,11 +162,7 @@ static void FCEU_CloseGame(void)
 
 		if(GameInfo->type!=GIT_NSF)
 		{
-			#ifdef GEKKO
-			FCEU_FlushGameCheats(0,1); // don't save cheats
-			#else
 			FCEU_FlushGameCheats(0,0);
-			#endif
 		}
 
 		GameInterface(GI_CLOSE);
@@ -141,8 +171,7 @@ static void FCEU_CloseGame(void)
 
 		ResetExState(0,0);
 
-		//mbg 5/9/08 - clear screen when game is closed
-		//http://sourceforge.net/tracker/index.php?func=detail&aid=1787298&group_id=13536&atid=113536
+		//clear screen when game is closed
 		extern uint8 *XBuf;
 		if(XBuf)
 			memset(XBuf,0,256*256);
@@ -151,11 +180,10 @@ static void FCEU_CloseGame(void)
 
 		delete GameInfo;
 		GameInfo = 0;
-
-		//Reset frame counter
+				
 		currFrameCounter = 0;
 
-		//Reset flags for Undo/Redo/Auto Savestating
+		//Reset flags for Undo/Redo/Auto Savestating //adelikat: TODO: maybe this stuff would be cleaner as a struct or class
 		lastSavestateMade[0] = 0;
 		undoSS = false;
 		redoSS = false;
@@ -318,7 +346,8 @@ static void AllocBuffers()
 #endif
 }
 
-static void FreeBuffers() {
+static void FreeBuffers()
+{
 #ifdef _USE_SHARED_MEMORY_
 	void win_FreeBuffers(uint8 *GameMemBlock, uint8 *RAM);
 	win_FreeBuffers(GameMemBlock, RAM);
@@ -493,7 +522,7 @@ endlseq:
 		FCEU_LoadGameCheats(0);
 
 #if defined (WIN32) || defined (WIN64)
-	DoDebuggerRunCheck(); //Can't safely do it in loadPreferences
+	DoDebuggerDataReload(); // Reloads data without reopening window
 #endif
 
 	return GameInfo;
@@ -590,12 +619,13 @@ void SetAutoFireOffset(int offset)
 void AutoFire(void)
 {
 	static int counter = 0;
-	if (justLagged == false) counter = (counter + 1) % (8*7*5*3);
+	if (justLagged == false) 
+		counter = (counter + 1) % (8*7*5*3);
 	//If recording a movie, use the frame # for the autofire so the offset
 	//doesn't get screwed up when loading.
 	if(FCEUMOV_Mode(MOVIEMODE_RECORD | MOVIEMODE_PLAY))
 	{
-		rapidAlternator= AutoFirePattern[(AutoFireOffset + FCEUMOV_GetFrame())%AutoFirePatternLength];
+		rapidAlternator= AutoFirePattern[(AutoFireOffset + FCEUMOV_GetFrame())%AutoFirePatternLength]; //adelikat: TODO: Think through this, MOVIEMODE_FINISHED should not use movie data for auto-fire?
 	}
 	else
 	{
@@ -661,12 +691,15 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 
 #ifdef WIN32
 	//These Windows only dialogs need to be updated only once per frame so they are included here
-	UpdateCheatList();
+	UpdateCheatList(); // CaH4e3: can't see why, this is only cause problems with selection - adelikat: selection is only a problem when not paused, it shoudl be paused to select, we want to see the values update
 	UpdateTextHooker();
 	Update_RAM_Search(); // Update_RAM_Watch() is also called.
 	RamChange();
 	UpdateLogWindow();
 	//FCEUI_AviVideoUpdate(XBuf);
+	extern int KillFCEUXonFrame;
+	if (KillFCEUXonFrame && (FCEUMOV_GetFrame() >= KillFCEUXonFrame))
+		DoFCEUExit();
 #endif
 
 	timestampbase += timestamp;
@@ -928,6 +961,7 @@ void FCEUI_SetEmulationPaused(int val)
 void FCEUI_ToggleEmulationPause(void)
 {
 	EmulationPaused = (EmulationPaused&1)^1;
+	DebuggerWasUpdated = false;
 }
 
 void FCEUI_FrameAdvanceEnd(void)
@@ -945,7 +979,7 @@ static int AutosaveCounter = 0;
 
 void UpdateAutosave(void)
 {
-	if(!EnableAutosave)
+	if(!EnableAutosave || turbo)
 		return;
 
 	char * f;
@@ -963,7 +997,7 @@ void UpdateAutosave(void)
 
 void FCEUI_Autosave(void)
 {
-	if(!EnableAutosave || !AutoSS)
+	if(!EnableAutosave || !AutoSS || FCEUMOV_Mode(MOVIEMODE_TASEDIT))
 		return;
 
 	if(AutosaveStatus[AutosaveIndex] == 1)
@@ -1016,7 +1050,7 @@ bool FCEU_IsValidUI(EFCEUI ui)
 
 	case FCEUI_STOPMOVIE:
 	case FCEUI_PLAYFROMBEGINNING:
-		return FCEUMOV_Mode(MOVIEMODE_PLAY|MOVIEMODE_RECORD);
+		return (FCEUMOV_Mode(MOVIEMODE_PLAY|MOVIEMODE_RECORD|MOVIEMODE_FINISHED));
 
 	case FCEUI_STOPAVI:
 		return FCEUI_AviIsRecording();
@@ -1027,7 +1061,7 @@ bool FCEU_IsValidUI(EFCEUI ui)
 
 	case FCEUI_RESET:
 		if(!GameInfo) return false;
-		if(FCEUMOV_Mode(MOVIEMODE_TASEDIT|MOVIEMODE_PLAY)) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_FINISHED|MOVIEMODE_TASEDIT|MOVIEMODE_PLAY)) return false;
 		break;
 
 	case FCEUI_POWER:

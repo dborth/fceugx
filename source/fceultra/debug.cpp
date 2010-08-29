@@ -195,11 +195,34 @@ unsigned int NewBreak(const char* name, int start, int end, unsigned int type, c
 }
 
 int GetPRGAddress(int A){
-	unsigned int result;
+	int result;
 	if((A < 0x8000) || (A > 0xFFFF))return -1;
 	result = &Page[A>>11][A]-PRGptr[0];
-	if((result > PRGsize[0]) || (result < 0))return -1;
+	if((result > (int)PRGsize[0]) || (result < 0))return -1;
 	else return result;
+}
+
+/**
+* Returns the bank for a given offset.
+* Technically speaking this function does not calculate the actual bank
+* where the offset resides but the 0x4000 bytes large chunk of the ROM of the offset.
+* 
+* @param offs The offset
+* @return The bank of that offset or -1 if the offset is not part of the ROM.
+**/
+int getBank(int offs)
+{
+	//NSF data is easy to overflow the return on.
+	//Anything over FFFFF will kill it.
+
+
+	//GetNesFileAddress doesn't work well with Unif files
+	int addr = GetNesFileAddress(offs)-16;
+
+	if (GameInfo && GameInfo->type==GIT_NSF) {
+	return addr != -1 ? addr / 0x1000 : -1;
+	}
+	return addr != -1 ? addr / 0x4000 : -1;
 }
 
 int GetNesFileAddress(int A){
@@ -272,15 +295,16 @@ int evaluate(Condition* c)
 	{
 		switch(c->type1)
 		{
-			case TYPE_ADDR:
+			case TYPE_ADDR: // This is intended to not break, and use the TYPE_NUM code
 			case TYPE_NUM: value1 = c->value1; break;
-			default: value1 = getValue(c->value1);
+			default: value1 = getValue(c->value1); break;
 		}
 	}
 
-	if (c->type1 == TYPE_ADDR)
+	switch(c->type1)
 	{
-		value1 = GetMem(value1);
+		case TYPE_ADDR: value1 = GetMem(value1); break;
+		case TYPE_BANK: value1 = getBank(_PC); break;
 	}
 
 	f = value1;
@@ -295,16 +319,17 @@ int evaluate(Condition* c)
 		{
 			switch(c->type2)
 			{
-				case TYPE_ADDR:
+				case TYPE_ADDR: // This is intended to not break, and use the TYPE_NUM code
 				case TYPE_NUM: value2 = c->value2; break;
-				default: value2 = getValue(c->type2);
+				default: value2 = getValue(c->type2); break;
 			}
 		}
 
-		if (c->type2 == TYPE_ADDR)
-		{
-			value2 = GetMem(value2);
-		}
+	switch(c->type2)
+	{
+		case TYPE_ADDR: value2 = GetMem(value2); break;
+		case TYPE_BANK: value2 = getBank(_PC); break;
+	}
 
 		switch (c->op)
 		{
@@ -335,93 +360,94 @@ int condition(watchpointinfo* wp)
 //---------------------
 
 volatile int codecount, datacount, undefinedcount;
-//HWND hCDLogger=0;
 unsigned char *cdloggerdata;
 char *cdlogfilename;
-//char loadedcdfile[MAX_PATH];
 static int indirectnext;
 
 int debug_loggingCD;
 
 //called by the cpu to perform logging if CDLogging is enabled
 void LogCDVectors(int which){
-	int i = 0xFFFA+(which*2);
 	int j;
-	j = GetPRGAddress(i);
+	j = GetPRGAddress(which);
 	if(j == -1){
 		return;
 	}
 
-	if(cdloggerdata[j] == 0){
-	cdloggerdata[j] |= 0x0E; // we're in the last bank and recording it as data so 0x1110 or 0xE should be what we need
-	datacount++;
-	undefinedcount--;
+	if(!(cdloggerdata[j] & 2)){
+		cdloggerdata[j] |= 0x0E; // we're in the last bank and recording it as data so 0x1110 or 0xE should be what we need
+		datacount++;
+		if(!(cdloggerdata[j] & 1))undefinedcount--;
 	}
 	j++;
 	
-	if(cdloggerdata[j] == 0){
-	cdloggerdata[j] |= 0x0E; // we're in the last bank and recording it as data so 0x1110 or 0xE should be what we need
-	datacount++;
-	undefinedcount--;
+	if(!(cdloggerdata[j] & 2)){
+		cdloggerdata[j] |= 0x0E;
+		datacount++;
+		if(!(cdloggerdata[j] & 1))undefinedcount--;
 	}
-
-	return;
 }
 
 void LogCDData(){
 	int i, j;
-	uint16 A=0; 
-	uint8 opcode[3] = {0};
+	uint16 A = 0; 
+	uint8 opcode[3] = {0}, memop = 0;
 
 	j = GetPRGAddress(_PC);
 
-	opcode[0] = GetMem(_PC);
-	for (i = 1; i < opsize[opcode[0]]; i++) opcode[i] = GetMem(_PC+i);
+	if(j != -1) {
+		opcode[0] = GetMem(_PC);
+		switch (opsize[opcode[0]]) {
+			case 2:
+				opcode[1] = GetMem(_PC + 1);
+				break;
+			case 3:
+				opcode[1] = GetMem(_PC + 1);
+				opcode[2] = GetMem(_PC + 2);
+				break;
+		}
 	
-	if(j != -1){
 		for (i = 0; i < opsize[opcode[0]]; i++){
 			if(cdloggerdata[j+i] & 1)continue; //this has been logged so skip
 			cdloggerdata[j+i] |= 1;
-			cdloggerdata[j+i] |=((_PC+i)>>11)&12;
+			cdloggerdata[j+i] |=((_PC+i)>>11)&0x0c;
 			if(indirectnext)cdloggerdata[j+i] |= 0x10;
 			codecount++; 
-			if(!(cdloggerdata[j+i] & 0x42))undefinedcount--;
+			if(!(cdloggerdata[j+i] & 2))undefinedcount--;
+		}
+
+		//log instruction jumped to in an indirect jump
+		if(opcode[0] == 0x6c) indirectnext = 1; else indirectnext = 0;
+
+		switch (optype[opcode[0]]) {
+			case 0: break;
+			case 1:
+				A = (opcode[1]+_X) & 0xFF;
+				A = GetMem(A) | (GetMem(A+1)<<8);
+				memop = 0x20;
+				break;
+			case 2: A = opcode[1]; break;
+			case 3: A = opcode[1] | opcode[2]<<8; break;
+			case 4:
+				A = (GetMem(opcode[1]) | (GetMem(opcode[1]+1)<<8))+_Y;
+				memop = 0x20;
+				break;
+			case 5: A = opcode[1]+_X; break;
+			case 6: A = (opcode[1] | (opcode[2]<<8))+_Y; break;
+			case 7: A = (opcode[1] | (opcode[2]<<8))+_X; break;
+			case 8: A = opcode[1]+_Y; break;
+		}
+
+		if((j = GetPRGAddress(A)) != -1) {
+			if(!(cdloggerdata[j] & 2)) {
+				cdloggerdata[j] |= 2;
+				cdloggerdata[j] |=(A>>11)&0x0c;
+				cdloggerdata[j] |= memop;
+				datacount++; 
+				if(!(cdloggerdata[j] & 1))undefinedcount--;
+			}
 		}
 	}
-	indirectnext = 0;
-	//log instruction jumped to in an indirect jump
-	if(opcode[0] == 0x6c){
-		indirectnext = 1;
-	}
-
-	switch (optype[opcode[0]]) {
-		case 0: break;
-		case 1:
-			A = (opcode[1]+_X) & 0xFF;
-			A = GetMem(A) | (GetMem(A+1))<<8;
-			break;
-		case 2: A = opcode[1]; break;
-		case 3: A = opcode[1] | opcode[2]<<8; break;
-		case 4: A = (GetMem(opcode[1]) | (GetMem(opcode[1]+1))<<8)+_Y; break;
-		case 5: A = opcode[1]+_X; break;
-		case 6: A = (opcode[1] | opcode[2]<<8)+_Y; break;
-		case 7: A = (opcode[1] | opcode[2]<<8)+_X; break;
-		case 8: A = opcode[1]+_Y; break;
-	}
-
-	//if(opbrktype[opcode[0]] != WP_R)return; //we only want reads
-
-	if((j = GetPRGAddress(A)) == -1)return;
-	//if(j == 0)BreakHit();
-
-
-	if(cdloggerdata[j] & 2)return; 
-	cdloggerdata[j] |= 2;
-	cdloggerdata[j] |=((A/*+i*/)>>11)&12;
-	if((optype[opcode[0]] == 1) || (optype[opcode[0]] == 4))cdloggerdata[j] |= 0x20;
-	datacount++; 
-	if(!(cdloggerdata[j+i] & 1))undefinedcount--;
-	return;
 }
 
 //-----------debugger stuff
@@ -444,7 +470,7 @@ void BreakHit(bool force = false) {
 		//check to see whether we fall in any forbid zone
 		for (int i = 0; i < numWPs; i++) {
 			watchpointinfo& wp = watchpoint[i];
-			if(!(wp.flags & WP_F))
+			if(!(wp.flags & WP_F) || !(wp.flags & WP_E))
 				continue;
 
 			if (condition(&wp))
@@ -467,51 +493,21 @@ void BreakHit(bool force = false) {
 	
 	FCEUD_DebugBreakpoint();
 }
-/*
-	//very ineffecient, but this shouldn't get executed THAT much
-	if(!(cdloggerdata[GetPRGAddress(0xFFFA)] & 2)){
-		cdloggerdata[GetPRGAddress(0xFFFA)]|=2;
-		codecount++;
-		undefinedcount--;
-	}
-	if(!(cdloggerdata[GetPRGAddress(0xFFFB)] & 2)){
-		cdloggerdata[GetPRGAddress(0xFFFB)]|=2;
-		codecount++;
-		undefinedcount--;
-	}
-	if(!(cdloggerdata[GetPRGAddress(0xFFFC)] & 2)){
-		cdloggerdata[GetPRGAddress(0xFFFC)]|=2;
-		codecount++;
-		undefinedcount--;
-	}
-	if(!(cdloggerdata[GetPRGAddress(0xFFFD)] & 2)){
-		cdloggerdata[GetPRGAddress(0xFFFD)]|=2;
-		codecount++;
-		undefinedcount--;
-	}
-	if(!(cdloggerdata[GetPRGAddress(0xFFFE)] & 2)){
-		cdloggerdata[GetPRGAddress(0xFFFE)]|=2;
-		codecount++;
-		undefinedcount--;
-	}
-	if(!(cdloggerdata[GetPRGAddress(0xFFFF)] & 2)){
-		cdloggerdata[GetPRGAddress(0xFFFF)]|=2;
-		codecount++;
-		undefinedcount--;
-	}
-	return;
-}
-*/
+
+uint8 StackAddrBackup = X.S;
+uint16 StackNextIgnorePC = 0xFFFF;
 
 ///fires a breakpoint
 void breakpoint() {
-	int i;
+	int i,j;
 	uint16 A=0;
 	uint8 brk_type,opcode[3] = {0};
+	uint8 stackop=0;
+	uint8 stackopstartaddr,stackopendaddr;
 
 	//inspect the current opcode
 	opcode[0] = GetMem(_PC);
-	
+
 	//if the current instruction is bad, and we are breaking on bad opcodes, then hit the breakpoint
 	if(dbgstate.badopbreak && (opsize[opcode[0]] == 0)) BreakHit(true);
 
@@ -572,6 +568,21 @@ void breakpoint() {
 		case 8: A = opcode[1]+_Y; break;
 	}
 
+	switch (opcode[0]) {
+		//Push Ops
+		case 0x08: //Fall to next
+		case 0x48: stackopstartaddr=stackopendaddr=X.S-1; stackop=WP_W; StackAddrBackup = X.S; StackNextIgnorePC=_PC+1; break;
+		//Pull Ops
+		case 0x28: //Fall to next
+		case 0x68: stackopstartaddr=stackopendaddr=X.S+1; stackop=WP_R; StackAddrBackup = X.S; StackNextIgnorePC=_PC+1; break;
+		//JSR (Includes return address - 1)
+		case 0x20: stackopstartaddr=stackopendaddr=X.S-1; stackop=WP_W; StackAddrBackup = X.S; StackNextIgnorePC=(opcode[1]|opcode[2]<<8); break;
+		//RTI (Includes processor status, and exact return address)
+		case 0x40: stackopstartaddr=X.S+1; stackopendaddr=X.S+3; stackop=WP_R; StackAddrBackup = X.S; StackNextIgnorePC=(GetMem(X.S+2|0x0100)|GetMem(X.S+3|0x0100)<<8); break;
+		//RTS (Includes return address - 1)
+		case 0x60: stackopstartaddr=X.S+1; stackopendaddr=X.S+2; stackop=WP_R; StackAddrBackup = X.S; StackNextIgnorePC=(GetMem(stackopstartaddr|0x0100)|GetMem(stackopendaddr|0x0100)<<8)+1; break;
+	}
+
 	for (i = 0; i < numWPs; i++) {
 // ################################## Start of SP CODE ###########################
 		if (condition(&watchpoint[i]))
@@ -597,17 +608,67 @@ void breakpoint() {
 			else { //CPU mem breaks
 				if ((watchpoint[i].flags & WP_E) && (watchpoint[i].flags & brk_type)) {
 					if (watchpoint[i].endaddress) {
-						if (((!(watchpoint[i].flags & WP_X)) && (watchpoint[i].address <= A) && (watchpoint[i].endaddress >= A)) ||
+						if (((watchpoint[i].flags & (WP_R | WP_W)) && (watchpoint[i].address <= A) && (watchpoint[i].endaddress >= A)) ||
 							((watchpoint[i].flags & WP_X) && (watchpoint[i].address <= _PC) && (watchpoint[i].endaddress >= _PC))) BreakHit();
 					}
-					else if (((!(watchpoint[i].flags & WP_X)) && (watchpoint[i].address == A)) ||
+					else if (((watchpoint[i].flags & (WP_R | WP_W)) && (watchpoint[i].address == A)) ||
 							((watchpoint[i].flags & WP_X) && (watchpoint[i].address == _PC))) BreakHit();
+				}
+				else if (watchpoint[i].flags & WP_E) {
+					//brk_type independant coding
+
+					if (stackop>0) {
+						//Announced stack mem breaks
+						//PHA, PLA, PHP, and PLP affect the stack data.
+						//TXS and TSX only deal with the pointer.
+						if (watchpoint[i].flags & stackop) {
+							for (j = (stackopstartaddr|0x0100); j <= (stackopendaddr|0x0100); j++) {
+								if (watchpoint[i].endaddress) {
+									if ((watchpoint[i].address <= j) && (watchpoint[i].endaddress >= j)) BreakHit();
+								}
+								else if (watchpoint[i].address == j) BreakHit();
+							}
+						}
+					}
+					if (StackNextIgnorePC==_PC) {
+						//Used to make it ignore the unannounced stack code one time
+						StackNextIgnorePC = 0xFFFF;
+					} else 
+					{
+						if ((X.S < StackAddrBackup) && (stackop==0)) {
+							//Unannounced stack mem breaks
+							//Pushes to stack
+							if (watchpoint[i].flags & WP_W) {
+								for (j = (X.S|0x0100); j < (StackAddrBackup|0x0100); j++) {
+									if (watchpoint[i].endaddress) {
+										if ((watchpoint[i].address <= j) && (watchpoint[i].endaddress >= j)) BreakHit();
+									}
+									else if (watchpoint[i].address == j) BreakHit();
+								}
+							}
+						}
+						else if ((StackAddrBackup < X.S) && (stackop==0)) {
+							//Pulls from stack
+							if (watchpoint[i].flags & WP_R) {
+								for (j = (StackAddrBackup|0x0100); j < (X.S|0x0100); j++) {
+									if (watchpoint[i].endaddress) {
+										if ((watchpoint[i].address <= j) && (watchpoint[i].endaddress >= j)) BreakHit();
+									}
+									else if (watchpoint[i].address == j) BreakHit();
+								}
+							}
+						}
+					}
+
 				}
 			}
 // ################################## Start of SP CODE ###########################
 		}
 // ################################## End of SP CODE ###########################
 	}
+
+	//Update the stack address with the current one, now that changes have registered.
+	StackAddrBackup = X.S;
 }
 //bbit edited: this is the end of the inserted code
 
@@ -617,8 +678,8 @@ void DebugCycle() {
 	
 	if (scanline == 240)
 	{
-		vblankScanLines = (timestamp / 114);	//114 approximates the number of timestamps per scanline during vblank.  Approx 2508
-		if (vblankScanLines) vblankPixel =  341 / vblankScanLines;	//314 pixels per scanline
+		vblankScanLines = (PAL?int((double)timestamp / ((double)341 / (double)3.2)):timestamp / 114);	//114 approximates the number of timestamps per scanline during vblank.  Approx 2508. NTSC: (341 / 3.0) PAL: (341 / 3.2). Uses (3.? * cpu_cycles) / 341.0, and assumes 1 cpu cycle.
+		if (vblankScanLines) vblankPixel = 341 / vblankScanLines;	//341 pixels per scanline
 		//FCEUI_printf("vbPixel = %d",vblankPixel);					     //Debug
 		//FCEUI_printf("ts: %d line: %d\n", timestamp, vblankScanLines); //Debug
 	}
