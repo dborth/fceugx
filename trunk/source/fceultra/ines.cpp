@@ -50,13 +50,13 @@ extern SFORMAT FCEUVSUNI_STATEINFO[];
 
 //mbg merge 6/29/06 - these need to be global
 uint8 *trainerpoo=0;
-uint8 *ROM=NULL;
-uint8 *VROM=NULL;
+uint8 *ROM = NULL;
+uint8 *VROM = NULL;
 iNES_HEADER head ;
 
 
 #ifdef _USE_SHARED_MEMORY_
-HANDLE mapROM, mapVROM;
+HANDLE mapROM = NULL, mapVROM = NULL;
 #endif
 
 CartInfo iNESCart;
@@ -129,36 +129,32 @@ void iNESGI(GI h) //bbit edited: removed static keyword
 			if(iNESCart.Close) iNESCart.Close();
 #ifdef _USE_SHARED_MEMORY_
 			if(ROM)
-		 {
+		 	{
 			 if(mapROM)
 			 {
-				 UnmapViewOfFile(mapROM);
 				 CloseHandle(mapROM);
-				 ROM=0;
+				 mapROM = NULL;
+				 UnmapViewOfFile(ROM);
 			 }
 			 else
-			 {
 				 free(ROM);
-				 ROM = NULL;
-			 }
-		 }
+			 ROM = NULL;
+		 	}
 			if(VROM)
-		 {
+		 	{
 			 if(mapVROM)
 			 {
-				 UnmapViewOfFile(mapVROM);
 				 CloseHandle(mapVROM);
-				 VROM=0;
+				 mapVROM = NULL;
+				 UnmapViewOfFile(VROM);
 			 }
 			 else
-			 {
 				 free(VROM);
-				 VROM = NULL;
-			 }
-		 }
+			 VROM = NULL;
+			}
 #else
-			if(ROM) {free(ROM);ROM=0;}
-			if(VROM) {free(VROM);VROM=0;}
+			if(ROM) {free(ROM); ROM = NULL;}
+			if(VROM) {free(VROM); VROM = NULL;}
 #endif
 			if(MapClose) MapClose();
 			if(trainerpoo) {FCEU_gfree(trainerpoo);trainerpoo=0;}
@@ -230,6 +226,7 @@ static void SetInput(void)
 		{0xde8fd935,SI_UNSET,SI_ZAPPER,SIFC_NONE},  // To the Earth
 		{0xedc3662b,SI_UNSET,SI_ZAPPER,SIFC_NONE},  // Operation Wolf
 		{0x2a6559a1,SI_UNSET,SI_ZAPPER,SIFC_NONE},  // Operation Wolf (J)
+	    {0x4e959173,SI_UNSET,SI_ZAPPER,SIFC_NONE},  // Gotcha! - The Sport!
 
 		{0x23d17f5e,SI_GAMEPAD,SI_ZAPPER,SIFC_NONE},  // The Lone Ranger
 		{0xb8b9aca3,SI_UNSET,SI_ZAPPER,SIFC_NONE},  // Wild Gunman
@@ -390,7 +387,7 @@ static void CheckHInfo(void)
 		0x1b084107d0878bd0LL,    /* Startropics 2*/
 
 		0x836c0ff4f3e06e45LL,    /* Zelda 2 */
-	    
+
 		0x82000965f04a71bbLL,    /* Mirai Shinwa Jarvas */
 
 		0      /* Abandon all hope if the game has 0 in the lower 64-bits of its MD5 hash */
@@ -425,8 +422,9 @@ static void CheckHInfo(void)
 #ifdef _USE_SHARED_MEMORY_
 					if(mapVROM)
 					{
-						UnmapViewOfFile(mapVROM);
 						CloseHandle(mapVROM);
+						UnmapViewOfFile(VROM);
+						mapVROM = NULL;
 					}
 					else
 					{
@@ -435,7 +433,7 @@ static void CheckHInfo(void)
 #else
 					free(VROM);
 #endif
-					VROM=0;
+					VROM = NULL;
 					tofix|=8;
 				}
 				if(MapperNo!=(moo[x].mapper&0xFF))
@@ -536,9 +534,9 @@ typedef struct {
 	char* name;
 	int number;
 	void (*init)(CartInfo *);
-} BMAPPING;
+} BMAPPINGLocal;
 
-static BMAPPING bmap[] = {
+static BMAPPINGLocal bmap[] = {
 	{"NROM",				0,   NROM_Init},
 	{"MMC1",    			1,	 Mapper1_Init},
 	{"UNROM",				2,   UNROM_Init},
@@ -741,48 +739,67 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode)
 	mapROM = CreateFileMapping((HANDLE)0xFFFFFFFF,NULL,PAGE_READWRITE, 0, ROM_size<<14,"fceu.ROM");
 	if(mapROM == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
 	{
-		mapROM = NULL;
-		CloseHandle(mapROM);
-
-		if(!(ROM=(uint8 *)FCEU_malloc(ROM_size<<14)))
-			return 0;
-
-		if(VROM_size)
+		if((ROM = (uint8 *)FCEU_malloc(ROM_size<<14)) == NULL) return 0;
+	}
+	else
+	{
+		if((ROM = (uint8 *)MapViewOfFile(mapROM, FILE_MAP_WRITE, 0, 0, 0)) == NULL)
 		{
-			if(!(VROM=(uint8 *)FCEU_malloc(VROM_size<<13)))
+			CloseHandle(mapROM);
+			mapROM = NULL;
+			if((ROM = (uint8 *)FCEU_malloc(ROM_size<<14)) == NULL) return 0;
+		}
+	}
+	if(VROM_size)
+	{
+		mapVROM = CreateFileMapping((HANDLE)0xFFFFFFFF,NULL,PAGE_READWRITE, 0, VROM_size<<13,"fceu.VROM");
+		if(mapVROM == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
+		{
+			if((VROM=(uint8 *)FCEU_malloc(VROM_size<<13)) == NULL)
 			{
-				free(ROM);
+				if(mapROM)
+				{
+					UnmapViewOfFile(mapROM);
+					mapROM = NULL;
+					CloseHandle(ROM);
+				}
+				else
+					free(ROM);
 				ROM = NULL;
 				return 0;
 			}
 		}
-	}
-	else
-	{
-		ROM   = (uint8 *)MapViewOfFile(mapROM, FILE_MAP_WRITE, 0, 0, 0);
-		if( !ROM ) return 0;
-
-		if(VROM_size)
+		else
 		{
-			mapVROM = CreateFileMapping((HANDLE)0xFFFFFFFF,NULL,PAGE_READWRITE, 0, VROM_size<<13,"fceu.VROM");
-			VROM   = (uint8 *)MapViewOfFile(mapVROM, FILE_MAP_WRITE, 0, 0, 0);
-			if( !VROM )
+			if((VROM = (uint8 *)MapViewOfFile(mapVROM, FILE_MAP_WRITE, 0, 0, 0)) == NULL)
 			{
-				UnmapViewOfFile(mapROM);
-				CloseHandle(mapROM);
-				return 0;
+				CloseHandle(mapVROM);
+				mapVROM = NULL;
+				if((VROM=(uint8 *)FCEU_malloc(VROM_size<<13)) == NULL)
+				{
+					if(mapROM)
+					{
+						UnmapViewOfFile(mapROM);
+						mapROM = NULL;
+						CloseHandle(ROM);
+					}
+					else
+						free(ROM);
+					ROM = NULL;
+					return 0;
+				}
 			}
 		}
 	}
 #else
-	if(!(ROM=(uint8 *)FCEU_malloc(ROM_size<<14)))
-		return 0;
+	if((ROM = (uint8 *)FCEU_malloc(ROM_size<<14)) == NULL) return 0;
 
 	if(VROM_size)
 	{
-		if(!(VROM=(uint8 *)FCEU_malloc(VROM_size<<13)))
+		if((VROM = (uint8 *)FCEU_malloc(VROM_size<<13)) == NULL)
 		{
 			free(ROM);
+			ROM = NULL;
 			return 0;
 		}
 	}
@@ -831,10 +848,23 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode)
 			FCEU_printf("%02x",iNESCart.MD5[x]);
 		FCEU_printf("\n");
 	}
+
+	char* mappername = "Not Listed";
+
+	for(int mappertest=0;mappertest< (sizeof bmap / sizeof bmap[0]) - 1;mappertest++)
+	{
+		if (bmap[mappertest].number == MapperNo) {
+			mappername = bmap[mappertest].name;
+			break;
+		}
+	}
+
 	FCEU_printf(" Mapper #:  %d\n Mapper name: %s\n Mirroring: %s\n",
-	 MapperNo, bmap[MapperNo].name, Mirroring==2?"None(Four-screen)":Mirroring?"Vertical":"Horizontal");
-	if(head.ROM_type&2) FCEU_printf(" Battery-backed.\n");
-	if(head.ROM_type&4) FCEU_printf(" Trained.\n");
+		MapperNo, mappername, Mirroring==2?"None (Four-screen)":Mirroring?"Vertical":"Horizontal");
+
+	FCEU_printf(" Battery-backed: %s\n", (head.ROM_type&2)?"Yes":"No");
+	FCEU_printf(" Trained: %s\n", (head.ROM_type&4)?"Yes":"No");
+	// (head.ROM_type&8) = Mirroring: None(Four-screen)
 
 	SetInput();
 	CheckHInfo();
@@ -880,6 +910,14 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode)
 	#endif
 
 	strcpy(LoadedRomFName,name); //bbit edited: line added
+
+	// Extract Filename only. Should account for Windows/Unix this way.
+	if (strrchr(name, '/')) {
+	name = strrchr(name, '/') + 1;
+	} else if(strrchr(name, '\\')) {
+	name = strrchr(name, '\\') + 1;
+	}
+
 	GameInterface=iNESGI;
 	FCEU_printf("\n");
 
@@ -1443,11 +1481,11 @@ static void iNESPower(void)
 
 static int NewiNES_Init(int num)
 {
-	BMAPPING *tmp=bmap;
+	BMAPPINGLocal *tmp=bmap;
 
 	if(GameInfo->type == GIT_VSUNI)
 		AddExState(FCEUVSUNI_STATEINFO, ~0, 0, 0);
-		
+
 	while(tmp->init)
 	{
 		if(num==tmp->number)
@@ -1470,14 +1508,19 @@ static int NewiNES_Init(int num)
 				{
 					CloseHandle(mapVROM);
 					mapVROM = NULL;
-					VROM=(uint8 *)malloc(CHRRAMSize);
+					if((VROM = (uint8 *)malloc(CHRRAMSize)) == NULL) return 0;
 				}
 				else
 				{
-					VROM   = (uint8 *)MapViewOfFile(mapVROM, FILE_MAP_WRITE, 0, 0, 0);
+					if((VROM = (uint8 *)MapViewOfFile(mapVROM, FILE_MAP_WRITE, 0, 0, 0)) == NULL)
+					{
+						CloseHandle(mapVROM);
+						mapVROM = NULL;
+						if((VROM = (uint8 *)malloc(CHRRAMSize)) == NULL) return 0;
+					}
 				}
 #else
-				VROM=(uint8 *)malloc(CHRRAMSize);
+				if((VROM = (uint8 *)malloc(CHRRAMSize)) == NULL) return 0;
 #endif
 				UNIFchrrama=VROM;
 				SetupCartCHRMapping(0,VROM,CHRRAMSize,1);
@@ -1486,9 +1529,9 @@ static int NewiNES_Init(int num)
 			if(head.ROM_type&8)
 				AddExState(ExtraNTARAM, 2048, 0, "EXNR");
 			tmp->init(&iNESCart);
-			return(1);
+			return 1;
 		}
 		tmp++;
 	}
-	return(0);
+	return 0;
 }

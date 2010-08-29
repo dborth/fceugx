@@ -47,10 +47,9 @@ bool SaveState (char * filepath, bool silent)
 		SaveFile((char *)gameScreenPng, screenpath, gameScreenPngSize, silent);
 	}
 
-	memorystream save(SAVEBUFFERSIZE);
+	EMUFILE_MEMFILE save(SAVEBUFFERSIZE);
 	FCEUSS_SaveMS(&save, Z_BEST_COMPRESSION);
-	save.sync();
-	datasize = save.tellp();
+	datasize = save.size();
 
 	if (datasize)
 		offset = SaveFile(save.buf(), filepath, datasize, silent);
@@ -90,7 +89,7 @@ bool LoadState (char * filepath, bool silent)
 
 	if (offset > 0)
 	{
-		memorystream save((char *)savebuffer, offset);
+		EMUFILE_MEMFILE save(savebuffer, offset);
 		FCEUSS_LoadFP(&save, SSLOADPARAM_NOBACKUP);
 		retval = true;
 	}

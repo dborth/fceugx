@@ -12,7 +12,7 @@
 #ifndef _PAD_H_
 #define _PAD_H_
 
-#include <gccore.h>
+#include <gctypes.h>
 #include <wiiuse/wpad.h>
 
 #define PI 				3.14159265f

@@ -12,8 +12,6 @@
 #ifndef _MENU_H
 #define _MENU_H
 
-#include <ogcsys.h>
-
 bool GuiLoaded();
 void InitGUIThreads();
 void MainMenu (int menuitem);

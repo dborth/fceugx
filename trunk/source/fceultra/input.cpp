@@ -85,6 +85,8 @@ static uint8 joy_readbit[2];
 uint8 joy[4]={0,0,0,0}; //HACK - should be static but movie needs it
 static uint8 LastStrobe;
 
+bool replaceP2StartWithMicrophone = false;
+
 #ifdef _USE_SHARED_MEMORY_
 static uint32 BotPointer = 0; //mbg merge 7/18/06 changed to uint32
 #endif
@@ -107,13 +109,36 @@ static DECLFR(JPRead)
 {
 	lagFlag = 0;
 	uint8 ret=0;
+	static bool microphone = false;
 
 	ret|=joyports[A&1].driver->Read(A&1);
+
+	// Test if the port 2 start button is being pressed.
+	// On a famicom, port 2 start shouldn't exist, so this removes it.
+	// Games can't automatically be checked for NES/Famicom status,
+	// so it's an all-encompassing change in the input config menu.
+	if ((replaceP2StartWithMicrophone) && (A&1) && (joy_readbit[1] == 4)) {
+	// Nullify Port 2 Start Button
+	ret&=0xFE;
+	}
 
 	if(portFC.driver)
 		ret = portFC.driver->Read(A&1,ret);
 
+	// Not verified against hardware.
+	if (replaceP2StartWithMicrophone) {
+		if (joy[1]&8) {
+			microphone = !microphone;
+			if (microphone) {
+				ret|=4;
+			}
+		} else {
+			microphone = false;
+		}
+	}
+
 	ret|=X.DB&0xC0;
+
 	return(ret);
 }
 
@@ -471,6 +496,10 @@ bool FCEUI_GetInputFourscore()
 {
 	return FSAttached;
 }
+bool FCEUI_GetInputMicrophone()
+{
+	return replaceP2StartWithMicrophone;
+}
 void FCEUI_SetInputFourscore(bool attachFourscore)
 {
 	FSAttached = attachFourscore;
@@ -603,6 +632,12 @@ static void LaunchTraceLogger(void);
 static void LaunchCodeDataLogger(void);
 static void LaunchRamWatch(void);
 static void LaunchRamSearch(void);
+static void RamSearchOpLT(void);
+static void RamSearchOpGT(void);
+static void RamSearchOpLTE(void);
+static void RamSearchOpGTE(void);
+static void RamSearchOpEQ(void);
+static void RamSearchOpNE(void);
 static void FA_SkipLag(void);
 static void OpenRom(void);
 static void CloseRom(void);
@@ -723,8 +758,14 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_MISC_DISPLAY_MOVIESUBTITLES,	EMUCMDTYPE_MISC,	MovieSubtitleToggle,0,0,"Toggle Movie Subtitles", 0},
 	{ EMUCMD_MISC_UNDOREDOSAVESTATE,		EMUCMDTYPE_MISC,	UndoRedoSavestate,  0,0,"Undo/Redo Savestate",    0},
 	{ EMUCMD_MISC_TOGGLEFULLSCREEN,			EMUCMDTYPE_MISC,	ToggleFullscreen, 0, 0, "Toggle Fullscreen",	  0},
-	{ EMUCMD_TOOL_OPENRAMWATCH,				EMUCMDTYPE_TOOL,	LaunchRamWatch,   0, 0, "Open Ram Watch",		  0},
+	{ EMUCMD_TOOL_OPENRAMWATCH,				EMUCMDTYPE_TOOL,	LaunchRamWatch,	  0, 0, "Open Ram Watch",		  0},
 	{ EMUCMD_TOOL_OPENRAMSEARCH,			EMUCMDTYPE_TOOL,	LaunchRamSearch,  0, 0, "Open Ram Search",		  0},
+	{ EMUCMD_TOOL_RAMSEARCHLT,				EMUCMDTYPE_TOOL,	RamSearchOpLT,	  0, 0, "Ram Search - Less Than", 0},
+	{ EMUCMD_TOOL_RAMSEARCHGT,				EMUCMDTYPE_TOOL,	RamSearchOpGT,	  0, 0, "Ram Search - Greater Than", 0},
+	{ EMUCMD_TOOL_RAMSEARCHLTE,				EMUCMDTYPE_TOOL,	RamSearchOpLTE,	  0, 0, "Ram Search - Less Than or Equal", 0},
+	{ EMUCMD_TOOL_RAMSEARCHGTE,				EMUCMDTYPE_TOOL,	RamSearchOpGTE,	  0, 0, "Ram Search - Greater Than or Equal", 0},
+	{ EMUCMD_TOOL_RAMSEARCHEQ,				EMUCMDTYPE_TOOL,	RamSearchOpEQ,	  0, 0, "Ram Search - Equal",	  0},
+	{ EMUCMD_TOOL_RAMSEARCHNE,				EMUCMDTYPE_TOOL,	RamSearchOpNE,	  0, 0, "Ram Search - Not Equal", 0},
 };
 
 #define NUM_EMU_CMDS		(sizeof(FCEUI_CommandTable)/sizeof(FCEUI_CommandTable[0]))
@@ -758,7 +799,7 @@ void FCEUI_HandleEmuCommands(TestCommandState* testfn)
 
 static void CommandUnImpl(void)
 {
-	FCEU_DispMessage("command '%s' unimplemented.", FCEUI_CommandTable[i].name);
+	FCEU_DispMessage("command '%s' unimplemented.",0, FCEUI_CommandTable[i].name);
 }
 
 static void CommandToggleDip(void)
@@ -925,7 +966,59 @@ static void LaunchRamSearch(void)
 #endif
 }
 
+static void RamSearchOpLT(void) {
+#ifdef WIN32
+	extern void SetSearchType(int SearchType);
+	extern void DoRamSearchOperation();
+	SetSearchType(0);
+	DoRamSearchOperation();
+#endif
+}
 
+static void RamSearchOpGT(void) {
+#ifdef WIN32
+	extern void SetSearchType(int SearchType);
+	extern void DoRamSearchOperation();
+	SetSearchType(1);
+	DoRamSearchOperation();
+#endif
+}
+
+static void RamSearchOpLTE(void) {
+#ifdef WIN32
+	extern void SetSearchType(int SearchType);
+	extern void DoRamSearchOperation();
+	SetSearchType(2);
+	DoRamSearchOperation();
+#endif
+}
+
+static void RamSearchOpGTE(void) {
+#ifdef WIN32
+	extern void SetSearchType(int SearchType);
+	extern void DoRamSearchOperation();
+	SetSearchType(3);
+	DoRamSearchOperation();
+#endif
+}
+
+static void RamSearchOpEQ(void) {
+#ifdef WIN32
+	extern void SetSearchType(int SearchType);
+	extern void DoRamSearchOperation();
+	SetSearchType(4);
+	DoRamSearchOperation();
+#endif
+}
+
+static void RamSearchOpNE(void) {
+#ifdef WIN32
+	extern void SetSearchType(int SearchType);
+	extern void DoRamSearchOperation();
+	SetSearchType(5);
+	DoRamSearchOperation();
+#endif
+}
 
 static void FA_SkipLag(void)
 {
@@ -950,8 +1043,8 @@ static void CloseRom(void)
 static void MovieSubtitleToggle(void)
 {
 	movieSubtitles ^= 1;
-	if (movieSubtitles)	FCEU_DispMessage("Movie subtitles on");
-	else FCEU_DispMessage("Movie subtitles off");
+	if (movieSubtitles)	FCEU_DispMessage("Movie subtitles on",0);
+	else FCEU_DispMessage("Movie subtitles off",0);
 }
 
 static void UndoRedoSavestate(void)

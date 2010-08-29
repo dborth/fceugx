@@ -11,8 +11,8 @@
 
 FILE *FCEUD_UTF8fopen(const char *fn, const char *mode);
 inline FILE *FCEUD_UTF8fopen(const std::string &n, const char *mode) { return FCEUD_UTF8fopen(n.c_str(),mode); }
-std::fstream* FCEUD_UTF8_fstream(const char *n, const char *m);
-inline std::fstream* FCEUD_UTF8_fstream(const std::string &n, const char *m) { return FCEUD_UTF8_fstream(n.c_str(),m); }
+EMUFILE_FILE* FCEUD_UTF8_fstream(const char *n, const char *m);
+inline EMUFILE_FILE* FCEUD_UTF8_fstream(const std::string &n, const char *m) { return FCEUD_UTF8_fstream(n.c_str(),m); }
 FCEUFILE* FCEUD_OpenArchiveIndex(ArchiveScanRecord& asr, std::string& fname, int innerIndex);
 FCEUFILE* FCEUD_OpenArchive(ArchiveScanRecord& asr, std::string& fname, std::string* innerFilename);
 ArchiveScanRecord FCEUD_ScanArchive(std::string fname);
@@ -77,6 +77,8 @@ void FCEUI_SetInputFC(ESIFC type, void *ptr, int attrib);
 void FCEUI_SetInputFourscore(bool attachFourscore);
 //tells whether a fourscore is attached
 bool FCEUI_GetInputFourscore();
+//tells whether the microphone is used
+bool FCEUI_GetInputMicrophone();
 
 void FCEUI_UseInputPreset(int preset);
 
@@ -167,7 +169,7 @@ void FCEUD_LoadStateFrom(void);
 
 //at the minimum, you should call FCEUI_SetInput, FCEUI_SetInputFC, and FCEUI_SetInputFourscore
 //you may also need to maintain your own internal state
-void FCEUD_SetInput(bool fourscore, ESI port0, ESI port1, ESIFC fcexp);
+void FCEUD_SetInput(bool fourscore, bool microphone, ESI port0, ESI port1, ESIFC fcexp);
 
 
 void FCEUD_MovieRecordTo(void);
@@ -176,7 +178,8 @@ void FCEUD_LuaRunFrom(void);
 
 int32 FCEUI_GetDesiredFPS(void);
 void FCEUI_SaveSnapshot(void);
-void FCEU_DispMessage(char *format, ...);
+void FCEUI_SaveSnapshotAs(void);
+void FCEU_DispMessage(char *format, int disppos, ...);
 #define FCEUI_DispMessage FCEU_DispMessage
 
 int FCEUI_DecodePAR(const char *code, int *a, int *v, int *c, int *type);

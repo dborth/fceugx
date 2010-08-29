@@ -24,6 +24,7 @@
 #include <di/di.h>
 #include <ogc/dvd.h>
 #include <iso9660.h>
+#include <fat.h>
 
 #include "fceugx.h"
 #include "fceusupport.h"
