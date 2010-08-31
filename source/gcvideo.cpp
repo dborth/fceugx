@@ -54,7 +54,7 @@ static Mtx GXmodelView2D;
 static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 4] ATTRIBUTE_ALIGN (32);
 
 static int UpdateVideo = 1;
-static int vmode_60hz = 0;
+static bool vmode_60hz = true;
 
 u8 * gameScreenTex = NULL; // a GX texture screen capture of the game
 u8 * gameScreenPng = NULL;
@@ -469,7 +469,7 @@ static GXRModeObj * FindVideoMode()
 	{
 		case VI_PAL:
 			// 576 lines (PAL 50Hz)
-			vmode_60hz = 0;
+			vmode_60hz = false;
 
 			// Original Video modes (forced to PAL 50Hz)
 			// set video signal mode
@@ -479,7 +479,7 @@ static GXRModeObj * FindVideoMode()
 
 		case VI_NTSC:
 			// 480 lines (NTSC 60Hz)
-			vmode_60hz = 1;
+			vmode_60hz = true;
 
 			// Original Video modes (forced to NTSC 60Hz)
 			// set video signal mode
@@ -490,7 +490,7 @@ static GXRModeObj * FindVideoMode()
 
 		default:
 			// 480 lines (PAL 60Hz)
-			vmode_60hz = 1;
+			vmode_60hz = true;
 
 			// Original Video modes (forced to PAL 60Hz)
 			// set video signal mode
@@ -507,45 +507,20 @@ static GXRModeObj * FindVideoMode()
 		progressive = false;
 
 	#ifdef HW_RVL
-	bool pal = false;
-
-	if (mode == &TVPal528IntDf)
-		pal = true;
-
 	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
-	{
-		mode->fbWidth = 640;
-		mode->efbHeight = 456;
-		mode->viWidth = 686;
-
-		if (pal)
-		{
-			mode->xfbHeight = 542;
-			mode->viHeight = 542;
-		}
-		else
-		{
-			mode->xfbHeight = 456;
-			mode->viHeight = 456;
-		}
-	}
+		mode->viWidth = 678;
 	else
-	{
-		if (pal)
-			mode = &TVPal574IntDfScale;
-
 		mode->viWidth = 672;
-	}
 
-	if (pal)
-	{
-		mode->viXOrigin = (VI_MAX_WIDTH_PAL - mode->viWidth) / 2;
-		mode->viYOrigin = (VI_MAX_HEIGHT_PAL - mode->viHeight) / 2;
-	}
-	else
+	if(vmode_60hz)
 	{
 		mode->viXOrigin = (VI_MAX_WIDTH_NTSC - mode->viWidth) / 2;
 		mode->viYOrigin = (VI_MAX_HEIGHT_NTSC - mode->viHeight) / 2;
+	}
+	else
+	{
+		mode->viXOrigin = (VI_MAX_WIDTH_PAL - mode->viWidth) / 2;
+		mode->viYOrigin = (VI_MAX_HEIGHT_PAL - mode->viHeight) / 2;
 	}
 	#endif
 
