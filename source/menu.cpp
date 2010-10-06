@@ -2006,8 +2006,10 @@ static int MenuGameCheats()
 
 	for(i=0; i < numcheats; i++)
 	{
-		FCEUI_GetCheat(i,&name,NULL,NULL,NULL,&status,NULL);
-		sprintf (options.name[i], "%s", name);
+		if(!FCEUI_GetCheat(i,&name,NULL,NULL,NULL,&status,NULL))
+			break;
+
+		snprintf (options.name[i], 100, "%s", name);
 		sprintf (options.value[i], status ? "On" : "Off");
 	}
 

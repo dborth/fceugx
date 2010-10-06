@@ -65,7 +65,7 @@ void ApplyIPS(FILE *ips, FCEUFILE* fp)
 
 	if(!ips) return;
 
-	char* buf = (char*)malloc(fp->size);
+	char* buf = (char*)FCEU_dmalloc(fp->size);
 	memcpy(buf,fp->EnsureMemorystream()->buf(),fp->size);
 
 
@@ -284,7 +284,7 @@ FCEUFILE * FCEU_fopen(const char *path, const char *ipsfn, char *mode, char *ext
 		{
 			//if the archive contained no files, try to open it the old fashioned way
 			EMUFILE_FILE* fp = FCEUD_UTF8_fstream(fileToOpen,mode);
-			if(!fp)
+			if(!fp || (fp->get_fp() == NULL))
 			{
 				return 0;
 			}
@@ -471,7 +471,7 @@ void FCEUI_SetDirOverride(int which, char *n)
 		int ret;
 
 		va_start(ap,fmt);
-		if(!(*strp=(char*)malloc(2048))) //mbg merge 7/17/06 cast to char*
+		if(!(*strp=(char*)FCEU_dmalloc(2048))) //mbg merge 7/17/06 cast to char*
 			return(0);
 		ret=vsnprintf(*strp,2048,fmt,ap);
 		va_end(ap);
