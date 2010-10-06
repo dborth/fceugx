@@ -875,7 +875,7 @@ class GuiKeyboard : public GuiWindow
 
 typedef struct _optionlist {
 	int length;
-	char name[MAX_OPTIONS][50];
+	char name[MAX_OPTIONS][100];
 	char value[MAX_OPTIONS][50];
 } OptionList;
 

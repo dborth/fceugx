@@ -1508,7 +1508,7 @@ static int NewiNES_Init(int num)
 				{
 					CloseHandle(mapVROM);
 					mapVROM = NULL;
-					if((VROM = (uint8 *)malloc(CHRRAMSize)) == NULL) return 0;
+					if((VROM = (uint8 *)FCEU_dmalloc(CHRRAMSize)) == NULL) return 0;
 				}
 				else
 				{
@@ -1516,11 +1516,11 @@ static int NewiNES_Init(int num)
 					{
 						CloseHandle(mapVROM);
 						mapVROM = NULL;
-						if((VROM = (uint8 *)malloc(CHRRAMSize)) == NULL) return 0;
+						if((VROM = (uint8 *)FCEU_dmalloc(CHRRAMSize)) == NULL) return 0;
 					}
 				}
 #else
-				if((VROM = (uint8 *)malloc(CHRRAMSize)) == NULL) return 0;
+				if((VROM = (uint8 *)FCEU_dmalloc(CHRRAMSize)) == NULL) return 0;
 #endif
 				UNIFchrrama=VROM;
 				SetupCartCHRMapping(0,VROM,CHRRAMSize,1);

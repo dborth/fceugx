@@ -115,7 +115,7 @@ public:
 		vec->resize(preallocate);
 		len = preallocate;
 	}
-	EMUFILE_MEMORY() : vec(new std::vector<u8>()), ownvec(true), pos(0), len(0) { vec->reserve(1024); }
+	EMUFILE_MEMORY() : vec(new std::vector<u8>()), ownvec(true), pos(0), len(0) { vec->reserve(8192); }
 	EMUFILE_MEMORY(void* buf, s32 size) : vec(new std::vector<u8>()), ownvec(true), pos(0), len(size) { 
 		vec->resize(size);
 		if(size != 0)
@@ -135,14 +135,19 @@ public:
 	virtual int fprintf(const char *format, ...) {
 		va_list argptr;
 		va_start(argptr, format);
-		
+
 		//we dont generate straight into the buffer because it will null terminate (one more byte than we want)
 		int amt = vsnprintf(0,0,format,argptr);
 		char* tempbuf = new char[amt+1];
-		vsprintf(tempbuf,format,argptr);
-		fwrite(tempbuf,amt);
-		delete[] tempbuf;
+
 		va_end(argptr);
+		va_start(argptr, format);
+		vsprintf(tempbuf,format,argptr);
+		
+        fwrite(tempbuf,amt);
+		delete[] tempbuf;
+		
+        va_end(argptr);
 		return amt;
 	};
 

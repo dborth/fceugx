@@ -474,7 +474,7 @@ void FCEUSS_Save(const char *fname)
 		st = FCEUD_UTF8_fstream(fn,"wb");
 	}
 
-	if(st == NULL)
+	if(st == NULL || st->get_fp() == NULL)
 	{
 		FCEU_DispMessage("State %d save error.",0,CurrentState);
 		return;
@@ -557,7 +557,7 @@ int FCEUSS_LoadFP_old(EMUFILE* is, ENUM_SSLOADPARAMS params)
 	{
 		FCEUMOV_PreLoad();
 	}
-	is->fread((char*)&header,16);
+    is->fread((char*)&header,16);
 	if(memcmp(header,"FCS",3))
 	{
 		return(0);
@@ -720,16 +720,16 @@ bool FCEUSS_Load(const char *fname)
 	{
 		strcpy(fn, FCEU_MakeFName(FCEUMKF_STATE,CurrentState,fname).c_str());
 		st=FCEUD_UTF8_fstream(fn,"rb");
-		strcpy(lastLoadstateMade,fn);
+        strcpy(lastLoadstateMade,fn);
 	}
 
-	if(st == NULL)
+	if(st == NULL || (st->get_fp() == NULL))
 	{
-		FCEU_DispMessage("State %d load error.",0,CurrentState);
+		FCEU_DispMessage("State %d load error. Filename: %s",0,CurrentState, fn);
 		SaveStateStatus[CurrentState]=0;
 		return false;
 	}
-
+    
 	//If in bot mode, don't do a backup when loading.
 	//Otherwise you eat at the hard disk, since so many
 	//states are being loaded.
@@ -739,11 +739,11 @@ bool FCEUSS_Load(const char *fname)
 		{
 			char szFilename[260]={0};
 			splitpath(fname, 0, 0, szFilename, 0);
-			FCEU_DispMessage("State %s loaded.",0,szFilename);
+			FCEU_DispMessage("State %s loaded. Filename: %s",0,szFilename, fn);
 		}
 		else
 		{
-			FCEU_DispMessage("State %d loaded.",0,CurrentState);
+			FCEU_DispMessage("State %d loaded. Filename: %s",0,CurrentState, fn);
 			SaveStateStatus[CurrentState]=1;
 		}
 		delete st;
@@ -786,7 +786,7 @@ bool FCEUSS_Load(const char *fname)
 		{
 			SaveStateStatus[CurrentState]=1;
 		}
-		FCEU_DispMessage("Error(s) reading state %d!",0,CurrentState);
+		FCEU_DispMessage("Error(s) reading state %d! Filename: %s",0,CurrentState, fn);
 		delete st;
 		return 0;
 	}
