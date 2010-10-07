@@ -32,6 +32,15 @@ Wii/GameCube.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.2.3 - October 7, 2010]
+
+* Sync with upstream SVN - fixes a few specific game issues
+* Fixed "blank listing" issue for SMB
+* Improved USB compatibility and speed
+* Added Portuguese and Brazilian Portuguese translations
+* Channel updated (improved USB compatibility)
+* Other minor changes
+
 [3.2.2 - August 14, 2010]
 
 * IOS 202 support removed
