@@ -47,7 +47,6 @@ void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
 
 extern "C" {
 extern void __exception_setreload(int t);
-extern u32 __di_check_ahbprot(void);
 }
 
 static int fskipc = 0;
@@ -318,13 +317,6 @@ int main(int argc, char *argv[])
 	#endif
 
 #ifdef HW_RVL
-	// only reload IOS if AHBPROT is not enabled
-	u32 version = IOS_GetVersion();
-	s32 preferred = IOS_GetPreferredVersion();
-
-	if(version != 58 && preferred > 0 && version != (u32)preferred && __di_check_ahbprot() != 1)
-		IOS_ReloadIOS(preferred);
-
 	StartNetworkThread();
 	DI_Init();
 #endif
