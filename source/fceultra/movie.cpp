@@ -206,7 +206,7 @@ void MovieData::TryDumpIncremental()
 			
 			currMovieData.storeTasSavestate(currFrameCounter, Z_DEFAULT_COMPRESSION);
 			currMovieData.greenZoneCount=currFrameCounter+1;
-		} else if (currFrameCounter < currMovieData.greenZoneCount || !movie_readonly)
+		} else if (currFrameCounter < currMovieData.greenZoneCount && !movie_readonly)
 		{
 			currMovieData.storeTasSavestate(currFrameCounter, Z_DEFAULT_COMPRESSION);
 		} else if (currFrameCounter > currMovieData.greenZoneCount && static_cast<unsigned int>(currMovieData.greenZoneCount)<currMovieData.records.size())
@@ -467,6 +467,7 @@ MovieData::MovieData()
 	, binaryFlag(false)
 	, greenZoneCount(0)
 	, microphone(false)
+	, tweakCount(0)
 {
 	memset(&romChecksum,0,sizeof(MD5DATA));
 }
@@ -985,6 +986,7 @@ void MovieData::storeTasSavestate(int frame, int compression_level)
 		savestates.resize(frame+1);
 
 	MovieData::dumpSavestateTo(&savestates[frame],compression_level);
+	tweakCount++;
 }
 
 //begin playing an existing movie
@@ -1163,7 +1165,7 @@ void FCEUMOV_AddInputState()
 	//or something like that
 	//(input recording is just like standard read+write movie recording with input taken from gamepad)
 	//otherwise, it will come from the tasedit data.
-
+	#ifdef _WIN32
 	if(movieMode == MOVIEMODE_TASEDIT)
 	{
 		MovieRecord* mr = &currMovieData.records[currFrameCounter];
@@ -1178,12 +1180,19 @@ void FCEUMOV_AddInputState()
 		}
 		else
 		{
+			if (currMovieData.greenZoneCount>currFrameCounter+1)
+			{
+				
+				InvalidateGreenZone(currFrameCounter);
+				
+			}
 			joyports[0].log(mr);
 			joyports[1].log(mr);
 			mr->commands = 0;
 		}
 	}
-	else if(movieMode == MOVIEMODE_PLAY)
+	#endif
+	if(movieMode == MOVIEMODE_PLAY)
 	{
 		//stop when we run out of frames
 		if(currFrameCounter >= (int)currMovieData.records.size())
