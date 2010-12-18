@@ -188,12 +188,19 @@ static void ipl_set_config(unsigned char c)
  * IOS Check
  ***************************************************************************/
 #ifdef HW_RVL
-bool SaneIOS()
+bool SupportedIOS(u32 ios)
+{
+	if(ios == 58 || ios == 61)
+		return true;
+
+	return false;
+}
+
+bool SaneIOS(u32 ios)
 {
 	bool res = false;
 	u32 num_titles=0;
 	u32 tmd_size;
-	u32 ios = IOS_GetVersion();
 
 	if(ios > 200)
 		return false;
@@ -309,7 +316,17 @@ void USBGeckoOutput()
 
 int main(int argc, char *argv[])
 {
-	USBGeckoOutput(); // uncomment to enable USB gecko output
+	u32 ios = IOS_GetVersion();
+
+	if(!SupportedIOS(ios))
+	{
+		s32 preferred = IOS_GetPreferredVersion();
+
+		if(SupportedIOS(preferred))
+			IOS_ReloadIOS(preferred);
+	}
+	
+	//USBGeckoOutput(); // uncomment to enable USB gecko output
 	__exception_setreload(8);
 	
 	#ifdef HW_DOL
