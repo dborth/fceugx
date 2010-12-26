@@ -44,6 +44,9 @@
 #include "fceultra/types.h"
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int Count);
+void FCEUD_UpdatePulfrich(uint8 *XBuf, int32 *Buffer, int Count);
+void FCEUD_UpdateLeft(uint8 *XBuf, int32 *Buffer, int Count);
+void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int Count);
 
 extern "C" {
 extern void __exception_setreload(int t);
@@ -309,6 +312,141 @@ void USBGeckoOutput()
 	devoptab_list[STD_ERR] = &gecko_out;
 }
 
+//CAK: We need to know the OUT1 pin of the expansion port for Famicom 3D System glasses
+extern uint8 shutter_3d;
+//CAK: We need to know the palette in RAM for red/cyan anaglyph 3D games (3D World Runner and Rad Racer)
+extern uint8 PALRAM[0x20];
+bool shutter_3d_mode, anaglyph_3d_mode, eye_3d;
+bool old_shutter_3d_mode = 0, old_anaglyph_3d_mode = 0;
+uint8 prev_shutter_3d = 0, prev_prev_shutter_3d = 0;
+uint8 pal_3d = 0, prev_pal_3d = 0, prev_prev_pal_3d = 0; 
+
+bool CheckForAnaglyphPalette()
+{
+	//CAK: It can also have none of these when all blacks
+	bool hasRed = false, hasCyan = false, hasOther = false;
+	pal_3d = 0;
+
+	//CAK: first 12 background colours are used for anaglyph (last 4 are for status bar)
+	for (int i = 0; i < 12; i++)
+	{
+		switch (PALRAM[i] & 63)
+		{
+			case 0x00:
+			case 0x0F: //CAK: blacks
+				break;
+			case 0x01:
+			case 0x11:
+			case 0x0A:
+			case 0x1A:
+			case 0x0C:
+			case 0x1C:
+			case 0x2C: //CAK: cyan
+				hasCyan = true;
+				break;
+			case 0x05:
+			case 0x15:
+			case 0x06:
+			case 0x16: //CAK: reds
+				hasRed = true;
+				break;
+			default:
+				hasOther = true;
+		}
+	}
+
+	if (hasOther || (hasRed && hasCyan))
+		return false;
+
+	//CAK: last 8 sprite colours are used for anaglyph (first 8 are for screen-level sprites)
+	for (int i = 24; i < 32; i++)
+	{
+		switch (PALRAM[i] & 63)
+		{
+			case 0x00:
+			case 0x0F: //CAK: blacks
+				break;
+			case 0x01:
+			case 0x11:
+			case 0x0A:
+			case 0x1A:
+			case 0x0C:
+			case 0x1C:
+			case 0x2c: //CAK: cyan
+				hasCyan = true;
+				break;
+			case 0x05:
+			case 0x15:
+			case 0x06:
+			case 0x16: //CAK: reds
+				hasRed = true;
+				break;
+			default:
+				hasOther = true;
+		}
+	}
+
+	if (hasOther || (hasRed && hasCyan) || (!hasRed && !hasCyan))
+		return false;
+
+	eye_3d = hasCyan;
+
+	if (hasCyan)
+		pal_3d = 2;
+	else
+		pal_3d = 1;
+
+	return true;
+}
+
+//CAK: Handles automatically entering and exiting stereoscopic 3D mode, and detecting which eye to draw
+void Check3D()
+{
+	//CAK: Stereoscopic 3D game mode detection
+	shutter_3d_mode = (shutter_3d != prev_shutter_3d && shutter_3d == prev_prev_shutter_3d);
+	prev_prev_shutter_3d = prev_shutter_3d;
+	prev_shutter_3d = shutter_3d;
+	if (shutter_3d_mode)
+	{
+		fskip = 0;
+		eye_3d = !shutter_3d;
+	}
+	else if (old_shutter_3d_mode)
+	{
+		//CAK: exited stereoscopic 3d mode, reset frameskip to 0
+		fskip = 0;
+		fskipc = 0;
+		frameskip = 0;
+	}
+	else
+	{
+		//CAK: Only check anaglyph when it's not a Famicom 3D System game
+		//Games are detected as anaglyph, only when they alternate between a very limited red palette
+		//and a very limited blue/green palette. It's very unlikely other games will do that, but
+		//not impossible.
+		anaglyph_3d_mode = CheckForAnaglyphPalette() && pal_3d != prev_pal_3d && pal_3d == prev_prev_pal_3d && prev_pal_3d != 0;
+		prev_prev_pal_3d = prev_pal_3d;
+		prev_pal_3d = pal_3d;
+		if (anaglyph_3d_mode)
+		{
+			fskip = 0;
+		}
+		else if (old_anaglyph_3d_mode)
+		{
+			//CAK: exited stereoscopic 3d mode, reset frameskip to 0
+			fskip = 0;
+			fskipc = 0;
+			frameskip = 0;
+		}
+		//CAK: TODO: make a backup of palette whenever not in anaglyph mode,
+		//and use it to override anaglyph's horible palette for full colour 3D
+		//note the difficulty will be that palette entries get rearranged to
+		//animate the road and will still need to be rearranged in our backup palette
+	}
+	old_shutter_3d_mode = shutter_3d_mode;
+	old_anaglyph_3d_mode = anaglyph_3d_mode;
+}
+
 /****************************************************************************
  * main
  * This is where it all happens!
@@ -316,6 +454,7 @@ void USBGeckoOutput()
 
 int main(int argc, char *argv[])
 {
+#ifdef HW_RVL
 	u32 ios = IOS_GetVersion();
 
 	if(!SupportedIOS(ios))
@@ -325,7 +464,8 @@ int main(int argc, char *argv[])
 		if(SupportedIOS(preferred))
 			IOS_ReloadIOS(preferred);
 	}
-	
+#endif
+
 	//USBGeckoOutput(); // uncomment to enable USB gecko output
 	__exception_setreload(8);
 	
@@ -454,8 +594,18 @@ int main(int argc, char *argv[])
 				}
 			}
 
+			//CAK: Currently this is designed to be used before the frame is emulated
+			Check3D();
+
 			FCEUI_Emulate(&gfx, &sound, &ssize, fskip);
-			FCEUD_Update(gfx, sound, ssize);
+
+			if (!shutter_3d_mode && !anaglyph_3d_mode)
+				FCEUD_Update(gfx, sound, ssize);
+			else if (eye_3d)
+				FCEUD_UpdateRight(gfx, sound, ssize);
+			else
+				FCEUD_UpdateLeft(gfx, sound, ssize);
+
 			SyncSpeed();
 
 			if(ResetRequested)

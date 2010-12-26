@@ -72,9 +72,14 @@ struct pcpal {
 
 static unsigned int gcpalette[256];	// Much simpler GC palette
 static unsigned short rgb565[256];	// Texture map palette
+bool AnaglyphPaletteValid = false; //CAK: Has the anaglyph palette below been generated yet?
+static unsigned short anaglyph565[64][64]; //CAK: Texture map left right combination anaglyph palette
+static void GenerateAnaglyphPalette(); //CAK: function prototype for generating the anaglyph palette
 
 static long long prev;
 static long long now;
+
+extern bool shutter_3d_mode, anaglyph_3d_mode; //CAK: only used for the SyncSpeed function because 3D is 30Hz
 
 /* New texture based scaler */
 typedef struct tagcamera
@@ -208,8 +213,12 @@ void setFrameTimer()
 
 void SyncSpeed()
 {
-	if((vmode_60hz && normaldiff == 16667) || (!vmode_60hz && normaldiff == 20000))
-		return; // same timing as game - no adjustment necessary 
+	// same timing as game - no adjustment necessary 
+	if((vmode_60hz && normaldiff == 16667) || (!vmode_60hz && normaldiff == 20000)) 
+		if (!shutter_3d_mode && !anaglyph_3d_mode) return; //CAK: But don't exit if in a 30/25Hz 3D mode.
+
+	//CAK: Note that the 3D modes (except Pulfrich) still call this function at 60/50Hz, but half the 
+	//     time there is no video rendering to go with it, so we need some delays.
 
 	now = gettime();
 	u32 diff = diff_usec(prev, now);
@@ -220,7 +229,7 @@ void SyncSpeed()
 	}
 	else if (diff > normaldiff)
 	{
-		frameskip++;
+		frameskip++; //CAK: In 3D this will be ignored, then reset to 0 when leaving 3D
 	}
 	else // ahead, so hold up
 	{	
@@ -768,6 +777,132 @@ void RenderFrame(unsigned char *XBuf)
 }
 
 /****************************************************************************
+ * RenderFrame
+ *
+ * Render a single frame
+ ****************************************************************************/
+
+void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
+{
+	// Ensure previous vb has complete
+	while ((LWP_ThreadIsSuspended (vbthread) == 0) || (copynow == GX_TRUE))
+		usleep (50);
+
+	// swap framebuffers
+	whichfb ^= 1;
+
+	// video has changed
+	if(UpdateVideo)
+	{
+		UpdateVideo = 0;
+		ResetVideo_Emu(); // reset video to emulator rendering settings
+	}
+	
+	//CAK: May need to regenerate the anaglyph 3D palette that is used below
+	if (!AnaglyphPaletteValid)
+		GenerateAnaglyphPalette();
+
+	int width, height;
+
+	u8 borderheight = 0;
+	u8 borderwidth = 0;
+
+	// 0 = off, 1 = vertical, 2 = horizontal, 3 = both
+	if(GCSettings.hideoverscan == 1 || GCSettings.hideoverscan == 3)
+		borderheight = 8;
+	if(GCSettings.hideoverscan >= 2)
+		borderwidth = 8;
+
+	u16 *texture = (unsigned short *)texturemem + (borderheight << 8) + (borderwidth << 2);
+	u8 *Lsrc1 = XBufLeft + (borderheight << 8) + borderwidth;
+	u8 *Lsrc2 = XBufLeft + (borderheight << 8) + borderwidth + 256;
+	u8 *Lsrc3 = XBufLeft + (borderheight << 8) + borderwidth + 512;
+	u8 *Lsrc4 = XBufLeft + (borderheight << 8) + borderwidth + 768;
+	u8 *Rsrc1 = XBufRight + (borderheight << 8) + borderwidth;
+	u8 *Rsrc2 = XBufRight + (borderheight << 8) + borderwidth + 256;
+	u8 *Rsrc3 = XBufRight + (borderheight << 8) + borderwidth + 512;
+	u8 *Rsrc4 = XBufRight + (borderheight << 8) + borderwidth + 768;
+
+	// fill the texture with red/cyan anaglyph
+	for (height = 0; height < 240 - (borderheight << 1); height += 4)
+	{
+		for (width = 0; width < 256 - (borderwidth << 1); width += 4)
+		{
+			// Row one
+			*texture++ = anaglyph565[(*Lsrc1++) & 63][(*Rsrc1++) & 63];
+			*texture++ = anaglyph565[(*Lsrc1++) & 63][(*Rsrc1++) & 63];
+			*texture++ = anaglyph565[(*Lsrc1++) & 63][(*Rsrc1++) & 63];
+			*texture++ = anaglyph565[(*Lsrc1++) & 63][(*Rsrc1++) & 63];
+			// Row two
+			*texture++ = anaglyph565[(*Lsrc2++) & 63][(*Rsrc2++) & 63];
+			*texture++ = anaglyph565[(*Lsrc2++) & 63][(*Rsrc2++) & 63];
+			*texture++ = anaglyph565[(*Lsrc2++) & 63][(*Rsrc2++) & 63];
+			*texture++ = anaglyph565[(*Lsrc2++) & 63][(*Rsrc2++) & 63];
+			// Row three
+			*texture++ = anaglyph565[(*Lsrc3++) & 63][(*Rsrc3++) & 63];
+			*texture++ = anaglyph565[(*Lsrc3++) & 63][(*Rsrc3++) & 63];
+			*texture++ = anaglyph565[(*Lsrc3++) & 63][(*Rsrc3++) & 63];
+			*texture++ = anaglyph565[(*Lsrc3++) & 63][(*Rsrc3++) & 63];
+			// Row four
+			*texture++ = anaglyph565[(*Lsrc4++) & 63][(*Rsrc4++) & 63];
+			*texture++ = anaglyph565[(*Lsrc4++) & 63][(*Rsrc4++) & 63];
+			*texture++ = anaglyph565[(*Lsrc4++) & 63][(*Rsrc4++) & 63];
+			*texture++ = anaglyph565[(*Lsrc4++) & 63][(*Rsrc4++) & 63];
+		}
+		Lsrc1 += 768 + (borderwidth << 1); // line 4*N
+		Lsrc2 += 768 + (borderwidth << 1); // line 4*(N+1)
+		Lsrc3 += 768 + (borderwidth << 1); // line 4*(N+2)
+		Lsrc4 += 768 + (borderwidth << 1); // line 4*(N+3)
+		Rsrc1 += 768 + (borderwidth << 1); // line 4*N
+		Rsrc2 += 768 + (borderwidth << 1); // line 4*(N+1)
+		Rsrc3 += 768 + (borderwidth << 1); // line 4*(N+2)
+		Rsrc4 += 768 + (borderwidth << 1); // line 4*(N+3)
+
+		texture += (borderwidth << 3);
+	}
+
+	// load texture into GX
+	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
+
+	// clear texture objects
+	GX_InvalidateTexAll();
+
+	// render textured quad
+	draw_square(view);
+	GX_DrawDone();
+
+	if(ScreenshotRequested)
+	{
+		if(GCSettings.render == 0) // we can't take a screenshot in Original mode
+		{
+			oldRenderMode = 0;
+			GCSettings.render = 2; // switch to unfiltered mode
+			UpdateVideo = 1; // request the switch
+		}
+		else
+		{
+			ScreenshotRequested = 0;
+			TakeScreenshot();
+			if(oldRenderMode != -1)
+			{
+				GCSettings.render = oldRenderMode;
+				oldRenderMode = -1;
+			}
+			ConfigRequested = 1;
+		}
+	}
+
+	// EFB is ready to be copied into XFB
+	VIDEO_SetNextFramebuffer(xfb[whichfb]);
+	VIDEO_Flush();
+
+	copynow = GX_TRUE;
+
+	// Return to caller, don't waste time waiting for vb
+	LWP_ResumeThread (vbthread);
+}
+
+/****************************************************************************
  * TakeScreenshot
  *
  * Copies the current screen into a GX texture
@@ -953,14 +1088,107 @@ void Menu_DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color, u8 f
 	GX_End();
 }
 
+static void OptimisedAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u8 rg, u8 rb)
+{
+	// The left eye needs to see a bit of every colour mixed into the red channel
+	// otherwise it will have trouble matching it to the right eye.
+	// the left eye also needs to be brighter. 
+	int ar = (lr * 600 + lg * 300 + lb * 200) / 1000;
+	if (ar > 255)
+		ar = 255;
+	*r = ar;
+	int ag = (rg * 700 + rr * 200) / 1000;
+	if (ag > 255)
+		ag = 255;
+	*g = ag;
+	*b = rb;
+}
+#if 0
+//CAK: This 3D palette is for high contrast white on black games like Falsion
+static void RedBlueMonoAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u8 rg, u8 rb)
+{
+	// The left eye needs to see a bit of every colour mixed into the red channel
+	// otherwise it will have trouble matching it to the right eye.
+	// the left eye also needs to be brighter. 
+	int ar = (lr * 300 + lg * 500 + lb * 200) / 1000;
+	if (ar > 255)
+		ar = 255;
+	*r = ar;
+	*g = 0;
+	int ab = (rr * 300 + rg * 500 + rb * 200) / 1000;
+	if (ab > 255)
+		ab = 255;
+	*b = ab;
+}
+
+//CAK: This 3D palette is for high contrast white on black games like Falsion
+static void RedGreenMonoAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u8 rg, u8 rb)
+{
+	// The left eye needs to see a bit of every colour mixed into the red channel
+	// otherwise it will have trouble matching it to the right eye.
+	// the left eye also needs to be brighter. 
+	int ar = (lr * 300 + lg * 500 + lb * 200) / 1000;
+	if (ar > 255)
+		ar = 255;
+	*r = ar;
+	int ab = (rr * 300 + rg * 500 + rb * 200) / 1000;
+	if (ab > 255)
+		ab = 255;
+	*g = ab;
+	*b = 0;
+}
+
+//CAK: This 3D palette is for high contrast white on black games like Falsion
+static void RedCyanMonoAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u8 rg, u8 rb)
+{
+	// The left eye needs to see a bit of every colour mixed into the red channel
+	// otherwise it will have trouble matching it to the right eye.
+	// the left eye also needs to be brighter. 
+	int ar = (lr * 300 + lg * 500 + lb * 200) / 1000;
+	if (ar > 255)
+		ar = 255;
+	*r = ar;
+	int ab = (rr * 300 + rg * 500 + rb * 200) / 2000;
+	if (ab > 255)
+		ab = 255;
+	*g = ab;
+	*b = ab;
+}
+
+//CAK: This 3D palette is good for games which were already in anaglyph
+static void FullColourAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u8 rg, u8 rb)
+{
+	// The left eye needs to see a bit of every colour mixed into the red channel
+	// otherwise it will have trouble matching it to the right eye.
+	// the left eye also needs to be brighter. 
+	*r = lr;
+	*g = rg;
+	*b = rb;
+}
+#endif
+//CAK: Create an RGB 565 colour (used in textures) for this stereoscopic 3D combination of 2 NES colours.
+static void GenerateAnaglyphPalette()
+{
+	for (int left = 0; left < 64; left++)
+	{
+		for (int right = 0; right < 64; right++)
+		{
+			u8 ar, ag, ab;
+			OptimisedAnaglyph(&ar, &ag, &ab, pcpalette[left].r, pcpalette[left].g, pcpalette[left].b, pcpalette[right].r, pcpalette[right].g, pcpalette[right].b);
+			anaglyph565[left][right] = ((ar & 0xf8) << 8) | ((ag & 0xfc) << 3) | ((ab & 0xf8) >> 3);
+		}
+	}
+	AnaglyphPaletteValid = true;
+}
+
 /****************************************************************************
  * rgbcolor
  *
  * Support routine for gcpalette
  ****************************************************************************/
 
-static unsigned int rgbcolor(unsigned char r1, unsigned char g1, unsigned char b1,
-        unsigned char r2, unsigned char g2, unsigned char b2) {
+static unsigned int rgbcolor(u8 r1, u8 g1, u8 b1, u8 r2, u8 g2, u8 b2)
+{
     int y1,cb1,cr1,y2,cb2,cr2,cb,cr;
 
     y1=(299*r1+587*g1+114*b1)/1000;
@@ -983,8 +1211,8 @@ static unsigned int rgbcolor(unsigned char r1, unsigned char g1, unsigned char b
  * A shadow copy of the palette is maintained, in case the NES Emu kernel
  * requests a copy.
  ****************************************************************************/
-void FCEUD_SetPalette(unsigned char index, unsigned char r, unsigned char g,
-        unsigned char b) {
+void FCEUD_SetPalette(u8 index, u8 r, u8 g, u8 b)
+{
     /*** Make PC compatible copy ***/
     pcpalette[index].r = r;
     pcpalette[index].g = g;
@@ -997,13 +1225,16 @@ void FCEUD_SetPalette(unsigned char index, unsigned char r, unsigned char g,
     rgb565[index] = ((r & 0xf8) << 8) |
         ((g & 0xfc) << 3) |
         ((b & 0xf8) >> 3);
+
+	/*** Will need to generate stereoscopic palette later. ***/
+	AnaglyphPaletteValid = false;
 }
 
 /****************************************************************************
  * GetPalette
  ****************************************************************************/
-void FCEUD_GetPalette(unsigned char i, unsigned char *r, unsigned char *g,
-        unsigned char *b) {
+void FCEUD_GetPalette(u8 i, u8 *r, u8 *g, u8 *b)
+{
     *r = pcpalette[i].r;
     *g = pcpalette[i].g;
     *b = pcpalette[i].b;
@@ -1019,7 +1250,7 @@ void SetPalette()
 	else
 	{
 		// Now setup this palette
-		unsigned char i,r,g,b;
+		u8 i,r,g,b;
 
 		for ( i = 0; i < 64; i++ )
 		{

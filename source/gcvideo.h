@@ -24,6 +24,7 @@ void InitGCVideo ();
 void StopGX();
 void ResetVideo_Emu ();
 void RenderFrame(unsigned char *XBuf);
+void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight); //CAK: Stereoscopic 3D
 void setFrameTimer();
 void SyncSpeed();
 void SetPalette();
