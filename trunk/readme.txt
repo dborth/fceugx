@@ -7,7 +7,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
 
 FCE Ultra GX is a modified port of the FCE Ultra Nintendo Entertainment
-system for x86 (Windows/Linux) PC's. With it you can play NES games on your 
+system for x86 (Windows/Linux) PCs. With it you can play NES games on your 
 Wii/GameCube.
 
 -=[ Features ]=-
@@ -24,13 +24,18 @@ Wii/GameCube.
 * Original/filtered/unfiltered video modes
 * Turbo Mode - up to 2x the normal speed
 * Cheat support (.CHT files and Game Genie)
+* Famicom 3D System support
 * IPS/UPS automatic patching support
-* NES Compatibility Based on FCEUX 2.1.3
+* NES Compatibility Based on FCEUX 2.1.4
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.2.4]
+
+* Support for Famicom 3D System games (thanks Carl Kenner!)
 
 [3.2.3 - October 7, 2010]
 
@@ -402,11 +407,12 @@ Wii
 On the Wii, you can load roms from SD card (Front SD or SD Gecko), USB, DVD,
 or SMB share. Note that if you are using the Homebrew Channel, to load from 
 USB, DVD, or SMB you will first have to load FCEUGX from SD, and then set 
-your load method preference. To load roms from a Windows network share (SMB) 
-you will have to edit FCEUGX.xml on your SD card with your network settings, 
-or edit fceuconfig.cpp from the source code and compile. If you edit and compile 
-the source, you can use wiiload and the Homebrew Channel to load and play 
-FCEUGX completely over the network, without needing an SD card.
+your load method preference.
+
+If you are planning to use your Network (LAN) to load and/or save games from 
+you will need to enter in the SMB share settings you haveve setup on your 
+computer via the Settings menu. You will need to enter in the SMB Share IP, 
+Share Name, Share Username and Share Password.
 
 Gamecube
 ------------
@@ -422,6 +428,20 @@ You can switch disks using the A button (by default). The mapped button
 can be changed under Controller Configuration ('Special' button).
 Compatibility is limited, so check that the game in question works on 
 FCE Ultra 0.98.12 for Windows before asking for help. 
+
+-=[ 3D Game Support ]=-
+
+Supported Famicom 3D System games: 
+* Highway Star
+* Famicom Grand Prix II
+* 3D Hot Rally
+* JJ (Tobidase Daisakusen Part 2)
+* Cosmic Epsilon
+* Attack Animal Gakuen
+
+Supported anaglyph games:
+* The 3-D Battles of World Runner (Tobidase Daisakusen)
+* Rad Racer
 
 -[ Emulator Options ]-
 

@@ -78,6 +78,48 @@ void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count)
 	GetJoy(); // check controller input
 }
 
+//CAK: Stereoscopic 3D Update functions
+//CAK: This buffer saves the previous frame (usually the left eye)
+//     so it can be mixed with the current frame (usually the right eye)
+uint8 XBufLeft[256*256];
+
+//CAK: This uses the previous frame for the right eye, and the current frame for the left eye
+//     It then sets the previous frame to the current frame. This is only for the Orb-3D game, and hasn't
+//     been tested yet. Probably more than one frame difference will be needed, which requires a circluar
+//     buffer of several frames.
+void FCEUD_UpdatePulfrich(uint8 *XBuf, int32 *Buffer, int32 Count)
+{
+	if(Buffer && Count > 0)
+		PlaySound(Buffer, Count); // play sound
+	if(XBuf) {
+		RenderStereoFrames(XBuf, XBufLeft); // output video frame
+		memcpy(XBufLeft, XBuf, sizeof(XBufLeft)); // output video frame
+	}
+	GetJoy(); // check controller input
+}
+
+//CAK: This doesn't actually draw anything, it just saves the frame in a buffer while we wait
+//     for the corresponding right frame.
+void FCEUD_UpdateLeft(uint8 *XBuf, int32 *Buffer, int32 Count)
+{
+	if (Buffer && Count > 0)
+		PlaySound(Buffer, Count); // play sound
+	if (XBuf)
+		memcpy(XBufLeft, XBuf, sizeof(XBufLeft)); // output video frame
+	GetJoy(); // check controller input
+}
+
+//CAK: This draws the saved left frame and the passed in right frame together in 3D.
+//     How it so isn't relevant to this function, since the stereoscopic methods are handled in gcvideo.cpp
+void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int32 Count)
+{
+	if (Buffer && Count > 0)
+		PlaySound(Buffer, Count); // play sound
+	if (XBuf)
+		RenderStereoFrames(XBufLeft, XBuf); // output video frames
+	GetJoy(); // check controller input
+}
+
 // Netplay
 int FCEUD_SendData(void *data, uint32 len)
 {

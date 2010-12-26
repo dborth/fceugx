@@ -71,6 +71,7 @@ extern INPUTCFC *FCEU_InitFamilyTrainerB(void);
 extern INPUTCFC *FCEU_InitOekaKids(void);
 extern INPUTCFC *FCEU_InitTopRider(void);
 extern INPUTCFC *FCEU_InitBarcodeWorld(void);
+extern INPUTCFC *FCEU_InitFamicom3D(void);
 //---------------
 
 //global lag variables
@@ -406,7 +407,7 @@ static void SetInputStuffFC()
 	switch(portFC.type)
 	{
 	case SIFC_NONE: 
-		portFC.driver=&DummyPortFC;
+		portFC.driver=FCEU_InitFamicom3D(); //CAK: originally this used &DummyPortFC;
 		break;
 	case SIFC_ARKANOID:
 		portFC.driver=FCEU_InitArkanoidFC();
