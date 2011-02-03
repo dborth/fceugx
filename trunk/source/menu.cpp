@@ -3249,9 +3249,7 @@ static int MenuSettings()
 
 	w.Append(&savingBtn);
 	w.Append(&menuBtn);
-#ifdef HW_RVL
 	w.Append(&networkBtn);
-#endif
 	w.Append(&cheatsBtn);
 
 	ResumeGui();
@@ -3435,14 +3433,6 @@ static int MenuSettingsFile()
 			// saving to DVD is impossible
 			if(GCSettings.SaveMethod == DEVICE_DVD)
 				GCSettings.SaveMethod++;
-
-			// disable SMB in GC mode (stalls out)
-			#ifdef HW_DOL
-			if(GCSettings.LoadMethod == DEVICE_SMB)
-				GCSettings.LoadMethod++;
-			if(GCSettings.SaveMethod == DEVICE_SMB)
-				GCSettings.SaveMethod++;
-			#endif
 
 			// don't allow SD Gecko on Wii
 			#ifdef HW_RVL
@@ -3695,7 +3685,6 @@ static int MenuSettingsMenu()
 static int MenuSettingsNetwork()
 {
 	int menu = MENU_NONE;
-#ifdef HW_RVL
 	int ret;
 	int i = 0;
 	bool firstRun = true;
@@ -3794,7 +3783,6 @@ static int MenuSettingsNetwork()
 	mainWindow->Remove(&w);
 	mainWindow->Remove(&titleTxt);
 	CloseShare();
-#endif
 	return menu;
 }
 
