@@ -33,9 +33,14 @@ Wii/GameCube.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[3.2.4]
+[3.2.4 - March 19, 2011]
 
+* Updated to core to latest FCEUX
 * Support for Famicom 3D System games (thanks Carl Kenner!)
+* Improved USB and controller compatibility (recompiled with latest libogc)
+* Enabled SMB on GameCube (thanks Extrems!)
+* Added Catalan translation
+* Translation updates
 
 [3.2.3 - October 7, 2010]
 
