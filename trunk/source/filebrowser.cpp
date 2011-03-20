@@ -295,7 +295,7 @@ bool MakeFilePath(char filepath[], int type, char * filename, int filenum)
 		sprintf (temppath, "%s%s/%s", pathPrefix[GCSettings.SaveMethod], folder, file);
 	}
 	CleanupPath(temppath); // cleanup path
-	strncpy(filepath, temppath, MAXPATHLEN);
+	snprintf(filepath, MAXPATHLEN, "%s", temppath);
 	return true;
 }
 
@@ -412,7 +412,7 @@ void StripExt(char* returnstring, char * inputstring)
 {
 	char* loc_dot;
 
-	strncpy (returnstring, inputstring, MAXJOLIET);
+	snprintf(returnstring, MAXJOLIET, "%s", inputstring);
 
 	if(inputstring == NULL || strlen(inputstring) < 4)
 		return;
@@ -541,8 +541,8 @@ int BrowserChangeFolder()
 	if(!UpdateDirName())
 		return -1;
 
-	CleanupPath(browser.dir);
 	HaltParseThread(); // halt parsing
+	CleanupPath(browser.dir);
 	ResetBrowser(); // reset browser
 
 	if(browser.dir[0] != 0)
