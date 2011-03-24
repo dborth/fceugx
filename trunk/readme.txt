@@ -33,6 +33,10 @@ Wii/GameCube.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.2.5 - March 23, 2011]
+
+* Fixed browser regressions with stability and speed
+
 [3.2.4 - March 19, 2011]
 
 * Updated to core to latest FCEUX
