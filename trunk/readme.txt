@@ -432,11 +432,11 @@ game data to SD or Memory Card.
 -=[ Famicom Disk System (FDS) ]=-
 
 FCE Ultra GX supports loading FDS games. The FDS BIOS is required - put it 
-in your roms folder, and name it disksys.rom (should be 8 KB in size).
+in your fceugx folder, and name it disksys.rom (should be 8 KB in size).
 You can switch disks using the A button (by default). The mapped button
 can be changed under Controller Configuration ('Special' button).
 Compatibility is limited, so check that the game in question works on 
-FCE Ultra 0.98.12 for Windows before asking for help. 
+FCEUX for Windows before asking for help. 
 
 -=[ 3D Game Support ]=-
 
