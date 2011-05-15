@@ -22,6 +22,7 @@
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "gcvideo.h"
+#include "gcaudio.h"
 #include "menu.h"
 #include "pad.h"
 #include "gui/gui.h"
@@ -613,11 +614,20 @@ ResetVideo_Emu ()
 	GXRModeObj *rmode;
 	Mtx44 p;
 
-	// change current VI mode if using original render mode
+	// set VI mode and audio sample rate depending on if original mode is used
+
 	if (GCSettings.render == 0)
+	{
 		rmode = tvmodes[FCEUI_GetCurrentVidSystem(NULL, NULL)];
+		UpdateSampleRate(48220);
+		SetSampleRate();
+	}
 	else
+	{
 		rmode = FindVideoMode();
+		UpdateSampleRate(48000);
+		SetSampleRate();
+	}
 
 	SetupVideoMode(rmode); // reconfigure VI
 

@@ -31,8 +31,6 @@
 
 bool romLoaded = false;
 
-#define SAMPLERATE 48000
-
 int GCMemROM(int size)
 {
 	bool biosError = false;
@@ -47,8 +45,6 @@ int GCMemROM(int size)
 	GameInfo->archiveCount = 0;
 
 	/*** Set some default values ***/
-	GameInfo->soundchan = 1;
-	GameInfo->soundrate = SAMPLERATE;
 	GameInfo->name=0;
 	GameInfo->type=GIT_CART;
 	GameInfo->vidsys=(EGIV)GCSettings.timing;
@@ -57,7 +53,7 @@ int GCMemROM(int size)
 	GameInfo->cspecial=SIS_NONE;
 
 	/*** Set internal sound information ***/
-	FCEUI_Sound(SAMPLERATE);
+	SetSampleRate();
 	FCEUI_SetSoundVolume(100); // 0-100
 	FCEUI_SetLowPass(0);
 
