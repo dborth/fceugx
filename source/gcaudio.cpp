@@ -13,8 +13,7 @@
 #include <gccore.h>
 #include <string.h>
 #include <asndlib.h>
-
-#define SAMPLERATE 48000
+#include "fceusupport.h"
 
 static u8 ConfigRequested = 0;
 static u8 soundbuffer[2][3840] ATTRIBUTE_ALIGN(32);
@@ -23,6 +22,7 @@ static int mixhead = 0;
 static int mixtail = 0;
 static int whichab = 0;
 static int IsPlaying = 0;
+static int samplerate;
 
 /****************************************************************************
  * MixerCollect
@@ -175,4 +175,14 @@ void PlaySound( int *Buffer, int count )
 	{
 		AudioSwitchBuffers ();
 	}
+}
+
+void UpdateSampleRate(int rate)
+{
+	samplerate = rate;
+}
+
+void SetSampleRate()
+{
+	FCEUI_Sound(samplerate);
 }
