@@ -625,7 +625,7 @@ ResetVideo_Emu ()
 	else
 	{
 		rmode = FindVideoMode();
-		UpdateSampleRate(48000);
+		UpdateSampleRate(48130);
 		SetSampleRate();
 	}
 
