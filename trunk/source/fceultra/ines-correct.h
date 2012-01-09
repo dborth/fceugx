@@ -4,8 +4,6 @@
     {0xbfc7a2e9,16,8},
     {0x33b899c9,16,-1},    /* Dragon Ball - Dai Maou Fukkatsu (J) [!] */
     {0x3f15d20d,153,8},    /* Famicom Jump 2 */
-//    {0xb049a8c4,153,-1},    /* SD Gundam Gaiden - Knight Gundam Monogatari 2 - Hikari no Kishi (J) [!] */
-//    NOT 16, since uses WRAM but 8000-FFFF address range for bankswitching, 
 
     {0x983d8175,157,8},  /* Datach Battle Rush */
     {0x894efdbc,157,8},  /* Datach Crayon Shin Chan */
@@ -241,6 +239,8 @@
    
    {0x22d6d5bd,4,1},
    {0x6a03d3f3,114,-1},
+   {0x0d98db53,114,-1}, /* Pocahontas */
+   {0x4e7729ff,114,-1}, /* Super Donkey Kong */
    
    {0x02c41438,176,-1}, /* Xing He Zhan Shi (C) */
    

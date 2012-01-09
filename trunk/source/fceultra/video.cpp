@@ -28,10 +28,6 @@
 #include <stdarg.h>
 #include <zlib.h>
 
-#ifdef _USE_SHARED_MEMORY_
-#include <windows.h>
-#endif
-
 #include "types.h"
 #include "video.h"
 #include "fceu.h"
@@ -73,10 +69,6 @@ extern uint32 cur_input_display;
 
 bool oldInputDisplay = false;
 
-#ifdef _USE_SHARED_MEMORY_
-HANDLE mapXBuf;
-#endif
-
 std::string AsSnapshotName ="";			//adelikat:this will set the snapshot name when for s savesnapshot as function
 
 void FCEUI_SetSnapshotAsName(std::string name) { AsSnapshotName = name; }
@@ -114,37 +106,11 @@ int FCEU_InitVirtualVideo(void)
 		/* 256 bytes per scanline, * 240 scanline maximum, +16 for alignment,
 		*/
 
-#ifdef _USE_SHARED_MEMORY_
-
-		mapXBuf  = CreateFileMapping((HANDLE)0xFFFFFFFF,NULL,PAGE_READWRITE, 0, 256 * 256 + 16, "fceu.XBuf");
-
-	if(mapXBuf == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
-	{
-		CloseHandle(mapXBuf);
-		mapXBuf = NULL;
-		XBuf = (uint8*) (FCEU_malloc(256 * 256 + 16));
-		XBackBuf = (uint8*) (FCEU_malloc(256 * 256 + 16));
-	}
-	else
-	{
-		XBuf = (uint8 *)MapViewOfFile(mapXBuf, FILE_MAP_WRITE, 0, 0, 0);
-		XBackBuf = (uint8*) (FCEU_malloc(256 * 256 + 16));
-	}
-
-	if (!XBuf || !XBackBuf)
-	{
-		return 0;
-	}
-
-#else
-
 		if(!(XBuf= (uint8*) (FCEU_malloc(256 * 256 + 16))) ||
 			!(XBackBuf= (uint8*) (FCEU_malloc(256 * 256 + 16))))
 		{
 			return 0;
 		}
-
-#endif //_USE_SHARED_MEMORY_
 
 		xbsave = XBuf;
 
@@ -243,16 +209,15 @@ void FCEU_PutImage(void)
 		FCEU_LuaGui(XBuf);
 		#endif
 
-		//Update AVI before overlay stuff is written
-		if(!FCEUI_EmulationPaused())
-			FCEUI_AviVideoUpdate(XBuf);
-
-		//Save snapshot before overlay stuff is written.
+		//Save snapshot
 		if(dosnapsave==1)
 		{
 			ReallySnap();
 			dosnapsave=0;
 		}
+
+		if (!FCEUI_AviEnableHUDrecording()) snapAVI();
+
 		if(GameInfo->type==GIT_VSUNI)
 			FCEU_VSUniDraw(XBuf);
 
@@ -262,8 +227,6 @@ void FCEU_PutImage(void)
 		FCEU_DrawNTSCControlBars(XBuf);
 		FCEU_DrawRecordingStatus(XBuf);
 	}
-
-	DrawMessage(false);
 
 	if(FCEUD_ShouldDrawInputAids())
 		FCEU_DrawInput(XBuf);
@@ -447,6 +410,26 @@ void FCEU_PutImage(void)
 			}
 		}
 	}
+
+	if (FCEUI_AviEnableHUDrecording())
+	{
+		if (FCEUI_AviDisableMovieMessages())
+		{
+			snapAVI();
+			DrawMessage(false);
+		} else
+		{
+			DrawMessage(false);
+			snapAVI();
+		}
+	} else DrawMessage(false);
+
+}
+void snapAVI()
+{
+	//Update AVI
+	if(!FCEUI_EmulationPaused())
+		FCEUI_AviVideoUpdate(XBuf);
 }
 
 void FCEU_DispMessageOnMovie(char *format, ...)
@@ -471,6 +454,11 @@ void FCEU_DispMessage(char *format, int disppos=0, ...)
 
 	va_start(ap,disppos);
 	vsnprintf(guiMessage.errmsg,sizeof(guiMessage.errmsg),format,ap);
+	// also log messages
+	char temp[2048];
+	vsnprintf(temp,sizeof(temp),format,ap);
+	strcat(temp, "\n");
+	FCEU_printf(temp);
 	va_end(ap);
 
 	guiMessage.howlong = 180;
@@ -565,7 +553,6 @@ int SaveSnapshot(void)
 {
 	unsigned int lastu=0;
 
-	char *fn=0;
 	int totallines=FSettings.LastSLine-FSettings.FirstSLine+1;
 	int x,u,y;
 	FILE *pp=NULL;
@@ -577,20 +564,19 @@ int SaveSnapshot(void)
 
 	for(u=lastu;u<99999;u++)
 	{
-		pp=FCEUD_UTF8fopen((fn=strdup(FCEU_MakeFName(FCEUMKF_SNAP,u,"png").c_str())),"rb");
+		pp=FCEUD_UTF8fopen(FCEU_MakeFName(FCEUMKF_SNAP,u,"png").c_str(),"rb");
 		if(pp==NULL) break;
 		fclose(pp);
 	}
 
 	lastu=u;
 
-	if(!(pp=FCEUD_UTF8fopen(fn,"wb")))
+	if(!(pp=FCEUD_UTF8fopen(FCEU_MakeFName(FCEUMKF_SNAP,u,"png").c_str(),"wb")))
 	{
-		free(fn);
 		free(compmem);
 		return 0;
 	}
-	free(fn);
+
 	{
 		static uint8 header[8]={137,80,78,71,13,10,26,10};
 		if(fwrite(header,8,1,pp)!=1)
@@ -677,8 +663,6 @@ int SaveSnapshot(char fileName[512])
 
 	if(!(compmem=(uint8 *)FCEU_malloc(compmemsize)))
 		return 0;
-
-	pp = fopen(fileName, "w");
 
 	if(!(pp=FCEUD_UTF8fopen(fileName,"wb")))
 	{

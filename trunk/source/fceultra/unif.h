@@ -108,6 +108,7 @@ void UNLA9746_Init(CartInfo *info);
 void UNLSHeroes_Init(CartInfo *info);
 void UNLH2288_Init(CartInfo *info);
 void UNL8237_Init(CartInfo *info);
+void UNL8237A_Init(CartInfo *info);
 void UNL8157_Init(CartInfo *info);
 void UNL22211_Init(CartInfo *info);
 void UNLTF1201_Init(CartInfo *info);
@@ -126,8 +127,6 @@ void UNLSMB2J_Init(CartInfo *info);
 void BMC411120C_Init(CartInfo *info);
 void BMC830118C_Init(CartInfo *info);
 void BMCT2271_Init(CartInfo *info);
-
-void MapperCopyFamiMMC3_Init(CartInfo *info);
 
 extern uint8 *UNIFchrrama;  // Meh.  So I can stop CHR RAM
          // bank switcherooing with certain boards...

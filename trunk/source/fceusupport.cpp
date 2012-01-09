@@ -158,6 +158,8 @@ DUMMY(FCEUD_AviStop)
 void FCEUI_AviVideoUpdate(const unsigned char* buffer) { }
 int FCEUD_ShowStatusIcon(void) { return 0; }
 bool FCEUI_AviIsRecording(void) { return 0; }
+bool FCEUI_AviEnableHUDrecording() { return 0; }
+void FCEUI_SetAviEnableHUDrecording(bool enable) { }
 bool FCEUI_AviDisableMovieMessages() { return true; }
 const char *FCEUD_GetCompilerString() { return NULL; }
 void FCEUI_UseInputPreset(int preset) { }

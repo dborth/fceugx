@@ -207,11 +207,15 @@ struct PPUREGS {
 
 	void increment_vs() {
 		fv++;
-		vt += (fv>>3);
+		int fv_overflow = (fv >> 3);
+		vt += fv_overflow;
 		vt &= 31; //fixed tecmo super bowl
-		v += (vt==30)?1:0;
+		if(vt == 30 && fv_overflow==1) //caution here (only do it at the exact instant of overflow) fixes p'radikus conflict
+		{
+			v++;
+			vt=0;
+		}
 		fv &= 7;
-		if(vt==30) vt=0;
 		v &= 1;
 	}
 
@@ -345,6 +349,7 @@ static int maxsprites=8;
 
 //scanline is equal to the current visible scanline we're on.
 int scanline;
+int g_rasterpos;
 static uint32 scanlines_per_frame;
 
 uint8 PPU[4];
@@ -924,9 +929,7 @@ static DECLFW(B2005)
 
 static DECLFW(B2006)
 {
-	if(!newppu)
-		FCEUPPU_LineUpdate();
-
+	FCEUPPU_LineUpdate();
 
 	PPUGenLatch=V;
 	if(!vtoggle)
@@ -965,6 +968,7 @@ static DECLFW(B2007)
 	uint32 tmp=RefreshAddr&0x3FFF;
 
 	if(newppu) {
+		PPUGenLatch=V;
 		RefreshAddr = ppur.get_2007access() & 0x3FFF;
 		CALL_PPUWRITE(RefreshAddr,V);
 		//printf("%04x ",RefreshAddr);
@@ -1034,6 +1038,9 @@ static uint8 sprlinebuf[256+8];
 
 void FCEUPPU_LineUpdate(void)
 {
+	if(newppu)
+		return;
+
 #ifdef FCEUDEF_DEBUGGER
 	if(!fceuindbg)
 #endif
@@ -2242,9 +2249,10 @@ int FCEUX_PPU_Loop(int skip) {
 		//int xscroll = ppur.fh;
 		//render 241 scanlines (including 1 dummy at beginning)
 		for(int sl=0;sl<241;sl++) {
-            spr_read.start_scanline();
+			spr_read.start_scanline();
 
-            ppur.status.sl = sl;
+			g_rasterpos = 0;
+			ppur.status.sl = sl;
 
 			const int yp = sl-1;
 			ppuphase = PPUPHASE_BG;
@@ -2270,7 +2278,6 @@ int FCEUX_PPU_Loop(int skip) {
 			for(int xt=0;xt<32;xt++) {
 				bgdata.main[xt+2].Read();
 
-
                 //ok, we're also going to draw here.
 				//unless we're on the first dummy scanline
 				if(sl != 0) {
@@ -2283,7 +2290,7 @@ int FCEUX_PPU_Loop(int skip) {
 					//check all the conditions that can cause things to render in these 8px
 					const bool renderspritenow = SpriteON && rendersprites && (xt>0 || SpriteLeft8);
 					const bool renderbgnow = ScreenON && renderbg && (xt>0 || BGLeft8);
-					for(int xp=0;xp<8;xp++,rasterpos++) {
+					for(int xp=0;xp<8;xp++,rasterpos++,g_rasterpos++) {
 
 						//bg pos is different from raster pos due to its offsetability.
 						//so adjust for that here
@@ -2357,19 +2364,21 @@ int FCEUX_PPU_Loop(int skip) {
 			oamcount=0;
 			const int spriteHeight = Sprite16?16:8;
 			for(int i=0;i<64;i++) {
+				oams[scanslot][oamcount][7] = 0;
 				uint8* spr = SPRAM+i*4;
 				if(yp >= spr[0] && yp < spr[0]+spriteHeight) {
 					//if we already have maxsprites, then this new one causes an overflow,
 					//set the flag and bail out.
 					if(oamcount >= 8 && PPUON) {
 						PPU_status |= 0x20;
-                        if (maxsprites == 8)
-						    break;
+						if (maxsprites == 8)
+							break;
 					}
 
 					//just copy some bytes into the internal sprite buffer
 					for(int j=0;j<4;j++)
 						oams[scanslot][oamcount][j] = spr[j];
+					oams[scanslot][oamcount][7] = 1;
 
 					//note that we stuff the oam index into [6].
 					//i need to turn this into a struct so we can have fewer magic numbers
@@ -2419,6 +2428,13 @@ int FCEUX_PPU_Loop(int skip) {
 				uint32 patternNumber = oam[1];
 				uint32 patternAddress;
 
+				//create deterministic dummy fetch pattern
+				if(!oam[7])
+				{
+					patternNumber = 0;
+					line = 0;
+				}
+
 				//8x16 sprite handling:
 				if(Sprite16) {
 					uint32 bank = (patternNumber&1)<<12;
@@ -2435,27 +2451,28 @@ int FCEUX_PPU_Loop(int skip) {
 				patternAddress += line&7;
 
 				//garbage nametable fetches
-                //reset the scroll counter, happens at cycle 304
-                if (realSprite)
-                {
-                    if ((sl == 0) && PPUON)
-                    {
-                        if (ppur.status.cycle == 304)
-                        {
-                            runppu(1);
-                            ppur.install_latches();
-                            runppu(1);
-                        }
-                        else
-                            runppu(kFetchTime);
-                    }
-                    else
-                        runppu(kFetchTime);
-                }
-                //Dragon's Lair (Europe version mapper 4)
-                //does not set SpriteON in the beginning but it does
-                //set the bg on so if using the conditional SpriteON the MMC3 counter
-                //the counter will never count and no IRQs will be fired so use PPUON
+				//reset the scroll counter, happens at cycle 304
+				if (realSprite)
+				{
+					if ((sl == 0) && PPUON)
+					{
+						if (ppur.status.cycle == 304)
+						{
+							runppu(1);
+							ppur.install_latches();
+							runppu(1);
+						}
+						else
+							runppu(kFetchTime);
+					}
+					else
+						runppu(kFetchTime);
+				}
+
+				//Dragon's Lair (Europe version mapper 4)
+				//does not set SpriteON in the beginning but it does
+				//set the bg on so if using the conditional SpriteON the MMC3 counter
+				//the counter will never count and no IRQs will be fired so use PPUON
 				if(((PPU[0]&0x38)!=0x18) && s == 2 && PPUON) { //SpriteON ) {
 					//(The MMC3 scanline counter is based entirely on PPU A12, triggered on rising edges (after the line remains low for a sufficiently long period of time))
 					//http://nesdevwiki.org/wiki/index.php/Nintendo_MMC3
@@ -2518,7 +2535,8 @@ int FCEUX_PPU_Loop(int skip) {
 			//first one on every second frame, then this delay simply doesn't exist.
             if (ppur.status.end_cycle == 341)
                 runppu(1);
-        }
+
+        } //scanline loop
 
 		if(MMC5Hack && PPUON) MMC5_hb(240);
 
