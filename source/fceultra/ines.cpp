@@ -23,10 +23,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _USE_SHARED_MEMORY_
-#include <windows.h>
-#endif
-
 #include "types.h"
 #include "x6502.h"
 #include "fceu.h"
@@ -55,9 +51,6 @@ uint8 *VROM = NULL;
 iNES_HEADER head ;
 
 
-#ifdef _USE_SHARED_MEMORY_
-HANDLE mapROM = NULL, mapVROM = NULL;
-#endif
 
 CartInfo iNESCart;
 
@@ -70,6 +63,7 @@ uint32 ROM_size=0;
 uint32 VROM_size=0;
 char LoadedRomFName[2048]; //mbg merge 7/17/06 added
 
+static int CHRRAMSize = -1;
 static void iNESPower(void);
 static int NewiNES_Init(int num);
 
@@ -88,6 +82,28 @@ static DECLFR(TrainerRead)
 	return(trainerpoo[A&0x1FF]);
 }
 
+static void iNES_ExecPower()
+{
+	if(CHRRAMSize != -1)
+		FCEU_MemoryRand(VROM,CHRRAMSize);
+
+	if(iNESCart.Power)
+		iNESCart.Power();
+
+	if(trainerpoo)
+	{
+		int x;
+		for(x=0;x<512;x++)
+		{
+			X6502_DMW(0x7000+x,trainerpoo[x]);
+			if(X6502_DMR(0x7000+x)!=trainerpoo[x])
+			{
+				SetReadHandler(0x7000,0x71FF,TrainerRead);
+				break;
+			}
+		}
+	}
+}
 
 void iNESGI(GI h) //bbit edited: removed static keyword
 {
@@ -104,21 +120,8 @@ void iNESGI(GI h) //bbit edited: removed static keyword
 			iNESCart.Reset();
 		break;
 	case GI_POWER:
-		if(iNESCart.Power)
-			iNESCart.Power();
-		if(trainerpoo)
-		{
-			int x;
-			for(x=0;x<512;x++)
-		 {
-			 X6502_DMW(0x7000+x,trainerpoo[x]);
-			 if(X6502_DMR(0x7000+x)!=trainerpoo[x])
-			 {
-				 SetReadHandler(0x7000,0x71FF,TrainerRead);
-				 break;
-			 }
-		 }
-		}
+		iNES_ExecPower();
+	
 		break;
 	case GI_CLOSE:
 		{
@@ -127,35 +130,8 @@ void iNESGI(GI h) //bbit edited: removed static keyword
 			#endif
 
 			if(iNESCart.Close) iNESCart.Close();
-#ifdef _USE_SHARED_MEMORY_
-			if(ROM)
-		 	{
-			 if(mapROM)
-			 {
-				 CloseHandle(mapROM);
-				 mapROM = NULL;
-				 UnmapViewOfFile(ROM);
-			 }
-			 else
-				 free(ROM);
-			 ROM = NULL;
-		 	}
-			if(VROM)
-		 	{
-			 if(mapVROM)
-			 {
-				 CloseHandle(mapVROM);
-				 mapVROM = NULL;
-				 UnmapViewOfFile(VROM);
-			 }
-			 else
-				 free(VROM);
-			 VROM = NULL;
-			}
-#else
 			if(ROM) {free(ROM); ROM = NULL;}
 			if(VROM) {free(VROM); VROM = NULL;}
-#endif
 			if(MapClose) MapClose();
 			if(trainerpoo) {FCEU_gfree(trainerpoo);trainerpoo=0;}
 		}
@@ -419,20 +395,7 @@ static void CheckHInfo(void)
 				if(moo[x].mapper&0x800 && VROM_size)
 				{
 					VROM_size=0;
-#ifdef _USE_SHARED_MEMORY_
-					if(mapVROM)
-					{
-						CloseHandle(mapVROM);
-						UnmapViewOfFile(VROM);
-						mapVROM = NULL;
-					}
-					else
-					{
-						free(VROM);
-					}
-#else
 					free(VROM);
-#endif
 					VROM = NULL;
 					tofix|=8;
 				}
@@ -615,6 +578,7 @@ static BMAPPINGLocal bmap[] = {
     {"",					153, Mapper153_Init},
 	{"",					154, Mapper154_Init},
 	{"",					155, Mapper155_Init},
+  {"",					159, Mapper159_Init},
     {"SA009",				160, SA009_Init},
 	{"",					163, Mapper163_Init},
 	{"",					164, Mapper164_Init},
@@ -629,7 +593,7 @@ static BMAPPINGLocal bmap[] = {
     {"",					178, Mapper178_Init},
 	{"",					180, Mapper180_Init},
 	{"",					181, Mapper181_Init},
-	{"",					182, Mapper182_Init},
+//	{"",					182, Mapper182_Init},	// identical to 114
 	{"",					183, Mapper183_Init},
 	{"",					184, Mapper184_Init},
 	{"",					185, Mapper185_Init},
@@ -652,9 +616,9 @@ static BMAPPINGLocal bmap[] = {
 	{"",					209, Mapper209_Init},
 	{"",					210, Mapper210_Init},
 	{"",					211, Mapper211_Init},
-	{"",					215, Mapper215_Init},
+	{"",					215, UNL8237_Init},
 	{"",					216, Mapper216_Init},
-	{"",					217, Mapper217_Init},
+//	{"",					217, Mapper217_Init},
 	{"UNLA9746",			219, UNLA9746_Init},
 	{"OneBus",	 		    220, UNLOneBus_Init},
 
@@ -736,63 +700,6 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode)
 
 	if(head.ROM_type&8) Mirroring=2;
 
-#ifdef _USE_SHARED_MEMORY_
-	mapROM = CreateFileMapping((HANDLE)0xFFFFFFFF,NULL,PAGE_READWRITE, 0, ROM_size<<14,"fceu.ROM");
-	if(mapROM == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
-	{
-		if((ROM = (uint8 *)FCEU_malloc(ROM_size<<14)) == NULL) return 0;
-	}
-	else
-	{
-		if((ROM = (uint8 *)MapViewOfFile(mapROM, FILE_MAP_WRITE, 0, 0, 0)) == NULL)
-		{
-			CloseHandle(mapROM);
-			mapROM = NULL;
-			if((ROM = (uint8 *)FCEU_malloc(ROM_size<<14)) == NULL) return 0;
-		}
-	}
-	if(VROM_size)
-	{
-		mapVROM = CreateFileMapping((HANDLE)0xFFFFFFFF,NULL,PAGE_READWRITE, 0, VROM_size<<13,"fceu.VROM");
-		if(mapVROM == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
-		{
-			if((VROM=(uint8 *)FCEU_malloc(VROM_size<<13)) == NULL)
-			{
-				if(mapROM)
-				{
-					UnmapViewOfFile(mapROM);
-					mapROM = NULL;
-					CloseHandle(ROM);
-				}
-				else
-					free(ROM);
-				ROM = NULL;
-				return 0;
-			}
-		}
-		else
-		{
-			if((VROM = (uint8 *)MapViewOfFile(mapVROM, FILE_MAP_WRITE, 0, 0, 0)) == NULL)
-			{
-				CloseHandle(mapVROM);
-				mapVROM = NULL;
-				if((VROM=(uint8 *)FCEU_malloc(VROM_size<<13)) == NULL)
-				{
-					if(mapROM)
-					{
-						UnmapViewOfFile(mapROM);
-						mapROM = NULL;
-						CloseHandle(ROM);
-					}
-					else
-						free(ROM);
-					ROM = NULL;
-					return 0;
-				}
-			}
-		}
-	}
-#else
 	if((ROM = (uint8 *)FCEU_malloc(ROM_size<<14)) == NULL) return 0;
 
 	if(VROM_size)
@@ -804,7 +711,6 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode)
 			return 0;
 		}
 	}
-#endif
 	memset(ROM,0xFF,ROM_size<<14);
 	if(VROM_size) memset(VROM,0xFF,VROM_size<<13);
 	if(head.ROM_type&4)   /* Trainer */
@@ -954,7 +860,11 @@ int iNesSave(){
 
 	fp = fopen(name,"wb");
 
-	if(fwrite(&head,1,16,fp)!=16)return 0;
+	if(fwrite(&head,1,16,fp)!=16)
+	{
+		fclose(fp);
+		return 0;
+	}
 
 	if(head.ROM_type&4) 	/* Trainer */
 	{
@@ -981,7 +891,11 @@ int iNesSaveAs(char* name)
 	int x = 0;
 	if (!fp)
 		int x = 1;
-	if(fwrite(&head,1,16,fp)!=16)return 0;
+	if(fwrite(&head,1,16,fp)!=16)
+	{
+		fclose(fp);
+		return 0;
+	}
 
 	if(head.ROM_type&4) 	/* Trainer */
 	{
@@ -1406,12 +1320,12 @@ void iNESStateRestore(int version)
 
 	if(0) switch(Mirroring)
 	{
-case 0:setmirror(MI_H);break;
-case 1:setmirror(MI_V);break;
-case 0x12:
-case 0x10:setmirror(MI_0);break;
-case 0x13:
-case 0x11:setmirror(MI_1);break;
+		case 0:setmirror(MI_H);break;
+		case 1:setmirror(MI_V);break;
+		case 0x12:
+		case 0x10:setmirror(MI_0);break;
+		case 0x13:
+		case 0x11:setmirror(MI_1);break;
 	}
 	if(MapStateRestore) MapStateRestore(version);
 }
@@ -1437,9 +1351,9 @@ static void iNESPower(void)
 	all of the iNES mapper code... */
 	IRQCount=IRQLatch=IRQa=0;
 	if(head.ROM_type&2)
-      memset(GameMemBlock+8192,0,GAME_MEM_BLOCK_SIZE-8192);
+		memset(GameMemBlock+8192,0,GAME_MEM_BLOCK_SIZE-8192);
 	else
-      memset(GameMemBlock,0,GAME_MEM_BLOCK_SIZE);
+		memset(GameMemBlock,0,GAME_MEM_BLOCK_SIZE);
 
 	NONE_init();
 	ResetExState(0,0);
@@ -1484,6 +1398,8 @@ static int NewiNES_Init(int num)
 {
 	BMAPPINGLocal *tmp=bmap;
 
+	CHRRAMSize = -1;
+
 	if(GameInfo->type == GIT_VSUNI)
 		AddExState(FCEUVSUNI_STATEINFO, ~0, 0, 0);
 
@@ -1494,7 +1410,6 @@ static int NewiNES_Init(int num)
 			UNIFchrrama=0; // need here for compatibility with UNIF mapper code
 			if(!VROM_size)
 			{
-				int CHRRAMSize;
 				if(num==13)
 				{
 					CHRRAMSize=16384;
@@ -1503,26 +1418,9 @@ static int NewiNES_Init(int num)
 				{
 					CHRRAMSize=8192;
 				}
-#ifdef _USE_SHARED_MEMORY_
-				mapVROM = CreateFileMapping((HANDLE)0xFFFFFFFF,NULL,PAGE_READWRITE, 0, CHRRAMSize,"fceu.VROM");
-				if(mapVROM == NULL || GetLastError() == ERROR_ALREADY_EXISTS)
-				{
-					CloseHandle(mapVROM);
-					mapVROM = NULL;
-					if((VROM = (uint8 *)FCEU_dmalloc(CHRRAMSize)) == NULL) return 0;
-				}
-				else
-				{
-					if((VROM = (uint8 *)MapViewOfFile(mapVROM, FILE_MAP_WRITE, 0, 0, 0)) == NULL)
-					{
-						CloseHandle(mapVROM);
-						mapVROM = NULL;
-						if((VROM = (uint8 *)FCEU_dmalloc(CHRRAMSize)) == NULL) return 0;
-					}
-				}
-#else
 				if((VROM = (uint8 *)FCEU_dmalloc(CHRRAMSize)) == NULL) return 0;
-#endif
+				FCEU_MemoryRand(VROM,CHRRAMSize);
+
 				UNIFchrrama=VROM;
 				SetupCartCHRMapping(0,VROM,CHRRAMSize,1);
 				AddExState(VROM,CHRRAMSize, 0, "CHRR");

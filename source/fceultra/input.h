@@ -5,6 +5,8 @@
 
 #include "git.h"
 
+void LagCounterToggle(void);
+
 class MovieRecord;
 
 //MBG TODO - COMBINE THESE INPUTC AND INPUTCFC
@@ -201,8 +203,8 @@ enum EMUCMD
 	EMUCMD_MISC_DISPLAY_OBJ_TOGGLE,
 	EMUCMD_MISC_DISPLAY_LAGCOUNTER_TOGGLE,
 	
-	EMUCMD_MISC_LAGCOUNTER_RESET,
 	//Currently Windows only------
+	EMUCMD_MISC_OPENTASEDIT,
 	EMUCMD_TOOL_OPENMEMORYWATCH, 
 	EMUCMD_TOOL_OPENCHEATS,
 	EMUCMD_TOOL_OPENDEBUGGER,
@@ -215,6 +217,7 @@ enum EMUCMD
 	//Currently only windows (but sdl could easily add onto these)
 	EMUCMD_OPENROM,
 	EMUCMD_CLOSEROM,
+	EMUCMD_RELOAD,
 	//-----------------------------
 	EMUCMD_MISC_DISPLAY_MOVIESUBTITLES,
 	EMUCMD_MISC_UNDOREDOSAVESTATE,
@@ -227,6 +230,12 @@ enum EMUCMD
 	EMUCMD_TOOL_RAMSEARCHGTE,
 	EMUCMD_TOOL_RAMSEARCHEQ,
 	EMUCMD_TOOL_RAMSEARCHNE,
+	EMUCMD_TOOL_OPENNTVIEW,
+	EMUCMD_TASEDIT_REWIND,
+	//-----------------------------
+	//keep adding these in order of newness or else the hotkey binding configs will get messed up...
+	EMUCMD_RERECORD_DISPLAY_TOGGLE,
+
 	EMUCMD_MAX
 };
 

@@ -1,6 +1,8 @@
 #ifndef __MOVIE_H_
 #define __MOVIE_H_
 
+#define PROGRESSBAR_UPDATE_RATE 2000	// in frames of greenzone
+
 #include <vector>
 #include <map>
 #include <string>
@@ -88,9 +90,9 @@ bool FCEUMOV_ReadState(EMUFILE* is, uint32 size);
 void FCEUMOV_PreLoad();
 bool FCEUMOV_PostLoad();
 
-void FCEUMOV_EnterTasEdit();
-void FCEUMOV_ExitTasEdit();
 bool FCEUMOV_FromPoweron();
+
+void CreateCleanMovie();
 
 class MovieData;
 class MovieRecord
@@ -141,6 +143,7 @@ public:
 	}
 
 	bool Compare(MovieRecord& compareRec);
+	void Clone(MovieRecord& sourceRec);
 	void clear();
 	
 	void parse(MovieData* md, EMUFILE* is);
@@ -172,7 +175,6 @@ public:
 	std::string romFilename;
 	std::vector<uint8> savestate;
 	std::vector<MovieRecord> records;
-	std::vector<std::vector<uint8> > savestates;
 	std::vector<std::wstring> comments;
 	std::vector<std::string> subtitles;
 	//this is the RERECORD COUNT. please rename variable.
@@ -181,6 +183,8 @@ public:
 
 	//was the frame data stored in binary?
 	bool binaryFlag;
+	// TAS Editor project files contain additional data after input
+	int loadFrameCount;
 
 	//which ports are defined for the movie
 	int ports[3];
@@ -189,12 +193,6 @@ public:
 	//whether microphone is enabled
 	bool microphone;
 	
-	//----TasEdit stuff---
-	int greenZoneCount;
-	int loadFrameCount;
-	int tweakCount;
-	//----
-
 	int getNumRecords() { return records.size(); }
 
 	class TDictionary : public std::map<std::string,std::string>
@@ -228,18 +226,13 @@ public:
 	void truncateAt(int frame);
 	void installValue(std::string& key, std::string& val);
 	int dump(EMUFILE* os, bool binary);
-	int dumpGreenzone(EMUFILE *os, bool binary);
-	int loadGreenzone(EMUFILE *is, bool binary);
 
 	void clearRecordRange(int start, int len);
 	void insertEmpty(int at, int frames);
+	void cloneRegion(int at, int frames);
 	
 	static bool loadSavestateFrom(std::vector<uint8>* buf);
 	static void dumpSavestateTo(std::vector<uint8>* buf, int compressionLevel);
-
-	bool loadTasSavestate(int frame);
-	void storeTasSavestate(int frame, int compression_level);
-	void TryDumpIncremental();
 
 private:
 	void installInt(std::string& val, int& var)
@@ -260,13 +253,12 @@ extern bool subtitlesOnAVI;
 extern bool freshMovie;
 extern bool movie_readonly;
 extern bool autoMovieBackup;
-extern int pauseframe;
 extern bool fullSaveStateLoads;
 //--------------------------------------------------
 void FCEUI_MakeBackupMovie(bool dispMessage);
 void FCEUI_CreateMovieFile(std::string fn);
 void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author);
-bool FCEUI_LoadMovie(const char *fname, bool read_only, bool tasedit, int _stopframe);
+bool FCEUI_LoadMovie(const char *fname, bool read_only, int _stopframe);
 void FCEUI_MoviePlayFromBeginning(void);
 void FCEUI_StopMovie(void);
 bool FCEUI_MovieGetInfo(FCEUFILE* fp, MOVIE_INFO& info, bool skipFrameCount = false);
@@ -278,6 +270,7 @@ int FCEUI_GetMovieLength();
 int FCEUI_GetMovieRerecordCount();
 std::string FCEUI_GetMovieName(void);
 void FCEUI_MovieToggleFrameDisplay();
+void FCEUI_MovieToggleRerecordDisplay();
 void FCEUI_ToggleInputDisplay(void);
 
 void LoadSubtitles(MovieData &);
