@@ -51,8 +51,8 @@ static GuiTrigger * trigA = NULL;
 static GuiTrigger * trig2 = NULL;
 
 static GuiButton * btnLogo = NULL;
+static GuiImageData * gameScreen = NULL;
 static GuiImage * gameScreenImg = NULL;
-static GuiImage * bgImg = NULL;
 static GuiImage * bgTopImg = NULL;
 static GuiImage * bgBottomImg = NULL;
 static GuiSound * bgMusic = NULL;
@@ -860,11 +860,7 @@ static void WindowCredits(void * ptr)
 	{
 		UpdatePads();
 
-		if(gameScreenImg)
-			gameScreenImg->Draw();
-		else
-			bgImg->Draw();
-
+		gameScreenImg->Draw();
 		bgBottomImg->Draw();
 		bgTopImg->Draw();
 		creditsWindow.Draw();
@@ -1440,19 +1436,17 @@ static int MenuGame()
 		{
 			if (WindowPrompt("Quit Game", "Quit this game? Any unsaved progress will be lost.", "OK", "Cancel"))
 			{
-				if(gameScreenImg)
-				{
-					mainWindow->Remove(gameScreenImg);
-					delete gameScreenImg;
-					gameScreenImg = NULL;
-				}
-				if(gameScreenTex)
-				{
-					free(gameScreenTex);
-					gameScreenTex = NULL;
-					gameScreenPngSize = 0;
-				}
-				bgImg->SetVisible(true);
+				HaltGui();
+				mainWindow->Remove(gameScreenImg);
+				delete gameScreenImg;
+				delete gameScreen;
+				gameScreen = NULL;
+				free(gameScreenPng);
+				gameScreenPng = NULL;
+				gameScreenImg = new GuiImage(screenwidth, screenheight, (GXColor){240, 225, 230, 255});
+				gameScreenImg->ColorStripe(10);
+				mainWindow->Insert(gameScreenImg, 0);
+				ResumeGui();
 				#ifndef NO_SOUND
 				bgMusic->Play(); // startup music
 				#endif
@@ -3810,29 +3804,27 @@ MainMenu (int menu)
 
 	mainWindow = new GuiWindow(screenwidth, screenheight);
 
-	bgImg = new GuiImage(screenwidth, screenheight, (GXColor){240, 225, 230, 255});
-	bgImg->ColorStripe(10);
-	mainWindow->Append(bgImg);
-
-	if(gameScreenTex)
+	if(menu == MENU_GAME)
 	{
-		IMGCTX pngContext = PNGU_SelectImageFromBuffer(gameScreenPng);
-
-		if (pngContext != NULL)
-		{
-			gameScreenPngSize = PNGU_EncodeFromGXTexture(pngContext, vmode->fbWidth, vmode->efbHeight, gameScreenTex, 0);
-			PNGU_ReleaseImageContext(pngContext);
-			DCFlushRange(gameScreenPng, 512*1024);
-		}
-		
-		gameScreenImg = new GuiImage(gameScreenTex, vmode->fbWidth, vmode->efbHeight);
+		gameScreen = new GuiImageData(gameScreenPng);
+		gameScreenImg = new GuiImage(gameScreen);
 		gameScreenImg->SetAlpha(192);
 		gameScreenImg->ColorStripe(30);
-		gameScreenImg->SetScaleX(screenwidth/(float)vmode->fbWidth);
+		
+		if (GCSettings.render > 0 && !GCSettings.widescreen)
+			gameScreenImg->SetScaleX(screenwidth/(vmode->fbWidth*0.8));
+		else
+			gameScreenImg->SetScaleX(screenwidth/(float)vmode->fbWidth);
+		
 		gameScreenImg->SetScaleY(screenheight/(float)vmode->efbHeight);
-		mainWindow->Append(gameScreenImg);
-		bgImg->SetVisible(false);
 	}
+	else
+	{
+		gameScreenImg = new GuiImage(screenwidth, screenheight, (GXColor){240, 225, 230, 255});
+		gameScreenImg->ColorStripe(10);
+	}
+
+	mainWindow->Append(gameScreenImg);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
@@ -3970,23 +3962,20 @@ MainMenu (int menu)
 	#endif
 
 	delete btnLogo;
-	delete bgImg;
+	delete gameScreenImg;
 	delete bgTopImg;
 	delete bgBottomImg;
 	delete mainWindow;
 
 	mainWindow = NULL;
 
-	if(gameScreenImg)
+	if(gameScreen)
+		delete gameScreen;
+
+	if(gameScreenPng)
 	{
-		delete gameScreenImg;
-		gameScreenImg = NULL;
-	}
-	if(gameScreenTex)
-	{
-		free(gameScreenTex);
-		gameScreenTex = NULL;
-		gameScreenPngSize = 0;
+		free(gameScreenPng);
+		gameScreenPng = NULL;
 	}
 	
 	// wait for keys to be depressed

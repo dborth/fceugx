@@ -57,7 +57,6 @@ static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 4] ATTRIBUTE_ALIGN (32)
 static int UpdateVideo = 1;
 static bool vmode_60hz = true;
 
-u8 * gameScreenTex = NULL; // a GX texture screen capture of the game
 u8 * gameScreenPng = NULL;
 int gameScreenPngSize = 0;
 
@@ -190,6 +189,8 @@ static GXRModeObj NTSC_240p =
                   0          // line n+1
         }
 };
+
+static GXRModeObj TV_Custom;
 
 /* TV Modes table */
 static GXRModeObj *tvmodes[2] = {
@@ -411,7 +412,7 @@ UpdateScaling()
 	}
 	else // unfiltered and filtered mode
 	{
-		xscale = vmode->fbWidth / 2;
+		xscale = 256;
 		yscale = vmode->efbHeight / 2;
 	}
 
@@ -625,6 +626,14 @@ ResetVideo_Emu ()
 	else
 	{
 		rmode = FindVideoMode();
+		
+		if (!GCSettings.widescreen)
+		{
+			memcpy(&TV_Custom, rmode, sizeof(TV_Custom));
+			rmode = &TV_Custom;
+			rmode->fbWidth = 512;
+		}
+		
 		UpdateSampleRate(48130);
 		SetSampleRate();
 	}
@@ -641,7 +650,7 @@ ResetVideo_Emu ()
 
 	GX_SetDispCopySrc (0, 0, rmode->fbWidth, rmode->efbHeight);
 	GX_SetDispCopyDst (rmode->fbWidth, rmode->xfbHeight);
-	GX_SetCopyFilter (rmode->aa, rmode->sample_pattern, (GCSettings.render == 1) ? GX_TRUE : GX_FALSE, rmode->vfilter);	// deflicker ON only for filtered mode
+	GX_SetCopyFilter(rmode->aa, rmode->sample_pattern, (rmode->xfbMode == VI_XFBMODE_SF) ? GX_FALSE : GX_TRUE, rmode->vfilter);
 
 	GX_SetFieldMode (rmode->field_rendering, ((rmode->viHeight == 2 * rmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 	
@@ -919,16 +928,15 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
  ***************************************************************************/
 void TakeScreenshot()
 {
-	int texSize = vmode->fbWidth * vmode->efbHeight * 4;
+	IMGCTX pngContext = PNGU_SelectImageFromBuffer(savebuffer);
 
-	if(gameScreenTex) free(gameScreenTex);
-	gameScreenTex = (u8 *)memalign(32, texSize);
-	if(gameScreenTex == NULL) return;
-	GX_SetTexCopySrc(0, 0, vmode->fbWidth, vmode->efbHeight);
-	GX_SetTexCopyDst(vmode->fbWidth, vmode->efbHeight, GX_TF_RGBA8, GX_FALSE);
-	GX_CopyTex(gameScreenTex, GX_FALSE);
-	GX_PixModeSync();
-	DCFlushRange(gameScreenTex, texSize);
+	if (pngContext != NULL)
+	{
+		gameScreenPngSize = PNGU_EncodeFromEFB(pngContext, vmode->fbWidth, vmode->efbHeight);
+		PNGU_ReleaseImageContext(pngContext);
+		gameScreenPng = (u8 *)malloc(gameScreenPngSize);
+		memcpy(gameScreenPng, savebuffer, gameScreenPngSize);
+	}
 }
 
 /****************************************************************************

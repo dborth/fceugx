@@ -37,7 +37,6 @@ bool SaveState (char * filepath, bool silent)
 	if(!FindDevice(filepath, &device))
 		return 0;
 
-	// save screenshot - I would prefer to do this from gameScreenTex
 	if(gameScreenPngSize > 0)
 	{
 		char screenpath[1024];
