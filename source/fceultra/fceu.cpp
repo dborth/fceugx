@@ -53,7 +53,7 @@
 #ifdef WIN32
 #include "drivers/win/pref.h"
 
-#include "drivers/win/taseditlib/greenzone.h"
+#include "drivers/win/taseditor/greenzone.h"
 extern GREENZONE greenzone;
 #endif
 
@@ -724,7 +724,7 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 		ProcessSubtitles();
 
 #ifdef WIN32
-	if(FCEUMOV_Mode(MOVIEMODE_TASEDIT))
+	if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 		greenzone.TryDumpIncremental(lagFlag != 0);
 #endif
 }
@@ -988,7 +988,7 @@ void UpdateAutosave(void)
 
 void FCEUI_Autosave(void)
 {
-	if(!EnableAutosave || !AutoSS || FCEUMOV_Mode(MOVIEMODE_TASEDIT))
+	if(!EnableAutosave || !AutoSS || FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 		return;
 
 	if(AutosaveStatus[AutosaveIndex] == 1)
@@ -1024,7 +1024,7 @@ bool FCEU_IsValidUI(EFCEUI ui)
 	{
 	case FCEUI_OPENGAME:
 	case FCEUI_CLOSEGAME:
-		if(FCEUMOV_Mode(MOVIEMODE_TASEDIT)) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
 		break;
 	case FCEUI_RECORDMOVIE:
 	case FCEUI_PLAYMOVIE:
@@ -1036,7 +1036,7 @@ bool FCEU_IsValidUI(EFCEUI ui)
 	case FCEUI_PREVIOUSSAVESTATE:
 	case FCEUI_VIEWSLOTS:
 		if(!GameInfo) return false;
-		if(FCEUMOV_Mode(MOVIEMODE_TASEDIT)) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
 		break;
 
 	case FCEUI_STOPMOVIE:
@@ -1046,14 +1046,14 @@ bool FCEU_IsValidUI(EFCEUI ui)
 	case FCEUI_STOPAVI:
 		return FCEUI_AviIsRecording();
 
-	case FCEUI_TASEDIT:
+	case FCEUI_TASEDITOR:
 		if(!GameInfo) return false;
-		if(FCEUMOV_Mode(MOVIEMODE_TASEDIT)) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
 		break;
 
 	case FCEUI_RESET:
 		if(!GameInfo) return false;
-		if(FCEUMOV_Mode(MOVIEMODE_FINISHED|MOVIEMODE_TASEDIT|MOVIEMODE_PLAY)) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_FINISHED|MOVIEMODE_TASEDITOR|MOVIEMODE_PLAY)) return false;
 		break;
 
 	case FCEUI_POWER:
