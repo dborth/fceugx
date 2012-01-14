@@ -26,12 +26,18 @@ Wii/GameCube.
 * Cheat support (.CHT files and Game Genie)
 * Famicom 3D System support
 * IPS/UPS automatic patching support
-* NES Compatibility Based on FCEUX 2.1.4
+* NES Compatibility Based on FCEUX 2.1.5
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.2.7 - January 14, 2012]
+
+* Updated core to latest FCEUX (r2383)
+* More accurate pixel scaling (thanks eke-eke!)
+* Other minor changes
 
 [3.2.6 - May 15, 2011]
 
@@ -44,7 +50,7 @@ Wii/GameCube.
 
 [3.2.4 - March 19, 2011]
 
-* Updated to core to latest FCEUX
+* Updated core to latest FCEUX
 * Support for Famicom 3D System games (thanks Carl Kenner!)
 * Improved USB and controller compatibility (recompiled with latest libogc)
 * Enabled SMB on GameCube (thanks Extrems!)
