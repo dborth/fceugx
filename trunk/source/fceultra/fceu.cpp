@@ -844,6 +844,7 @@ FCEUS FSettings;
 
 void FCEU_printf(char *format, ...)
 {
+#ifndef GEKKO
 	char temp[2048];
 
 	va_list ap;
@@ -853,10 +854,12 @@ void FCEU_printf(char *format, ...)
 	FCEUD_Message(temp);
 
 	va_end(ap);
+#endif
 }
 
 void FCEU_PrintError(char *format, ...)
 {
+#ifndef GEKKO
 	char temp[2048];
 
 	va_list ap;
@@ -866,6 +869,7 @@ void FCEU_PrintError(char *format, ...)
 	FCEUD_PrintError(temp);
 
 	va_end(ap);
+#endif
 }
 
 void FCEUI_SetRenderedLines(int ntscf, int ntscl, int palf, int pall)
