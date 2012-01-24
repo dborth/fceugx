@@ -33,6 +33,10 @@ Wii/GameCube.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.2.8 - January 23, 2012]
+
+* Fixed bug with flipping disk sides for FDS
+
 [3.2.7 - January 14, 2012]
 
 * Updated core to latest FCEUX (r2383)
