@@ -33,6 +33,10 @@ Wii/GameCube.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.2.9 - January 25, 2012]
+
+* Fixed zapper support
+
 [3.2.8 - January 23, 2012]
 
 * Fixed bug with flipping disk sides for FDS
