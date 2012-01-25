@@ -76,18 +76,19 @@ static void ZapperFrapper(int w, uint8 *bg, uint8 *spr, uint32 linets, int final
 	}
 endo:
 	ZD[w].zappo=final;
-
-    //if this was a miss, clear out the hit
+	
+#ifndef GEKKO
+	//if this was a miss, clear out the hit
     if(ZD[w].mzb&2)
         ZD[w].zaphit=0;
-        
+#endif
 }      
 
 static INLINE int CheckColor(int w)
 {
 	FCEUPPU_LineUpdate();
-
-    if(newppu)
+	
+	if(newppu)
     {
         int x = (int)ZD[w].mzx;
         int y = (int)ZD[w].mzy;
@@ -116,10 +117,15 @@ static INLINE int CheckColor(int w)
     }
 
 
+#ifdef GEKKO
+	if((ZD[w].zaphit+100)>=(timestampbase+timestamp)
+		&& !(ZD[w].mzb&2)) return 0;
+#else
     if((ZD[w].zaphit+100)>=(timestampbase+timestamp))
     {
         return 0;
     }
+#endif
 
 	return 1;
 }
@@ -168,7 +174,16 @@ static void DrawZapper(int w, uint8 *buf, int arg)
 static void UpdateZapper(int w, void *data, int arg)
 {
 	uint32 *ptr=(uint32 *)data;
+#ifdef GEKKO
+	if(ZD[w].bogo)
+		ZD[w].bogo--;	
+	if(ptr[2]&3 && (!(ZD[w].mzb&3)))
+		ZD[w].bogo=5;
 
+	ZD[w].mzx=ptr[0];
+	ZD[w].mzy=ptr[1];
+	ZD[w].mzb=ptr[2];
+#else
     bool newclicked = (ptr[2]&3)!=0;
     bool oldclicked = (ZD[w].lastInput)!=0;
 
@@ -187,7 +202,7 @@ static void UpdateZapper(int w, void *data, int arg)
 	    ZD[w].mzx=ptr[0];
 	    ZD[w].mzy=ptr[1];
     }
-
+#endif
 }
 
 static void LogZapper(int w, MovieRecord* mr)
