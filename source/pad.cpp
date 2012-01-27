@@ -375,6 +375,8 @@ static unsigned char DecodeJoy(unsigned short chan)
 	s8 pad_y = userInput[chan].pad.stickY;
 	u32 jp = userInput[chan].pad.btns_h;
 	unsigned char J = 0;
+	double angle;
+	static const double THRES = 1.0 / sqrt(2.0);
 
 	#ifdef HW_RVL
 	s8 wm_ax = userInput[chan].WPAD_StickX(0);
@@ -391,29 +393,16 @@ static unsigned char DecodeJoy(unsigned short chan)
 	// Is XY inside the "zone"?
 	if (pad_x * pad_x + pad_y * pad_y > PADCAL * PADCAL)
 	{
-		if (pad_x > 0 && pad_y == 0) J |= JOY_RIGHT;
-		if (pad_x < 0 && pad_y == 0) J |= JOY_LEFT;
-		if (pad_x == 0 && pad_y > 0) J |= JOY_UP;
-		if (pad_x == 0 && pad_y < 0) J |= JOY_DOWN;
-
-		if (pad_x != 0 && pad_y != 0)
-		{
-			if ((float)pad_y / pad_x >= -2.41421356237 && (float)pad_y / pad_x < 2.41421356237)
-			{
-				if (pad_x >= 0)
-					J |= JOY_RIGHT;
-				else
-					J |= JOY_LEFT;
-			}
-
-			if ((float)pad_x / pad_y >= -2.41421356237 && (float)pad_x / pad_y < 2.41421356237)
-			{
-				if (pad_y >= 0)
-					J |= JOY_UP;
-				else
-					J |= JOY_DOWN;
-			}
-		}
+		angle = atan2(pad_y, pad_x);
+ 
+		if(cos(angle) > THRES)
+			J |= JOY_RIGHT;
+		else if(cos(angle) < -THRES)
+			J |= JOY_LEFT;
+		if(sin(angle) > THRES)
+			J |= JOY_UP;
+		else if(sin(angle) < -THRES)
+			J |= JOY_DOWN;
 	}
 #ifdef HW_RVL
 	/***
@@ -422,41 +411,16 @@ static unsigned char DecodeJoy(unsigned short chan)
 	// Is XY inside the "zone"?
 	if (wm_ax * wm_ax + wm_ay * wm_ay > PADCAL * PADCAL)
 	{
-		/*** we don't want division by zero ***/
-		if (wm_ax > 0 && wm_ay == 0)
+		angle = atan2(wm_ay, wm_ax);
+		 
+		if(cos(angle) > THRES)
 			J |= JOY_RIGHT;
-		if (wm_ax < 0 && wm_ay == 0)
+		else if(cos(angle) < -THRES)
 			J |= JOY_LEFT;
-		if (wm_ax == 0 && wm_ay > 0)
+		if(sin(angle) > THRES)
 			J |= JOY_UP;
-		if (wm_ax == 0 && wm_ay < 0)
+		else if(sin(angle) < -THRES)
 			J |= JOY_DOWN;
-
-		if (wm_ax != 0 && wm_ay != 0)
-		{
-
-			/*** Recalc left / right ***/
-			float t;
-
-			t = (float) wm_ay / wm_ax;
-			if (t >= -2.41421356237 && t < 2.41421356237)
-			{
-				if (wm_ax >= 0)
-					J |= JOY_RIGHT;
-				else
-					J |= JOY_LEFT;
-			}
-
-			/*** Recalc up / down ***/
-			t = (float) wm_ax / wm_ay;
-			if (t >= -2.41421356237 && t < 2.41421356237)
-			{
-				if (wm_ay >= 0)
-					J |= JOY_UP;
-				else
-					J |= JOY_DOWN;
-			}
-		}
 	}
 #endif
 
