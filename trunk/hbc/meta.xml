@@ -6,5 +6,5 @@
   <release_date>20120125</release_date>
   <short_description>Nintendo Emulator</short_description>
   <long_description>A port of FCE Ultra to the Wii.</long_description>
-  <no_ios_reload/>
+  <ahb_access />
 </app>
