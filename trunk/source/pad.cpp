@@ -376,7 +376,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 	u32 jp = userInput[chan].pad.btns_h;
 	unsigned char J = 0;
 	double angle;
-	static const double THRES = 1.0 / sqrt(2.0);
+	static const double THRES = cos(67.5);
 
 	#ifdef HW_RVL
 	s8 wm_ax = userInput[chan].WPAD_StickX(0);
