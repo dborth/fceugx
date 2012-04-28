@@ -463,6 +463,9 @@ static GXRModeObj * FindVideoMode()
 			break;
 		default:
 			mode = VIDEO_GetPreferredMode(NULL);
+			
+			if(mode == &TVPal576IntDfScale)
+				mode = &TVPal528IntDf;
 
 			#ifdef HW_DOL
 			/* we have component cables, but the preferred mode is interlaced
