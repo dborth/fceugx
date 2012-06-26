@@ -53,8 +53,7 @@
 #ifdef WIN32
 #include "drivers/win/pref.h"
 
-#include "drivers/win/taseditor/greenzone.h"
-extern GREENZONE greenzone;
+extern bool TaseditorIsRecording();
 #endif
 
 #include <fstream>
@@ -94,7 +93,7 @@ FCEUGI::FCEUGI()
 : filename(0)
 , archiveFilename(0)
 {
-	printf("%08x",opsize);
+	//printf("%08x",opsize); // WTF?!
 }
 
 FCEUGI::~FCEUGI()
@@ -182,7 +181,7 @@ static void FCEU_CloseGame(void)
 		CloseGenie();
 
 		delete GameInfo;
-		GameInfo = 0;
+		GameInfo = NULL;
 				
 		currFrameCounter = 0;
 
@@ -201,7 +200,7 @@ static void FCEU_CloseGame(void)
 uint64 timestampbase;
 
 
-FCEUGI *GameInfo = 0;
+FCEUGI *GameInfo = NULL;
 
 void (*GameInterface)(GI h);
 void (*GameStateRestore)(int version);
@@ -722,11 +721,6 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 
 	if (movieSubtitles)
 		ProcessSubtitles();
-
-#ifdef WIN32
-	if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
-		greenzone.TryDumpIncremental(lagFlag != 0);
-#endif
 }
 
 void FCEUI_CloseGame(void)
@@ -749,6 +743,8 @@ void ResetNES(void)
 	// clear back baffer
 	extern uint8 *XBackBuf;
 	memset(XBackBuf,0,256*256);
+
+	FCEU_DispMessage("Reset", 0);
 }
 
 void FCEU_MemoryRand(uint8 *ptr, uint32 size)
@@ -768,14 +764,15 @@ void hand(X6502 *X, int type, unsigned int A)
 
 }
 
-int suppressAddPowerCommand=0; // hack... yeah, I know...
+//int suppressAddPowerCommand=0; // hack... yeah, I know...
 void PowerNES(void)
 {
 	//void MapperInit();
 	//MapperInit();
 
-	if(!suppressAddPowerCommand)
+	//if(!suppressAddPowerCommand)
 		FCEUMOV_AddCommand(FCEUNPCMD_POWER);
+
 	if(!GameInfo) return;
 
 	FCEU_CheatResetRAM();
@@ -822,6 +819,7 @@ void PowerNES(void)
 #ifdef WIN32
 	Update_RAM_Search(); // Update_RAM_Watch() is also called.
 #endif
+	FCEU_DispMessage("Power on", 0);
 }
 
 void FCEU_ResetVidSys(void)
@@ -1044,25 +1042,28 @@ bool FCEU_IsValidUI(EFCEUI ui)
 		break;
 
 	case FCEUI_STOPMOVIE:
-	case FCEUI_PLAYFROMBEGINNING:
 		return (FCEUMOV_Mode(MOVIEMODE_PLAY|MOVIEMODE_RECORD|MOVIEMODE_FINISHED));
+
+	case FCEUI_PLAYFROMBEGINNING:
+		return (FCEUMOV_Mode(MOVIEMODE_PLAY|MOVIEMODE_RECORD|MOVIEMODE_TASEDITOR|MOVIEMODE_FINISHED));
 
 	case FCEUI_STOPAVI:
 		return FCEUI_AviIsRecording();
 
 	case FCEUI_TASEDITOR:
 		if(!GameInfo) return false;
-		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;
+		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;		// can't run two TAS Editors
 		break;
 
 	case FCEUI_RESET:
-		if(!GameInfo) return false;
-		if(FCEUMOV_Mode(MOVIEMODE_FINISHED|MOVIEMODE_TASEDITOR|MOVIEMODE_PLAY)) return false;
-		break;
-
 	case FCEUI_POWER:
+	case FCEUI_EJECT_DISK:
+	case FCEUI_SWITCH_DISK:
 		if(!GameInfo) return false;
 		if(FCEUMOV_Mode(MOVIEMODE_RECORD)) return true;
+#ifdef WIN32
+		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR) && TaseditorIsRecording()) return true;
+#endif
 		if(!FCEUMOV_Mode(MOVIEMODE_INACTIVE)) return false;
 		break;
 

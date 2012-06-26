@@ -1,8 +1,6 @@
 #ifndef __MOVIE_H_
 #define __MOVIE_H_
 
-#define PROGRESSBAR_UPDATE_RATE 2000	// in frames of greenzone
-
 #include <vector>
 #include <map>
 #include <string>
@@ -92,7 +90,8 @@ bool FCEUMOV_PostLoad();
 
 bool FCEUMOV_FromPoweron();
 
-void CreateCleanMovie();
+void FCEUMOV_CreateCleanMovie();
+void FCEUMOV_ClearCommands();
 
 class MovieData;
 class MovieRecord

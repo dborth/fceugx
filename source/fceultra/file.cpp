@@ -314,7 +314,7 @@ FCEUFILE * FCEU_fopen(const char *path, const char *ipsfn, char *mode, char *ext
 				if(magic==0x088b1f) {
 					 // maybe gzip... 
 
-					void* gzfile = gzopen(fileToOpen.c_str(),"rb");
+					gzFile gzfile = gzopen(fileToOpen.c_str(),"rb");
 					if(gzfile) {
 						delete fp;
 
@@ -535,6 +535,9 @@ std::string  FCEU_GetPath(int type)
 				return "";		//adelikat - 03/02/09 - if no override, should return null and allow the last directory to be used intead
 				//return BaseDirectory + PSS + "tools";
 			break;
+		case FCEUMKF_TASEDITOR:
+			return BaseDirectory + PSS + "tools";
+
 	}
 
 	return ret;
