@@ -250,6 +250,12 @@ public:
 
 	virtual void fflush() {}
 
+	void set_len(s32 length)
+	{
+		len = length;
+		if(pos > length)
+			pos = length;
+	}
 	void trim()
 	{
 		vec->resize(len);

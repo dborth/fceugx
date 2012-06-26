@@ -44,6 +44,8 @@ extern void AddRecentMovieFile(const char *filename);
 #include "./drivers/win/taseditor/recorder.h"
 extern PLAYBACK playback;
 extern RECORDER recorder;
+extern bool emulator_must_run_taseditor;
+extern bool TaseditorIsRecording();
 #endif
 
 using namespace std;
@@ -60,6 +62,8 @@ bool subtitlesOnAVI = false;
 bool autoMovieBackup = false; //Toggle that determines if movies should be backed up automatically before altering them
 bool freshMovie = false;	  //True when a movie loads, false when movie is altered.  Used to determine if a movie has been altered since opening
 bool movieFromPoweron = true;
+
+static int _currCommand = 0;
 
 // Function declarations------------------------
 
@@ -661,14 +665,18 @@ bool LoadFM2(MovieData& movieData, EMUFILE* fp, int size, bool stopAfterHeader)
 	// Non-TASEditor projects consume until EOF
 	movieData.loadFrameCount = -1;
 
-	//first, look for an fcm signature
-	char fcmbuf[3];
 	std::ios::pos_type curr = fp->ftell();
-	fp->fread(fcmbuf,3);
-	fp->fseek(curr,SEEK_SET);
-	if(!strncmp(fcmbuf,"FCM",3)) {
-		FCEU_PrintError("FCM File format is no longer supported. Please use Tools > Convert FCM");
-		return false;
+
+	if (!stopAfterHeader)
+	{
+		// first, look for an fcm signature
+		char fcmbuf[3];
+		fp->fread(fcmbuf,3);
+		fp->fseek(curr,SEEK_SET);
+		if(!strncmp(fcmbuf,"FCM",3)) {
+			FCEU_PrintError("FCM File format is no longer supported. Please use Tools > Convert FCM");
+			return false;
+		}
 	}
 
 	//movie must start with "version 3"
@@ -685,10 +693,10 @@ bool LoadFM2(MovieData& movieData, EMUFILE* fp, int size, bool stopAfterHeader)
 		NEWLINE, KEY, SEPARATOR, VALUE, RECORD, COMMENT, SUBTITLE
 	} state = NEWLINE;
 	bool bail = false;
+	bool iswhitespace, isrecchar, isnewline;
+	int c;
 	for(;;)
 	{
-		bool iswhitespace, isrecchar, isnewline;
-		int c;
 		if(size--<=0) goto bail;
 		c = fp->fgetc();
 		if(c == -1)
@@ -850,7 +858,7 @@ void poweron(bool shouldDisableBatteryLoading)
 	disableBatteryLoading = 0;
 }
 
-void CreateCleanMovie()
+void FCEUMOV_CreateCleanMovie()
 {
 	currMovieData = MovieData();
 	currMovieData.palFlag = FCEUI_GetCurrentVidSystem(0,0)!=0;
@@ -859,14 +867,15 @@ void CreateCleanMovie()
 	currMovieData.guid.newGuid();
 	currMovieData.fourscore = FCEUI_GetInputFourscore();
 	currMovieData.microphone = FCEUI_GetInputMicrophone();
-	//currMovieData.ports[0] = InputType[0];
-	//currMovieData.ports[1] = InputType[1];
-	//currMovieData.ports[2] = InputType[2];
 	currMovieData.ports[0] = joyports[0].type;
 	currMovieData.ports[1] = joyports[1].type;
 	currMovieData.ports[2] = portFC.type;
 	currMovieData.fds = isFDS;
 	currMovieData.PPUflag = (newppu != 0);
+}
+void FCEUMOV_ClearCommands()
+{
+	_currCommand = 0;
 }
 
 bool FCEUMOV_FromPoweron()
@@ -1007,9 +1016,8 @@ void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author)
 
 	currFrameCounter = 0;
 	LagCounterReset();
-	CreateCleanMovie();
+	FCEUMOV_CreateCleanMovie();
 	if(author != L"") currMovieData.comments.push_back(L"author " + author);
-
 
 	if(flags & MOVIE_FLAG_FROM_POWERON)
 	{
@@ -1022,6 +1030,8 @@ void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author)
 		MovieData::dumpSavestateTo(&currMovieData.savestate,Z_BEST_COMPRESSION);
 	}
 
+	FCEUMOV_ClearCommands();
+
 	//we are going to go ahead and dump the header. from now on we will only be appending frames
 	currMovieData.dump(osRecordingMovie, false);
 
@@ -1032,7 +1042,6 @@ void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author)
 	FCEU_DispMessage("Movie recording started.",0);
 }
 
-static int _currCommand = 0;
 
 //the main interaction point between the emulator and the movie system.
 //either dumps the current joystick state or loads one state from the movie
@@ -1041,29 +1050,32 @@ void FCEUMOV_AddInputState()
 #ifdef _WIN32
 	if(movieMode == MOVIEMODE_TASEDITOR)
 	{
-		// if movie length is less than currFrame, pad it with empty frames
-		if((int)currMovieData.records.size() <= currFrameCounter)
-			currMovieData.insertEmpty(-1, 1 + currFrameCounter - (int)currMovieData.records.size());
+		// if movie length is less or equal to currFrame, pad it with empty frames
+		if((int)currMovieData.records.size()-1 <= currFrameCounter)
+			currMovieData.insertEmpty(-1, 2 + currFrameCounter - (int)currMovieData.records.size());
 
 		MovieRecord* mr = &currMovieData.records[currFrameCounter];
-		if(movie_readonly || turbo || playback.pause_frame > currFrameCounter)
+		if(TaseditorIsRecording())
 		{
-			// replay buttons
-			if(mr->command_reset())
-				ResetNES();
-			if(mr->command_fds_insert())
-				FCEU_FDSInsert();
-			if(mr->command_fds_select())
-				FCEU_FDSSelect();
-			joyports[0].load(mr);
-			joyports[1].load(mr);
-		} else
-		{
-			// record buttons
+			// record commands and buttons
+			mr->commands |= _currCommand;
 			joyports[0].log(mr);
 			joyports[1].log(mr);
 			recorder.InputChanged();
+			// replay buttons even when Recording - return data from movie to joyports in case Recorder changed it (for example, by applying Superimpose)
 		}
+		// replay buttons
+		joyports[0].load(mr);
+		joyports[1].load(mr);
+		// replay commands
+		if(mr->command_power())
+			PowerNES();
+		if(mr->command_reset())
+			ResetNES();
+		if(mr->command_fds_insert())
+			FCEU_FDSInsert();
+		if(mr->command_fds_select())
+			FCEU_FDSSelect();
 		_currCommand = 0;
 	} else
 #endif
@@ -1081,13 +1093,10 @@ void FCEUMOV_AddInputState()
 			//reset and power cycle if necessary
 			if(mr->command_power())
 				PowerNES();
-
 			if(mr->command_reset())
 				ResetNES();
-
 			if(mr->command_fds_insert())
 				FCEU_FDSInsert();
-			
 			if(mr->command_fds_select())
 				FCEU_FDSSelect();
 
@@ -1142,7 +1151,7 @@ void FCEUMOV_AddInputState()
 void FCEUMOV_AddCommand(int cmd)
 {
 	// do nothing if not recording a movie
-	if(movieMode != MOVIEMODE_RECORD)
+	if(movieMode != MOVIEMODE_RECORD && movieMode != MOVIEMODE_TASEDITOR)
 		return;
 
 	//NOTE: EMOVIECMD matches FCEUNPCMD_RESET and FCEUNPCMD_POWER
@@ -1251,20 +1260,13 @@ bool FCEUMOV_ReadState(EMUFILE* is, uint32 size)
 	{
 		if (currMovieData.loadFrameCount >= 0)
 		{
-			#ifdef WIN32
+#ifdef WIN32
 			int result = MessageBox(hAppWnd, "This movie is a TAS Editor project file.\nIt can be modified in TAS Editor only.\n\nOpen it in TAS Editor now?", "Movie Replay", MB_YESNO);
 			if (result == IDYES)
-			{
-				extern bool EnterTasEditor();
-				extern bool LoadProject(char* fullname);
-				char fullname[512];
-				strcpy(fullname, curMovieFilename);
-				if (EnterTasEditor())
-					LoadProject(fullname);
-			}
-			#else
+				emulator_must_run_taseditor = true;
+#else
 			FCEUI_printf("This movie is a TAS Editor project file! It can be modified in TAS Editor only.\nMovie is now Read-Only.\n");
-			#endif
+#endif
 			movie_readonly = true;
 		}
 		if (FCEU_isFileInArchive(curMovieFilename))
