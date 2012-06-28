@@ -3810,12 +3810,7 @@ MainMenu (int menu)
 		gameScreenImg = new GuiImage(gameScreen);
 		gameScreenImg->SetAlpha(192);
 		gameScreenImg->ColorStripe(30);
-		
-		if (GCSettings.render > 0 && !GCSettings.widescreen)
-			gameScreenImg->SetScaleX(screenwidth/(vmode->fbWidth*0.8));
-		else
-			gameScreenImg->SetScaleX(screenwidth/(float)vmode->fbWidth);
-		
+		gameScreenImg->SetScaleX(screenwidth/(float)vmode->fbWidth);
 		gameScreenImg->SetScaleY(screenheight/(float)vmode->efbHeight);
 	}
 	else
