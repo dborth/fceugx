@@ -1022,6 +1022,9 @@ int FCEU_TextScanlineOffsetFromBottom(int y)
 
 bool FCEU_IsValidUI(EFCEUI ui)
 {
+#ifdef GEKKO
+	return true;
+#endif
 	switch(ui)
 	{
 	case FCEUI_OPENGAME:
