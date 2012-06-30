@@ -450,17 +450,18 @@ void FCEU_DispMessageOnMovie(char *format, ...)
 
 void FCEU_DispMessage(char *format, int disppos=0, ...)
 {
+#ifndef GEKKO
 	va_list ap;
 
 	va_start(ap,disppos);
 	vsnprintf(guiMessage.errmsg,sizeof(guiMessage.errmsg),format,ap);
-#ifndef GEKKO
+
 	// also log messages
 	char temp[2048];
 	vsnprintf(temp,sizeof(temp),format,ap);
 	strcat(temp, "\n");
 	FCEU_printf(temp);
-#endif
+
 	va_end(ap);
 
 	guiMessage.howlong = 180;
@@ -479,6 +480,7 @@ void FCEU_DispMessage(char *format, int disppos=0, ...)
 			guiMessage.howlong = 0;
 	}
 	#endif
+#endif
 }
 
 void FCEU_ResetMessages()
