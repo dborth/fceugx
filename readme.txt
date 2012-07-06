@@ -33,6 +33,14 @@ Wii/GameCube.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.3.0 - July 6, 2012]
+
+* Support for newer Wiimotes
+* Fixed screen flicker when going back to menu
+* Improved controller behavior - allow two directions to be pressed simultaneously
+* Updated core to latest FCEUX (r2522)
+* Compiled with devkitPPC r26 and libogc 1.8.11
+
 [3.2.9 - January 25, 2012]
 
 * Fixed zapper support
