@@ -2,8 +2,8 @@
 <app version="1">
   <name>FCE Ultra GX</name>
   <coder>Tantric</coder>
-  <version>3.2.9</version>
-  <release_date>20120125</release_date>
+  <version>3.3.0</version>
+  <release_date>20120706</release_date>
   <short_description>Nintendo Emulator</short_description>
   <long_description>A port of FCE Ultra to the Wii.</long_description>
   <ahb_access />
