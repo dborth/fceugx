@@ -52,8 +52,8 @@ extern "C" {
 extern void __exception_setreload(int t);
 }
 
-static int fskipc = 0;
-static int fskip = 0;
+int fskipc = 0;
+int fskip = 0;
 static uint8 *gfx=0;
 static int32 *sound=0;
 static int32 ssize=0;
@@ -267,11 +267,13 @@ static mutex_t gecko_mutex = 0;
 
 static ssize_t __out_write(struct _reent *r, int fd, const char *ptr, size_t len)
 {
-	u32 level;
-
-	if (!ptr || len <= 0 || !gecko)
+	if (!gecko || len == 0)
+		return len;
+	
+	if(!ptr || len < 0)
 		return -1;
 
+	u32 level;
 	LWP_MutexLock(gecko_mutex);
 	level = IRQ_Disable();
 	usb_sendbuffer(1, ptr, len);
@@ -303,148 +305,18 @@ const devoptab_t gecko_out = {
 	NULL		// device statvfs_r
 };
 
-void USBGeckoOutput()
+static void USBGeckoOutput()
 {
-	LWP_MutexInit(&gecko_mutex, false);
 	gecko = usb_isgeckoalive(1);
-	
+	LWP_MutexInit(&gecko_mutex, false);
+
 	devoptab_list[STD_OUT] = &gecko_out;
 	devoptab_list[STD_ERR] = &gecko_out;
 }
 
-//CAK: We need to know the OUT1 pin of the expansion port for Famicom 3D System glasses
-extern uint8 shutter_3d;
-//CAK: We need to know the palette in RAM for red/cyan anaglyph 3D games (3D World Runner and Rad Racer)
-extern uint8 PALRAM[0x20];
-bool shutter_3d_mode, anaglyph_3d_mode, eye_3d;
-bool old_shutter_3d_mode = 0, old_anaglyph_3d_mode = 0;
-uint8 prev_shutter_3d = 0, prev_prev_shutter_3d = 0;
-uint8 pal_3d = 0, prev_pal_3d = 0, prev_prev_pal_3d = 0; 
-
-bool CheckForAnaglyphPalette()
-{
-	//CAK: It can also have none of these when all blacks
-	bool hasRed = false, hasCyan = false, hasOther = false;
-	pal_3d = 0;
-
-	//CAK: first 12 background colours are used for anaglyph (last 4 are for status bar)
-	for (int i = 0; i < 12; i++)
-	{
-		switch (PALRAM[i] & 63)
-		{
-			case 0x00:
-			case 0x0F: //CAK: blacks
-				break;
-			case 0x01:
-			case 0x11:
-			case 0x0A:
-			case 0x1A:
-			case 0x0C:
-			case 0x1C:
-			case 0x2C: //CAK: cyan
-				hasCyan = true;
-				break;
-			case 0x05:
-			case 0x15:
-			case 0x06:
-			case 0x16: //CAK: reds
-				hasRed = true;
-				break;
-			default:
-				hasOther = true;
-		}
-	}
-
-	if (hasOther || (hasRed && hasCyan))
-		return false;
-
-	//CAK: last 8 sprite colours are used for anaglyph (first 8 are for screen-level sprites)
-	for (int i = 24; i < 32; i++)
-	{
-		switch (PALRAM[i] & 63)
-		{
-			case 0x00:
-			case 0x0F: //CAK: blacks
-				break;
-			case 0x01:
-			case 0x11:
-			case 0x0A:
-			case 0x1A:
-			case 0x0C:
-			case 0x1C:
-			case 0x2c: //CAK: cyan
-				hasCyan = true;
-				break;
-			case 0x05:
-			case 0x15:
-			case 0x06:
-			case 0x16: //CAK: reds
-				hasRed = true;
-				break;
-			default:
-				hasOther = true;
-		}
-	}
-
-	if (hasOther || (hasRed && hasCyan) || (!hasRed && !hasCyan))
-		return false;
-
-	eye_3d = hasCyan;
-
-	if (hasCyan)
-		pal_3d = 2;
-	else
-		pal_3d = 1;
-
-	return true;
-}
-
-//CAK: Handles automatically entering and exiting stereoscopic 3D mode, and detecting which eye to draw
-void Check3D()
-{
-	//CAK: Stereoscopic 3D game mode detection
-	shutter_3d_mode = (shutter_3d != prev_shutter_3d && shutter_3d == prev_prev_shutter_3d);
-	prev_prev_shutter_3d = prev_shutter_3d;
-	prev_shutter_3d = shutter_3d;
-	if (shutter_3d_mode)
-	{
-		fskip = 0;
-		eye_3d = !shutter_3d;
-	}
-	else if (old_shutter_3d_mode)
-	{
-		//CAK: exited stereoscopic 3d mode, reset frameskip to 0
-		fskip = 0;
-		fskipc = 0;
-		frameskip = 0;
-	}
-	else
-	{
-		//CAK: Only check anaglyph when it's not a Famicom 3D System game
-		//Games are detected as anaglyph, only when they alternate between a very limited red palette
-		//and a very limited blue/green palette. It's very unlikely other games will do that, but
-		//not impossible.
-		anaglyph_3d_mode = CheckForAnaglyphPalette() && pal_3d != prev_pal_3d && pal_3d == prev_prev_pal_3d && prev_pal_3d != 0;
-		prev_prev_pal_3d = prev_pal_3d;
-		prev_pal_3d = pal_3d;
-		if (anaglyph_3d_mode)
-		{
-			fskip = 0;
-		}
-		else if (old_anaglyph_3d_mode)
-		{
-			//CAK: exited stereoscopic 3d mode, reset frameskip to 0
-			fskip = 0;
-			fskipc = 0;
-			frameskip = 0;
-		}
-		//CAK: TODO: make a backup of palette whenever not in anaglyph mode,
-		//and use it to override anaglyph's horible palette for full colour 3D
-		//note the difficulty will be that palette entries get rearranged to
-		//animate the road and will still need to be rearranged in our backup palette
-	}
-	old_shutter_3d_mode = shutter_3d_mode;
-	old_anaglyph_3d_mode = anaglyph_3d_mode;
+extern "C" { 
+	s32 __STM_Close();
+	s32 __STM_Init();
 }
 
 /****************************************************************************
@@ -454,7 +326,7 @@ void Check3D()
 
 int main(int argc, char *argv[])
 {
-#ifdef HW_RVL
+	#ifdef HW_RVL
 	L2Enhance();
 	
 	u32 ios = IOS_GetVersion();
@@ -466,43 +338,43 @@ int main(int argc, char *argv[])
 		if(SupportedIOS(preferred))
 			IOS_ReloadIOS(preferred);
 	}
-#endif
-
-	//USBGeckoOutput(); // uncomment to enable USB gecko output
-	__exception_setreload(8);
-	
-	#ifdef HW_DOL
+	#else
 	ipl_set_config(6); // disable Qoob modchip
 	#endif
 
-#ifdef HW_RVL
-	StartNetworkThread();
-	DI_Init();
-#endif
+	USBGeckoOutput(); // uncomment to enable USB gecko output
+	__exception_setreload(8);
 
-	InitDeviceThread();
 	InitGCVideo (); // Initialize video
-	SetupPads();
 	ResetVideo_Menu (); // change to menu video mode
-	MountAllFAT(); // Initialize libFAT for SD and USB
-
+	
 	#ifdef HW_RVL
 	// Wii Power/Reset buttons
-	WPAD_SetPowerButtonCallback((WPADShutdownCallback)ShutdownCB);
+	__STM_Close();
+	__STM_Init();
+	__STM_Close();
+	__STM_Init();
 	SYS_SetPowerCallback(ShutdownCB);
 	SYS_SetResetCallback(ResetCB);
+	
+	WPAD_Init();
+	WPAD_SetPowerButtonCallback((WPADShutdownCallback)ShutdownCB);
+	DI_Init();
+	USBStorage_Initialize();
+	StartNetworkThread();
+	#else
+	DVD_Init (); // Initialize DVD subsystem (GameCube only)
 	#endif
-
-	// Initialize DVD subsystem (GameCube only)
-	#ifdef HW_DOL
-	DVD_Init ();
-	#endif
-
+	
+	SetupPads();
+	InitDeviceThread();
+	MountAllFAT(); // Initialize libFAT for SD and USB
+	
+	#ifdef HW_RVL
 	// store path app was loaded from
-#ifdef HW_RVL
 	if(argc > 0 && argv[0] != NULL)
 		CreateAppPath(argv[0]);
-#endif
+	#endif
 
 	DefaultSettings(); // Set defaults
 	InitialiseAudio();
