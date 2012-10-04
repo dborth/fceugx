@@ -186,8 +186,6 @@ void SetControllers()
  *
  * Scans pad and wpad
  ***************************************************************************/
-static int padsConnected = 0;
-static u64 prev, now;
 
 void
 UpdatePads()
@@ -195,18 +193,8 @@ UpdatePads()
 	#ifdef HW_RVL
 	WPAD_ScanPads();
 	#endif
-
-	now = gettime();
-
-	if(!padsConnected && diff_sec(prev, now) < 2)
-		return;
-
-	prev = now;
-
-	padsConnected = PAD_ScanPads();
-
-	if(!padsConnected)
-		return;
+	
+	PAD_ScanPads();
 
 	for(int i=3; i >= 0; i--)
 	{
