@@ -33,6 +33,10 @@ Wii/GameCube.
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.3.2 - November 9, 2012]
+
+* Fixed lag with GameCube controllers
+
 [3.3.1 - July 7, 2012]
 
 * Fixed PAL support
