@@ -26,12 +26,16 @@ Wii/GameCube.
 * Cheat support (.CHT files and Game Genie)
 * Famicom 3D System support
 * IPS/UPS automatic patching support
-* NES Compatibility Based on FCEUX 2.1.5
+* NES Compatibility Based on FCEUX 2.2.0+ (r2793)
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.3.3 - December 14, 2012]
+
+* Updated core to latest FCEUX (r2793)
 
 [3.3.2 - November 9, 2012]
 
