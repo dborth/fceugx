@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
 
@@ -76,8 +76,8 @@ void UNLEDU2000_Init(CartInfo *info)
   SetupCartPRGMapping(0x10,WRAM,32768,1);
   if(info->battery)
   {
-  info->SaveGame[0]=WRAM;
-  info->SaveGameLen[0]=32768;
+    info->SaveGame[0]=WRAM;
+    info->SaveGameLen[0]=32768;
   }
   AddExState(WRAM, 32768, 0, "WRAM");
   AddExState(StateRegs, ~0, 0, 0);

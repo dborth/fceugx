@@ -1,22 +1,22 @@
 /* FCE Ultra - NES/Famicom Emulator
-*
-* Copyright notice for this file:
-*  Copyright (C) 2003 Xodnizel
-*
-* This program is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; either version 2 of the License, or
-* (at your option) any later version.
-*
-* This program is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
+ *
+ * Copyright notice for this file:
+ *  Copyright (C) 2003 Xodnizel
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
 #include <string>
 #include <string.h>
@@ -52,6 +52,9 @@
 
 #ifdef WIN32
 #include "drivers/win/pref.h"
+
+extern void ResetDebugStatisticsCounters();
+extern void SetMainWindowText();
 
 extern bool TaseditorIsRecording();
 #endif
@@ -108,16 +111,16 @@ bool CheckFileExists(const char* filename)
 	if (!filename) return false;
 	fstream test;
 	test.open(filename,fstream::in);
-		
+
 	if (test.fail())
 	{
 		test.close();
-		return false; 
+		return false;
 	}
 	else
 	{
 		test.close();
-		return true; 
+		return true;
 	}
 }
 
@@ -134,6 +137,9 @@ void FCEU_TogglePPU(void)
 		FCEU_DispMessage("Old PPU loaded", 0);
 		FCEUI_printf("Old PPU loaded");
 	}
+#ifdef WIN32
+	SetMainWindowText();
+#endif
 }
 
 static void FCEU_CloseGame(void)
@@ -182,7 +188,7 @@ static void FCEU_CloseGame(void)
 
 		delete GameInfo;
 		GameInfo = NULL;
-				
+
 		currFrameCounter = 0;
 
 		//Reset flags for Undo/Redo/Auto Savestating //adelikat: TODO: maybe this stuff would be cleaner as a struct or class
@@ -219,7 +225,7 @@ bool frameAdvanceRequested=false;
 int frameAdvanceDelay;
 
 //indicates that the emulation core just frame advanced (consumed the frame advance state and paused)
-bool JustFrameAdvanced=false;
+bool JustFrameAdvanced = false;
 
 static int *AutosaveStatus; //is it safe to load Auto-savestate
 static int AutosaveIndex = 0; //which Auto-savestate we're on
@@ -399,7 +405,7 @@ int NSFLoad(const char *name, FCEUFILE *fp);
 
 //char lastLoadedGameName [2048] = {0,}; // hack for movie WRAM clearing on record from poweron
 
-
+//name should be UTF-8, hopefully, or else there may be trouble
 FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode)
 {
 	//mbg merge 7/17/07 - why is this here
@@ -427,6 +433,9 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode)
 	//file opened ok. start loading.
 
 	ResetGameLoaded();
+
+	//reset parameters so theyre cleared just in case a format's loader doesnt know to do the clearing
+	MasterRomInfoParams = TMasterRomInfoParams();
 
 	if (!AutosaveStatus)
 		AutosaveStatus = (int*)FCEU_dmalloc(sizeof(int)*AutosaveQty);
@@ -481,9 +490,7 @@ endlseq:
 		extern int loadDebugDataFailed;
 
 		if ((loadDebugDataFailed = loadPreferences(LoadedRomFName)))
-		{
-			FCEUD_PrintError("Couldn't load debugging data");
-		}
+			FCEU_printf("Couldn't load debugging data.\n");
 
 // ################################## End of SP CODE ###########################
 #endif
@@ -507,6 +514,8 @@ endlseq:
 #if defined (WIN32) || defined (WIN64)
 	DoDebuggerDataReload(); // Reloads data without reopening window
 #endif
+
+	ResetScreenshotsCounter();
 
 	return GameInfo;
 }
@@ -602,7 +611,7 @@ void SetAutoFireOffset(int offset)
 void AutoFire(void)
 {
 	static int counter = 0;
-	if (justLagged == false) 
+	if (justLagged == false)
 		counter = (counter + 1) % (8*7*5*3);
 	//If recording a movie, use the frame # for the autofire so the offset
 	//doesn't get screwed up when loading.
@@ -678,7 +687,6 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	UpdateTextHooker();
 	Update_RAM_Search(); // Update_RAM_Watch() is also called.
 	RamChange();
-	UpdateLogWindow();
 	//FCEUI_AviVideoUpdate(XBuf);
 	extern int KillFCEUXonFrame;
 	if (KillFCEUXonFrame && (FCEUMOV_GetFrame() >= KillFCEUXonFrame))
@@ -752,7 +760,14 @@ void FCEU_MemoryRand(uint8 *ptr, uint32 size)
 	int x=0;
 	while(size)
 	{
-		*ptr=(x&4)?0xFF:0x00;
+		*ptr = (x & 4) ? 0xFF : 0x00;	// Huang Di DEBUG MODE enabled by default
+										// Cybernoid NO MUSIC by default
+//		*ptr = (x & 4) ? 0x7F : 0x00;	// Huang Di DEBUG MODE enabled by default
+										// Minna no Taabou no Nakayoshi Daisakusen DOESN'T BOOT
+										// Cybernoid NO MUSIC by default
+//		*ptr = (x & 1) ? 0x55 : 0xAA;	// F-15 Sity War HISCORE is screwed...
+										// 1942 SCORE/HISCORE is screwed...
+//		*ptr = 0xFF;					// Work for all cases
 		x++;
 		size--;
 		ptr++;
@@ -780,8 +795,14 @@ void PowerNES(void)
 
 	GeniePower();
 
-	FCEU_MemoryRand(RAM,0x800);
+	//dont do this, it breaks some games: Cybernoid; Minna no Taabou no Nakayoshi Daisakusen; and maybe mechanized attack
 	//memset(RAM,0xFF,0x800);
+	//this fixes the above, but breaks Huang Di, which expects $100 to be non-zero or else it believes it has debug cheats enabled, giving you moon jump and other great but likely unwanted things
+	//FCEU_MemoryRand(RAM,0x800);
+	//this should work better, based on observational evidence. fixes all of the above:
+	//for(int i=0;i<0x800;i++) if(i&1) RAM[i] = 0xAA; else RAM[i] = 0x55;
+	//but we're leaving this for now until we collect some more data
+	FCEU_MemoryRand(RAM,0x800);
 
 	SetReadHandler(0x0000,0xFFFF,ANull);
 	SetWriteHandler(0x0000,0xFFFF,BNull);
@@ -806,12 +827,13 @@ void PowerNES(void)
 	if(disableBatteryLoading)
 		GameInterface(GI_RESETSAVE);
 
-
-	timestampbase=0;
-	LagCounterReset();
-
+	timestampbase = 0;
 	X6502_Power();
+#ifdef WIN32
+	ResetDebugStatisticsCounters();
+#endif
 	FCEU_PowerCheats();
+	LagCounterReset();
 	// clear back baffer
 	extern uint8 *XBackBuf;
 	memset(XBackBuf,0,256*256);
@@ -819,6 +841,7 @@ void PowerNES(void)
 #ifdef WIN32
 	Update_RAM_Search(); // Update_RAM_Watch() is also called.
 #endif
+
 	FCEU_DispMessage("Power on", 0);
 }
 
@@ -990,7 +1013,7 @@ void UpdateAutosave(void)
 
 void FCEUI_Autosave(void)
 {
-	if(!EnableAutosave || !AutoSS || FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
+	if(!EnableAutosave || !AutoSS)
 		return;
 
 	if(AutosaveStatus[AutosaveIndex] == 1)
@@ -1055,7 +1078,6 @@ bool FCEU_IsValidUI(EFCEUI ui)
 
 	case FCEUI_TASEDITOR:
 		if(!GameInfo) return false;
-		if(FCEUMOV_Mode(MOVIEMODE_TASEDITOR)) return false;		// can't run two TAS Editors
 		break;
 
 	case FCEUI_RESET:

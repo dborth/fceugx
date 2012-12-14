@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * Dragon Ball Z 2 - Gekishin Freeza! (C)
  * Dragon Ball Z Gaiden - Saiya Jin Zetsumetsu Keikaku (C)
@@ -26,7 +26,8 @@
 #include "mapinc.h"
 #include "mmc3.h"
 
-static uint8 *CHRRAM=NULL; // and here too
+static uint8 *CHRRAM=NULL;
+static uint32 CHRRAMSIZE;
 
 static void M199PW(uint32 A, uint8 V)
 {
@@ -60,12 +61,11 @@ static DECLFW(M199Write)
 {
   if((A==0x8001)&&(MMC3_cmd&8))
   {
-//    FCEU_printf("%02x=>%02x\n",MMC3_cmd,V);
     EXPREGS[MMC3_cmd&3]=V;
     FixMMC3PRG(MMC3_cmd);
     FixMMC3CHR(MMC3_cmd);
   }
-  else    
+  else
     if(A<0xC000)
       MMC3_CMDWrite(A,V);
     else
@@ -82,16 +82,26 @@ static void M199Power(void)
   SetWriteHandler(0x8000,0xFFFF,M199Write);
 }
 
+static void M199Close(void)
+{
+  if(CHRRAM)
+    FCEU_gfree(CHRRAM);
+  CHRRAM=NULL;
+}
+
 void Mapper199_Init(CartInfo *info)
 {
-  int CHRRAMSize=1024*8;
   GenMMC3_Init(info, 512, 256, 8, info->battery);
   cwrap=M199CW;
   pwrap=M199PW;
   mwrap=M199MW;
   info->Power=M199Power;
-  CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSize);
-  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSize, 1);
-  AddExState(CHRRAM, CHRRAMSize, 0, "CHRR");
+  info->Close=M199Close;
+
+  CHRRAMSIZE=8192;
+  CHRRAM=(uint8*)FCEU_gmalloc(CHRRAMSIZE);
+  SetupCartCHRMapping(0x10, CHRRAM, CHRRAMSIZE, 1);
+  AddExState(CHRRAM, CHRRAMSIZE, 0, "CHRR");
+
   AddExState(EXPREGS, 4, 0, "EXPR");
 }

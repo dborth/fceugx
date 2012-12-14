@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include "mapinc.h"
@@ -54,7 +54,7 @@ static DECLFW(UNL3DBlockWrite)
     case 0x4900: reg[1]=V; break;
     case 0x4a00: reg[2]=V; break;
     case 0x4e00: reg[3]=V; IRQCount=Count; IRQPause=Pause; IRQa=1; X6502_IRQEnd(FCEU_IQEXT); break;
-  } 
+  }
 }
 
 static void UNL3DBlockPower(void)
@@ -87,7 +87,7 @@ static void UNL3DBlockIRQHook(int a)
       }
       else
       {
-        IRQCount=Count; 
+        IRQCount=Count;
         IRQPause=Pause;
         X6502_IRQEnd(FCEU_IQEXT);
       }

@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 700in1 and 400in1 carts
  */
  
@@ -39,30 +39,40 @@ static void Sync(void)
   {
     if(cmd&0x100)
     {
-      setprg16(0x8000,((cmd&0xe0)>>2)|bank);
-      setprg16(0xC000,((cmd&0xe0)>>2)|7);  
+      setprg16(0x8000,((cmd&0xfc)>>2)|bank);
+      setprg16(0xC000,((cmd&0xfc)>>2)|7);
     }
     else
     {
-      setprg16(0x8000,((cmd&0xe0)>>2)|(bank&6));
-      setprg16(0xC000,((cmd&0xe0)>>2)|((bank&6)|1));  
+      setprg16(0x8000,((cmd&0xfc)>>2)|(bank&6));
+      setprg16(0xC000,((cmd&0xfc)>>2)|((bank&6)|1));
     }
   }
   else
   {
-    setprg16(0x8000,((cmd&0xe0)>>2)|bank);
-    setprg16(0xC000,((cmd&0xe0)>>2)|bank);
+    setprg16(0x8000,((cmd&0xfc)>>2)|bank);
+    setprg16(0xC000,((cmd&0xfc)>>2)|bank);
   }  
 }
 
+static uint16 ass = 0;
+
 static DECLFW(UNLN625092WriteCommand)
 {
-  cmd=A;  
-  Sync();
+  cmd=A;
+  if(A==0x80F8)
+    {
+        setprg16(0x8000,ass);
+        setprg16(0xC000,ass);
+    }
+    else
+    {
+        Sync();
+    }
 }
 
 static DECLFW(UNLN625092WriteBank)
-{ 
+{
   bank=A&7;
   Sync();
 }
@@ -81,6 +91,8 @@ static void UNLN625092Reset(void)
 {
   cmd=0;
   bank=0;
+  ass++;
+  FCEU_printf("%04x\n",ass);
 }
 
 static void StateRestore(int version)

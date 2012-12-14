@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * Super Game (Sugar Softec) protected mapper
  * Pocahontas 2 (Unl) [U][!], etc.
@@ -27,7 +27,7 @@
 
 static uint8 cmdin;
 
-static uint8 regperm[8][8] = 
+static uint8 regperm[8][8] =
   {
     {0, 1, 2, 3, 4, 5, 6, 7},
     {0, 2, 6, 1, 7, 3, 4, 5},
@@ -39,7 +39,7 @@ static uint8 regperm[8][8] =
     {0, 1, 2, 3, 4, 5, 6, 7}, // empty
   };
 
-static uint8 adrperm[8][8] = 
+static uint8 adrperm[8][8] =
   {
     {0, 1, 2, 3, 4, 5, 6, 7},
     {3, 2, 0, 4, 1, 5, 6, 7},
@@ -151,7 +151,7 @@ static DECLFW(UNL8237Write)
       dat = (dat & 0xC0)|(regperm[EXPREGS[2]][dat & 7]);
     MMC3_CMDWrite(addr,dat);
   }
-  else 
+  else
     MMC3_IRQWrite(addr,dat);
 }
 
@@ -181,7 +181,7 @@ void UNL8237_Init(CartInfo *info)
   pwrap=UNL8237PW;
   info->Power=UNL8237Power;
   AddExState(EXPREGS, 3, 0, "EXPR");
-  AddExState(&cmdin, 1, 0, "CMDIN");
+  AddExState(&cmdin, 1, 0, "CMDI");
 }
 
 void UNL8237A_Init(CartInfo *info)
@@ -191,5 +191,5 @@ void UNL8237A_Init(CartInfo *info)
   pwrap=UNL8237APW;
   info->Power=UNL8237Power;
   AddExState(EXPREGS, 3, 0, "EXPR");
-  AddExState(&cmdin, 1, 0, "CMDIN");
+  AddExState(&cmdin, 1, 0, "CMDI");
 }

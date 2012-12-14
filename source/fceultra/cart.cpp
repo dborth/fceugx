@@ -15,7 +15,7 @@
 *
 * You should have received a copy of the GNU General Public License
 * along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 /// \file
@@ -295,7 +295,7 @@ void setchr8r(int r, unsigned int V)
 	if(CHRram[r])
 		PPUCHRRAM|=(255);
 	else
-		PPUCHRRAM=0; 
+		PPUCHRRAM=0;
 }
 
 void setchr1(unsigned int A, unsigned int V)
@@ -439,7 +439,7 @@ static uint8 *GENIEROM=0;
 
 void FixGenieMap(void);
 
-// Called when a game(file) is opened successfully. 
+// Called when a game(file) is opened successfully.
 void OpenGenie(void)
 {
 	FILE *fp;

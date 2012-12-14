@@ -1,4 +1,4 @@
-/* 
+/*
 Copyright (C) 2009-2010 DeSmuME team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -56,7 +56,7 @@ public:
 	virtual EMUFILE* memwrap() = 0;
 
 	virtual ~EMUFILE() {}
-	
+
 	static bool readAllBytes(std::vector<u8>* buf, const std::string& fname);
 
 	bool fail(bool unset=false) { bool ret = failbit; if(unset) unfail(); return ret; }
@@ -122,7 +122,7 @@ public:
 };
 
 //todo - handle read-only specially?
-class EMUFILE_MEMORY : public EMUFILE { 
+class EMUFILE_MEMORY : public EMUFILE {
 protected:
 	std::vector<u8> *vec;
 	bool ownvec;
@@ -136,12 +136,12 @@ protected:
 public:
 
 	EMUFILE_MEMORY(std::vector<u8> *underlying) : vec(underlying), ownvec(false), pos(0), len((s32)underlying->size()) { }
-	EMUFILE_MEMORY(u32 preallocate) : vec(new std::vector<u8>()), ownvec(true), pos(0), len(0) { 
+	EMUFILE_MEMORY(u32 preallocate) : vec(new std::vector<u8>()), ownvec(true), pos(0), len(0) {
 		vec->resize(preallocate);
 		len = preallocate;
 	}
 	EMUFILE_MEMORY() : vec(new std::vector<u8>()), ownvec(true), pos(0), len(0) { vec->reserve(1024); }
-	EMUFILE_MEMORY(void* buf, s32 size) : vec(new std::vector<u8>()), ownvec(true), pos(0), len(size) { 
+	EMUFILE_MEMORY(void* buf, s32 size) : vec(new std::vector<u8>()), ownvec(true), pos(0), len(size) {
 		vec->resize(size);
 		if(size != 0)
 			memcpy(&vec->front(),buf,size);
@@ -160,7 +160,7 @@ public:
 		if(pos>length) pos=length;
 	}
 
-	u8* buf() { 
+	u8* buf() {
 		if(size()==0) reserve(1);
 		return &(*vec)[0];
 	}
@@ -180,10 +180,10 @@ public:
 		va_end(argptr);
 		va_start(argptr, format);
 		vsprintf(tempbuf,format,argptr);
-		
+
         fwrite(tempbuf,amt);
 		delete[] tempbuf;
-		
+
         va_end(argptr);
 		return amt;
 	};
@@ -225,7 +225,7 @@ public:
 		len = std::max(pos,len);
 	}
 
-	virtual int fseek(int offset, int origin){ 
+	virtual int fseek(int offset, int origin){
 		//work differently for read-only...?
 		switch(origin) {
 			case SEEK_SET:
@@ -416,21 +416,14 @@ public:
 };
 #endif
 
-class EMUFILE_FILE : public EMUFILE { 
+class EMUFILE_FILE : public EMUFILE {
 protected:
 	FILE* fp;
 	std::string fname;
 	char mode[16];
 
 private:
-	void open(const char* fname, const char* mode)
-	{
-		fp = fopen(fname,mode);
-		if(!fp)
-			failbit = true;
-		this->fname = fname;
-		strcpy(this->mode,mode);
-	}
+	void open(const char* fname, const char* mode);
 
 public:
 
@@ -443,7 +436,7 @@ public:
 	}
 
 	virtual FILE *get_fp() {
-		return fp; 
+		return fp;
 	}
 
 	virtual EMUFILE* memwrap();
@@ -483,7 +476,7 @@ public:
 			failbit = true;
 	}
 
-	virtual int fseek(int offset, int origin) { 
+	virtual int fseek(int offset, int origin) {
 		return ::fseek(fp, offset, origin);
 	}
 
@@ -491,7 +484,7 @@ public:
 		return (u32)::ftell(fp);
 	}
 
-	virtual int size() { 
+	virtual int size() {
 		int oldpos = ftell();
 		fseek(0,SEEK_END);
 		int len = ftell();

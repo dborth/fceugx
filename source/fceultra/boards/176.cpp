@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include "mapinc.h"
@@ -115,7 +115,7 @@ static void M176Power(void)
 	SetWriteHandler(0x5011,0x5011,M176Write_5011);
   SetWriteHandler(0x5ff1,0x5ff1,M176Write_5FF1);
   SetWriteHandler(0x5ff2,0x5ff2,M176Write_5FF2);
-	
+
 	we_sram = 0;
 	sbw = 0;
 	prg[0] = 0;
