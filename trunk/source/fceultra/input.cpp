@@ -16,7 +16,7 @@
 *
 * You should have received a copy of the GNU General Public License
 * along with this program; if not, write to the Free Software
-* Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+* Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 #include <string>
@@ -51,17 +51,8 @@
 #include "drivers/win/memview.h"
 #include "drivers/win/window.h"
 #include "drivers/win/ntview.h"
-
-#include "./drivers/win/taseditor/taseditor_window.h"
-#include "./drivers/win/taseditor/markers.h"
-#include "./drivers/win/taseditor/selection.h"
-#include "./drivers/win/taseditor/snapshot.h"
-#include "./drivers/win/taseditor/bookmarks.h"
-#include "./drivers/win/taseditor/playback.h"
+#include "drivers/win/taseditor.h"
 extern bool Taseditor_rewind_now;
-extern BOOKMARKS bookmarks;
-extern TASEDITOR_WINDOW taseditor_window;
-extern PLAYBACK playback;
 #endif // WIN32
 
 //it is easier to declare these input drivers extern here than include a bunch of files
@@ -170,7 +161,7 @@ static DECLFW(B4016)
 		//what's really going on.  But who wants accuracy? ;)
 		//Seriously, though, this shouldn't be a problem.
 		//new comment:
-		
+
 		//mbg 6/7/08 - I guess he means that the input drivers could track the strobing themselves
 		//I dont see why it is unreasonable here.
 		for(int i=0;i<2;i++)
@@ -335,7 +326,7 @@ void FCEU_UpdateInput(void)
 		for(int port=0;port<2;port++)
 			joyports[port].driver->Update(port,joyports[port].ptr,joyports[port].attrib);
 		portFC.driver->Update(portFC.ptr,portFC.attrib);
-	} 
+	}
 
 	if(GameInfo->type==GIT_VSUNI)
 		if(coinon) coinon--;
@@ -344,7 +335,7 @@ void FCEU_UpdateInput(void)
 		NetplayUpdate(joy);
 
 	FCEUMOV_AddInputState();
-	
+
 	//TODO - should this apply to the movie data? should this be displayed in the input hud?
 	if(GameInfo->type==GIT_VSUNI)
 		FCEU_VSUniSwap(&joy[0],&joy[1]);
@@ -417,7 +408,7 @@ static void SetInputStuffFC()
 {
 	switch(portFC.type)
 	{
-	case SIFC_NONE: 
+	case SIFC_NONE:
 #ifdef GEKKO
 		portFC.driver=FCEU_InitFamicom3D();
 #else
@@ -542,7 +533,7 @@ void FCEU_DoSimpleCommand(int cmd)
 	case FCEUNPCMD_FDSINSERT: FCEU_FDSInsert();break;
 	case FCEUNPCMD_FDSSELECT: FCEU_FDSSelect();break;
 	case FCEUNPCMD_VSUNICOIN: FCEU_VSUniCoin(); break;
-	case FCEUNPCMD_VSUNIDIP0: 
+	case FCEUNPCMD_VSUNIDIP0:
 	case FCEUNPCMD_VSUNIDIP0+1:
 	case FCEUNPCMD_VSUNIDIP0+2:
 	case FCEUNPCMD_VSUNIDIP0+3:
@@ -637,6 +628,7 @@ const char* FCEUI_CommandTypeNames[]=
 	"FDS",
 	"VS Sys",
 	"Tools",
+	"TAS Editor",
 };
 
 static void CommandUnImpl(void);
@@ -674,11 +666,11 @@ static void ReloadRom(void);
 static void MovieSubtitleToggle(void);
 static void UndoRedoSavestate(void);
 static void FCEUI_DoExit(void);
-static void ToggleFullscreen(void);
+void ToggleFullscreen();
 static void TaseditorRewindOn(void);
 static void TaseditorRewindOff(void);
-static void TaseditorRestorePlayback(void);
-static void TaseditorCancelSeeking(void);
+static void TaseditorCommand(void);
+extern void FCEUI_ToggleShowFPS();
 
 struct EMUCMDTABLE FCEUI_CommandTable[]=
 {
@@ -707,8 +699,8 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_SAVE_SLOT_7,					EMUCMDTYPE_STATE,	CommandSelectSaveSlot, 0, 0, "Savestate Slot 7", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_SAVE_SLOT_8,					EMUCMDTYPE_STATE,	CommandSelectSaveSlot, 0, 0, "Savestate Slot 8", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_SAVE_SLOT_9,					EMUCMDTYPE_STATE,	CommandSelectSaveSlot, 0, 0, "Savestate Slot 9", EMUCMDFLAG_TASEDITOR },
-	{ EMUCMD_SAVE_SLOT_NEXT,				EMUCMDTYPE_STATE,	CommandSelectSaveSlot, 0, 0, "Next Savestate Slot", 0 },
-	{ EMUCMD_SAVE_SLOT_PREV,				EMUCMDTYPE_STATE,	CommandSelectSaveSlot, 0, 0, "Previous Savestate Slot", 0 },
+	{ EMUCMD_SAVE_SLOT_NEXT,				EMUCMDTYPE_STATE,	CommandSelectSaveSlot, 0, 0, "Next Savestate Slot", EMUCMDFLAG_TASEDITOR },
+	{ EMUCMD_SAVE_SLOT_PREV,				EMUCMDTYPE_STATE,	CommandSelectSaveSlot, 0, 0, "Previous Savestate Slot", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_SAVE_STATE,					EMUCMDTYPE_STATE,	CommandStateSave, 0, 0, "Save State", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_SAVE_STATE_AS,					EMUCMDTYPE_STATE,	FCEUD_SaveStateAs, 0, 0, "Save State As...", 0 },
 	{ EMUCMD_SAVE_STATE_SLOT_0,				EMUCMDTYPE_STATE,	CommandStateSave, 0, 0, "Save State to Slot 0", EMUCMDFLAG_TASEDITOR },
@@ -733,7 +725,7 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_LOAD_STATE_SLOT_7,				EMUCMDTYPE_STATE,	CommandStateLoad, 0, 0, "Load State from Slot 7", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_LOAD_STATE_SLOT_8,				EMUCMDTYPE_STATE,	CommandStateLoad, 0, 0, "Load State from Slot 8", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_LOAD_STATE_SLOT_9,				EMUCMDTYPE_STATE,	CommandStateLoad, 0, 0, "Load State from Slot 9", EMUCMDFLAG_TASEDITOR },
-	
+
 	{ EMUCMD_MOVIE_RECORD_TO,				EMUCMDTYPE_MOVIE,	FCEUD_MovieRecordTo, 0, 0, "Record Movie To...", 0 },
 	{ EMUCMD_MOVIE_REPLAY_FROM,				EMUCMDTYPE_MOVIE,	FCEUD_MovieReplayFrom, 0, 0, "Play Movie From...", 0 },
 	{ EMUCMD_MOVIE_PLAY_FROM_BEGINNING,		EMUCMDTYPE_MOVIE,	FCEUI_MoviePlayFromBeginning, 0, 0, "Play Movie From Beginning", EMUCMDFLAG_TASEDITOR },
@@ -778,7 +770,7 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_MISC_DISPLAY_BG_TOGGLE,		EMUCMDTYPE_MISC,	BackgroundDisplayToggle, 0, 0, "Toggle Background Display", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_MISC_DISPLAY_OBJ_TOGGLE,		EMUCMDTYPE_MISC,	ObjectDisplayToggle, 0, 0, "Toggle Object Display", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_MISC_DISPLAY_LAGCOUNTER_TOGGLE,EMUCMDTYPE_MISC,	LagCounterToggle, 0, 0, "Lag Counter Toggle", EMUCMDFLAG_TASEDITOR },
-	{ EMUCMD_MISC_OPENTASEDITOR,			EMUCMDTYPE_TOOL,	LaunchTasEditor,  0, 0, "Open TAS Editor", 0},
+	{ EMUCMD_MISC_OPENTASEDITOR,			EMUCMDTYPE_TOOL,	LaunchTasEditor,  0, 0, "Open TAS Editor", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_TOOL_OPENMEMORYWATCH,			EMUCMDTYPE_TOOL,	LaunchMemoryWatch,0, 0, "Open Memory Watch", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_TOOL_OPENCHEATS,				EMUCMDTYPE_TOOL,	LaunchCheats,	  0, 0, "Open Cheats", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_TOOL_OPENDEBUGGER,				EMUCMDTYPE_TOOL,	LaunchDebugger,   0, 0, "Open Debugger", EMUCMDFLAG_TASEDITOR },
@@ -802,10 +794,14 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_TOOL_RAMSEARCHGTE,				EMUCMDTYPE_TOOL,	RamSearchOpGTE,	  0, 0, "Ram Search - Greater Than or Equal", 0},
 	{ EMUCMD_TOOL_RAMSEARCHEQ,				EMUCMDTYPE_TOOL,	RamSearchOpEQ,	  0, 0, "Ram Search - Equal",	  0},
 	{ EMUCMD_TOOL_RAMSEARCHNE,				EMUCMDTYPE_TOOL,	RamSearchOpNE,	  0, 0, "Ram Search - Not Equal", 0},
-	{ EMUCMD_TASEDITOR_REWIND,				EMUCMDTYPE_MISC,	TaseditorRewindOn, TaseditorRewindOff, 0, "Rewind Frame (TAS Editor)", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_RERECORD_DISPLAY_TOGGLE,		EMUCMDTYPE_MISC,	FCEUI_MovieToggleRerecordDisplay, 0, 0, "Toggle Rerecord Display", EMUCMDFLAG_TASEDITOR },
-	{ EMUCMD_TASEDITOR_RESTORE_PLAYBACK,	EMUCMDTYPE_MISC,	TaseditorRestorePlayback, 0, 0, "Restore Playback (TAS Editor)", EMUCMDFLAG_TASEDITOR },
-	{ EMUCMD_TASEDITOR_CANCEL_SEEKING,		EMUCMDTYPE_MISC,	TaseditorCancelSeeking, 0, 0, "Cancel Seeking (TAS Editor)", EMUCMDFLAG_TASEDITOR },
+	{ EMUCMD_TASEDITOR_REWIND,				EMUCMDTYPE_TASEDITOR,	TaseditorRewindOn, TaseditorRewindOff, 0, "Frame Rewind", EMUCMDFLAG_TASEDITOR },
+	{ EMUCMD_TASEDITOR_RESTORE_PLAYBACK,	EMUCMDTYPE_TASEDITOR,	TaseditorCommand, 0, 0, "Restore Playback", EMUCMDFLAG_TASEDITOR },
+	{ EMUCMD_TASEDITOR_CANCEL_SEEKING,		EMUCMDTYPE_TASEDITOR,	TaseditorCommand, 0, 0, "Cancel Seeking", EMUCMDFLAG_TASEDITOR },
+	{ EMUCMD_TASEDITOR_SWITCH_AUTORESTORING,		EMUCMDTYPE_TASEDITOR,	TaseditorCommand, 0, 0, "Switch Auto-restore last position", EMUCMDFLAG_TASEDITOR },
+	{ EMUCMD_TASEDITOR_SWITCH_MULTITRACKING,		EMUCMDTYPE_TASEDITOR,	TaseditorCommand, 0, 0, "Switch current Multitracking mode", EMUCMDFLAG_TASEDITOR },
+	{ EMUCMD_TASEDITOR_RUN_MANUAL_LUA,		EMUCMDTYPE_TASEDITOR,	TaseditorCommand, 0, 0, "Run Manual Lua function", EMUCMDFLAG_TASEDITOR },
+	{ EMUCMD_FPS_DISPLAY_TOGGLE,			EMUCMDTYPE_MISC,	FCEUI_ToggleShowFPS, 0, 0, "Toggle FPS Display", EMUCMDFLAG_TASEDITOR },
 };
 
 #define NUM_EMU_CMDS		(sizeof(FCEUI_CommandTable)/sizeof(FCEUI_CommandTable[0]))
@@ -825,7 +821,7 @@ void FCEUI_HandleEmuCommands(TestCommandState* testfn)
 		bool allow = true;
 		if(taseditor && !(FCEUI_CommandTable[i].flags & EMUCMDFLAG_TASEDITOR))
 			allow = false;
-		
+
 		if(allow)
 		{
 			if (new_state == 1 && old_state == 0 && FCEUI_CommandTable[i].fn_on)
@@ -865,7 +861,7 @@ static void CommandSelectSaveSlot(void)
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 	{
 #ifdef WIN32
-		bookmarks.command(COMMAND_JUMP, execcmd - EMUCMD_SAVE_SLOT_0);
+		Taseditor_EMUCMD(execcmd);
 #endif
 	} else
 	{
@@ -883,10 +879,7 @@ static void CommandStateSave(void)
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 	{
 #ifdef WIN32
-		if (execcmd == EMUCMD_SAVE_STATE)
-			bookmarks.command(COMMAND_SET);
-		else if(execcmd >= EMUCMD_SAVE_STATE_SLOT_0 && execcmd <= EMUCMD_SAVE_STATE_SLOT_9)
-			bookmarks.command(COMMAND_SET, execcmd - EMUCMD_SAVE_STATE_SLOT_0);
+		Taseditor_EMUCMD(execcmd);
 #endif
 	} else
 	{
@@ -907,10 +900,7 @@ static void CommandStateLoad(void)
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 	{
 #ifdef WIN32
-		if (execcmd == EMUCMD_LOAD_STATE)
-			bookmarks.command(COMMAND_DEPLOY);
-		else if(execcmd >= EMUCMD_LOAD_STATE_SLOT_0 && execcmd <= EMUCMD_LOAD_STATE_SLOT_9)
-			bookmarks.command(COMMAND_DEPLOY, execcmd - EMUCMD_LOAD_STATE_SLOT_0);
+		Taseditor_EMUCMD(execcmd);
 #endif
 	} else
 	{
@@ -1149,7 +1139,7 @@ static void ReloadRom(void)
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 	{
 		// load most recent project
-		taseditor_window.LoadRecentProject(0);
+		Taseditor_EMUCMD(execcmd);
 	} else
 	{
 		// load most recent ROM
@@ -1179,12 +1169,12 @@ static void FCEUI_DoExit(void)
 #endif
 }
 
-static void ToggleFullscreen(void)
+void ToggleFullscreen()
 {
 #ifdef WIN32
 	extern int SetVideoMode(int fs);		//adelikat: Yeah, I know, hacky
 	extern void UpdateCheckedMenuItems();
-	
+
 	UpdateCheckedMenuItems();
 	changerecursive=1;
 
@@ -1208,18 +1198,10 @@ static void TaseditorRewindOff(void)
 #endif
 }
 
-static void TaseditorRestorePlayback(void)
+static void TaseditorCommand(void)
 {
 #ifdef WIN32
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
-		playback.RestorePosition();
-#endif
-}
-
-static void TaseditorCancelSeeking(void)
-{
-#ifdef WIN32
-	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
-		playback.CancelSeeking();
+		Taseditor_EMUCMD(execcmd);
 #endif
 }

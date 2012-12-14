@@ -64,6 +64,13 @@ void FCEUD_VideoChanged()
 {
 }
 
+static unsigned int keys[256] = {0,}; // with repeat
+
+unsigned int *GetKeyboard(void)
+{
+	return(keys);
+}
+
 FCEUFILE* FCEUD_OpenArchiveIndex(ArchiveScanRecord& asr, std::string &fname, int innerIndex) { return 0; }
 FCEUFILE* FCEUD_OpenArchive(ArchiveScanRecord& asr, std::string& fname, std::string* innerFilename) { return 0; }
 ArchiveScanRecord FCEUD_ScanArchive(std::string fname) { return ArchiveScanRecord(); }

@@ -16,7 +16,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include "mapinc.h"
@@ -107,39 +107,39 @@ static void MMC1PRG(void)
   else
   {
     switch(DRegs[0]&0xC)
-  {
-    case 0xC: setprg16(0x8000,(DRegs[3]+offs));
-              setprg16(0xC000,0xF+offs);
-              break;
-    case 0x8: setprg16(0xC000,(DRegs[3]+offs));
-              setprg16(0x8000,offs);
-              break;
-    case 0x0:
-    case 0x4:
-              setprg16(0x8000,((DRegs[3]&~1)+offs));
-              setprg16(0xc000,((DRegs[3]&~1)+offs+1));
-              break;
+    {
+      case 0xC: setprg16(0x8000,(DRegs[3]+offs));
+                setprg16(0xC000,0xF+offs);
+                break;
+      case 0x8: setprg16(0xC000,(DRegs[3]+offs));
+                setprg16(0x8000,offs);
+                break;
+      case 0x0:
+      case 0x4:
+                setprg16(0x8000,((DRegs[3]&~1)+offs));
+                setprg16(0xc000,((DRegs[3]&~1)+offs+1));
+                break;
+    }
   }
-}
 }
 
 static void MMC1MIRROR(void)
 {
-  if(!is171) 
-  switch(DRegs[0]&3)
-  {
-    case 2: setmirror(MI_V); break;
-    case 3: setmirror(MI_H); break;
-    case 0: setmirror(MI_0); break;
-    case 1: setmirror(MI_1); break;
-  }
+  if(!is171)
+    switch(DRegs[0]&3)
+    {
+      case 2: setmirror(MI_V); break;
+      case 3: setmirror(MI_H); break;
+      case 0: setmirror(MI_0); break;
+      case 1: setmirror(MI_1); break;
+    }
 }
 
 static uint64 lreset;
 static DECLFW(MMC1_write)
 {
   int n=(A>>13)-4;
-  //FCEU_DispMessage("%016x",0,timestampbase+timestamp);
+  //FCEU_DispMessage("%016x",timestampbase+timestamp);
 //  FCEU_printf("$%04x:$%02x, $%04x\n",A,V,X.PC);
   //DumpMem("out",0xe000,0xffff);
 

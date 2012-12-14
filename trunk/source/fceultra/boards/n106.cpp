@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include "mapinc.h"
@@ -88,7 +88,9 @@ static DECLFR(Namco_Read4800)
 {
   uint8 ret=IRAM[dopol&0x7f];
   /* Maybe I should call NamcoSoundHack() here? */
+  #ifdef FCEUDEF_DEBUGGER
   if(!fceuindbg)
+  #endif
     if(dopol&0x80)
       dopol=(dopol&0x80)|((dopol+1)&0x7f);
   return ret;
@@ -275,7 +277,7 @@ static INLINE uint32 FetchDuff(uint32 P, uint32 envelope)
 static void DoNamcoSoundHQ(void)
 {
   uint32 V; //mbg merge 7/17/06 made uint32
-  int32 P; 
+  int32 P;
   int32 cyclesuck=(((IRAM[0x7F]>>4)&7)+1)*15;
 
   for(P=7;P>=(7-((IRAM[0x7F]>>4)&7));P--)

@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include "mapinc.h"
@@ -32,8 +32,8 @@ static SFORMAT StateRegs[]=
   {&nt2, 1, "NT2"},
   {&mirr, 1, "MIRR"},
   {&prg_reg, 1, "PRG"},
-  {&kogame, 1, "KOGAME"},
-  {&count, 4, "COUNT"},
+  {&kogame, 1, "KGME"},
+  {&count, 4, "CNT"},
   {chr_reg, 4, "CHR"},
   {0}
 };
@@ -92,7 +92,7 @@ static DECLFR(M68Read)
 static DECLFW(M68WriteLo)
 {
   if(!V)
-  { 
+  {
     count = 0;
     setprg16r((PRGptr[1])?kogame:0,0x8000,prg_reg);
   }
@@ -106,13 +106,13 @@ static DECLFW(M68WriteCHR)
 
 static DECLFW(M68WriteNT1)
 {
-  nt1 = V;            
+  nt1 = V;
   M68NTfix();
 }
 
 static DECLFW(M68WriteNT2)
 {
-  nt2 = V;            
+  nt2 = V;
   M68NTfix();
 }
 

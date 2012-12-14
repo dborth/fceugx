@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * Lethal Weapon (VRC4 mapper)
  */
@@ -24,7 +24,7 @@
 
 static uint8 prg0, prg1, mirr, swap;
 static uint8 chr[8];
-static uint8 IRQCount;           
+static uint8 IRQCount;
 static uint8 IRQPre;
 static uint8 IRQa;
 
@@ -35,8 +35,8 @@ static SFORMAT StateRegs[]=
   {&mirr, 1, "MIRR"},
   {&swap, 1, "SWAP"},
   {chr, 8, "CHR"},
-  {&IRQCount, 1, "IRQCOUNT"},
-  {&IRQPre, 1, "IRQPRE"},
+  {&IRQCount, 1, "IRQC"},
+  {&IRQPre, 1, "IRQP"},
   {&IRQa, 1, "IRQA"},
   {0}
 };
@@ -47,7 +47,7 @@ static void SyncPrg(void)
   {
     setprg8(0x8000,~1);
     setprg8(0xC000,prg0);
-  }  
+  }
   else
   {
     setprg8(0x8000,prg0);
@@ -89,11 +89,11 @@ static DECLFW(UNLTF1201Write)
     case 0x9001: swap=V&3; SyncPrg(); break;
     case 0xF000: IRQCount=((IRQCount&0xF0)|(V&0xF)); break;
     case 0xF002: IRQCount=((IRQCount&0x0F)|((V&0xF)<<4)); break;
-    case 0xF001: 
+    case 0xF001:
     case 0xF003: IRQa=V&2; X6502_IRQEnd(FCEU_IQEXT); if(scanline<240) IRQCount-=8; break;
   }
 }
-  
+
 static void UNLTF1201IRQCounter(void)
 {
   if(IRQa)
@@ -105,7 +105,7 @@ static void UNLTF1201IRQCounter(void)
     }
   }
 }
-  
+
 static void UNLTF1201Power(void)
 {
   IRQPre=IRQCount=IRQa=0;

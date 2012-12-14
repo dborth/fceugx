@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * CAI Shogakko no Sansu
  */
@@ -40,7 +40,7 @@ static SFORMAT StateRegs[]=
   {&IRQCount, 1, "IRQC"},
   {&IRQLatch, 1, "IRQL"},
   {&IRQa, 1, "IRQA"},
-  {&K4IRQ, 1, "K4IRQ"},
+  {&K4IRQ, 1, "KIRQ"},
   {regs, 16, "REGS"},
   {0}
 };
@@ -125,7 +125,7 @@ static DECLFW(M190Write)
 // FCEU_printf("write %04x:%04x %d, %d\n",A,V,scanline,timestamp);
   regs[(A&0x0F00)>>8]=V;
   switch(A)
-  {  
+  {
     case 0xd600:IRQLatch&=0xFF00;IRQLatch|=V;break;
     case 0xd700:IRQLatch&=0x00FF;IRQLatch|=V<<8;break;
     case 0xd900:IRQCount=IRQLatch;IRQa=V&2;K4IRQ=V&1;X6502_IRQEnd(FCEU_IQEXT);break;
@@ -185,7 +185,7 @@ static void M190Power(void)
   test[5]=5;
   test[6]=6;
   test[7]=7;
-*/  
+*/
   setprg4r(0x10,0x7000,2);
 
   old2007wrap=GetWriteHandler(0x2007);
@@ -226,7 +226,7 @@ void Mapper190_Init(CartInfo *info)
 
   CHRRAM=(uint8*)FCEU_gmalloc(CHRSIZE);
   SetupCartCHRMapping(0x10,CHRRAM,CHRSIZE,1);
-  AddExState(CHRRAM, CHRSIZE, 0, "CHRRAM");
+  AddExState(CHRRAM, CHRSIZE, 0, "CRAM");
 
   WRAM=(uint8*)FCEU_gmalloc(WRAMSIZE);
   SetupCartPRGMapping(0x10,WRAM,WRAMSIZE,1);

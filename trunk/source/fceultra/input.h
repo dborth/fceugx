@@ -69,7 +69,7 @@ struct INPUTCFC
 extern struct JOYPORT
 {
 	JOYPORT(int _w)
-		: w(_w) 
+		: w(_w)
 	{}
 
 	int w;
@@ -111,7 +111,7 @@ enum EMUCMD
 	EMUCMD_SCREENSHOT,
 	EMUCMD_HIDE_MENU_TOGGLE,
 	//fixed: current command key handling handle only command table record index with
-	//the same as cmd enumerarot index, or else does wrong key mapping, fixed it but placed this enum here anyway 
+	//the same as cmd enumerarot index, or else does wrong key mapping, fixed it but placed this enum here anyway
 	//...i returned it back.
 	//adelikat, try to find true cause of problem before reversing it
 	EMUCMD_EXIT,
@@ -202,10 +202,10 @@ enum EMUCMD
 	EMUCMD_MISC_DISPLAY_BG_TOGGLE,
 	EMUCMD_MISC_DISPLAY_OBJ_TOGGLE,
 	EMUCMD_MISC_DISPLAY_LAGCOUNTER_TOGGLE,
-	
+
 	//Currently Windows only------
 	EMUCMD_MISC_OPENTASEDITOR,
-	EMUCMD_TOOL_OPENMEMORYWATCH, 
+	EMUCMD_TOOL_OPENMEMORYWATCH,
 	EMUCMD_TOOL_OPENCHEATS,
 	EMUCMD_TOOL_OPENDEBUGGER,
 	EMUCMD_TOOL_OPENHEX,
@@ -234,9 +234,13 @@ enum EMUCMD
 	EMUCMD_TASEDITOR_REWIND,
 	EMUCMD_RERECORD_DISPLAY_TOGGLE,
 	EMUCMD_TASEDITOR_RESTORE_PLAYBACK,
+	EMUCMD_TASEDITOR_CANCEL_SEEKING,
+	EMUCMD_TASEDITOR_SWITCH_AUTORESTORING,
+	EMUCMD_TASEDITOR_SWITCH_MULTITRACKING,
+	EMUCMD_TASEDITOR_RUN_MANUAL_LUA,
 	//-----------------------------
 	//keep adding these in order of newness or else the hotkey binding configs will get messed up...
-	EMUCMD_TASEDITOR_CANCEL_SEEKING,
+	EMUCMD_FPS_DISPLAY_TOGGLE,
 
 	EMUCMD_MAX
 };
@@ -252,6 +256,7 @@ enum EMUCMDTYPE
 	EMUCMDTYPE_FDS,
 	EMUCMDTYPE_VSUNI,
 	EMUCMDTYPE_TOOL,  //All Tools type are currenty windows only programs
+	EMUCMDTYPE_TASEDITOR,	// Windows-only as well
 
 	EMUCMDTYPE_MAX
 };

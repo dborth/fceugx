@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * 63in1 ghostbusters
  */
 
@@ -53,7 +53,7 @@ static DECLFW(BMCGhostbusters63in1Write)
 {
   reg[A&1]=V;
   bank=((reg[0]&0x80)>>7)|((reg[1]&1)<<1);
-//  FCEU_printf("reg[0]=%02x, reg[1]=%02x, bank=%02x\n",reg[0],reg[1],bank);
+//	FCEU_printf("reg[0]=%02x, reg[1]=%02x, bank=%02x\n",reg[0],reg[1],bank);
   Sync();
 }
 
@@ -99,7 +99,7 @@ void BMCGhostbusters63in1_Init(CartInfo *info)
   CHRROMSIZE=8192; // dummy CHRROM, VRAM disable
   CHRROM=(uint8*)FCEU_gmalloc(CHRROMSIZE);
   SetupCartPRGMapping(0x10,CHRROM,CHRROMSIZE,0);
-  AddExState(CHRROM, CHRROMSIZE, 0, "CHRROM");
+  AddExState(CHRROM, CHRROMSIZE, 0, "CROM");
 
   GameStateRestore=StateRestore;
   AddExState(&StateRegs, ~0, 0, 0);

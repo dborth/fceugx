@@ -15,15 +15,13 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 // M-022 MMC3 based 830118C T-106 4M + 4M
 
 #include "mapinc.h"
 #include "mmc3.h"
-
-static uint8 reset_flag = 0;
 
 static void BMC830118CCW(uint32 A, uint8 V)
 {
@@ -32,8 +30,8 @@ static void BMC830118CCW(uint32 A, uint8 V)
 
 static void BMC830118CPW(uint32 A, uint8 V)
 {
-      if((EXPREGS[0]&0x0C)==0x0C) 
-      {  
+      if((EXPREGS[0]&0x0C)==0x0C)
+      {
          if(A==0x8000)
          {
            setprg8(A,(V&0x0F)|((EXPREGS[0]&0x0c)<<2));

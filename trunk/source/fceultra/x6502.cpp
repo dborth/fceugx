@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include <string.h>
@@ -56,11 +56,11 @@ static INLINE void WrMem(unsigned int A, uint8 V)
 	#endif
 }
 
-static INLINE uint8 RdRAM(unsigned int A) 
+static INLINE uint8 RdRAM(unsigned int A)
 {
   //bbit edited: this was changed so cheat substituion would work
   return(_DB=ARead[A](A));
-  // return(_DB=RAM[A]); 
+  // return(_DB=RAM[A]);
 }
 
 static INLINE void WrRAM(unsigned int A, uint8 V)
@@ -91,7 +91,7 @@ void X6502_DMW(uint32 A, uint8 V)
  uint8 VTMP=V;  \
  WrRAM(0x100+_S,VTMP);  \
  _S--;  \
-}       
+}
 
 #define POP() RdRAM(0x100+(++_S))
 
@@ -194,7 +194,7 @@ static uint8 ZNTable[256];
      _P|=l;  \
      X_ZNT(x);  \
 		}
-		 
+
 /* Icky icky thing for some undocumented instructions.  Can easily be
    broken if names of local variables are changed.
 */
@@ -333,7 +333,7 @@ static uint8 ZNTable[256];
 #define ST_IY(r)  {unsigned int A; GetIYWR(A); WrMem(A,r); break; }
 
 static uint8 CycTable[256] =
-{                             
+{
 /*0x00*/ 7,6,2,8,3,3,5,5,3,2,2,2,4,4,6,6,
 /*0x10*/ 2,5,2,8,4,4,6,6,2,4,2,7,4,4,7,7,
 /*0x20*/ 6,6,2,8,3,3,5,5,4,2,2,2,4,4,6,6,
@@ -368,7 +368,7 @@ void TriggerNMI(void)
 }
 
 void TriggerNMI2(void)
-{ 
+{
  _IRQlow|=FCEU_IQNMI2;
 }
 
@@ -405,7 +405,8 @@ void X6502_Init(void)
 
 void X6502_Power(void)
 {
- _count=_tcount=_IRQlow=_PC=_A=_X=_Y=_S=_P=_PI=_DB=_jammed=0;
+ _count=_tcount=_IRQlow=_PC=_A=_X=_Y=_P=_PI=_DB=_jammed=0;
+ _S=0xFD;
  timestamp=0;
  X6502_Reset();
 }

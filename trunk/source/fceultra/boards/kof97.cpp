@@ -15,7 +15,7 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
 #include "mapinc.h"
@@ -24,7 +24,7 @@
 static DECLFW(UNLKOF97CMDWrite)
 {
   V=(V&0xD8)|((V&0x20)>>4)|((V&4)<<3)|((V&2)>>1)|((V&1)<<2);  //76143502
-  if(A==0x9000) A=0x8001;  
+  if(A==0x9000) A=0x8001;
   MMC3_CMDWrite(A,V);
 }
 
