@@ -481,66 +481,90 @@ void FCEUI_SetDirOverride(int which, char *n)
 
 std::string  FCEU_GetPath(int type)
 {
-	char ret[FILENAME_MAX];
-	switch(type)
+	switch (type)
 	{
 		case FCEUMKF_STATE:
+		{
 			if(odirs[FCEUIOD_STATES])
 				return (odirs[FCEUIOD_STATES]);
 			else
 				return BaseDirectory + PSS + "fcs";
 			break;
+		}
+		case FCEUMKF_CHEAT:
+		{
+			if(odirs[FCEUIOD_CHEATS])
+				return (odirs[FCEUIOD_CHEATS]);
+			else
+				return BaseDirectory + PSS + "cheats";
+			break;
+		}
 		case FCEUMKF_MOVIE:
+		{
 			if(odirs[FCEUIOD_MOVIES])
 				return (odirs[FCEUIOD_MOVIES]);
 			else
 				return BaseDirectory + PSS + "movies";
 			break;
+		}
 		case FCEUMKF_MEMW:
+		{
 			if(odirs[FCEUIOD_MEMW])
 				return (odirs[FCEUIOD_MEMW]);
 			else
 				return "";	//adelikat: 03/02/09 - return null so it defaults to last directory used
 				//return BaseDirectory + PSS + "tools";
 			break;
+		}
 		//adelikat: TODO: this no longer exist and could be removed (but that would require changing a lot of other directory arrays
 		case FCEUMKF_BBOT:
+		{
 			if(odirs[FCEUIOD_BBOT])
 				return (odirs[FCEUIOD_BBOT]);
 			else
 				return BaseDirectory + PSS + "tools";
 			break;
+		}
 		case FCEUMKF_ROMS:
+		{
 			if(odirs[FCEUIOD_ROMS])
 				return (odirs[FCEUIOD_ROMS]);
 			else
 				return "";	//adelikat: removing base directory return, should return null it goes to last used directory
 			break;
+		}
 		case FCEUMKF_INPUT:
+		{
 			if(odirs[FCEUIOD_INPUT])
 				return (odirs[FCEUIOD_INPUT]);
 			else
 				return BaseDirectory + PSS + "tools";
 			break;
+		}
 		case FCEUMKF_LUA:
+		{
 			if(odirs[FCEUIOD_LUA])
 				return (odirs[FCEUIOD_LUA]);
 			else
 				return "";	//adelikat: 03/02/09 - return null so it defaults to last directory used //return BaseDirectory + PSS + "tools";
 			break;
+		}
 		case FCEUMKF_AVI:
+		{
 			if(odirs[FCEUIOD_AVI])
 				return (odirs[FCEUIOD_AVI]);
 			else
 				return "";		//adelikat - 03/02/09 - if no override, should return null and allow the last directory to be used intead
 				//return BaseDirectory + PSS + "tools";
 			break;
+		}
 		case FCEUMKF_TASEDITOR:
+		{
 			return BaseDirectory + PSS + "tools";
-
+			break;
+		}
 	}
-
-	return ret;
+	return "";
 }
 
 std::string FCEU_MakePath(int type, const char* filebase)
@@ -605,8 +629,7 @@ std::string FCEU_MakeFName(int type, int id1, const char *cd1)
 				if(odirs[FCEUIOD_STATES])
 				{
 					sprintf(ret,"%s"PSS"%s%s.fc%d",odirs[FCEUIOD_STATES],FileBase,mfn,id1);
-				}
-				else
+				} else
 				{
 					sprintf(ret,"%s"PSS"fcs"PSS"%s%s.fc%d",BaseDirectory.c_str(),FileBase,mfn,id1);
 				}
@@ -615,10 +638,30 @@ std::string FCEU_MakeFName(int type, int id1, const char *cd1)
 					if(odirs[FCEUIOD_STATES])
 					{
 						sprintf(ret,"%s"PSS"%s%s.fc%d",odirs[FCEUIOD_STATES],FileBase,mfn,id1);
-					}
-					else
+					} else
 					{
 						sprintf(ret,"%s"PSS"fcs"PSS"%s%s.fc%d",BaseDirectory.c_str(),FileBase,mfn,id1);
+					}
+				}
+			}
+			break;
+		case FCEUMKF_RESUMESTATE:
+			{
+				if(odirs[FCEUIOD_STATES])
+				{
+					sprintf(ret,"%s"PSS"%s-resume.fcs",odirs[FCEUIOD_STATES],FileBase);
+				} else
+				{
+					sprintf(ret,"%s"PSS"fcs"PSS"%s-resume.fcs",BaseDirectory.c_str(),FileBase);
+				}
+				if(stat(ret,&tmpstat)==-1)
+				{
+					if(odirs[FCEUIOD_STATES])
+					{
+						sprintf(ret,"%s"PSS"%s-resume.fcs",odirs[FCEUIOD_STATES],FileBase);
+					} else
+					{
+						sprintf(ret,"%s"PSS"fcs"PSS"%s-resume.fcs",BaseDirectory.c_str(),FileBase);
 					}
 				}
 			}
@@ -650,12 +693,21 @@ std::string FCEU_MakeFName(int type, int id1, const char *cd1)
 			break;
 		case FCEUMKF_AUTOSTATE:
 			mfnString = GetMfn();
-			mfn = mfnString.c_str();
+			if (mfnString.length() <= MAX_MOVIEFILENAME_LEN)
+			{
+				mfn = mfnString.c_str();
+			} else
+			{
+				//This caps the movie filename length before adding it to the savestate filename.
+				//This helps prevent possible crashes from savestate filenames of excessive length.
+				mfnString = mfnString.substr(0, MAX_MOVIEFILENAME_LEN);
+				mfn = mfnString.c_str();
+			}
+
 			if(odirs[FCEUIOD_STATES])
 			{
 				sprintf(ret,"%s"PSS"%s%s-autosave%d.fcs",odirs[FCEUIOD_STATES],FileBase,mfn,id1);
-			}
-			else
+			} else
 			{
 				sprintf(ret,"%s"PSS"fcs"PSS"%s%s-autosave%d.fcs",BaseDirectory.c_str(),FileBase,mfn,id1);
 			}
@@ -664,8 +716,7 @@ std::string FCEU_MakeFName(int type, int id1, const char *cd1)
 				if(odirs[FCEUIOD_STATES])
 				{
 					sprintf(ret,"%s"PSS"%s%s-autosave%d.fcs",odirs[FCEUIOD_STATES],FileBase,mfn,id1);
-				}
-				else
+				} else
 				{
 					sprintf(ret,"%s"PSS"fcs"PSS"%s%s-autosave%d.fcs",BaseDirectory.c_str(),FileBase,mfn,id1);
 				}

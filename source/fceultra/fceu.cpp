@@ -96,6 +96,8 @@ bool frameAdvanceLagSkip = false; //If this is true, frame advance will skip ove
 bool AutoSS = false;        //Flagged true when the first auto-savestate is made while a game is loaded, flagged false on game close
 bool movieSubtitles = true; //Toggle for displaying movie subtitles
 bool DebuggerWasUpdated = false; //To prevent the debugger from updating things without being updated.
+bool AutoResumePlay = false;
+char rom_name_when_closing_emulator[129] = {0};
 
 FCEUGI::FCEUGI()
 	: filename(0)
@@ -137,13 +139,20 @@ void FCEU_TogglePPU(void) {
 #endif
 }
 
-static void FCEU_CloseGame(void) {
-	if (GameInfo) {
-#ifdef WIN32
-//SP CODE
-		extern char LoadedRomFName[2048];
+static void FCEU_CloseGame(void)
+{
+	if (GameInfo)
+	{
+		if (AutoResumePlay && (GameInfo->type != GIT_NSF))
+		{
+			// save "-resume" savestate
+			FCEUSS_Save(FCEU_MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str());
+		}
 
-		if (storePreferences(LoadedRomFName)) {
+#ifdef WIN32
+		extern char LoadedRomFName[2048];
+		if (storePreferences(LoadedRomFName))
+		{
 			FCEUD_PrintError("Couldn't store debugging data");
 		}
 #endif
@@ -309,19 +318,16 @@ void SetWriteHandler(int32 start, int32 end, writefunc func) {
 			BWrite[x] = func;
 }
 
-uint8 *GameMemBlock;
 uint8 *RAM;
 
 //---------
 //windows might need to allocate these differently, so we have some special code
 
 static void AllocBuffers() {
-	GameMemBlock = (uint8*)FCEU_gmalloc(GAME_MEM_BLOCK_SIZE);
 	RAM = (uint8*)FCEU_gmalloc(0x800);
 }
 
 static void FreeBuffers() {
-	FCEU_free(GameMemBlock);
 	FCEU_free(RAM);
 }
 //------
@@ -376,12 +382,8 @@ int NSFLoad(const char *name, FCEUFILE *fp);
 //char lastLoadedGameName [2048] = {0,}; // hack for movie WRAM clearing on record from poweron
 
 //name should be UTF-8, hopefully, or else there may be trouble
-FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode) {
-	//mbg merge 7/17/07 - why is this here
-	//#ifdef WIN32
-	//	StopSound();
-	//#endif
-
+FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode, bool silent)
+{
 	//----------
 	//attempt to open the files
 	FCEUFILE *fp;
@@ -391,8 +393,10 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode) {
 	const char* romextensions[] = { "nes", "fds", 0 };
 	fp = FCEU_fopen(name, 0, "rb", 0, -1, romextensions);
 
-	if (!fp) {
-		FCEU_PrintError("Error opening \"%s\"!", name);
+	if (!fp)
+	{
+		if (!silent)
+			FCEU_PrintError("Error opening \"%s\"!", name);
 		return 0;
 	}
 
@@ -441,7 +445,8 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode) {
 	if (FDSLoad(name, fp))
 		goto endlseq;
 
-	FCEU_PrintError("An error occurred while loading the file.");
+	if (!silent)
+		FCEU_PrintError("An error occurred while loading the file.");
 	FCEU_fclose(fp);
 
 	delete GameInfo;
@@ -459,7 +464,8 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode) {
 	extern int loadDebugDataFailed;
 
 	if ((loadDebugDataFailed = loadPreferences(LoadedRomFName)))
-		FCEU_printf("Couldn't load debugging data.\n");
+		if (!silent)
+			FCEU_printf("Couldn't load debugging data.\n");
 
 // ################################## End of SP CODE ###########################
 #endif
@@ -484,13 +490,23 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode) {
 	DoDebuggerDataReload(); // Reloads data without reopening window
 #endif
 
+	if (AutoResumePlay && (GameInfo->type != GIT_NSF))
+	{
+		// load "-resume" savestate
+		if (FCEUSS_Load(FCEU_MakeFName(FCEUMKF_RESUMESTATE, 0, 0).c_str()))
+			FCEU_DispMessage("Old play session resumed.", 0);
+		else
+			FCEU_DispMessage("", 0);
+	}
+
 	ResetScreenshotsCounter();
 
 	return GameInfo;
 }
 
-FCEUGI *FCEUI_LoadGame(const char *name, int OverwriteVidMode) {
-	return FCEUI_LoadGameVirtual(name, OverwriteVidMode);
+FCEUGI *FCEUI_LoadGame(const char *name, int OverwriteVidMode, bool silent)
+{
+	return FCEUI_LoadGameVirtual(name, OverwriteVidMode, silent);
 }
 
 
@@ -661,6 +677,7 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	Update_RAM_Search(); // Update_RAM_Watch() is also called.
 	RamChange();
 	//FCEUI_AviVideoUpdate(XBuf);
+
 	extern int KillFCEUXonFrame;
 	if (KillFCEUXonFrame && (FCEUMOV_GetFrame() >= KillFCEUXonFrame))
 		DoFCEUExit();
