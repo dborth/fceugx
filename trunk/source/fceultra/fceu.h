@@ -5,6 +5,9 @@ extern int fceuindbg;
 extern int newppu;
 void ResetGameLoaded(void);
 
+extern bool AutoResumePlay;
+extern char rom_name_when_closing_emulator[];
+
 #define DECLFR(x) uint8 x (uint32 A)
 #define DECLFW(x) void x (uint32 A, uint8 V)
 
@@ -46,7 +49,6 @@ extern uint8 MMC5HackSPPage;
 #define GAME_MEM_BLOCK_SIZE 131072
 
 extern  uint8  *RAM;            //shared memory modifications
-extern  uint8  *GameMemBlock;   //shared memory modifications
 extern int EmulationPaused;
 
 uint8 FCEU_ReadRomByte(uint32 i);

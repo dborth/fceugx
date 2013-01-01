@@ -5,6 +5,7 @@
 	{0x82f204ae,	 -1,		1},	/* Liang Shan Ying Xiong (NJ023) (Ch) [!] */
 	{0x684afccd,	 -1,		1},	/* Space Hunter (J) */
 	{0xad9c63e2,	 -1,		1},	/* Space Shadow (J) */
+	{0xe1526228,	 -1,		1}, /* Quest of Ki */
 	{0xaf5d7aa2,	 -1,		0},	/* Clu Clu Land */
 	{0xcfb224e6,	 -1,		1},	/* Dragon Ninja (J) [p1][!].nes */
 	{0x4f2f1846,	 -1,		1},	/* Famista '89 - Kaimaku Han!! (J) */

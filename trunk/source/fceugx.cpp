@@ -391,7 +391,8 @@ int main(int argc, char *argv[])
 		ExitApp();
 
 	FCEUI_SetGameGenie(1); // 0 - OFF, 1 - ON
-
+	
+	FDSBIOS=(uint8 *)malloc(8192);
 	memset(FDSBIOS, 0, sizeof(FDSBIOS)); // clear FDS BIOS memory
 
 	FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
