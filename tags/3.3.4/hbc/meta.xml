@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<app version="1">
+  <name>FCE Ultra GX</name>
+  <coder>Tantric</coder>
+  <version>3.3.4</version>
+  <release_date>20130112</release_date>
+  <short_description>Nintendo Emulator</short_description>
+  <long_description>A port of FCE Ultra to the Wii.</long_description>
+  <ahb_access />
+</app>
