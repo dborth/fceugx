@@ -36,7 +36,8 @@ BROWSERINFO browser;
 BROWSERENTRY * browserList = NULL; // list of files/folders in browser
 
 static char szpath[MAXPATHLEN];
-static bool inSz = false;
+char szname[MAXPATHLEN];
+bool inSz = false;
 
 char romFilename[256];
 bool loadingFile = false;
@@ -211,6 +212,8 @@ int UpdateDirName()
 	
 			/* remove last subdirectory name */
 			size = strlen(browser.dir) - size - 1;
+			strncpy(GCSettings.LastFileLoaded, &browser.dir[size], strlen(browser.dir) - size - 1); //set as loaded file the previous dir
+			GCSettings.LastFileLoaded[strlen(browser.dir) - size - 1] = 0;
 			browser.dir[size] = 0;
 		}
 
@@ -429,12 +432,11 @@ void StripExt(char* returnstring, char * inputstring)
  ***************************************************************************/
 int BrowserLoadSz()
 {
-	char filepath[MAXPATHLEN];
-	memset(filepath, 0, MAXPATHLEN);
-
-	// we'll store the 7z filepath for extraction later
-	if(!MakeFilePath(szpath, FILE_ROM))
-		return 0;
+	memset(szpath, 0, MAXPATHLEN);
+	strncpy(szpath, browser.dir, strlen(browser.dir) - 1);
+	
+	strncpy(szname, strrchr(szpath, '/') + 1, strrchr(szpath, '.') - strrchr(szpath, '/'));
+	*strrchr(szname, '.') = '\0';
 
 	int szfiles = SzParse(szpath);
 	if(szfiles)
@@ -500,7 +502,7 @@ int BrowserLoadFile()
 	{
 		// store the filename (w/o ext) - used for ram/state naming
 		StripExt(romFilename, browserList[browser.selIndex].filename);
-		strcpy(loadedFile, browserList[browser.selIndex].filename);
+		snprintf(GCSettings.LastFileLoaded, MAXPATHLEN, "%s", browserList[browser.selIndex].filename);
 		
 		// load UPS/IPS/PPF patch
 		filesize = LoadPatch(filesize);
@@ -540,21 +542,31 @@ int BrowserChangeFolder()
 		SzClose();
 	}
 
-	if(!UpdateDirName())
+	if(!UpdateDirName()) 
 		return -1;
 
-	HaltParseThread(); // halt parsing
+	HaltParseThread();
 	CleanupPath(browser.dir);
-	ResetBrowser(); // reset browser
+	ResetBrowser();
 
 	if(browser.dir[0] != 0)
-		ParseDirectory();
+	{
+		if(strstr(browser.dir, ".7z"))
+		{
+			BrowserLoadSz();
+		}
+		else 
+		{
+			ParseDirectory(true, true);
+		}
+		FindAndSelectLastLoadedFile();
+	}
 
 	if(browser.numEntries == 0)
 	{
 		browser.dir[0] = 0;
 		int i=0;
-
+		
 #ifdef HW_RVL
 		AddBrowserEntry();
 		sprintf(browserList[i].filename, "sd:/");
