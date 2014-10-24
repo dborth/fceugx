@@ -124,9 +124,11 @@ preparePrefsData ()
 	createXMLSetting("LoadMethod", "Load Method", toStr(GCSettings.LoadMethod));
 	createXMLSetting("SaveMethod", "Save Method", toStr(GCSettings.SaveMethod));
 	createXMLSetting("LoadFolder", "Load Folder", GCSettings.LoadFolder);
+	createXMLSetting("LastFileLoaded", "Last File Loaded", GCSettings.LastFileLoaded);
 	createXMLSetting("SaveFolder", "Save Folder", GCSettings.SaveFolder);
 	createXMLSetting("CheatFolder", "Cheats Folder", GCSettings.CheatFolder);
 	createXMLSetting("gamegenie", "Game Genie", toStr(GCSettings.gamegenie));
+	createXMLSetting("ScreenshotsFolder", "Screenshots Folder", GCSettings.ScreenshotsFolder);
 
 	createXMLSection("Network", "Network Settings");
 
@@ -296,9 +298,11 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.LoadMethod, "LoadMethod");
 			loadXMLSetting(&GCSettings.SaveMethod, "SaveMethod");
 			loadXMLSetting(GCSettings.LoadFolder, "LoadFolder", sizeof(GCSettings.LoadFolder));
+			loadXMLSetting(GCSettings.LastFileLoaded, "LastFileLoaded", sizeof(GCSettings.LastFileLoaded));
 			loadXMLSetting(GCSettings.SaveFolder, "SaveFolder", sizeof(GCSettings.SaveFolder));
 			loadXMLSetting(GCSettings.CheatFolder, "CheatFolder", sizeof(GCSettings.CheatFolder));
 			loadXMLSetting(&GCSettings.gamegenie, "gamegenie");
+			loadXMLSetting(GCSettings.ScreenshotsFolder, "ScreenshotsFolder", sizeof(GCSettings.ScreenshotsFolder));
 
 			// Network Settings
 
@@ -433,6 +437,7 @@ DefaultSettings ()
 	sprintf (GCSettings.LoadFolder, "%s/roms", APPFOLDER); // Path to game files
 	sprintf (GCSettings.SaveFolder, "%s/saves", APPFOLDER); // Path to save files
 	sprintf (GCSettings.CheatFolder, "%s/cheats", APPFOLDER); // Path to cheat files
+	sprintf (GCSettings.CheatFolder, "%s/screenshots", APPFOLDER); // Path to cheat files
 	GCSettings.AutoLoad = 1; // Auto Load RAM
 	GCSettings.AutoSave = 1; // Auto Save RAM
 }
