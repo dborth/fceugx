@@ -326,13 +326,13 @@ msgid "Japanese"
 msgstr "일본어"
 
 msgid "Justifier"
-msgstr "Justifier건"
+msgstr "광선총"
 
 msgid "Justifier - GameCube Controller"
-msgstr "Justifier건 - 게임큐브 컨트롤러"
+msgstr "광선총 - 게임큐브 컨트롤러"
 
 msgid "Justifier - Wiimote"
-msgstr "Justifier건 - 위모트"
+msgstr "광선총 - 위모트"
 
 msgid "Korean"
 msgstr "한국어"
@@ -455,7 +455,7 @@ msgid "None"
 msgstr "없음"
 
 msgid "NTSC (480i)"
-msgstr ""
+msgstr "NTSC (480i)"
 
 msgid "Nunchuk"
 msgstr "눈챠크"
@@ -488,22 +488,22 @@ msgid "Out of memory: too many files!"
 msgstr 메모리 부족: 너무 많은 파일!"
 
 msgid "P1"
-msgstr ""
+msgstr "1플레이어"
 
 msgid "P2"
-msgstr ""
+msgstr "2플레이어"
 
 msgid "P3"
-msgstr ""
+msgstr "3플레이어"
 
 msgid "P4"
-msgstr ""
+msgstr "4플레이어"
 
 msgid "PAL (50Hz)"
-msgstr ""
+msgstr "PAL (50Hz)"
 
 msgid "PAL (60Hz)"
-msgstr ""
+msgstr "PAL (60Hz)"
 
 msgid "Palette saved"
 msgstr "팔레트 저장"
