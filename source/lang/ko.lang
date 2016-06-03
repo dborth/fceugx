@@ -248,7 +248,7 @@ msgid "GBA Screen Zoom"
 msgstr "GBA 화면 확대"
 
 msgid "Game Genie ROM not found!"
-msgstr "Game Genie ROM을 찾을 수 없습니다!"
+msgstr "게임 지니 ROM을 찾을 수 없습니다!"
 
 msgid "Game Settings"
 msgstr "게임 설정"
@@ -317,7 +317,7 @@ msgid "Invalid save file"
 msgstr "잘못된 저장 파일입니다."
 
 msgid "Invalid state file"
-msgstr "장못된 상태 파일입니다."
+msgstr "잘못된 상태 파일입니다."
 
 msgid "Italian"
 msgstr "이탈리아어"
@@ -530,7 +530,7 @@ msgid "Power off Wii"
 msgstr "Wii 끄기"
 
 msgid "Preferences saved"
-msgstr "환경 설정 자장"
+msgstr "환경 설정 저장"
 
 msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
 msgstr "지금 클래식 컨트롤러의 아무 버튼이나 누릅니다. 홈 버튼을 눌러 기존 매핑을 정리합니다."
@@ -578,7 +578,7 @@ msgid "Reset this game? Any unsaved progress will be lost."
 msgstr "이 게임을 리셋하겠습니까? 저장되지 않는 진행은 손실됩니다."
 
 msgid "Reset Mappings"
-msgstr "맴핑 리셋"
+msgstr "맵핑 리셋"
 
 msgid "Reset Settings"
 msgstr "설정 리셋"
@@ -659,7 +659,7 @@ msgid "Select"
 msgstr "선택"
 
 msgid "Seek error!"
-msgstr "Seek 오류!"
+msgstr "탐색 오류!"
 
 msgid "Settings"
 msgstr "설정"
@@ -683,7 +683,7 @@ msgid "Shift"
 msgstr "시프트"
 
 msgid "Simp_chinese"
-msgstr "간체 중국어語"
+msgstr "간체 중국어"
 
 msgid "SMB Share IP"
 msgstr "SMB 공유 IP"
@@ -872,10 +872,10 @@ msgid "Logo"
 msgstr "로고"
 
 msgid "Turbo On"
-msgstr "터보 켬"
+msgstr "연사 켬"
 
 msgid "Turbo Off"
-msgstr "터보 끔"
+msgstr "연사 끔"
 
 msgid "Automatic"
 msgstr "자동"
@@ -884,7 +884,7 @@ msgid "Palette"
 msgstr "팔레트"
 
 msgid "AspiringSquire's Real palette"
-msgstr "AspiringSquire의 실제 팔레트"
+msgstr "AspiringSquire의 리얼 팔레트"
 
 msgid "Loopy's palette"
 msgstr "Loopy의 팔레트"
@@ -920,7 +920,7 @@ msgid "VS Castlevania palette"
 msgstr "VS 캐슬베니아 팔레트"
 
 msgid "VS SMB/VS Ice Climber palette"
-msgstr "VS SMB/VS 아이스 클라이머 팔레트"
+msgstr "VS SMB/VS아이스 클라이머 팔레트"
 
 msgid "Catalan"
 msgstr "카탈루니아어"
