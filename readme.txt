@@ -10,6 +10,10 @@ FCE Ultra GX is a modified port of the FCE Ultra Nintendo Entertainment
 system for x86 (Windows/Linux) PCs. With it you can play NES games on your 
 Wii/GameCube.
 
+-=[ Releases ]=-
+
+https://github.com/dborth/fceugc/releases
+
 -=[ Features ]=-
 
 * Wiimote, Nunchuk, Classic, and Gamecube controller support
