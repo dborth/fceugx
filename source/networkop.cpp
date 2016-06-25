@@ -51,7 +51,7 @@ void UpdateCheck()
 	updateChecked = true;
 	u8 tmpbuffer[256];
 
-	if (http_request("http://fceugc.googlecode.com/svn/trunk/update.xml", NULL, tmpbuffer, 256, SILENT) <= 0)
+	if (http_request("http://www.wiimc.org/files/fceugx-update.xml", NULL, tmpbuffer, 256, SILENT) <= 0)
 		return;
 
 	mxml_node_t *xml;
