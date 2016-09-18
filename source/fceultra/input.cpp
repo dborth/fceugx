@@ -19,10 +19,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include <string>
-#include <ostream>
-#include <string.h>
-
 #include "types.h"
 #include "x6502.h"
 
@@ -52,7 +48,12 @@
 #include "drivers/win/window.h"
 #include "drivers/win/ntview.h"
 #include "drivers/win/taseditor.h"
-extern bool Taseditor_rewind_now;
+
+#include <string>
+#include <ostream>
+#include <cstring>
+
+extern bool mustRewindNow;
 #endif // WIN32
 
 //it is easier to declare these input drivers extern here than include a bunch of files
@@ -66,6 +67,7 @@ extern INPUTCFC *FCEU_InitArkanoidFC(void);
 extern INPUTCFC *FCEU_InitSpaceShadow(void);
 extern INPUTCFC *FCEU_InitFKB(void);
 extern INPUTCFC *FCEU_InitSuborKB(void);
+extern INPUTCFC *FCEU_InitPEC586KB(void);
 extern INPUTCFC *FCEU_InitHS(void);
 extern INPUTCFC *FCEU_InitMahjong(void);
 extern INPUTCFC *FCEU_InitQuizKing(void);
@@ -74,10 +76,6 @@ extern INPUTCFC *FCEU_InitFamilyTrainerB(void);
 extern INPUTCFC *FCEU_InitOekaKids(void);
 extern INPUTCFC *FCEU_InitTopRider(void);
 extern INPUTCFC *FCEU_InitBarcodeWorld(void);
-
-#ifdef GEKKO
-extern INPUTCFC *FCEU_InitFamicom3D(void);
-#endif
 //---------------
 
 //global lag variables
@@ -91,6 +89,7 @@ extern bool movieSubtitles;
 static uint8 joy_readbit[2];
 uint8 joy[4]={0,0,0,0}; //HACK - should be static but movie needs it
 static uint8 LastStrobe;
+uint8 RawReg4016 = 0; // Joystick strobe (W)
 
 bool replaceP2StartWithMicrophone = false;
 
@@ -170,12 +169,13 @@ static DECLFW(B4016)
 			portFC.driver->Strobe();
 	}
 	LastStrobe=V&0x1;
+	RawReg4016 = V;
 }
 
 //a main joystick port driver representing the case where nothing is plugged in
-static INPUTC DummyJPort={0,0,0,0,0,0};
+static INPUTC DummyJPort={0};
 //and an expansion port driver for the same ting
-static INPUTCFC DummyPortFC={0,0,0,0,0,0};
+static INPUTCFC DummyPortFC={0};
 
 
 //--------4 player driver for expansion port--------
@@ -303,7 +303,7 @@ static void StrobeGP(int w)
 	joy_readbit[w]=0;
 }
 
-//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^6
+//^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 static INPUTC GPC={ReadGP,0,StrobeGP,UpdateGP,0,0,LogGP,LoadGP};
@@ -323,8 +323,9 @@ void FCEU_UpdateInput(void)
 	//tell all drivers to poll input and set up their logical states
 	if(!FCEUMOV_Mode(MOVIEMODE_PLAY))
 	{
-		for(int port=0;port<2;port++)
+		for(int port=0;port<2;port++){
 			joyports[port].driver->Update(port,joyports[port].ptr,joyports[port].attrib);
+        }
 		portFC.driver->Update(portFC.ptr,portFC.attrib);
 	}
 
@@ -337,8 +338,9 @@ void FCEU_UpdateInput(void)
 	FCEUMOV_AddInputState();
 
 	//TODO - should this apply to the movie data? should this be displayed in the input hud?
-	if(GameInfo->type==GIT_VSUNI)
+	if(GameInfo->type==GIT_VSUNI){
 		FCEU_VSUniSwap(&joy[0],&joy[1]);
+    }
 }
 
 static DECLFR(VSUNIRead0)
@@ -375,16 +377,18 @@ void InputScanlineHook(uint8 *bg, uint8 *spr, uint32 linets, int final)
 	portFC.driver->SLHook(bg,spr,linets,final);
 }
 
+#include <iostream>
 //binds JPorts[pad] to the driver specified in JPType[pad]
 static void SetInputStuff(int port)
 {
 	switch(joyports[port].type)
 	{
 	case SI_GAMEPAD:
-		if(GameInfo->type==GIT_VSUNI)
+		if(GameInfo->type==GIT_VSUNI){
 			joyports[port].driver = &GPCVS;
-		else
+        } else {
 			joyports[port].driver= &GPC;
+        }
 		break;
 	case SI_ARKANOID:
 		joyports[port].driver=FCEU_InitArkanoid(port);
@@ -409,11 +413,7 @@ static void SetInputStuffFC()
 	switch(portFC.type)
 	{
 	case SIFC_NONE:
-#ifdef GEKKO
-		portFC.driver=FCEU_InitFamicom3D();
-#else
 		portFC.driver=&DummyPortFC;
-#endif
 		break;
 	case SIFC_ARKANOID:
 		portFC.driver=FCEU_InitArkanoidFC();
@@ -433,6 +433,9 @@ static void SetInputStuffFC()
 		break;
 	case SIFC_SUBORKB:
 		portFC.driver=FCEU_InitSuborKB();
+		break;
+	case SIFC_PEC586KB:
+		portFC.driver=FCEU_InitPEC586KB();
 		break;
 	case SIFC_HYPERSHOT:
 		portFC.driver=FCEU_InitHS();
@@ -584,6 +587,9 @@ void FCEUI_VSUniToggleDIP(int w)
 
 void FCEUI_VSUniCoin(void)
 {
+	if(!FCEU_IsValidUI(FCEUI_INSERT_COIN))
+		return;
+
 	FCEU_QSimpleCommand(FCEUNPCMD_VSUNICOIN);
 }
 
@@ -751,7 +757,7 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_FDS_EJECT_INSERT,				EMUCMDTYPE_FDS,		FCEUI_FDSInsert, 0, 0, "Eject or Insert FDS Disk", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_FDS_SIDE_SELECT,				EMUCMDTYPE_FDS,		FCEUI_FDSSelect, 0, 0, "Switch FDS Disk Side", EMUCMDFLAG_TASEDITOR },
 
-	{ EMUCMD_VSUNI_COIN,					EMUCMDTYPE_VSUNI,	FCEUI_VSUniCoin, 0, 0, "Insert Coin", 0 },
+	{ EMUCMD_VSUNI_COIN,					EMUCMDTYPE_VSUNI,	FCEUI_VSUniCoin, 0, 0, "Insert Coin", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_VSUNI_TOGGLE_DIP_0,			EMUCMDTYPE_VSUNI,	CommandToggleDip, 0, 0, "Toggle Dipswitch 0", 0 },
 	{ EMUCMD_VSUNI_TOGGLE_DIP_1,			EMUCMDTYPE_VSUNI,	CommandToggleDip, 0, 0, "Toggle Dipswitch 1", 0 },
 	{ EMUCMD_VSUNI_TOGGLE_DIP_2,			EMUCMDTYPE_VSUNI,	CommandToggleDip, 0, 0, "Toggle Dipswitch 2", 0 },
@@ -762,7 +768,7 @@ struct EMUCMDTABLE FCEUI_CommandTable[]=
 	{ EMUCMD_VSUNI_TOGGLE_DIP_7,			EMUCMDTYPE_VSUNI,	CommandToggleDip, 0, 0, "Toggle Dipswitch 7", 0 },
 	{ EMUCMD_VSUNI_TOGGLE_DIP_8,			EMUCMDTYPE_VSUNI,	CommandToggleDip, 0, 0, "Toggle Dipswitch 8", 0 },
 	{ EMUCMD_VSUNI_TOGGLE_DIP_9,			EMUCMDTYPE_VSUNI,	CommandToggleDip, 0, 0, "Toggle Dipswitch 9", 0 },
-	{ EMUCMD_MISC_AUTOSAVE,					EMUCMDTYPE_MISC,	FCEUI_Autosave,   0, 0, "Load Last Auto-save", 0},
+	{ EMUCMD_MISC_AUTOSAVE,					EMUCMDTYPE_MISC,	FCEUI_RewindToLastAutosave,   0, 0, "Load Last Auto-save", 0},
 	{ EMUCMD_MISC_SHOWSTATES,				EMUCMDTYPE_MISC,	ViewSlots,        0, 0, "View save slots",    0 },
 	{ EMUCMD_MISC_USE_INPUT_PRESET_1,		EMUCMDTYPE_MISC,	CommandUsePreset, 0, 0, "Use Input Preset 1", EMUCMDFLAG_TASEDITOR },
 	{ EMUCMD_MISC_USE_INPUT_PRESET_2,		EMUCMDTYPE_MISC,	CommandUsePreset, 0, 0, "Use Input Preset 2", EMUCMDFLAG_TASEDITOR },
@@ -861,7 +867,7 @@ static void CommandSelectSaveSlot(void)
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 	{
 #ifdef WIN32
-		Taseditor_EMUCMD(execcmd);
+		handleEmuCmdByTaseditor(execcmd);
 #endif
 	} else
 	{
@@ -879,7 +885,7 @@ static void CommandStateSave(void)
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 	{
 #ifdef WIN32
-		Taseditor_EMUCMD(execcmd);
+		handleEmuCmdByTaseditor(execcmd);
 #endif
 	} else
 	{
@@ -900,7 +906,7 @@ static void CommandStateLoad(void)
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 	{
 #ifdef WIN32
-		Taseditor_EMUCMD(execcmd);
+		handleEmuCmdByTaseditor(execcmd);
 #endif
 	} else
 	{
@@ -963,8 +969,8 @@ void LagCounterToggle(void)
 static void LaunchTasEditor(void)
 {
 #ifdef WIN32
-	extern bool EnterTasEditor();
-	EnterTasEditor();
+	extern bool enterTASEditor();
+	enterTASEditor();
 #endif
 }
 
@@ -1139,7 +1145,7 @@ static void ReloadRom(void)
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
 	{
 		// load most recent project
-		Taseditor_EMUCMD(execcmd);
+		handleEmuCmdByTaseditor(execcmd);
 	} else
 	{
 		// load most recent ROM
@@ -1158,6 +1164,9 @@ static void MovieSubtitleToggle(void)
 
 static void UndoRedoSavestate(void)
 {
+	// FIXME this will always evaluate to true, should this be
+	// if (*lastSavestateMade...) to check if it holds a string or just
+	// a '\0'?
 	if (lastSavestateMade && (undoSS || redoSS))
 		SwapSaveState();
 }
@@ -1188,13 +1197,13 @@ void ToggleFullscreen()
 static void TaseditorRewindOn(void)
 {
 #ifdef WIN32
-	Taseditor_rewind_now = true;
+	mustRewindNow = true;
 #endif
 }
 static void TaseditorRewindOff(void)
 {
 #ifdef WIN32
-	Taseditor_rewind_now = false;
+	mustRewindNow = false;
 #endif
 }
 
@@ -1202,6 +1211,6 @@ static void TaseditorCommand(void)
 {
 #ifdef WIN32
 	if (FCEUMOV_Mode(MOVIEMODE_TASEDITOR))
-		Taseditor_EMUCMD(execcmd);
+		handleEmuCmdByTaseditor(execcmd);
 #endif
 }

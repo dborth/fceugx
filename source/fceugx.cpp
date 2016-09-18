@@ -17,6 +17,7 @@
 #include <ogc/system.h>
 #include <fat.h>
 #include <wiiuse/wpad.h>
+#include <wupc/wupc.h>
 #include <malloc.h>
 #include <sys/iosupport.h>
 
@@ -40,6 +41,9 @@
 #include "filelist.h"
 #include "gui/gui.h"
 #include "utils/FreeTypeGX.h"
+#ifdef USE_VM
+	#include "vmalloc.h"
+#endif
 
 #include "fceultra/types.h"
 
@@ -49,6 +53,9 @@ void FCEUD_UpdateLeft(uint8 *XBuf, int32 *Buffer, int Count);
 void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int Count);
 
 extern "C" {
+#ifdef USE_VM
+	#include "utils/vm/vm.h"
+#endif
 extern void __exception_setreload(int t);
 }
 
@@ -90,6 +97,26 @@ static void ExitCleanup()
 	int *psoid = (int *) 0x80001800;
 	void (*PSOReload) () = (void (*)()) 0x80001800;
 #endif
+
+void ExitToWiiflow()
+{
+	ShutoffRumble();
+	SavePrefs(SILENT);
+	if (romLoaded && !ConfigRequested && GCSettings.AutoSave == 1)
+		SaveRAMAuto(SILENT);
+	ExitCleanup();
+
+	if( !!*(u32*)0x80001800 ) 
+	{
+		// Were we launched via HBC? (or via wiiflows stub replacement? :P)
+		exit(1);
+	}
+	else
+	{
+		// Wii channel support
+		SYS_ResetSystem( SYS_RETURNTOMENU, 0, 0 );
+	}
+}
 
 void ExitApp()
 {
@@ -326,6 +353,10 @@ extern "C" {
 
 int main(int argc, char *argv[])
 {
+	#ifdef USE_VM
+	VM_Init(ARAM_SIZE, MRAM_BACKING);		// Setup Virtual Memory with the entire ARAM
+	#endif
+
 	#ifdef HW_RVL
 	L2Enhance();
 	
@@ -357,6 +388,7 @@ int main(int argc, char *argv[])
 	SYS_SetPowerCallback(ShutdownCB);
 	SYS_SetResetCallback(ResetCB);
 	
+	WUPC_Init();
 	WPAD_Init();
 	WPAD_SetPowerButtonCallback((WPADShutdownCallback)ShutdownCB);
 	DI_Init();
@@ -379,13 +411,20 @@ int main(int argc, char *argv[])
 	DefaultSettings(); // Set defaults
 	InitialiseAudio();
 	InitFreeType((u8*)font_ttf, font_ttf_size); // Initialize font system
+#ifdef USE_VM
+	gameScreenPng = (u8 *)vm_malloc(512*1024);
+#else
 	gameScreenPng = (u8 *)malloc(512*1024);
+#endif
 	browserList = (BROWSERENTRY *)malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
 	InitGUIThreads();
 
 	// allocate memory to store rom
+#ifdef USE_VM
+	nesrom = (unsigned char *)vm_malloc(1024*1024*4); // 4 MB should be plenty
+#else
 	nesrom = (unsigned char *)memalign(32,1024*1024*4); // 4 MB should be plenty
-
+#endif
 	/*** Minimal Emulation Loop ***/
 	if (!FCEUI_Initialize())
 		ExitApp();
@@ -398,18 +437,86 @@ int main(int argc, char *argv[])
 	FCEUI_SetSoundQuality(1); // 0 - low, 1 - high, 2 - high (alt.)
 	int currentTiming = 0;
 
-    while (1) // main loop
-    {
-    	// go back to checking if devices were inserted/removed
+	bool autoboot = false;
+	if(argc > 3 && argv[1] != NULL && argv[2] != NULL && argv[3] != NULL)
+	{
+		autoboot = true;
+		ResetBrowser();
+		LoadPrefs();
+		if(strcasestr(argv[1], "sd:/") != NULL)
+		{
+			GCSettings.SaveMethod = DEVICE_SD;
+			GCSettings.LoadMethod = DEVICE_SD;
+		}
+		else
+		{
+			GCSettings.SaveMethod = DEVICE_USB;
+			GCSettings.LoadMethod = DEVICE_USB;
+		}
+		SavePrefs(SILENT);
+		selectLoadedFile = 1;
+		std::string dir(argv[1]);
+		dir.assign(&dir[dir.find_last_of(":") + 2]);
+		char arg_filename[1024];
+		strncpy(arg_filename, argv[2], sizeof(arg_filename));
+		strncpy(GCSettings.LoadFolder, dir.c_str(), sizeof(GCSettings.LoadFolder));
+		OpenGameList();
+		strncpy(GCSettings.Exit_Dol_File, argv[3], sizeof(GCSettings.Exit_Dol_File));
+		if(argc > 5 && argv[4] != NULL && argv[5] != NULL)
+		{
+			sscanf(argv[4], "%08x", &GCSettings.Exit_Channel[0]);
+			sscanf(argv[5], "%08x", &GCSettings.Exit_Channel[1]);
+		}
+		else
+		{
+			GCSettings.Exit_Channel[0] = 0x00010008;
+			GCSettings.Exit_Channel[1] = 0x57494948;
+		}
+		if(argc > 6 && argv[6] != NULL)
+			strncpy(GCSettings.LoaderName, argv[6], sizeof(GCSettings.LoaderName));
+		else
+			snprintf(GCSettings.LoaderName, sizeof(GCSettings.LoaderName), "WiiFlow");
+		for(int i = 0; i < browser.numEntries; i++)
+		{
+			// Skip it
+			if (strcmp(browserList[i].filename, ".") == 0 || strcmp(browserList[i].filename, "..") == 0)
+				continue;
+			if(strcasestr(browserList[i].filename, arg_filename) != NULL)
+			{
+				browser.selIndex = i;
+				if(IsSz())
+				{
+					BrowserLoadSz();
+					browser.selIndex = 1;
+				}
+				break;
+			}
+		}
+		BrowserLoadFile();
+	}
+
+	while (1) // main loop
+	{
+		// go back to checking if devices were inserted/removed
 		// since we're entering the menu
-    	ResumeDeviceThread();
+		ResumeDeviceThread();
 
 		SwitchAudioMode(1);
 
-		if(!romLoaded)
-			MainMenu(MENU_GAMESELECTION);
+		if(!autoboot)
+		{
+			if(!romLoaded)
+				MainMenu(MENU_GAMESELECTION);
+			else
+				MainMenu(MENU_GAME);
+
+			ConfigRequested = 0;
+			ScreenshotRequested = 0;
+		}
+		else if(romLoaded && autoboot)
+			autoboot = false;
 		else
-			MainMenu(MENU_GAME);
+			ExitApp();
 
 		if(currentTiming != GCSettings.timing)
 		{

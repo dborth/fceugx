@@ -56,7 +56,13 @@ struct iNES_HEADER {
 	uint8 VROM_size;
 	uint8 ROM_type;
 	uint8 ROM_type2;
-	uint8 reserve[8];
+	uint8 ROM_type3;
+	uint8 Upper_ROM_VROM_size;
+	uint8 RAM_size;
+	uint8 VRAM_size;
+	uint8 TV_system;
+	uint8 VS_hardware;
+	uint8 reserved[2];
 
 	void cleanup()
 	{
@@ -107,6 +113,9 @@ void Mapper23_Init(CartInfo *);
 void Mapper24_Init(CartInfo *);
 void Mapper25_Init(CartInfo *);
 void Mapper26_Init(CartInfo *);
+void Mapper28_Init(CartInfo *);
+void Mapper29_Init(CartInfo *);
+void Mapper31_Init(CartInfo *);
 void Mapper32_Init(CartInfo *);
 void Mapper33_Init(CartInfo *);
 void Mapper34_Init(CartInfo *);
@@ -187,6 +196,7 @@ void Mapper154_Init(CartInfo *);
 void Mapper155_Init(CartInfo *);
 void Mapper156_Init(CartInfo *);
 void Mapper157_Init(CartInfo *);
+void Mapper159_Init(CartInfo *);
 void Mapper163_Init(CartInfo *);
 void Mapper164_Init(CartInfo *);
 void Mapper165_Init(CartInfo *);

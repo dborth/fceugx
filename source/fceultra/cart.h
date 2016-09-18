@@ -13,6 +13,12 @@ typedef struct {
 					// that are not really MMC3 but are
 					// set to mapper 4.
 	int battery;	// Presence of an actual battery.
+	int ines2;
+	int submapper;	// Submappers as defined by NES 2.0
+	int wram_size;
+	int battery_wram_size;
+	int vram_size;
+	int battery_vram_size;
 	uint8 MD5[16];
 	uint32 CRC32;	// Should be set by the iNES/UNIF loading
 					// code, used by mapper/board code, maybe
@@ -33,6 +39,9 @@ void SetupCartMirroring(int m, int hard, uint8 *extra);
 DECLFR(CartBROB);
 DECLFR(CartBR);
 DECLFW(CartBW);
+
+extern uint8 PRGram[32];
+extern uint8 CHRram[32];
 
 extern uint8 *PRGptr[32];
 extern uint8 *CHRptr[32];
@@ -86,6 +95,6 @@ extern int geniestage;
 
 void FCEU_GeniePower(void);
 
-void FCEU_OpenGenie(void);
+bool FCEU_OpenGenie(void);
 void FCEU_CloseGenie(void);
 void FCEU_KillGenie(void);

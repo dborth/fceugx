@@ -19,26 +19,26 @@ TARGET		:=	fceugx-gc
 TARGETDIR   :=  executables
 BUILD		:=	build_gc
 SOURCES		:=	source source/images source/sounds source/fonts source/lang \
-				source/gui source/utils source/utils/sz \
+				source/gui source/utils source/utils/unzip source/utils/sz \
 				source/fceultra source/fceultra/boards source/fceultra/input \
-				source/fceultra/utils source/fceultra/mbshare
+				source/fceultra/utils source/fceultra/mbshare source/utils/vm
 INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS		=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNO_SOUND \
+CFLAGS		=	-g -O3 -LTO -Wall $(MACHDEP) $(INCLUDE) \
 				-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
-				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
+				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DUSE_VM \
 				-fomit-frame-pointer \
 				-Wno-unused-parameter -Wno-strict-aliasing -Wno-write-strings
 CXXFLAGS	=	$(CFLAGS)
-LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
+LDFLAGS		=	-g $(MACHDEP) -LTO -Wl,-Map,$(notdir $@).map
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lpng -lmxml -ltinysmb -lbba -lfat -liso9660 -lz -logc -lfreetype
+LIBS	:= -lpng -lmxml -ltinysmb -lbba -lfat -liso9660 -lvorbisidec -lasnd -lz -logc -lfreetype
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -70,6 +70,7 @@ SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 TTFFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.ttf)))
 LANGFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.lang)))
 PNGFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.png)))
+OGGFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.ogg)))
 PCMFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.pcm)))
 
 #---------------------------------------------------------------------------------
@@ -85,7 +86,7 @@ export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(sFILES:.s=.o) $(SFILES:.S=.o) \
 					$(TTFFILES:.ttf=.ttf.o) $(LANGFILES:.lang=.lang.o) \
 					$(PNGFILES:.png=.png.o) \
-					$(PCMFILES:.pcm=.pcm.o)
+					$(OGGFILES:.ogg=.ogg.o) $(PCMFILES:.pcm=.pcm.o) 
 
 #---------------------------------------------------------------------------------
 # build a list of include paths
@@ -136,7 +137,7 @@ $(OUTPUT).dol: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
 
 #---------------------------------------------------------------------------------
-# This rule links in binary data with these extensions: ttf lang png pcm
+# This rule links in binary data with these extensions: ttf lang png ogg pcm
 #---------------------------------------------------------------------------------
 %.ttf.o : %.ttf
 	@echo $(notdir $<)
@@ -149,7 +150,11 @@ $(OUTPUT).elf: $(OFILES)
 %.png.o : %.png
 	@echo $(notdir $<)
 	$(bin2o)
-	
+
+%.ogg.o : %.ogg
+	@echo $(notdir $<)
+	$(bin2o)
+
 %.pcm.o : %.pcm
 	@echo $(notdir $<)
 	$(bin2o)

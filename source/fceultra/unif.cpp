@@ -22,11 +22,6 @@
 /* **INCOMPLETE**             */
 /* Override stuff: CHR RAM instead of CHR ROM,   mirroring. */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-
 #include "types.h"
 #include "fceu.h"
 #include "cart.h"
@@ -39,6 +34,10 @@
 #include "file.h"
 #include "input.h"
 #include "driver.h"
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 typedef struct {
 	char ID[4];
@@ -78,7 +77,7 @@ static uint8 *malloced[32];
 static uint32 mallocedsizes[32];
 
 static int FixRomSize(uint32 size, uint32 minimum) {
-	uint32 x = 1; //mbg merge 7/17/06 made uint
+	uint32 x = 1;
 
 	if (size < minimum)
 		return minimum;
@@ -126,8 +125,9 @@ static void MooMirroring(void) {
 }
 
 static int DoMirroring(FCEUFILE *fp) {
-	uint8 t, i;
-	if(uchead.info == 1) {
+	int t;
+	uint32 i;
+	if (uchead.info == 1) {
 		if ((t = FCEU_fgetc(fp)) == EOF)
 			return(0);
 		mirrortodo = t;
@@ -138,7 +138,7 @@ static int DoMirroring(FCEUFILE *fp) {
 		}
 	} else {
 		FCEU_printf(" Incorrect Mirroring Chunk Size (%d). Data is:", uchead.info);
-		for(i = 0; i < uchead.info; i++) {
+		for (i = 0; i < uchead.info; i++) {
 			if ((t = FCEU_fgetc(fp)) == EOF)
 				return(0);
 			FCEU_printf(" %02x", t);
@@ -196,15 +196,16 @@ static int DINF(FCEUFILE *fp) {
 		char *months[12] = {
 			"January", "February", "March", "April", "May", "June", "July",
 			"August", "September", "October", "November", "December"
-	};
+		};
 		FCEU_printf(" Dumped on: %s %d, %d\n", months[(m - 1) % 12], d, y);
 	}
 	return(1);
 }
 
 static int CTRL(FCEUFILE *fp) {
-	int t, i;
-	if(uchead.info == 1) {
+	int t;
+	uint32 i;
+	if (uchead.info == 1) {
 		if ((t = FCEU_fgetc(fp)) == EOF)
 			return(0);
 		/* The information stored in this byte isn't very helpful, but it's
@@ -219,7 +220,7 @@ static int CTRL(FCEUFILE *fp) {
 			GameInfo->input[1] = SI_ZAPPER;
 	} else {
 		FCEU_printf(" Incorrect Control Chunk Size (%d). Data is:", uchead.info);
-		for(i = 0; i < uchead.info; i++) {
+		for (i = 0; i < uchead.info; i++) {
 			t = FCEU_fgetc(fp);
 			FCEU_printf(" %02x", t);
 		}
@@ -314,10 +315,11 @@ static int LoadCHR(FCEUFILE *fp) {
 	return(1);
 }
 
-#define BMCFLAG_FORCE4 1
-#define BMCFLAG_16KCHRR  2
-#define BMCFLAG_32KCHRR  4
-#define BMCFLAG_EXPCHRR  8
+#define BMCFLAG_FORCE4    0x01
+#define BMCFLAG_16KCHRR   0x02
+#define BMCFLAG_32KCHRR   0x04
+#define BMCFLAG_128KCHRR  0x08
+#define BMCFLAG_256KCHRR  0x10
 
 static BMAPPING bmap[] = {
 	{ "11160", BMC11160_Init, 0 },
@@ -349,7 +351,7 @@ static BMAPPING bmap[] = {
 	{ "CNROM", CNROM_Init, 0 },
 	{ "CPROM", CPROM_Init, BMCFLAG_16KCHRR },
 	{ "D1038", BMCD1038_Init, 0 },
-	{ "DANCE", UNLOneBus_Init, 0 }, // redundant
+	{ "DANCE", UNLOneBus_Init, 0 },	// redundant
 	{ "DANCE2000", UNLD2000_Init, 0 },
 	{ "DREAMTECH01", DreamTech01_Init, 0 },
 	{ "EDU2000", UNLEDU2000_Init, 0 },
@@ -357,8 +359,8 @@ static BMAPPING bmap[] = {
 	{ "ELROM", ELROM_Init, 0 },
 	{ "ETROM", ETROM_Init, 0 },
 	{ "EWROM", EWROM_Init, 0 },
-	{ "FK23C", BMCFK23C_Init, BMCFLAG_EXPCHRR },
-	{ "FK23CA", BMCFK23CA_Init, BMCFLAG_EXPCHRR },
+	{ "FK23C", BMCFK23C_Init, BMCFLAG_256KCHRR },
+	{ "FK23CA", BMCFK23CA_Init, BMCFLAG_256KCHRR },
 	{ "FS304", UNLFS304_Init, 0 },
 	{ "G-146", BMCG146_Init, 0 },
 	{ "GK-192", BMCGK192_Init, 0 },
@@ -369,6 +371,7 @@ static BMAPPING bmap[] = {
 	{ "HKROM", HKROM_Init, 0 },
 	{ "KOF97", UNLKOF97_Init, 0 },
 	{ "KONAMI-QTAI", Mapper190_Init, 0 },
+	{ "KS7010", UNLKS7010_Init, 0 },
 	{ "KS7012", UNLKS7012_Init, 0 },
 	{ "KS7013B", UNLKS7013B_Init, 0 },
 	{ "KS7017", UNLKS7017_Init, 0 },
@@ -381,6 +384,7 @@ static BMAPPING bmap[] = {
 	{ "LH10", LH10_Init, 0 },
 	{ "LH32", LH32_Init, 0 },
 	{ "LH53", LH53_Init, 0 },
+	{ "MALISB", UNLMaliSB_Init, 0 },
 	{ "MARIO1-MALEE2", MALEE_Init, 0 },
 	{ "MHROM", MHROM_Init, 0 },
 	{ "N625092", UNLN625092_Init, 0 },
@@ -392,6 +396,7 @@ static BMAPPING bmap[] = {
 	{ "NovelDiamond9999999in1", Novel_Init, 0 },
 	{ "OneBus", UNLOneBus_Init, 0 },
 	{ "PEC-586", UNLPEC586Init, 0 },
+	{ "RET-CUFROM", Mapper29_Init, BMCFLAG_32KCHRR },
 	{ "RROM", NROM_Init, 0 },
 	{ "RROM-128", NROM_Init, 0 },
 	{ "SA-002", TCU02_Init, 0 },
@@ -419,9 +424,9 @@ static BMAPPING bmap[] = {
 	{ "SNROM", SNROM_Init, 0 },
 	{ "SOROM", SOROM_Init, 0 },
 	{ "SSS-NROM-256", SSSNROM_Init, 0 },
-	{ "SUNSOFT_UNROM", SUNSOFT_UNROM_Init, 0 }, // fix me, real pcb name, real pcb type
+	{ "SUNSOFT_UNROM", SUNSOFT_UNROM_Init, 0 },	// fix me, real pcb name, real pcb type
 	{ "Sachen-74LS374N", S74LS374N_Init, 0 },
-	{ "Sachen-74LS374NA", S74LS374NA_Init, 0 }, //seems to be custom mapper
+	{ "Sachen-74LS374NA", S74LS374NA_Init, 0 },	//seems to be custom mapper
 	{ "Sachen-8259A", S8259A_Init, 0 },
 	{ "Sachen-8259B", S8259B_Init, 0 },
 	{ "Sachen-8259C", S8259C_Init, 0 },
@@ -449,9 +454,14 @@ static BMAPPING bmap[] = {
 	{ "TVROM", TLROM_Init, BMCFLAG_FORCE4 },
 	{ "Transformer", Transformer_Init, 0 },
 	{ "UNROM", UNROM_Init, 0 },
+	{ "UNROM-512-8", UNROM512_Init, 0 },
+	{ "UNROM-512-16", UNROM512_Init, BMCFLAG_16KCHRR },
+	{ "UNROM-512-32", UNROM512_Init, BMCFLAG_32KCHRR },
 	{ "UOROM", UNROM_Init, 0 },
 	{ "VRC7", UNLVRC7_Init, 0 },
 	{ "YOKO", UNLYOKO_Init, 0 },
+	{ "SB-2000", UNLSB2000_Init, 0 },
+	{ "COOLBOY", COOLBOY_Init, BMCFLAG_256KCHRR },
 
 	{ 0, 0, 0 }
 };
@@ -507,13 +517,16 @@ static int InitializeBoard(void) {
 		if (!strcmp((char*)sboardname, (char*)bmap[x].name)) {
 			if (!malloced[16]) {
 				if (bmap[x].flags & BMCFLAG_16KCHRR)
-					CHRRAMSize = 16384;
+					CHRRAMSize = 16;
 				else if (bmap[x].flags & BMCFLAG_32KCHRR)
-					CHRRAMSize = 32768;
-				else if (bmap[x].flags & BMCFLAG_EXPCHRR)
-					CHRRAMSize = 128 * 1024;
+					CHRRAMSize = 32;
+				else if (bmap[x].flags & BMCFLAG_128KCHRR)
+					CHRRAMSize = 128;
+				else if (bmap[x].flags & BMCFLAG_256KCHRR)
+					CHRRAMSize = 256;
 				else
-					CHRRAMSize = 8192;
+					CHRRAMSize = 8;
+                CHRRAMSize <<= 10;
 				if ((UNIFchrrama = (uint8*)FCEU_malloc(CHRRAMSize))) {
 					SetupCartCHRMapping(0, UNIFchrrama, CHRRAMSize, 1);
 					AddExState(UNIFchrrama, CHRRAMSize, 0, "CHRR");

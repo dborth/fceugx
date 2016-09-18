@@ -25,22 +25,22 @@ THE SOFTWARE.
 #ifndef EMUFILE_H
 #define EMUFILE_H
 
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include <vector>
-#include <algorithm>
-#include <string>
-#include <stdarg.h>
 #ifdef GEKKO
 #include <malloc.h>
 #endif
-
 #include "emufile_types.h"
 
 #ifdef _MSC_VER
 #include <io.h>
 #endif
+
+#include <cassert>
+#include <cstdio>
+#include <cstring>
+#include <cstdarg>
+#include <vector>
+#include <algorithm>
+#include <string>
 
 class EMUFILE {
 protected:

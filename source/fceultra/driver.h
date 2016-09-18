@@ -1,13 +1,13 @@
 #ifndef __DRIVER_H_
 #define __DRIVER_H_
 
-#include <stdio.h>
-#include <string>
-#include <iosfwd>
-
 #include "types.h"
 #include "git.h"
 #include "file.h"
+
+#include <cstdio>
+#include <cstring>
+#include <iosfwd>
 
 FILE *FCEUD_UTF8fopen(const char *fn, const char *mode);
 inline FILE *FCEUD_UTF8fopen(const std::string &n, const char *mode) { return FCEUD_UTF8fopen(n.c_str(),mode); }
@@ -120,6 +120,10 @@ void FCEUI_SetGameGenie(bool a);
 //Set video system a=0 NTSC, a=1 PAL
 void FCEUI_SetVidSystem(int a);
 
+//Set variables for NTSC(0) / PAL(1) / Dendy(2)
+//Dendy has PAL framerate and resolution, but ~NTSC timings, and has 50 dummy scanlines to force 50 fps
+void FCEUI_SetRegion(int region);
+
 //Convenience function; returns currently emulated video system(0=NTSC, 1=PAL).
 int FCEUI_GetCurrentVidSystem(int *slstart, int *slend);
 
@@ -161,8 +165,8 @@ int FCEUI_SelectState(int, int);
 extern void FCEUI_SelectStateNext(int);
 
 //"fname" overrides the default save state filename code if non-NULL.
-void FCEUI_SaveState(const char *fname);
-void FCEUI_LoadState(const char *fname);
+void FCEUI_SaveState(const char *fname, bool display_message=true);
+void FCEUI_LoadState(const char *fname, bool display_message=true);
 
 void FCEUD_SaveStateAs(void);
 void FCEUD_LoadStateFrom(void);
@@ -229,7 +233,6 @@ void FCEUI_GetIVectors(uint16 *reset, uint16 *irq, uint16 *nmi);
 
 uint32 FCEUI_CRC32(uint32 crc, uint8 *buf, uint32 len);
 
-void FCEUI_ToggleTileView(void);
 void FCEUI_SetLowPass(int q);
 
 void FCEUI_NSFSetVis(int mode);
@@ -336,7 +339,7 @@ enum EFCEUI
 	FCEUI_STOPMOVIE, FCEUI_RECORDMOVIE, FCEUI_PLAYMOVIE,
 	FCEUI_OPENGAME, FCEUI_CLOSEGAME,
 	FCEUI_TASEDITOR,
-	FCEUI_RESET, FCEUI_POWER, FCEUI_PLAYFROMBEGINNING, FCEUI_EJECT_DISK, FCEUI_SWITCH_DISK
+	FCEUI_RESET, FCEUI_POWER, FCEUI_PLAYFROMBEGINNING, FCEUI_EJECT_DISK, FCEUI_SWITCH_DISK, FCEUI_INSERT_COIN
 };
 
 //checks whether an EFCEUI is valid right now

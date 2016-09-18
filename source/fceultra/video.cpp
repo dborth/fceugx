@@ -18,16 +18,6 @@
 * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#ifndef WIN32
-#include <stdint.h>
-#endif
-
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <zlib.h>
-
 #include "types.h"
 #include "video.h"
 #include "fceu.h"
@@ -54,6 +44,17 @@
 #ifdef CREATE_AVI
 #include "drivers/videolog/nesvideos-piece.h"
 #endif
+
+//no stdint in win32 (but we could add it if we needed to)
+#ifndef WIN32
+#include <stdint.h>
+#endif
+
+#include <cstring>
+#include <cstdio>
+#include <cstdlib>
+#include <cstdarg>
+#include <zlib.h>
 
 uint8 *XBuf=NULL;
 uint8 *XBackBuf=NULL;
@@ -169,7 +170,7 @@ void FCEU_PutImage(void)
 	{
 		char nameo[512];
 		strcpy(nameo,FCEUI_GetSnapshotAsName().c_str());
-		if (nameo)
+		if (nameo[0])
 		{
 			SaveSnapshot(nameo);
 			FCEU_DispMessage("Snapshot Saved.",0);
@@ -179,6 +180,10 @@ void FCEU_PutImage(void)
 	if(GameInfo->type==GIT_NSF)
 	{
 		DrawNSF(XBuf);
+
+#ifdef _S9XLUA_H
+		FCEU_LuaGui(XBuf);
+#endif
 
 		//Save snapshot after NSF screen is drawn.  Why would we want to do it before?
 		if(dosnapsave==1)
@@ -443,7 +448,6 @@ void FCEU_DispMessageOnMovie(char *format, ...)
 
 void FCEU_DispMessage(char *format, int disppos=0, ...)
 {
-#ifndef GEKKO
 	va_list ap;
 
 	va_start(ap,disppos);
@@ -473,7 +477,6 @@ void FCEU_DispMessage(char *format, int disppos=0, ...)
 			guiMessage.howlong = 0;
 	}
 	#endif
-#endif
 }
 
 void FCEU_ResetMessages()
