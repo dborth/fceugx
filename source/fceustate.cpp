@@ -112,3 +112,22 @@ LoadStateAuto (bool silent)
 
 	return LoadState(filepath, silent);
 }
+
+bool SavePreviewImg (char * filepath, bool silent)
+{
+	int device;
+	
+	if(!FindDevice(filepath, &device))
+		return 0;
+
+	if(gameScreenPngSize > 0)
+	{
+		char screenpath[1024];
+		strncpy(screenpath, filepath, 1024);
+		screenpath[strlen(screenpath)] = 0;
+		sprintf(screenpath, "%s.png", screenpath);
+		SaveFile((char *)gameScreenPng, screenpath, gameScreenPngSize, silent);
+	}
+	
+	return 1;
+}

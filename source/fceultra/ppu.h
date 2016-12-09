@@ -10,14 +10,16 @@ extern void (*PPU_hook)(uint32 A);
 extern void (*GameHBIRQHook)(void), (*GameHBIRQHook2)(void);
 
 /* For cart.c and banksw.h, mostly */
-extern uint8 NTARAM[0x800],*vnapage[4];
+extern uint8 NTARAM[0x800], *vnapage[4];
 extern uint8 PPUNTARAM;
 extern uint8 PPUCHRRAM;
 
 void FCEUPPU_SaveState(void);
 void FCEUPPU_LoadState(int version);
+uint32 FCEUPPU_PeekAddress();
 uint8* FCEUPPU_GetCHR(uint32 vadr, uint32 refreshaddr);
 void ppu_getScroll(int &xpos, int &ypos);
+
 
 
 #ifdef _MSC_VER

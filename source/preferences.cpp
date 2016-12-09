@@ -159,6 +159,8 @@ preparePrefsData ()
 	createXMLSetting("SFXVolume", "Sound Effects Volume", toStr(GCSettings.SFXVolume));
 	createXMLSetting("Rumble", "Rumble", toStr(GCSettings.Rumble));
 	createXMLSetting("language", "Language", toStr(GCSettings.language));
+	createXMLSetting("DisplayMemory", "Display Virtual Memory", toStr(GCSettings.DisplayVM));
+	
 
 	createXMLSection("Controller", "Controller Settings");
 
@@ -333,7 +335,8 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.SFXVolume, "SFXVolume");
 			loadXMLSetting(&GCSettings.Rumble, "Rumble");
 			loadXMLSetting(&GCSettings.language, "language");
-
+			loadXMLSetting(&GCSettings.DisplayVM, "DisplayMemory");
+			
 			// Controller Settings
 
 			loadXMLSetting(&GCSettings.Controller, "Controller");
@@ -398,13 +401,13 @@ DefaultSettings ()
 	memset (&GCSettings, 0, sizeof (GCSettings));
 	ResetControls(); // controller button mappings
 
-	GCSettings.currpal = 1; // color palette
+	GCSettings.currpal = 0; // color palette
 	GCSettings.timing = 2; // 0 - NTSC, 1 - PAL, 2 - Automatic
 	GCSettings.videomode = 0; // automatic video mode detection
 	GCSettings.Controller = CTRL_PAD2; // NES pad, Four Score, Zapper
 	GCSettings.crosshair = 1; // show zapper crosshair
 	GCSettings.spritelimit = 1; // enforce 8 sprite limit
-	GCSettings.gamegenie = 1;
+	GCSettings.gamegenie = 0; // Off
 
 	GCSettings.render = 2; // Unfiltered
 	GCSettings.hideoverscan = 2; // hide both horizontal and vertical
@@ -420,6 +423,7 @@ DefaultSettings ()
 	GCSettings.MusicVolume = 40;
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1;
+	GCSettings.DisplayVM = 1;
 #ifdef HW_RVL
 	GCSettings.language = CONF_GetLanguage();
 	
@@ -437,7 +441,7 @@ DefaultSettings ()
 	sprintf (GCSettings.LoadFolder, "%s/roms", APPFOLDER); // Path to game files
 	sprintf (GCSettings.SaveFolder, "%s/saves", APPFOLDER); // Path to save files
 	sprintf (GCSettings.CheatFolder, "%s/cheats", APPFOLDER); // Path to cheat files
-	sprintf (GCSettings.CheatFolder, "%s/screenshots", APPFOLDER); // Path to cheat files
+	sprintf (GCSettings.ScreenshotsFolder, "%s/screenshots", APPFOLDER); // Path to screenshots files
 	GCSettings.AutoLoad = 1; // Auto Load RAM
 	GCSettings.AutoSave = 1; // Auto Save RAM
 }

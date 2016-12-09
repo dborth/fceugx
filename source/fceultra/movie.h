@@ -1,15 +1,15 @@
 #ifndef __MOVIE_H_
 #define __MOVIE_H_
 
+#include "input/zapper.h"
+#include "utils/guid.h"
+#include "utils/md5.h"
+
 #include <vector>
 #include <map>
 #include <string>
 #include <ostream>
-#include <stdlib.h>
-
-#include "input/zapper.h"
-#include "utils/guid.h"
-#include "utils/md5.h"
+#include <cstdlib>
 
 struct FCEUFILE;
 
@@ -67,7 +67,8 @@ enum EMOVIECMD
 	MOVIECMD_RESET = 1,
 	MOVIECMD_POWER = 2,
 	MOVIECMD_FDS_INSERT = 4,
-	MOVIECMD_FDS_SELECT = 8
+	MOVIECMD_FDS_SELECT = 8,
+	MOVIECMD_VS_INSERTCOIN = 16
 };
 
 EMOVIEMODE FCEUMOV_Mode();
@@ -88,6 +89,7 @@ int FCEUMOV_WriteState(EMUFILE* os);
 bool FCEUMOV_ReadState(EMUFILE* is, uint32 size);
 void FCEUMOV_PreLoad();
 bool FCEUMOV_PostLoad();
+void FCEUMOV_IncrementRerecordCount();
 
 bool FCEUMOV_FromPoweron();
 
@@ -111,10 +113,11 @@ public:
 	//small now to save space; we might need to support more commands later.
 	//the disk format will support up to 64bit if necessary
 	uint8 commands;
-	bool command_reset() { return (commands&MOVIECMD_RESET)!=0; }
-	bool command_power() { return (commands&MOVIECMD_POWER)!=0; }
-	bool command_fds_insert() { return (commands&MOVIECMD_FDS_INSERT)!=0; }
-	bool command_fds_select() { return (commands&MOVIECMD_FDS_SELECT)!=0; }
+	bool command_reset() { return (commands & MOVIECMD_RESET) != 0; }
+	bool command_power() { return (commands & MOVIECMD_POWER) != 0; }
+	bool command_fds_insert() { return (commands & MOVIECMD_FDS_INSERT) != 0; }
+	bool command_fds_select() { return (commands & MOVIECMD_FDS_SELECT) != 0; }
+	bool command_vs_insertcoin() { return (commands & MOVIECMD_VS_INSERTCOIN) != 0; }
 
 	void toggleBit(int joy, int bit)
 	{

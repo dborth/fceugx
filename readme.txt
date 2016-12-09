@@ -16,7 +16,7 @@ https://github.com/dborth/fceugc/releases
 
 -=[ Features ]=-
 
-* Wiimote, Nunchuk, Classic, and Gamecube controller support
+* Wiimote, Nunchuk, Classic, Wii U Pro and Gamecube controller support
 * iNES, FDS, VS, UNIF, and NSF ROM support
 * 1-4 Player Support
 * Zapper support
@@ -30,12 +30,49 @@ https://github.com/dborth/fceugc/releases
 * Cheat support (.CHT files and Game Genie)
 * Famicom 3D System support
 * IPS/UPS automatic patching support
-* NES Compatibility Based on FCEUX 2.2.0+ (r2818)
+* NES Compatibility Based on FCEUX 2.2.0+ (r2951)
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.3.7 -  Apr 18, 2016]
+
+* Added both Firebrandx NES color palettes (thanks to SuperrSonic and Asho).
+* Added Nestopia's RGB palette (thanks to SuperrSonic and ShadowOne333).
+* Added a new window when selecting a color palette (in order to avoid cycling the color palettes one by one).
+* Reverted FDS file in order to fix Disk System support (thanks to Burnt Lasagna) (Support was broken on ver 3.3.5 MOD).
+* Added option to disable / enable the Virtual Memory messages on the settings menu.
+* Removed the "Reset" and "Power On" messages when loading and reseting a game (Messages were added on ver 3.3.5 MOD).
+
+[3.3.6 -  Apr 12, 2015]
+
+* Merged Emu_kidid's 3.3.5 mod version with Zopenko's 3.3.4 mod version.
+* Added SuperrSonic's 3DS Virtual Console palette.
+* Changed the savestate cursor box color (in order to match the emu's color design).
+
+[3.3.5 MOD -  Apr 22, 2015]
+
+* Merged in changes from FCEUX (up to r2951)
+* Added tueidj's TLB VM (w/ ARAM storage) for ROM and other data storage
+* Enabled menu audio
+* Less out of memory crashes
+* Free memory displayed on in game menu
+
+[3.3.4 MOD -  Apr 12, 2015]
+
+* Added Cebolleto's preview image support.
+* Added FIX94's WiiUPro controller support.
+* Added SuperrSonic's Wii Virtual Console Palette.
+* Increase preview image size and reduce game list width.
+* Added a background to the preview image.
+* Added a Screenshot button (under the game settings options, the video scaling option must be set to default otherwise screenshot looks smaller and with black borders around it, also screenshot folder must already exist otherwise a folder error will popup).
+* Added a "WiiuPro" button on the button mapping menu, the options is just for completeness, since the controller mappings are shared between the wiiupro and the classic controller.
+* Fixed the inverted color button selection that was in some option Windows.
+* On the cheat menu, increased the cheat name display size and added scrolling if the name is too long to display at once.
+* Fixed cover image dimensions, now it displays screenshot and cover within the background border.
+* Fixed screenshot option, it no longer creates an additional "dummy" file.
 
 [3.3.4 - January 12, 2013]
 

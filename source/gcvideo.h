@@ -13,7 +13,7 @@
 #define _GCVIDEO_H_
 
 // color palettes
-#define MAXPAL 13
+#define MAXPAL 18
 
 struct st_palettes {
     char name[32], desc[32];

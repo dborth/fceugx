@@ -16,8 +16,8 @@ include $(DEVKITPPC)/wii_rules
 # INCLUDES is a list of directories containing extra header files
 #---------------------------------------------------------------------------------
 TARGET		:=	fceugx-wii
-TARGETDIR   :=  executables
-BUILD		:=	build_wii
+TARGETDIR	:=  executables
+BUILD			:=	build_wii
 SOURCES		:=	source source/images source/sounds source/fonts source/lang \
 				source/gui source/utils source/utils/sz source/utils/unzip \
 				source/fceultra source/fceultra/boards source/fceultra/input \
@@ -27,19 +27,19 @@ INCLUDES	:=	source
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS		=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) \
+CFLAGS		=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) -DNO_SOUND \
 				-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 				-fomit-frame-pointer \
 				-Wno-unused-parameter -Wno-strict-aliasing -Wno-write-strings
 CXXFLAGS	=	$(CFLAGS)
-LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
+LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map,-wrap,wiiuse_register
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
 LIBS	:=	-ldi -liso9660 -lpng -lmxml \
-			-lfat -lwiiuse -lz -lbte -lasnd -logc -lvorbisidec -lfreetype -ltinysmb
+			-lfat -lwiiuse -lwupc -lz -lbte -lasnd -logc -lvorbisidec -lfreetype -ltinysmb
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

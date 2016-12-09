@@ -19,10 +19,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "types.h"
 #include "x6502.h"
 #include "fceu.h"
@@ -42,10 +38,14 @@
 #include "vsuni.h"
 #include "driver.h"
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
 extern SFORMAT FCEUVSUNI_STATEINFO[];
 
 //mbg merge 6/29/06 - these need to be global
-uint8 *trainerpoo = 0;
+uint8 *trainerpoo = NULL;
 uint8 *ROM = NULL;
 uint8 *VROM = NULL;
 uint8 *ExtraNTARAM = NULL;
@@ -66,6 +66,8 @@ static int CHRRAMSize = -1;
 static int iNES_Init(int num);
 
 static int MapperNo = 0;
+
+static int iNES2 = 0;
 
 static DECLFR(TrainerRead) {
 	return(trainerpoo[A & 0x1FF]);
@@ -105,9 +107,7 @@ void iNESGI(GI h) { //bbit edited: removed static keyword
 		break;
 	case GI_CLOSE:
 	{
-		#ifndef GEKKO
 		FCEU_SaveGameSave(&iNESCart);
-		#endif
 		if (iNESCart.Close)
 			iNESCart.Close();
 		if (ROM) {
@@ -239,7 +239,6 @@ struct BADINF {
 	char *name;
 	uint32 type;
 };
-
 
 static struct BADINF BadROMImages[] =
 {
@@ -442,7 +441,7 @@ typedef struct {
 //size
 static int not_power2[] =
 {
-	198, 228
+	53, 198, 228
 };
 typedef struct {
 	char *name;
@@ -465,9 +464,9 @@ static BMAPPINGLocal bmap[] = {
 	{"Color Dreams",		 11, Mapper11_Init},
 	{"REX DBZ 5",			 12, Mapper12_Init},
 	{"CPROM",				 13, CPROM_Init},
-//	{"",					 14, Mapper14_Init},
+	{"REX SL-1632",			 14, UNLSL1632_Init},
 	{"100-in-1",			 15, Mapper15_Init},
-	{"Bandai",				 16, Mapper16_Init},
+	{"BANDAI 24C02",		 16, Mapper16_Init},
 	{"FFE Rev. B",			 17, Mapper17_Init},
 	{"JALECO SS880006",		 18, Mapper18_Init},	// JF-NNX (EB89018-30007) boards
 	{"Namcot 106",			 19, Mapper19_Init},
@@ -478,11 +477,11 @@ static BMAPPINGLocal bmap[] = {
 	{"Konami VRC6 Rev. A",	 24, Mapper24_Init},
 	{"Konami VRC2/VRC4 D",	 25, Mapper25_Init},
 	{"Konami VRC6 Rev. B",	 26, Mapper26_Init},
-//	{"",					 27, Mapper27_Init},	// Deprecated, dupe for VRC2/VRC4 mapper
-//	{"",					 28, Mapper28_Init},
-//	{"",					 29, Mapper29_Init},
-//	{"",					 30, Mapper30_Init},
-//	{"",					 31, Mapper31_Init},
+	{"CC-21 MI HUN CHE",	 27, UNLCC21_Init},		// Former dupe for VRC2/VRC4 mapper, redefined with crc to mihunche boards
+	{"",					 28, Mapper28_Init},
+	{"RET-CUFROM",			 29, Mapper29_Init},
+	{"UNROM 512",			 30, UNROM512_Init},
+	{"infiniteneslives-NSF", 31, Mapper31_Init},
 	{"IREM G-101",			 32, Mapper32_Init},
 	{"TC0190FMC/TC0350FMR",	 33, Mapper33_Init},
 	{"IREM I-IM/BNROM",		 34, Mapper34_Init},
@@ -504,7 +503,7 @@ static BMAPPINGLocal bmap[] = {
 	{"SMB2j FDS Rev. A",	 50, Mapper50_Init},
 	{"11-in-1 BALL SERIES",	 51, Mapper51_Init},	// 1993 year version
 	{"MMC3 BMC PIRATE D",	 52, Mapper52_Init},
-//	{"",					 53, Mapper53_Init},	// iNES version of complex UNIF board, can't emulate properly as iNES
+	{"SUPERVISION 16-in-1",	 53, Supervision16_Init},
 //	{"",					 54, Mapper54_Init},
 //	{"",					 55, Mapper55_Init},
 //	{"",					 56, Mapper56_Init},
@@ -517,7 +516,7 @@ static BMAPPINGLocal bmap[] = {
 //	{"",					 63, Mapper63_Init},
 	{"TENGEN RAMBO1",		 64, Mapper64_Init},
 	{"IREM-H3001",			 65, Mapper65_Init},
-	{"MHOM",				 66, MHROM_Init},
+	{"MHROM",				 66, MHROM_Init},
 	{"SUNSOFT-FZII",		 67, Mapper67_Init},
 	{"Sunsoft Mapper #4",	 68, Mapper68_Init},
 	{"SUNSOFT-5/FME-7",		 69, Mapper69_Init},
@@ -540,11 +539,11 @@ static BMAPPINGLocal bmap[] = {
 	{"JALECO JF-13",		 86, Mapper86_Init},
 	{"74*139/74 DISCRETE",	 87, Mapper87_Init},
 	{"NAMCO 3433",			 88, Mapper88_Init},
-	{"SUNSOFT-3",			 89, Mapper89_Init},		// SUNSOFT-2 mapper
+	{"SUNSOFT-3",			 89, Mapper89_Init},	// SUNSOFT-2 mapper
 	{"HUMMER/JY BOARD",		 90, Mapper90_Init},
 	{"EARLY HUMMER/JY BOARD",91, Mapper91_Init},
 	{"JALECO JF-19",		 92, Mapper92_Init},
-	{"SUNSOFT-3R",			 93, SUNSOFT_UNROM_Init},	// SUNSOFT-2 mapper with VRAM, different wiring
+	{"SUNSOFT-3R",			 93, SUNSOFT_UNROM_Init},// SUNSOFT-2 mapper with VRAM, different wiring
 	{"HVC-UN1ROM",			 94, Mapper94_Init},
 	{"NAMCOT 108 Rev. B",	 95, Mapper95_Init},
 	{"BANDAI OEKAKIDS",		 96, Mapper96_Init},
@@ -604,13 +603,13 @@ static BMAPPINGLocal bmap[] = {
 	{"S74LS374N",			150, S74LS374N_Init},
 	{"",					151, Mapper151_Init},
 	{"",					152, Mapper152_Init},
-	{"",					153, Mapper153_Init},
+	{"BANDAI SRAM",			153, Mapper153_Init},	// Bandai board 16 with SRAM instead of EEPROM
 	{"",					154, Mapper154_Init},
 	{"",					155, Mapper155_Init},
 	{"",					156, Mapper156_Init},
-	{"",					157, Mapper157_Init},
+	{"BANDAI BARCODE",		157, Mapper157_Init},
 //	{"",					158, Mapper158_Init},
-//	{"",					159, Mapper159_Init},
+	{"BANDAI 24C01",		159, Mapper159_Init},	// Different type of EEPROM on the  bandai board
 	{"SA009",				160, SA009_Init},
 //	{"",					161, Mapper161_Init},
 	{"",					162, UNLFS304_Init},
@@ -627,7 +626,7 @@ static BMAPPINGLocal bmap[] = {
 	{"",					173, Mapper173_Init},
 //	{"",					174, Mapper174_Init},
 	{"",					175, Mapper175_Init},
-	{"BMCFK23C",			176, BMCFK23C_Init},	//zero 26-may-2012 - well, i have some WXN junk games that use 176 for instance ????. i dont know what game uses this BMCFK23C as mapper 176. we'll have to make a note when we find it.
+	{"BMCFK23C",			176, BMCFK23C_Init},	// zero 26-may-2012 - well, i have some WXN junk games that use 176 for instance ????. i dont know what game uses this BMCFK23C as mapper 176. we'll have to make a note when we find it.
 	{"",					177, Mapper177_Init},
 	{"",					178, Mapper178_Init},
 //	{"",					179, Mapper179_Init},
@@ -707,6 +706,11 @@ static BMAPPINGLocal bmap[] = {
 	{"DRAGON BALL PIRATE",	253, Mapper253_Init},
 	{"",					254, Mapper254_Init},
 //	{"",					255, Mapper255_Init},	// No good dumps for this mapper
+
+//-------- Mappers 256-511 is the Supplementary Multilingual Plane ----------
+//-------- Mappers 512-767 is the Supplementary Ideographic Plane -----------
+//-------- Mappers 3840-4095 are for rom dumps not publicly released --------
+
 	{"",					0, NULL}
 };
 
@@ -723,16 +727,35 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 
 	memset(&iNESCart, 0, sizeof(iNESCart));
 
+	iNES2 = ((head.ROM_type2 & 0x0C) == 0x08);
+	if(iNES2)
+	{
+		iNESCart.ines2 = true;
+		iNESCart.wram_size = (head.RAM_size & 0x0F)?(64 << (head.RAM_size & 0x0F)):0;
+		iNESCart.battery_wram_size = (head.RAM_size & 0xF0)?(64 << ((head.RAM_size & 0xF0)>>4)):0;
+		iNESCart.vram_size = (head.VRAM_size & 0x0F)?(64 << (head.VRAM_size & 0x0F)):0;
+		iNESCart.battery_vram_size = (head.VRAM_size & 0xF0)?(64 << ((head.VRAM_size & 0xF0)>>4)):0;
+		iNESCart.submapper = head.ROM_type3 >> 4;
+	}
+
 	MapperNo = (head.ROM_type >> 4);
 	MapperNo |= (head.ROM_type2 & 0xF0);
-	Mirroring = (head.ROM_type & 1);
+	if(iNES2) MapperNo |= ((head.ROM_type3 & 0x0F) << 8);
+	
+	if (head.ROM_type & 8) {
+		Mirroring = 2;
+	} else
+		Mirroring = (head.ROM_type & 1);
 
-	if (!head.ROM_size)
+	int not_round_size = head.ROM_size;
+	if(iNES2) not_round_size |= ((head.Upper_ROM_VROM_size & 0x0F) << 8);
+	
+	if (!head.ROM_size && !iNES2)
 		ROM_size = 256;
 	else
-		ROM_size = uppow2(head.ROM_size);
+		ROM_size = uppow2(not_round_size);
 
-	VROM_size = uppow2(head.VROM_size);
+	VROM_size = uppow2(head.VROM_size | (iNES2?((head.Upper_ROM_VROM_size & 0xF0)<<4):0));
 
 	int round = true;
 	for (int i = 0; i != sizeof(not_power2) / sizeof(not_power2[0]); ++i) {
@@ -745,10 +768,6 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 			round = false;
 			break;
 		}
-	}
-
-	if (head.ROM_type & 8) {
-		Mirroring = 2;
 	}
 
 	if ((ROM = (uint8*)FCEU_malloc(ROM_size << 14)) == NULL)
@@ -764,7 +783,7 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 		memset(VROM, 0xFF, VROM_size << 13);
 	}
 
-	if (head.ROM_type & 4) { /* Trainer */
+	if (head.ROM_type & 4) {	/* Trainer */
 		trainerpoo = (uint8*)FCEU_gmalloc(512);
 		FCEU_fread(trainerpoo, 512, 1, fp);
 	}
@@ -774,7 +793,7 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 
 	SetupCartPRGMapping(0, ROM, ROM_size << 14, 0);
 
-	FCEU_fread(ROM, 0x4000, (round) ? ROM_size : head.ROM_size, fp);
+	FCEU_fread(ROM, 0x4000, (round) ? ROM_size : not_round_size, fp);
 
 	if (VROM_size)
 		FCEU_fread(VROM, 0x2000, VROM_size, fp);
@@ -793,7 +812,7 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 
 	iNESCart.CRC32 = iNESGameCRC32;
 
-	FCEU_printf(" PRG ROM:  %3d x 16KiB\n", (round) ? ROM_size: head.ROM_size);
+	FCEU_printf(" PRG ROM:  %3d x 16KiB\n", (round) ? ROM_size: not_round_size);
 	FCEU_printf(" CHR ROM:  %3d x  8KiB\n", head.VROM_size);
 	FCEU_printf(" ROM CRC32:  0x%08lx\n", iNESGameCRC32);
 	{
@@ -818,6 +837,18 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 	FCEU_printf(" Mirroring: %s\n", Mirroring == 2 ? "None (Four-screen)" : Mirroring ? "Vertical" : "Horizontal");
 	FCEU_printf(" Battery-backed: %s\n", (head.ROM_type & 2) ? "Yes" : "No");
 	FCEU_printf(" Trained: %s\n", (head.ROM_type & 4) ? "Yes" : "No");
+	if(iNES2) 
+	{
+		FCEU_printf(" NES2.0 Extensions\n");
+		FCEU_printf(" Sub Mapper #: %d\n", iNESCart.submapper);
+		FCEU_printf(" Total WRAM size: %d\n", iNESCart.wram_size + iNESCart.battery_wram_size);
+		FCEU_printf(" Total VRAM size: %d\n", iNESCart.vram_size + iNESCart.battery_vram_size);
+		if(head.ROM_type & 2)
+		{
+			FCEU_printf(" WRAM backked by battery: %d\n", iNESCart.battery_wram_size);
+			FCEU_printf(" VRAM backed by battery: %d\n", iNESCart.battery_vram_size);
+		}
+	}
 
 	SetInput();
 	CheckHInfo();
@@ -852,9 +883,7 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 		FCEU_PrintError("iNES mapper #%d is not supported at all.", MapperNo);
 
 	GameInfo->mappernum = MapperNo;
-	#ifndef GEKKO
 	FCEU_LoadGameSave(&iNESCart);
-	#endif
 
 	strcpy(LoadedRomFName, name); //bbit edited: line added
 
@@ -886,59 +915,47 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 
 // bbit edited: the whole function below was added
 int iNesSave() {
-	FILE *fp;
 	char name[2048];
-
-	if (GameInfo->type != GIT_CART) return 0;
-	if (GameInterface != iNESGI) return 0;
 
 	strcpy(name, LoadedRomFName);
 	if (strcmp(name + strlen(name) - 4, ".nes") != 0) { //para edit
 		strcat(name, ".nes");
 	}
 
-	fp = fopen(name, "wb");
-
-	if (fwrite(&head, 1, 16, fp) != 16) {
-		fclose(fp);
-		return 0;
-	}
-
-	if (head.ROM_type & 4) {   /* Trainer */
-		fwrite(trainerpoo, 512, 1, fp);
-	}
-
-	fwrite(ROM, 0x4000, ROM_size, fp);
-
-	if (head.VROM_size) fwrite(VROM, 0x2000, head.VROM_size, fp);
-	fclose(fp);
-
-	return 1;
+	return iNesSaveAs(name);
 }
 
-int iNesSaveAs(char* name) {
+int iNesSaveAs(char* name)
+{
 	//adelikat: TODO: iNesSave() and this have pretty much the same code, outsource the common code to a single function
+	//caitsith2: done. iNesSave() now gets filename and calls iNesSaveAs with that filename.
 	FILE *fp;
 
 	if (GameInfo->type != GIT_CART) return 0;
 	if (GameInterface != iNESGI) return 0;
 
 	fp = fopen(name, "wb");
+	if (!fp)
+		return 0;
 
-	if (fwrite(&head, 1, 16, fp) != 16) {
+	if (fwrite(&head, 1, 16, fp) != 16)
+	{
 		fclose(fp);
 		return 0;
 	}
 
-	if (head.ROM_type & 4) {   /* Trainer */
+	if (head.ROM_type & 4)
+	{
+		/* Trainer */
 		fwrite(trainerpoo, 512, 1, fp);
 	}
 
 	fwrite(ROM, 0x4000, ROM_size, fp);
 
-	if (head.VROM_size) fwrite(VROM, 0x2000, head.VROM_size, fp);
-	fclose(fp);
+	if (head.VROM_size)
+		fwrite(VROM, 0x2000, head.VROM_size, fp);
 
+	fclose(fp);
 	return 1;
 }
 
@@ -946,8 +963,10 @@ int iNesSaveAs(char* name) {
 char *iNesShortFName() {
 	char *ret;
 
-	if (!(ret = strrchr(LoadedRomFName, '\\'))) {
-		if (!(ret = strrchr(LoadedRomFName, '/'))) return 0;
+	if (!(ret = strrchr(LoadedRomFName, '\\')))
+	{
+		if (!(ret = strrchr(LoadedRomFName, '/')))
+			return 0;
 	}
 	return ret + 1;
 }
@@ -964,12 +983,22 @@ static int iNES_Init(int num) {
 		if (num == tmp->number) {
 			UNIFchrrama = 0;	// need here for compatibility with UNIF mapper code
 			if (!VROM_size) {
-				switch (num) {	// FIXME, mapper or game data base with the board parameters and ROM/RAM sizes
-				case 13:  CHRRAMSize = 16 * 1024; break;
-				case 6:
-				case 96:  CHRRAMSize = 32 * 1024; break;
-				case 176: CHRRAMSize = 128 * 1024; break;
-				default:  CHRRAMSize = 8 * 1024; break;
+				if(!iNESCart.ines2)
+				{
+					switch (num) {	// FIXME, mapper or game data base with the board parameters and ROM/RAM sizes
+					case 13:  CHRRAMSize = 16 * 1024; break;
+					case 6:
+					case 29:
+					case 30:
+					case 96:  CHRRAMSize = 32 * 1024; break;
+					case 176: CHRRAMSize = 128 * 1024; break;
+					default:  CHRRAMSize = 8 * 1024; break;
+					}
+					iNESCart.vram_size = CHRRAMSize;
+				}
+				else
+				{
+					CHRRAMSize = iNESCart.battery_vram_size + iNESCart.vram_size;
 				}
 				if ((VROM = (uint8*)FCEU_dmalloc(CHRRAMSize)) == NULL) return 0;
 				FCEU_MemoryRand(VROM, CHRRAMSize);

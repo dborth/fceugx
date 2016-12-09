@@ -127,6 +127,7 @@ static void VRC6Power(void) {
 	SetReadHandler(0x6000, 0xFFFF, CartBR);
 	SetWriteHandler(0x6000, 0x7FFF, CartBW);
 	SetWriteHandler(0x8000, 0xFFFF, VRC6Write);
+	FCEU_CheatAddRAM(WRAMSIZE >> 10, 0x6000, WRAM);
 }
 
 static void VRC6IRQHook(int a) {
@@ -245,11 +246,11 @@ static INLINE void DoSQVHQ(int x) {
 
 	if (vpsg1[(x << 2) | 0x2] & 0x80) {
 		if (vpsg1[x << 2] & 0x80) {
-			for (V = cvbc[x]; V < SOUNDTS; V++)
+			for (V = cvbc[x]; V < (int)SOUNDTS; V++)
 				WaveHi[V] += amp;
 		} else {
 			int32 thresh = (vpsg1[x << 2] >> 4) & 7;
-			for (V = cvbc[x]; V < SOUNDTS; V++) {
+			for (V = cvbc[x]; V < (int)SOUNDTS; V++) {
 				if (dcount[x] > thresh)
 					WaveHi[V] += amp;
 				vcount[x]--;
@@ -277,7 +278,7 @@ static void DoSawVHQ(void) {
 	int32 V;
 
 	if (vpsg2[2] & 0x80) {
-		for (V = cvbc[2]; V < SOUNDTS; V++) {
+		for (V = cvbc[2]; V < (int)SOUNDTS; V++) {
 			WaveHi[V] += (((phaseacc >> 3) & 0x1f) << 8) * 6 / 8;
 			vcount[2]--;
 			if (vcount[2] <= 0) {
