@@ -1,7 +1,7 @@
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                  - FCE Ultra GX -
-                         http://code.google.com/p/fceugc   
+                         https://github.com/dborth/fceugx   
                                (Under GPL License)
  
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
@@ -9,6 +9,10 @@
 FCE Ultra GX is a modified port of the FCE Ultra Nintendo Entertainment
 system for x86 (Windows/Linux) PCs. With it you can play NES games on your 
 Wii/GameCube.
+
+-=[ Releases ]=-
+
+https://github.com/dborth/fceugc/releases
 
 -=[ Features ]=-
 
@@ -564,6 +568,6 @@ Timing - NTSC or PAL (Depends if you're running a PAL or NTSC game)
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
  
                                   FCEUGX Web Site
-                          http://code.google.com/p/fceugc
+                          https://github.com/dborth/fceugx
  
 ¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤°`°¤ø,¸,ø¤°`°¤ø,¸¸,ø¤
