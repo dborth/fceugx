@@ -283,9 +283,6 @@ decodePrefsData ()
 					result = false;
 				else if(verMajor < 3) // less than version 3.0.0
 					result = false; // reset settings
-				else if((verMajor*100 + verMinor*10 + verPoint) > 
-						(curMajor*100 + curMinor*10 + curPoint)) // some future version
-					result = false; // reset settings
 				else
 					result = true;
 			}
