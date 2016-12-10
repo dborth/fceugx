@@ -37,6 +37,11 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.3.9 - December 10, 2016]
+
+* Hide saving dialog that pops up briefly when returning from a game
+* don't ignore buttons when zapper is enabled. prevented "Gotcha! The Sport!" from working (thanks liuhb86!)
+
 [3.3.8 - May 14, 2016]
 
 * Removed some unused and redundant palettes (thanks to Burnt Lasagna), new naming convention is:
