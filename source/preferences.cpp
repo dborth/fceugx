@@ -401,7 +401,7 @@ DefaultSettings ()
 	memset (&GCSettings, 0, sizeof (GCSettings));
 	ResetControls(); // controller button mappings
 
-	GCSettings.currpal = 0; // color palette
+	GCSettings.currpal = 1; // color palette
 	GCSettings.timing = 2; // 0 - NTSC, 1 - PAL, 2 - Automatic
 	GCSettings.videomode = 0; // automatic video mode detection
 	GCSettings.Controller = CTRL_PAD2; // NES pad, Four Score, Zapper
@@ -419,11 +419,11 @@ DefaultSettings ()
 	GCSettings.yshift = 0; // vertical video shift
 
 	GCSettings.WiimoteOrientation = 0;
-	GCSettings.ExitAction = 0;
+	GCSettings.ExitAction = 0; // Auto
 	GCSettings.MusicVolume = 40;
 	GCSettings.SFXVolume = 40;
-	GCSettings.Rumble = 1;
-	GCSettings.DisplayVM = 1;
+	GCSettings.Rumble = 1; // Enabled
+	GCSettings.DisplayVM = 0; // Disabled
 #ifdef HW_RVL
 	GCSettings.language = CONF_GetLanguage();
 	

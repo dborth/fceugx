@@ -12,7 +12,7 @@ Wii/GameCube.
 
 -=[ Releases ]=-
 
-https://github.com/dborth/fceugc/releases
+https://github.com/dborth/fceugx/releases
 
 -=[ Features ]=-
 
@@ -36,6 +36,17 @@ https://github.com/dborth/fceugc/releases
 ื—–ญ—–ญ—–ญ—–ญ –ญ—–ญ—–ญ—–ญ—–ญ—–ญ—–ญ—–ญ—–ญ—–ญ— ญ—–ญ—–ญ—–ญ—–ญ—–ญ—–ญ—–ญ—-ญ—–ญ-–•ฌ
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
+
+[3.3.8 - May 14, 2016]
+
+* Removed some unused and redundant palettes (thanks to Burnt Lasagna), new naming convention is:
+    + Accurate Colors = Unsaturated-V5 Palette By FirebrandX
+    + Vivid Colors = YUV-V3 Palette By FirebrandX
+    + Wii VC Colors	= Wii's Virtual Console Palette By SuperrSonic
+    + 3DS VC Colors	= 3DS's Virtual Console Palette By SuperrSonic
+	+ FCEUGX Colors	= Real Palette by AspiringSquire
+* Added a new "Delete" button in the Game Options, to erase Save States and SRAM files.
+* NES Zapper support fixed (thanks to Burnt Lasagna)
 
 [3.3.7 -  Apr 18, 2016]
 
@@ -553,7 +564,9 @@ Timing - NTSC or PAL (Depends if you're running a PAL or NTSC game)
 			Menu artwork				the3seashells
 			Menu sound					Peter de Man
 			Logo design					mvit
-
+			Additional updates/fixes	Zopenko, Burnt Lasagna, Askot
+			Beta testing, bug reports	Sindrik, niuus
+			
 			จจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจจ
 			FCE Ultra GX GameCube		SoftDev,
 										askot & dsbomb

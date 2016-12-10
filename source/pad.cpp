@@ -464,59 +464,6 @@ static unsigned char DecodeJoy(unsigned short chan)
 	}
 #endif
 
-	bool zapper_triggered = false;
-	// zapper enabled
-	if(GCSettings.Controller == CTRL_ZAPPER)
-	{
-		int z; // NES port # (0 or 1)
-
-		if(GameInfo->type == GIT_VSUNI)
-			z = 0;
-		else
-			z = 1;
-
-		myzappers[z][2] = 0; // reset trigger to not pressed
-
-		// is trigger pressed?
-		if ( (jp & btnmap[CTRL_ZAPPER][CTRLR_GCPAD][0])	// gamecube controller
-		#ifdef HW_RVL
-		|| ( (exp_type == WPAD_EXP_NONE) && (wp & btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE][0]) )	// wiimote
-		#endif
-		)
-		{
-			// report trigger press
-			myzappers[z][2] |= 2;
-			zapper_triggered = true;
-		}
-
-		// VS zapper games
-		if ( (jp & btnmap[CTRL_ZAPPER][CTRLR_GCPAD][1])	// gamecube controller
-		#ifdef HW_RVL
-		|| ( (exp_type == WPAD_EXP_NONE) && (wp & btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE][1]) )	// wiimote
-		#endif
-		)
-		{
-			FCEUI_VSUniCoin(); // insert coin for VS zapper games
-			zapper_triggered = true;
-		}
-
-		// cursor position
-		int channel = 0;	// by default, use wiimote 1
-		#ifdef HW_RVL
-		if (userInput[1].wpad->ir.valid)
-		{
-			channel = 1;	// if wiimote 2 is connected, use wiimote 2 as zapper
-		}
-		#endif
-		UpdateCursorPosition(channel); // update cursor for wiimote
-		myzappers[z][0] = pos_x;
-		myzappers[z][1] = pos_y;
-
-		// Report changes to FCE Ultra
-		zapperdata[z]->Update(z,myzappers[z],0);
-	}
-
-
 	// Report pressed buttons (gamepads)
 	int i;
 	for (i = 0; i < MAXJP; i++)
@@ -531,8 +478,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 		)
 		{
 			// if zapper is on, ignore all buttons except START and SELECT
-			//if(GCSettings.Controller != CTRL_ZAPPER || nespadmap[i] == JOY_START || nespadmap[i] == JOY_SELECT)
-			if (!zapper_triggered)
+			if(GCSettings.Controller != CTRL_ZAPPER || nespadmap[i] == JOY_START || nespadmap[i] == JOY_SELECT)
 			{
 				if(rapidAlternator && nespadmap[i] == RAPID_A)
 				{
@@ -566,7 +512,47 @@ static unsigned char DecodeJoy(unsigned short chan)
 		}
 	}
 
+	// zapper enabled
+	if(GCSettings.Controller == CTRL_ZAPPER)
+	{
+		int z; // NES port # (0 or 1)
 
+		if(GameInfo->type == GIT_VSUNI)
+			z = 0;
+		else
+			z = 1;
+
+		myzappers[z][2] = 0; // reset trigger to not pressed
+
+		// is trigger pressed?
+		if ( (jp & btnmap[CTRL_ZAPPER][CTRLR_GCPAD][0])	// gamecube controller
+		#ifdef HW_RVL
+		|| ( (exp_type == WPAD_EXP_NONE) && (wp & btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE][0]) )	// wiimote
+		#endif
+		)
+		{
+			// report trigger press
+			myzappers[z][2] |= 2;
+		}
+
+		// VS zapper games
+		if ( (jp & btnmap[CTRL_ZAPPER][CTRLR_GCPAD][1])	// gamecube controller
+		#ifdef HW_RVL
+		|| ( (exp_type == WPAD_EXP_NONE) && (wp & btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE][1]) )	// wiimote
+		#endif
+		)
+		{
+			FCEUI_VSUniCoin(); // insert coin for VS zapper games
+		}
+
+		// cursor position
+		UpdateCursorPosition(0); // update cursor for wiimote 1
+		myzappers[z][0] = pos_x;
+		myzappers[z][1] = pos_y;
+
+		// Report changes to FCE Ultra
+		zapperdata[z]->Update(z,myzappers[z],0);
+	}
 
 	return J;
 }
@@ -603,13 +589,12 @@ void GetJoy()
 
 	UpdatePads();
 
-// Turbo mode
-// RIGHT on c-stick and on classic ctrlr right joystick
-//	if(userInput[0].pad.substickX > 70 || userInput[0].WPAD_StickX(1) > 70 || userInput[0].wupcdata.substickX > 560)
-//		turbomode = 1;
-//	else
-//		turbomode = 0;
-	turbomode = 0;
+	// Turbo mode
+	// RIGHT on c-stick and on classic ctrlr right joystick
+	if(userInput[0].pad.substickX > 70 || userInput[0].WPAD_StickX(1) > 70 || userInput[0].wupcdata.substickX > 560)
+		turbomode = 1;
+	else
+		turbomode = 0;
 
 	// request to go back to menu
 	if(MenuRequested())

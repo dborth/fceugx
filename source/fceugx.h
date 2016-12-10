@@ -17,7 +17,7 @@
 #include "fceultra/driver.h"
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.3.9"
+#define APPVERSION		"3.3.8"
 #define APPFOLDER 		"fceugx"
 #define PREF_FILE_NAME	"settings.xml"
 
@@ -80,19 +80,19 @@ enum
 struct SGCSettings
 {
 	int		AutoLoad;
-	int		AutoSave;
-	int		LoadMethod; // For ROMS: Auto, SD, DVD, USB, Network (SMB)
+    int		AutoSave;
+    int		LoadMethod; // For ROMS: Auto, SD, DVD, USB, Network (SMB)
 	int		SaveMethod; // For SRAM, Freeze, Prefs: Auto, SD, USB, SMB
 	char	LoadFolder[MAXPATHLEN]; // Path to game files
 	char	LastFileLoaded[MAXPATHLEN]; //Last file loaded filename
 	char	SaveFolder[MAXPATHLEN]; // Path to save files
 	char	CheatFolder[MAXPATHLEN]; // Path to cheat files
 	char	ScreenshotsFolder[MAXPATHLEN]; //Path to screenshots files
-
+	
 	char	Exit_Dol_File[MAXPATHLEN]; // Exit Path
 	char	LoaderName[20]; // Menu Loader Name
 	u32		Exit_Channel[2]; // Exit Channel
-
+	
 	char	smbip[80];
 	char	smbuser[20];
 	char	smbpwd[20];

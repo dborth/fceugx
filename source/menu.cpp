@@ -790,13 +790,13 @@ static void WindowCredits(void * ptr)
 	creditsBoxImg.SetAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
 	creditsWindowBox.Append(&creditsBoxImg);
 
-	int numEntries = 25;
+	int numEntries = 27;
 	GuiText * txt[numEntries];
 
 	txt[i] = new GuiText("Credits", 30, (GXColor){0, 0, 0, 255});
 	txt[i]->SetAlignment(ALIGN_CENTRE, ALIGN_TOP); txt[i]->SetPosition(0,y); i++; y+=32;
 
-	txt[i] = new GuiText("Official Site: https://github.com/dborth/fceugc", 20, (GXColor){0, 0, 0, 255});
+	txt[i] = new GuiText("Official Site: https://github.com/dborth/fceugx", 20, (GXColor){0, 0, 0, 255});
 	txt[i]->SetAlignment(ALIGN_CENTRE, ALIGN_TOP); txt[i]->SetPosition(0,y); i++; y+=40;
 
 	txt[i]->SetPresets(20, (GXColor){0, 0, 0, 255}, 0,
@@ -817,6 +817,10 @@ static void WindowCredits(void * ptr)
 	txt[i] = new GuiText("Logo");
 	txt[i]->SetPosition(40,y); i++;
 	txt[i] = new GuiText("mvit");
+	txt[i]->SetPosition(335,y); i++; y+=24;
+	txt[i] = new GuiText("Additional improvements");
+	txt[i]->SetPosition(40,y); i++;
+	txt[i] = new GuiText("Zopenko, Askot, others");
 	txt[i]->SetPosition(335,y); i++; y+=48;
 
 	txt[i] = new GuiText("FCE Ultra GX GameCube");
@@ -1432,9 +1436,9 @@ static int MenuGame()
 	w.Append(&resetBtn);
 	w.Append(&gameSettingsBtn);
 
-	if(GCSettings.DisplayVM == 1)
+	if(GCSettings.DisplayVM == 1) //show memory usage
 	{
-		w.Append(&memTxt); //show memory usage	
+		w.Append(&memTxt);
 	}
 		
 	#ifdef HW_RVL
@@ -3212,8 +3216,7 @@ static int MenuSettingsVideo()
 				break;
 
 			case 3: // palette
-				GCSettings.currpal++;
-				if ( GCSettings.currpal > MAXPAL )
+				if ( ++GCSettings.currpal > MAXPAL )
 					GCSettings.currpal = 0;
 				break;
 
@@ -3274,7 +3277,8 @@ static int MenuSettingsVideo()
 				case 3: sprintf (options.value[2], "Both"); break;
 			}
 
-			sprintf (options.value[3], "%s", (GCSettings.currpal > -1) ? palettes[GCSettings.currpal].desc : "Default");
+			sprintf (options.value[3], "%s",
+				GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default Colors");
  
 			switch(GCSettings.timing)
 			{
@@ -3290,11 +3294,16 @@ static int MenuSettingsVideo()
 
 			switch(GCSettings.videomode)
 			{
-				case 0: sprintf (options.value[9], "Automatic (Recommended)"); break;
-				case 1: sprintf (options.value[9], "NTSC (480i)"); break;
-				case 2: sprintf (options.value[9], "Progressive (480p)"); break;
-				case 3: sprintf (options.value[9], "PAL (50Hz)"); break;
-				case 4: sprintf (options.value[9], "PAL (60Hz)"); break;
+				case 0:
+					sprintf (options.value[9], "Automatic (Recommended)"); break;
+				case 1:
+					sprintf (options.value[9], "NTSC (480i)"); break;
+				case 2:
+					sprintf (options.value[9], "Progressive (480p)"); break;
+				case 3:
+					sprintf (options.value[9], "PAL (50Hz)"); break;
+				case 4:
+					sprintf (options.value[9], "PAL (60Hz)"); break;
 			}
 			optionBrowser.TriggerUpdate();
 		}
