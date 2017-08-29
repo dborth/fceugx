@@ -191,9 +191,12 @@ const stateheader* stateheader_first(const void* gba_data) {
 	else if (check_le == POCKETNES_STATEID2) check++;
 	else if (check_le == SMSADVANCE_STATEID) check++;
 
-	return stateheader_plausible(check)
-		? (stateheader*)check
-		: NULL;
+	if (stateheader_plausible(check)) {
+		return (stateheader*)check;
+	} else {
+		goomba_error("sh at %p not plausible - value: %08X", gba_data, *(uint32_t*)gba_data);
+		return NULL;
+	}
 }
 
 const stateheader** stateheader_scan(const void* gba_data) {
@@ -202,6 +205,10 @@ const stateheader** stateheader_scan(const void* gba_data) {
 	memset(headers, 0, psize * 64);
 
 	const stateheader* sh = stateheader_first(gba_data);
+	if (sh == NULL) {
+		free(headers);
+		return NULL;
+	}
 	int i = 0;
 	while (stateheader_plausible(sh) && i < 63) {
 		headers[i] = sh;
@@ -289,12 +296,15 @@ char* goomba_cleanup(const void* gba_data_param) {
 			goomba_configdata* gcd = NULL;
 			smsadvance_configdata* scd = NULL;
 
-			if (cd->size == sizeof(goomba_configdata)) {
+			if (F16(cd->size) == sizeof(goomba_configdata)) {
 				gcd = (goomba_configdata*)cd;
 				checksum = F32(gcd->sram_checksum); // 0 = clean, postitive = unclean
-			} else if (cd->size == sizeof(smsadvance_configdata)) {
+			} else if (F16(cd->size) == sizeof(smsadvance_configdata)) {
 				scd = (smsadvance_configdata*)cd;
 				checksum = F32(scd->sram_checksum); // 0 = clean, postitive = unclean
+			} else {
+				goomba_error("Unrecognized size of configdata, cannot clean");
+				return NULL;
 			}
 
 			for (j = 0; headers[j] != NULL; j++) {

@@ -87,13 +87,25 @@ bool SaveRAM (char * filepath, bool silent)
 			
 			if (goomba_is_sram(&tag))
 			{
-				goomba_cleanup(savebuffer);
+				void* gba_data = malloc(GOOMBA_COLOR_SRAM_SIZE);
+				
+				file = fopen(filepath, "rb");
+				fread(gba_data, 1, GOOMBA_COLOR_SRAM_SIZE, file);
+				fclose(file);
+				
+				void* cleaned = goomba_cleanup(gba_data);
+				if (!cleaned) {
+					ErrorPrompt(goomba_last_error());
+				} else if (cleaned != gba_data) {
+					memcpy(gba_data, cleaned, GOOMBA_COLOR_SRAM_SIZE);
+					free(cleaned);
+				}
 
 				// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
 				stateheader* sh1 = NULL;
 				stateheader* sh2 = NULL;
 
-				stateheader* sh = (stateheader*)(savebuffer + 4);
+				stateheader* sh = (stateheader*)(gba_data + 4);
 				while (sh && stateheader_plausible(sh)) {
 					if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) {}
 					else if (sh1 == NULL) {
@@ -118,10 +130,15 @@ bool SaveRAM (char * filepath, bool silent)
 				}
 				else
 				{
-					char* newdata = goomba_new_sav(savebuffer, sh1, savebuffer, datasize);
-					memcpy(savebuffer, newdata, GOOMBA_COLOR_SRAM_SIZE);
-					datasize = GOOMBA_COLOR_SRAM_SIZE;
-					free(newdata);
+					char* newdata = goomba_new_sav(gba_data, sh1, savebuffer, datasize);
+					if (!newdata) {
+						ErrorPrompt(goomba_last_error());
+						datasize = 0;
+					} else {
+						memcpy(savebuffer, newdata, GOOMBA_COLOR_SRAM_SIZE);
+						datasize = GOOMBA_COLOR_SRAM_SIZE;
+						free(newdata);
+					}
 				}
 			}
 		}
@@ -177,7 +194,13 @@ bool LoadRAM (char * filepath, bool silent)
 	// Check to see if this is a PocketNES save file
 	if (goomba_is_sram(savebuffer))
 	{
-		goomba_cleanup(savebuffer);
+		void* cleaned = goomba_cleanup(savebuffer);
+		if (!cleaned) {
+			ErrorPrompt(goomba_last_error());
+		} else if (cleaned != savebuffer) {
+			memcpy(savebuffer, cleaned, GOOMBA_COLOR_SRAM_SIZE);
+			free(cleaned);
+		}
 		
 		// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
 		stateheader* sh1 = NULL;
@@ -185,9 +208,7 @@ bool LoadRAM (char * filepath, bool silent)
 
 		stateheader* sh = (stateheader*)(savebuffer + 4);
 		while (sh && stateheader_plausible(sh)) {
-			if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) {
-				InfoPrompt("Not sram");
-			}
+			if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) { }
 			else if (sh1 == NULL) {
 				sh1 = sh;
 			}
