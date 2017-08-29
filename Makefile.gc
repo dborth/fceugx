@@ -22,7 +22,7 @@ SOURCES		:=	source source/images source/sounds source/fonts source/lang \
 				source/gui source/utils source/utils/unzip source/utils/sz \
 				source/fceultra source/fceultra/boards source/fceultra/input \
 				source/fceultra/utils source/fceultra/mbshare source/utils/vm \
-				source/fceultra/pocketnes source/fceultra/pocketnes/minilzo
+				source/pocketnes source/pocketnes/minilzo
 INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------
