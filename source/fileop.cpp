@@ -569,6 +569,7 @@ static bool ParseDirEntries()
 				if(	stricmp(ext, "nes") != 0 && stricmp(ext, "fds") != 0 &&
 					stricmp(ext, "nsf") != 0 && stricmp(ext, "unf") != 0 &&
 					stricmp(ext, "nez") != 0 && stricmp(ext, "unif") != 0 &&
+					stricmp(ext, "gba") != 0 &&
 					stricmp(ext, "zip") != 0 && stricmp(ext, "7z") != 0)
 					continue;
 			}

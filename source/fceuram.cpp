@@ -25,6 +25,7 @@
 #include "menu.h"
 #include "filebrowser.h"
 #include "fileop.h"
+#include "pocketnes/goombasav.h"
 
 static u32 WiiFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 {
@@ -76,6 +77,57 @@ bool SaveRAM (char * filepath, bool silent)
 
 	if (datasize)
 	{
+		// Check to see if this is a PocketNES save file
+		FILE* file = fopen(filepath, "rb");
+		if (file)
+		{
+			uint32 tag;
+			fread(&tag, sizeof(uint32), 1, file);
+			fclose(file);
+			
+			if (goomba_is_sram(&tag))
+			{
+
+				// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
+				stateheader* sh1 = NULL;
+				stateheader* sh2 = NULL;
+
+				stateheader* sh = (stateheader*)(savebuffer + 4);
+				while (sh && stateheader_plausible(sh)) {
+					if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) {}
+					else if (sh1 == NULL) {
+						sh1 = sh;
+					}
+					else {
+						sh2 = sh;
+						break;
+					}
+					sh = stateheader_advance(sh);
+				}
+
+				if (sh1 == NULL)
+				{
+					ErrorPrompt("PocketNES save file has no SRAM.");
+					datasize = 0;
+				}
+				else if (sh2 != NULL)
+				{
+					ErrorPrompt("PocketNES save file has more than one SRAM.");
+					datasize = 0;
+				}
+				else
+				{
+					char* newdata = goomba_new_sav(savebuffer, sh1, savebuffer, datasize);
+					memcpy(savebuffer, newdata, GOOMBA_COLOR_SRAM_SIZE);
+					datasize = GOOMBA_COLOR_SRAM_SIZE;
+					free(newdata);
+				}
+			}
+		}
+	}
+
+	if (datasize)
+	{
 		offset = SaveFile(filepath, datasize, silent);
 
 		if (offset > 0)
@@ -120,6 +172,53 @@ bool LoadRAM (char * filepath, bool silent)
 	AllocSaveBuffer ();
 
 	offset = LoadFile(filepath, silent);
+
+	// Check to see if this is a PocketNES save file
+	if (goomba_is_sram(savebuffer))
+	{
+		// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
+		stateheader* sh1 = NULL;
+		stateheader* sh2 = NULL;
+
+		stateheader* sh = (stateheader*)(savebuffer + 4);
+		while (sh && stateheader_plausible(sh)) {
+			if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) {
+				InfoPrompt("Not sram");
+			}
+			else if (sh1 == NULL) {
+				sh1 = sh;
+			}
+			else {
+				sh2 = sh;
+				break;
+			}
+			sh = stateheader_advance(sh);
+		}
+
+		if (sh1 == NULL)
+		{
+			ErrorPrompt("PocketNES save file has no SRAM.");
+			offset = 0;
+		}
+		else if (sh2 != NULL)
+		{
+			ErrorPrompt("PocketNES save file has more than one SRAM.");
+			offset = 0;
+		}
+		else
+		{
+			goomba_size_t len;
+			void* extracted = goomba_extract(savebuffer, sh1, &len);
+			if (!extracted)
+				ErrorPrompt(goomba_last_error());
+			else
+			{
+				memcpy(savebuffer, extracted, len);
+				offset = len;
+				free(extracted);
+			}
+		}
+	}
 
 	if (offset > 0)
 	{

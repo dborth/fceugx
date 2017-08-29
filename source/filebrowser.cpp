@@ -31,6 +31,8 @@
 #include "fceuram.h"
 #include "fceustate.h"
 #include "patch.h"
+#include "pocketnes/goombasav.h"
+#include "pocketnes/pocketnesrom.h"
 
 BROWSERINFO browser;
 BROWSERENTRY * browserList = NULL; // list of files/folders in browser
@@ -353,6 +355,12 @@ static bool IsValidROM()
 
 		if (p != NULL)
 		{
+			if(strcasecmp(p, ".gba") == 0)
+			{
+				// File will be checked for GBA ROMs later.
+				return true;
+			}
+			
 			char * zippedFilename = NULL;
 
 			if(stricmp(p, ".zip") == 0 && !inSz)
@@ -480,6 +488,28 @@ int BrowserLoadFile()
 			goto done;
 
 		filesize = LoadFile ((char *)nesrom, filepath, browserList[browser.selIndex].length, NOTSILENT);
+
+		// check nesrom for PocketNES embedded roms
+		const char *ext = strrchr(filepath, '.');
+		if (ext != NULL && strcmp(ext, ".gba") == 0)
+		{
+			const pocketnes_romheader* rom1 = pocketnes_first_rom(nesrom, filesize);
+			const pocketnes_romheader* rom2 = NULL;
+			if (rom1 != NULL) {
+				rom2 = pocketnes_next_rom(nesrom, filesize, rom1);
+			}
+
+			if (rom1 == NULL)
+				ErrorPrompt("No NES ROMs found in this file.");
+			else if (rom2 != NULL)
+				ErrorPrompt("More than one NES ROM found in this file. Only files with one ROM are supported.");
+			else
+			{
+				const void* rom = rom1 + 1;
+				filesize = little_endian_conv_32(rom1->filesize);
+				memcpy(nesrom, rom, filesize);
+			}
+		}
 	}
 	else
 	{
