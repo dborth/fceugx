@@ -87,6 +87,7 @@ bool SaveRAM (char * filepath, bool silent)
 			
 			if (goomba_is_sram(&tag))
 			{
+				goomba_cleanup(savebuffer);
 
 				// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
 				stateheader* sh1 = NULL;
@@ -176,6 +177,8 @@ bool LoadRAM (char * filepath, bool silent)
 	// Check to see if this is a PocketNES save file
 	if (goomba_is_sram(savebuffer))
 	{
+		goomba_cleanup(savebuffer);
+		
 		// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
 		stateheader* sh1 = NULL;
 		stateheader* sh2 = NULL;
