@@ -174,7 +174,7 @@ int stateheader_plausible(const void* ptr) {
 	// when checking for whether something equals 0, endian conversion is not necessary
 }
 
-stateheader* stateheader_advance(const stateheader* sh) {
+const stateheader* stateheader_advance(const stateheader* sh) {
 	if (!stateheader_plausible(sh)) return NULL;
 
 	uint16_t s = F16(sh->size);
@@ -210,7 +210,7 @@ const stateheader** stateheader_scan(const void* gba_data) {
 		return NULL;
 	}
 	int i = 0;
-	while (stateheader_plausible(sh) && i < 63) {
+	while (sh && stateheader_plausible(sh) && i < 63) {
 		headers[i] = sh;
 		i++;
 		sh = stateheader_advance(sh);
@@ -222,18 +222,27 @@ const stateheader* stateheader_for(const void* gba_data, const char* gbc_title) 
 	char title[0x10];
 	memcpy(title, gbc_title, 0x0F);
 	title[0x0F] = '\0';
-	const stateheader* use_this = NULL;
-	const stateheader** headers = stateheader_scan(gba_data);
-	int i;
-	for (i = 0; headers[i] != NULL; i++) {
-		if (strcmp(headers[i]->title, title) == 0 && headers[i]->type == GOOMBA_SRAMSAVE) {
-			use_this = headers[i];
-			break;
+	const stateheader* sh = stateheader_first(gba_data);
+	while (sh && stateheader_plausible(sh)) {
+		if (strcmp(sh->title, title) == 0 && sh->type == GOOMBA_SRAMSAVE) {
+			return sh;
 		}
+		sh = stateheader_advance(sh);
 	}
-	free(headers);
-	if (use_this == NULL) sprintf(last_error, "Could not find SRAM data for %s", title);
-	return use_this;
+	goomba_error(last_error, "Could not find SRAM data for %s", title);
+	return NULL;
+}
+
+const stateheader* stateheader_for_checksum(const void* gba_data, uint32_t checksum) {
+	const stateheader* sh = stateheader_first(gba_data);
+	while (sh && stateheader_plausible(sh)) {
+		if (sh->checksum == checksum && sh->type == GOOMBA_SRAMSAVE) {
+			return sh;
+		}
+		sh = stateheader_advance(sh);
+	}
+	goomba_error(last_error, "Could not find SRAM data for %04X", checksum);
+	return NULL;
 }
 
 // Uses checksum_slow, and looks at the compressed data (not the header).
@@ -283,14 +292,13 @@ char* goomba_cleanup(const void* gba_data_param) {
 	char gba_data[GOOMBA_COLOR_SRAM_SIZE]; // on stack - do not need to free
 	memcpy(gba_data, gba_data_param, GOOMBA_COLOR_SRAM_SIZE);
 
-	const stateheader** headers = stateheader_scan(gba_data);
-	if (headers == NULL) return NULL;
-
-	int i, j;
-	for (i = 0; headers[i] != NULL; i++) {
-		if (F16(headers[i]->type) == GOOMBA_CONFIGSAVE) {
+	const stateheader* first = stateheader_first(gba_data);
+	if (first == NULL) return NULL;
+	
+	for (const stateheader* sh1 = first; sh1 && stateheader_plausible(sh1); sh1 = stateheader_advance(sh1)) {
+		if (F16(sh1->type) == GOOMBA_CONFIGSAVE) {
 			// found configdata
-			configdata* cd = (configdata*)headers[i];
+			configdata* cd = (configdata*)sh1;
 			uint32_t checksum = 0;
 
 			goomba_configdata* gcd = NULL;
@@ -307,11 +315,9 @@ char* goomba_cleanup(const void* gba_data_param) {
 				return NULL;
 			}
 
-			for (j = 0; headers[j] != NULL; j++) {
-				const stateheader* sh = headers[j];
-				if (F16(sh->type) == GOOMBA_SRAMSAVE && F32(sh->checksum) == checksum) {
+			for (const stateheader* sh2 = first; sh2 && stateheader_plausible(sh2); sh2 = stateheader_advance(sh2)) {
+				if (F16(sh2->type) == GOOMBA_SRAMSAVE && F32(sh2->checksum) == checksum) {
 					// found stateheader
-					free(headers); // so make sure we return something before the loop goes around again!!
 
 					if (gcd) gcd->sram_checksum = 0; // because we do this here, goomba_new_sav should not complain about an unclean file
 					if (scd) scd->sram_checksum = 0;
@@ -321,14 +327,14 @@ char* goomba_cleanup(const void* gba_data_param) {
 						gba_data + GOOMBA_COLOR_AVAILABLE_SIZE,
 						sizeof(gbc_data)); // Extract GBC data at 0xe000 to an array
 
-					char* new_gba_data = goomba_new_sav(gba_data, sh, gbc_data, sizeof(gbc_data));
+					char* new_gba_data = goomba_new_sav(gba_data, sh2, gbc_data, sizeof(gbc_data));
 					if (new_gba_data != NULL) memset(new_gba_data + GOOMBA_COLOR_AVAILABLE_SIZE, 0, sizeof(gbc_data));
 					return new_gba_data;
 				}
 			}
 		}
 	}
-	free(headers);
+
 	return (char*)gba_data_param;
 }
 

@@ -37,6 +37,10 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.4.0 January 17, 2018]
+
+* Revert commit 3.3.2 Fixed lag with GameCube controllers, because it broke the GameCube build.
+
 [3.3.9 - December 10, 2016]
 
 * Hide saving dialog that pops up briefly when returning from a game

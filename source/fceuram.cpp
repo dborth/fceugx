@@ -102,10 +102,10 @@ bool SaveRAM (char * filepath, bool silent)
 				}
 
 				// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
-				stateheader* sh1 = NULL;
-				stateheader* sh2 = NULL;
+				const stateheader* sh1 = NULL;
+				const stateheader* sh2 = NULL;
 
-				stateheader* sh = (stateheader*)(gba_data + 4);
+				const stateheader* sh = stateheader_first(gba_data);
 				while (sh && stateheader_plausible(sh)) {
 					if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) {}
 					else if (sh1 == NULL) {
@@ -203,10 +203,10 @@ bool LoadRAM (char * filepath, bool silent)
 		}
 		
 		// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
-		stateheader* sh1 = NULL;
-		stateheader* sh2 = NULL;
+		const stateheader* sh1 = NULL;
+		const stateheader* sh2 = NULL;
 
-		stateheader* sh = (stateheader*)(savebuffer + 4);
+		const stateheader* sh = stateheader_first(savebuffer);
 		while (sh && stateheader_plausible(sh)) {
 			if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) { }
 			else if (sh1 == NULL) {
@@ -276,6 +276,9 @@ LoadRAMAuto (bool silent)
 
 	if (LoadRAM(filepath, silent))
 		return true;
+
+	if (!GCSettings.AppendAuto)
+		return false;
 
 	// look for file with no number or Auto appended
 	if(!MakeFilePath(filepath2, FILE_RAM, romFilename, -1))
