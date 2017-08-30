@@ -155,6 +155,12 @@ const char* stateheader_summary_str(const stateheader* sh);
 int stateheader_plausible(const void* sh);
 
 /**
+* If a valid stateheader starts at the address given or 4 bytes later,
+* returns a pointer to the stateheader. Otherwise, returns NULL.
+*/
+const stateheader* stateheader_first(const void* gba_data);
+
+/**
 * When given a pointer to a stateheader, returns a pointer to where the next
 * stateheader will be located (if any). Use stateheader_plausible to
 * determine if there really is a header at this location.
@@ -162,7 +168,7 @@ int stateheader_plausible(const void* sh);
 * If stateheader_plausible determines that the input is not a valid
 * stateheader, NULL will be returned.
 */
-stateheader* stateheader_advance(const stateheader* sh);
+const stateheader* stateheader_advance(const stateheader* sh);
 
 /**
 * Scans for valid stateheaders and allocates an array to store them. The array
@@ -176,10 +182,17 @@ const stateheader** stateheader_scan(const void* gba_data);
 
 /**
 * Returns the stateheader in gba_data with the title field = gbc_title,
-* or NULL if there is none. Only the first 15 bytes of gbc_title will be
-* used in the comparison.
+* or NULL if there is none. This function is intended for Game Boy (Color)
+* ROMs, so only the first 15 bytes of gbc_title will be used in the
+* comparison.
 */
 const stateheader* stateheader_for(const void* gba_data, const char* gbc_title_ptr);
+
+/**
+* Returns the stateheader in gba_data for the given ROM checksum, or NULL if
+* there is none.
+*/
+const stateheader* stateheader_for_checksum(const void* gba_data, uint32_t checksum);
 
 /**
 * Returns true if the given data starts with GOOMBA_STATEID (little endian.)
