@@ -3713,8 +3713,8 @@ static int MenuSettingsFile()
 			else if (GCSettings.AutoSave == 2) sprintf (options.value[7],"State");
 			else if (GCSettings.AutoSave == 3) sprintf (options.value[7],"Both");
 
-			if (GCSettings.AppendAuto == 0) sprintf (options.value[10], "Off");
-			else if (GCSettings.AppendAuto == 1) sprintf (options.value[10], "On");
+			if (GCSettings.AppendAuto == 0) sprintf (options.value[8], "Off");
+			else if (GCSettings.AppendAuto == 1) sprintf (options.value[8], "On");
 
 			optionBrowser.TriggerUpdate();
 		}
