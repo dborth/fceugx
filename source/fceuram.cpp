@@ -25,6 +25,7 @@
 #include "menu.h"
 #include "filebrowser.h"
 #include "fileop.h"
+#include "pocketnes/goombasav.h"
 
 static u32 WiiFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 {
@@ -76,6 +77,75 @@ bool SaveRAM (char * filepath, bool silent)
 
 	if (datasize)
 	{
+		// Check to see if this is a PocketNES save file
+		FILE* file = fopen(filepath, "rb");
+		if (file)
+		{
+			uint32 tag;
+			fread(&tag, sizeof(uint32), 1, file);
+			fclose(file);
+			
+			if (goomba_is_sram(&tag))
+			{
+				void* gba_data = malloc(GOOMBA_COLOR_SRAM_SIZE);
+				
+				file = fopen(filepath, "rb");
+				fread(gba_data, 1, GOOMBA_COLOR_SRAM_SIZE, file);
+				fclose(file);
+				
+				void* cleaned = goomba_cleanup(gba_data);
+				if (!cleaned) {
+					ErrorPrompt(goomba_last_error());
+				} else if (cleaned != gba_data) {
+					memcpy(gba_data, cleaned, GOOMBA_COLOR_SRAM_SIZE);
+					free(cleaned);
+				}
+
+				// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
+				const stateheader* sh1 = NULL;
+				const stateheader* sh2 = NULL;
+
+				const stateheader* sh = stateheader_first(gba_data);
+				while (sh && stateheader_plausible(sh)) {
+					if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) {}
+					else if (sh1 == NULL) {
+						sh1 = sh;
+					}
+					else {
+						sh2 = sh;
+						break;
+					}
+					sh = stateheader_advance(sh);
+				}
+
+				if (sh1 == NULL)
+				{
+					ErrorPrompt("PocketNES save file has no SRAM.");
+					datasize = 0;
+				}
+				else if (sh2 != NULL)
+				{
+					ErrorPrompt("PocketNES save file has more than one SRAM.");
+					datasize = 0;
+				}
+				else
+				{
+					char* newdata = goomba_new_sav(gba_data, sh1, savebuffer, datasize);
+					if (!newdata) {
+						ErrorPrompt(goomba_last_error());
+						datasize = 0;
+					} else {
+						memcpy(savebuffer, newdata, GOOMBA_COLOR_SRAM_SIZE);
+						datasize = GOOMBA_COLOR_SRAM_SIZE;
+						free(newdata);
+					}
+				}
+			}
+		}
+	}
+
+	if (datasize)
+	{
 		offset = SaveFile(filepath, datasize, silent);
 
 		if (offset > 0)
@@ -121,6 +191,59 @@ bool LoadRAM (char * filepath, bool silent)
 
 	offset = LoadFile(filepath, silent);
 
+	// Check to see if this is a PocketNES save file
+	if (goomba_is_sram(savebuffer))
+	{
+		void* cleaned = goomba_cleanup(savebuffer);
+		if (!cleaned) {
+			ErrorPrompt(goomba_last_error());
+		} else if (cleaned != savebuffer) {
+			memcpy(savebuffer, cleaned, GOOMBA_COLOR_SRAM_SIZE);
+			free(cleaned);
+		}
+		
+		// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
+		const stateheader* sh1 = NULL;
+		const stateheader* sh2 = NULL;
+
+		const stateheader* sh = stateheader_first(savebuffer);
+		while (sh && stateheader_plausible(sh)) {
+			if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) { }
+			else if (sh1 == NULL) {
+				sh1 = sh;
+			}
+			else {
+				sh2 = sh;
+				break;
+			}
+			sh = stateheader_advance(sh);
+		}
+
+		if (sh1 == NULL)
+		{
+			ErrorPrompt("PocketNES save file has no SRAM.");
+			offset = 0;
+		}
+		else if (sh2 != NULL)
+		{
+			ErrorPrompt("PocketNES save file has more than one SRAM.");
+			offset = 0;
+		}
+		else
+		{
+			goomba_size_t len;
+			void* extracted = goomba_extract(savebuffer, sh1, &len);
+			if (!extracted)
+				ErrorPrompt(goomba_last_error());
+			else
+			{
+				memcpy(savebuffer, extracted, len);
+				offset = len;
+				free(extracted);
+			}
+		}
+	}
+
 	if (offset > 0)
 	{
 		if(GameInfo->type == GIT_CART)
@@ -153,6 +276,9 @@ LoadRAMAuto (bool silent)
 
 	if (LoadRAM(filepath, silent))
 		return true;
+
+	if (!GCSettings.AppendAuto)
+		return false;
 
 	// look for file with no number or Auto appended
 	if(!MakeFilePath(filepath2, FILE_RAM, romFilename, -1))
