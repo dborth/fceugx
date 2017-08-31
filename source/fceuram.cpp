@@ -277,6 +277,9 @@ LoadRAMAuto (bool silent)
 	if (LoadRAM(filepath, silent))
 		return true;
 
+	if (!GCSettings.AppendAuto)
+		return false;
+
 	// look for file with no number or Auto appended
 	if(!MakeFilePath(filepath2, FILE_RAM, romFilename, -1))
 		return false;
