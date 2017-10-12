@@ -107,71 +107,6 @@ int currRerecordCount; // Keep the global value
 
 char lagcounterbuf[32] = {0};
 
-
-#ifdef GEKKO
-void MovieData::clearRecordRange(int start, int len) { }
-void MovieData::eraseRecords(int at, int frames) { }
-void MovieData::insertEmpty(int at, int frames) { }
-void MovieData::cloneRegion(int at, int frames) { }
-MovieRecord::MovieRecord() { }
-void MovieRecord::clear() { }
-bool MovieRecord::Compare(MovieRecord& compareRec) { return false; }
-void MovieRecord::Clone(MovieRecord& sourceRec) { }
-void MovieRecord::dumpJoy(EMUFILE* os, uint8 joystate) { }
-void MovieRecord::parseJoy(EMUFILE* is, uint8& joystate) { }
-void MovieRecord::parse(MovieData* md, EMUFILE* is) { }
-bool MovieRecord::parseBinary(MovieData* md, EMUFILE* is) { return false; }
-void MovieRecord::dumpBinary(MovieData* md, EMUFILE* os, int index) { }
-void MovieRecord::dump(MovieData* md, EMUFILE* os, int index) { }
-MovieData::MovieData() { }
-void MovieData::truncateAt(int frame) { }
-void MovieData::installValue(std::string& key, std::string& val) { }
-int MovieData::dump(EMUFILE *os, bool binary) { return 0; }
-int FCEUMOV_GetFrame(void) { return 0; }
-int FCEUI_GetLagCount(void) { return 0; }
-bool FCEUI_GetLagged(void) { return false; }
-void FCEUI_SetLagFlag(bool value) { }
-bool FCEUMOV_ShouldPause(void) { return false; }
-EMOVIEMODE FCEUMOV_Mode() { return movieMode; }
-bool FCEUMOV_Mode(EMOVIEMODE modemask) { return false; }
-bool FCEUMOV_Mode(int modemask) { return false; }
-bool LoadFM2(MovieData& movieData, EMUFILE* fp, int size, bool stopAfterHeader) { return false; }
-void FCEUI_StopMovie() { }
-void poweron(bool shouldDisableBatteryLoading) { }
-void CreateCleanMovie() { }
-bool FCEUMOV_FromPoweron() { return false; }
-bool MovieData::loadSavestateFrom(std::vector<uint8>* buf) { return false; }
-void MovieData::dumpSavestateTo(std::vector<uint8>* buf, int compressionLevel) { }
-bool FCEUI_LoadMovie(const char *fname, bool _read_only, bool tasedit, int _pauseframe) { return false; }
-void FCEUI_SaveMovie(const char *fname, EMOVIE_FLAG flags, std::wstring author) { }
-void FCEUMOV_AddInputState() { }
-void FCEUMOV_AddCommand(int cmd) { }
-void FCEU_DrawMovies(uint8 *XBuf) { }
-void FCEU_DrawLagCounter(uint8 *XBuf) { }
-int FCEUMOV_WriteState(EMUFILE* os) { return 0; }
-int CheckTimelines(MovieData& stateMovie, MovieData& currMovie) { return -1; }
-bool FCEUMOV_ReadState(EMUFILE* is, uint32 size) { return false; }
-void FCEUMOV_PreLoad(void) { }
-bool FCEUMOV_PostLoad(void) { return false; }
-void FCEUI_MovieToggleFrameDisplay(void) { }
-void FCEUI_MovieToggleRerecordDisplay() { }
-void FCEUI_ToggleInputDisplay(void) { }
-int FCEUI_GetMovieLength() { return 0; }
-int FCEUI_GetMovieRerecordCount() { return 0; }
-bool FCEUI_GetMovieToggleReadOnly() { return false; }
-void FCEUI_SetMovieToggleReadOnly(bool which) { }
-void FCEUI_MovieToggleReadOnly() { }
-void FCEUI_MoviePlayFromBeginning(void) { }
-string FCEUI_GetMovieName(void) { return curMovieFilename; }
-bool FCEUI_MovieGetInfo(FCEUFILE* fp, MOVIE_INFO& info, bool skipFrameCount) { return false; }
-void LoadSubtitles(MovieData &moviedata) { }
-void ProcessSubtitles(void) { }
-void FCEU_DisplaySubtitles(char *format, ...) { }
-void FCEUI_CreateMovieFile(std::string fn) { }
-void FCEUI_MakeBackupMovie(bool dispMessage) { }
-
-#else
-
 void MovieData::clearRecordRange(int start, int len)
 {
 	for(int i=0;i<len;i++)
@@ -454,6 +389,7 @@ void MovieRecord::dump(MovieData* md, EMUFILE* os, int index)
 MovieData::MovieData()
 	: version(MOVIE_VERSION)
 	, emuVersion(FCEU_VERSION_NUMERIC)
+	, fds(false)
 	, palFlag(false)
 	, PPUflag(false)
 	, rerecordCount(0)
@@ -1481,7 +1417,7 @@ void FCEUMOV_IncrementRerecordCount()
 		else
 			currMovieData.rerecordCount++;
 #else
-	if (movieMode != MOVIEMODE_TASEDITOR)currRerecordCount++;
+	if (movieMode != MOVIEMODE_TASEDITOR)
 		currRerecordCount++;
 	else
 		currMovieData.rerecordCount++;
@@ -1756,4 +1692,4 @@ void FCEUI_MakeBackupMovie(bool dispMessage)
 			FCEUI_DispMessage("%s created",0,backupFn.c_str()); //Inform user of backup filename
 	}
 }
-#endif
+

@@ -82,7 +82,7 @@ inline int read_double_le(double *Bufo, EMUFILE*is) { uint64 temp; int ret = rea
 template<typename T>
 int readle(T *Bufo, EMUFILE*is)
 {
-	//CTASSERT(sizeof(T)==1||sizeof(T)==2||sizeof(T)==4||sizeof(T)==8);
+	CTASSERT(sizeof(T)==1||sizeof(T)==2||sizeof(T)==4||sizeof(T)==8);
 	switch(sizeof(T)) {
 		case 1: return read8le((uint8*)Bufo,is);
 		case 2: return read16le((uint16*)Bufo,is);
@@ -96,7 +96,7 @@ int readle(T *Bufo, EMUFILE*is)
 template<typename T>
 int writele(T *Bufo, EMUFILE*os)
 {
-	//CTASSERT(sizeof(T)==1||sizeof(T)==2||sizeof(T)==4||sizeof(T)==8);
+	CTASSERT(sizeof(T)==1||sizeof(T)==2||sizeof(T)==4||sizeof(T)==8);
 	switch(sizeof(T)) {
 		case 1: return write8le(*(uint8*)Bufo,os);
 		case 2: return write16le(*(uint16*)Bufo,os);
