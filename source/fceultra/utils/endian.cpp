@@ -29,7 +29,7 @@
 #include "../emufile.h"
 
 //OMG ! configure this correctly
-#define LOCAL_BE
+#define LOCAL_LE
 
 /* little endian to local endianess convert macros */
 #ifdef LOCAL_BE	/* local arch is big endian */

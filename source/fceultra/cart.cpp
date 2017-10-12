@@ -336,11 +336,7 @@ void SetupCartMirroring(int m, int hard, uint8 *extra) {
 	mirrorhard = hard;
 }
 
-#ifdef GEKKO
-uint8 *GENIEROM=0;
-#else
-static uint8 *GENIEROM=0;
-#endif
+static uint8 *GENIEROM = 0;
 
 void FixGenieMap(void);
 

@@ -116,17 +116,16 @@ static INLINE int CheckColor(int w)
         return ZD[w].zaphit?0:1;
     }
 
-
 #ifdef GEKKO
-	if((ZD[w].zaphit+100)>=(timestampbase+timestamp)
-		&& !(ZD[w].mzb&2)) return 0;
+		if((ZD[w].zaphit+100)>=(timestampbase+timestamp)
+				&& !(ZD[w].mzb&2)) return 0;
 #else
     if((ZD[w].zaphit+100)>=(timestampbase+timestamp))
     {
         return 0;
     }
 #endif
-
+	
 	return 1;
 }
 
@@ -175,14 +174,14 @@ static void UpdateZapper(int w, void *data, int arg)
 {
 	uint32 *ptr=(uint32 *)data;
 #ifdef GEKKO
-	if(ZD[w].bogo)
-		ZD[w].bogo--;	
-	if(ptr[2]&3 && (!(ZD[w].mzb&3)))
-		ZD[w].bogo=5;
+		if(ZD[w].bogo)
+				ZD[w].bogo--;	
+		if(ptr[2]&3 && (!(ZD[w].mzb&3)))
+				ZD[w].bogo=5;
 
-	ZD[w].mzx=ptr[0];
-	ZD[w].mzy=ptr[1];
-	ZD[w].mzb=ptr[2];
+		ZD[w].mzx=ptr[0];
+		ZD[w].mzy=ptr[1];
+		ZD[w].mzb=ptr[2];
 #else
     bool newclicked = (ptr[2]&3)!=0;
     bool oldclicked = (ZD[w].lastInput)!=0;

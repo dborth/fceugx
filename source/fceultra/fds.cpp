@@ -18,10 +18,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 #include "types.h"
 #include "x6502.h"
 #include "fceu.h"
@@ -37,10 +33,14 @@
 #include "driver.h"
 #include "movie.h"
 
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
 //	TODO:  Add code to put a delay in between the time a disk is inserted
 //	and the when it can be successfully read/written to.  This should
 //	prevent writes to wrong places OR add code to prevent disk ejects
-//	when the virtual motor is on(mmm...virtual motor).
+//	when the virtual motor is on (mmm...virtual motor).
 extern int disableBatteryLoading;
 
 bool isFDS = false; //flag for determining if a FDS game is loaded, movie.cpp needs this
@@ -69,11 +69,7 @@ static uint8 IRQa;
 
 static uint8 *FDSRAM = NULL;
 static uint32 FDSRAMSize;
-#ifdef GEKKO
-uint8 *FDSBIOS = NULL;
-#else
 static uint8 *FDSBIOS = NULL;
-#endif
 static uint32 FDSBIOSsize;
 static uint8 *CHRRAM = NULL;
 static uint32 CHRRAMSize;
@@ -147,20 +143,26 @@ static void FDSInit(void) {
 	SelectDisk = 0;
 }
 
-void FCEU_FDSInsert(void) {
-	if (FCEUI_EmulationPaused()) EmulationPaused |= 2;
+void FCEU_FDSInsert(void)
+{
+	if (TotalSides == 0)
+	{
+		FCEU_DispMessage("", 0);// remove text "Not FDS; can't eject disk."
+		return;
+	}
+
+	if (FCEUI_EmulationPaused())
+		EmulationPaused |= EMULATIONPAUSED_FA;
 
 	if (FCEUMOV_Mode(MOVIEMODE_RECORD))
 		FCEUMOV_AddCommand(FCEUNPCMD_FDSINSERT);
 
-	if (TotalSides == 0) {
-		FCEU_DispMessage("", 0);// remove text "Not FDS; can't eject disk."
-		return;
-	}
-	if (InDisk == 255) {
+	if (InDisk == 255)
+	{
 		//FCEU_DispMessage("Disk %d Side %s Inserted", 0, SelectDisk >> 1, (SelectDisk & 1) ? "B" : "A");
 		InDisk = SelectDisk;
-	} else {
+	} else
+	{
 		//FCEU_DispMessage("Disk %d Side %s Ejected", 0, SelectDisk >> 1, (SelectDisk & 1) ? "B" : "A");
 		InDisk = 255;
 	}
@@ -171,20 +173,25 @@ void FCEU_FDSEject(void)
 InDisk=255;
 }
 */
-void FCEU_FDSSelect(void) {
-	if (FCEUI_EmulationPaused()) EmulationPaused |= 2;
+void FCEU_FDSSelect(void)
+{
+	if (TotalSides == 0)
+	{
+		FCEU_DispMessage("", 0);//remove text "Not FDS; can't select disk."
+		return;
+	}
+	if (InDisk != 255)
+	{
+		FCEU_DispMessage("", 0); //remove text "Eject disk before selecting"
+		return;
+	}
+
+	if (FCEUI_EmulationPaused())
+		EmulationPaused |= EMULATIONPAUSED_FA;
 
 	if (FCEUMOV_Mode(MOVIEMODE_RECORD))
 		FCEUMOV_AddCommand(FCEUNPCMD_FDSSELECT);
 
-	if (TotalSides == 0) {
-		FCEU_DispMessage("", 0);//remove text "Not FDS; can't select disk."
-		return;
-	}
-	if (InDisk != 255) {
-		FCEU_DispMessage("", 0); //remove text "Eject disk before selecting"
-		return;
-	}
 	SelectDisk = ((SelectDisk + 1) % TotalSides) & 3;
 	FCEU_DispMessage("", 0); //("Disk %d Side %c Selected", 0, SelectDisk >> 1, (SelectDisk & 1) ? 'B' : 'A');
 }
@@ -628,11 +635,9 @@ static void PostSave(void) {
 }
 
 int FDSLoad(const char *name, FCEUFILE *fp) {
-#ifndef GEKKO
 	FILE *zp;
-#endif
 	int x;
-#ifndef GEKKO
+
 	char *fn = strdup(FCEU_MakeFName(FCEUMKF_FDSROM, 0, 0).c_str());
 
 	if (!(zp = FCEUD_UTF8fopen(fn, "rb"))) {
@@ -650,13 +655,12 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 		return 0;
 	}
 	fseek(zp, 0L, SEEK_SET);
-#endif
+
 	ResetCartMapping();
-#ifndef GEKKO
+
 	if(FDSBIOS)
 		free(FDSBIOS);
 	FDSBIOS = NULL;
-#endif
 	if(FDSRAM)
 		free(FDSRAM);
 	FDSRAM = NULL;
@@ -665,11 +669,9 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 	CHRRAM = NULL;
 
 	FDSBIOSsize = 8192;
-#ifndef GEKKO
 	FDSBIOS = (uint8*)FCEU_gmalloc(FDSBIOSsize);
-#endif
 	SetupCartPRGMapping(0, FDSBIOS, FDSBIOSsize, 0);
-#ifndef GEKKO
+
 	if (fread(FDSBIOS, 1, FDSBIOSsize, zp) != FDSBIOSsize) {
 		if(FDSBIOS)
 			free(FDSBIOS);
@@ -680,16 +682,14 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 	}
 
 	fclose(zp);
-#endif
+
 	FCEU_fseek(fp, 0, SEEK_SET);
 
 	FreeFDSMemory();
 	if (!SubLoad(fp)) {
-#ifndef GEKKO
 		if(FDSBIOS)
 			free(FDSBIOS);
 		FDSBIOS = NULL;
-#endif
 		return(0);
 	}
 
@@ -702,7 +702,7 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 			diskdatao[x] = (uint8*)FCEU_malloc(65500);
 			memcpy(diskdatao[x], diskdata[x], 65500);
 		}
-#ifndef GEKKO
+
 		if ((tp = FCEU_fopen(fn, 0, "rb", 0))) {
 			FCEU_printf("Disk was written. Auxillary FDS file open \"%s\".\n",fn);
 			FreeFDSMemory();
@@ -718,12 +718,11 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 			DiskWritten = 1;  /* For save state handling. */
 		}
 		free(fn);
-#endif
 	}
-#ifndef GEKKO
+
 	extern char LoadedRomFName[2048];
 	strcpy(LoadedRomFName, name); //For the debugger list
-#endif
+
 	GameInfo->type = GIT_FDS;
 	GameInterface = FDSGI;
 	isFDS = true;
@@ -773,7 +772,6 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 }
 
 void FDSClose(void) {
-#ifndef GEKKO
 	FILE *fp;
 	int x;
 	isFDS = false;
@@ -798,21 +796,16 @@ void FDSClose(void) {
 			free(diskdatao[x]);
 			diskdatao[x] = 0;
 		}
-#endif
+
 	FreeFDSMemory();
-#ifndef GEKKO
 	if(FDSBIOS)
 		free(FDSBIOS);
 	FDSBIOS = NULL;
-#endif
 	if(FDSRAM)
 		free(FDSRAM);
 	FDSRAM = NULL;
 	if(CHRRAM)
 		free(CHRRAM);
 	CHRRAM = NULL;
-#ifndef GEKKO
 	fclose(fp);
-#endif
-
 }

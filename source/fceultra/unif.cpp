@@ -55,11 +55,7 @@ typedef struct {
 	int (*init)(FCEUFILE *fp);
 } BFMAPPING;
 
-#ifdef GEKKO
-CartInfo UNIFCart;
-#else
 static CartInfo UNIFCart;
-#endif
 
 static int vramo;
 static int mirrortodo;
@@ -348,6 +344,7 @@ static BMAPPING bmap[] = {
 	{ "BS-5", BMCBS5_Init, 0 },
 	{ "CC-21", UNLCC21_Init, 0 },
 	{ "CITYFIGHT", UNLCITYFIGHT_Init, 0 },
+	{ "10-24-C-A1", BMC1024CA1_Init, 0 },
 	{ "CNROM", CNROM_Init, 0 },
 	{ "CPROM", CPROM_Init, BMCFLAG_16KCHRR },
 	{ "D1038", BMCD1038_Init, 0 },
@@ -374,6 +371,7 @@ static BMAPPING bmap[] = {
 	{ "KS7010", UNLKS7010_Init, 0 },
 	{ "KS7012", UNLKS7012_Init, 0 },
 	{ "KS7013B", UNLKS7013B_Init, 0 },
+	{ "KS7016", UNLKS7016_Init, 0 },
 	{ "KS7017", UNLKS7017_Init, 0 },
 	{ "KS7030", UNLKS7030_Init, 0 },
 	{ "KS7031", UNLKS7031_Init, 0 },
@@ -462,6 +460,14 @@ static BMAPPING bmap[] = {
 	{ "YOKO", UNLYOKO_Init, 0 },
 	{ "SB-2000", UNLSB2000_Init, 0 },
 	{ "COOLBOY", COOLBOY_Init, BMCFLAG_256KCHRR },
+	{ "158B", UNL158B_Init, 0 },
+	{ "DRAGONFIGHTER", UNLBMW8544_Init, 0 },
+	{ "EH8813A", UNLEH8813A_Init, 0 },
+	{ "HP898F", BMCHP898F_Init, 0 },
+	{ "F-15", BMCF15_Init, 0 },
+	{ "RT-01", UNLRT01_Init, 0 },
+	{ "81-01-31-C", BMC810131C_Init, 0 },
+	{ "8-IN-1", BMC8IN1_Init, 0 },
 
 	{ 0, 0, 0 }
 };
@@ -561,9 +567,7 @@ static void UNIFGI(GI h) {
 		if (UNIFchrrama) memset(UNIFchrrama, 0, 8192);
 		break;
 	case GI_CLOSE:
-		#ifndef GEKKO
 		FCEU_SaveGameSave(&UNIFCart);
-		#endif
 		if (UNIFCart.Close)
 			UNIFCart.Close();
 		FreeUNIF();
@@ -608,9 +612,7 @@ int UNIFLoad(const char *name, FCEUFILE *fp) {
 	if (!InitializeBoard())
 		goto aborto;
 
-	#ifndef GEKKO
 	FCEU_LoadGameSave(&UNIFCart);
-	#endif
 
 	strcpy(LoadedRomFName, name); //For the debugger list
 	GameInterface = UNIFGI;

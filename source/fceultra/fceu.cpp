@@ -56,8 +56,9 @@ extern bool isTaseditorRecording();
 extern int32 fps_scale;
 extern int32 fps_scale_unpaused;
 extern int32 fps_scale_frameadvance;
-extern void RefreshThrottleFPS();
 #endif
+
+extern void RefreshThrottleFPS();
 
 #ifdef _S9XLUA_H
 #include "fceulua.h"
@@ -74,11 +75,7 @@ extern void RefreshThrottleFPS();
 #include "drivers/win/memwatch.h"
 #include "drivers/win/tracer.h"
 #else
-#ifdef GEKKO
-#include "driver.h"
-#else
 #include "drivers/sdl/sdl.h"
-#endif
 #endif
 
 #include <fstream>
@@ -93,6 +90,20 @@ extern void RefreshThrottleFPS();
 
 using namespace std;
 
+//-----------
+//overclocking-related
+// overclock the console by adding dummy scanlines to PPU loop or to vblank
+// disables DMC DMA, WaveHi filling and image rendering for these dummies
+// doesn't work with new PPU
+bool overclock_enabled = 0;
+bool overclocking = 0;
+bool skip_7bit_overclocking = 1; // 7-bit samples have priority over overclocking
+int normalscanlines;
+int totalscanlines;
+int postrenderscanlines = 0;
+int vblankscanlines = 0;
+//------------
+
 int AFon = 1, AFoff = 1, AutoFireOffset = 0; //For keeping track of autofire settings
 bool justLagged = false;
 bool frameAdvanceLagSkip = false; //If this is true, frame advance will skip over lag frame (i.e. it will emulate 2 frames instead of 1)
@@ -101,7 +112,6 @@ bool movieSubtitles = true; //Toggle for displaying movie subtitles
 bool DebuggerWasUpdated = false; //To prevent the debugger from updating things without being updated.
 bool AutoResumePlay = false;
 char romNameWhenClosingEmulator[2048] = {0};
-int dendy = 0;
 
 FCEUGI::FCEUGI()
 	: filename(0),
@@ -140,10 +150,12 @@ void FCEU_TogglePPU(void) {
 	if (newppu) {
 		FCEU_DispMessage("New PPU loaded", 0);
 		FCEUI_printf("New PPU loaded");
+		overclock_enabled = 0;
 	} else {
 		FCEU_DispMessage("Old PPU loaded", 0);
 		FCEUI_printf("Old PPU loaded");
 	}
+	normalscanlines = (dendy ? 290 : 240)+newppu; // use flag as number!
 #ifdef WIN32
 	SetMainWindowText();
 #endif
@@ -348,16 +360,10 @@ uint8 PAL = 0;
 
 static DECLFW(BRAML) {
 	RAM[A] = V;
-	#ifdef _S9XLUA_H
-	CallRegisteredLuaMemHook(A, 1, V, LUAMEMHOOK_WRITE);
-	#endif
 }
 
 static DECLFW(BRAMH) {
 	RAM[A & 0x7FF] = V;
-	#ifdef _S9XLUA_H
-	CallRegisteredLuaMemHook(A & 0x7FF, 1, V, LUAMEMHOOK_WRITE);
-	#endif
 }
 
 static DECLFR(ARAML) {
@@ -384,7 +390,7 @@ void ResetGameLoaded(void) {
 	MMC5Hack = 0;
 	PEC586Hack = 0;
 	PAL &= 1;
-	pale = 0;
+	default_palette_selection = 0;
 }
 
 int UNIFLoad(const char *name, FCEUFILE *fp);
@@ -401,6 +407,8 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 	//attempt to open the files
 	FCEUFILE *fp;
 	char fullname[2048];	// this name contains both archive name and ROM file name
+	int lastpal = PAL;
+	int lastdendy = dendy;
 
 	const char* romextensions[] = { "nes", "fds", 0 };
 	fp = FCEU_fopen(name, 0, "rb", 0, -1, romextensions);
@@ -488,7 +496,8 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 // ################################## End of SP CODE ###########################
 #endif
 
-	FCEU_ResetVidSys();
+	if (OverwriteVidMode)
+		FCEU_ResetVidSys();
 
 	if (GameInfo->type != GIT_NSF)
 	{
@@ -510,6 +519,18 @@ FCEUGI *FCEUI_LoadGameVirtual(const char *name, int OverwriteVidMode, bool silen
 
 	FCEU_ResetPalette();
 	FCEU_ResetMessages();   // Save state, status messages, etc.
+
+	if (!lastpal && PAL) {
+		FCEU_DispMessage("PAL mode set", 0);
+		FCEUI_printf("PAL mode set");
+	} else if (!lastdendy && dendy) {
+		// this won't happen, since we don't autodetect dendy, but maybe someday we will?
+		FCEU_DispMessage("Dendy mode set", 0);
+		FCEUI_printf("Dendy mode set");
+	} else if ((lastpal || lastdendy) && !(PAL || dendy)) {
+		FCEU_DispMessage("NTSC mode set", 0);
+		FCEUI_printf("NTSC mode set");
+	}
 
 	if (GameInfo->type != GIT_NSF)
 		FCEU_LoadGameCheats(0);
@@ -712,10 +733,15 @@ void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int ski
 	extern int KillFCEUXonFrame;
 	if (KillFCEUXonFrame && (FCEUMOV_GetFrame() >= KillFCEUXonFrame))
 		DoFCEUExit();
+#else
+		extern int KillFCEUXonFrame;
+	if (KillFCEUXonFrame && (FCEUMOV_GetFrame() >= KillFCEUXonFrame))
+		exit(0);
 #endif
 
 	timestampbase += timestamp;
 	timestamp = 0;
+	soundtimestamp = 0;
 
 	*pXBuf = skip ? 0 : XBuf;
 	if (skip == 2) { //If skip = 2, then bypass sound
@@ -766,20 +792,38 @@ void ResetNES(void) {
 	extern uint8 *XBackBuf;
 	memset(XBackBuf, 0, 256 * 256);
 
-	//FCEU_DispMessage("Reset", 0);
+	FCEU_DispMessage("Reset", 0);
 }
+
+
+int RAMInitOption = 0;
+// Note: this option does not currently apply to WRAM.
+// Would it be appropriate to call FCEU_MemoryRand inside FCEU_gmalloc to initialize them?
 
 void FCEU_MemoryRand(uint8 *ptr, uint32 size) {
 	int x = 0;
 	while (size) {
-		*ptr = (x & 4) ? 0xFF : 0x00;	// Huang Di DEBUG MODE enabled by default
-										// Cybernoid NO MUSIC by default
-//		*ptr = (x & 4) ? 0x7F : 0x00;	// Huang Di DEBUG MODE enabled by default
-										// Minna no Taabou no Nakayoshi Daisakusen DOESN'T BOOT
-										// Cybernoid NO MUSIC by default
-//		*ptr = (x & 1) ? 0x55 : 0xAA;	// F-15 Sity War HISCORE is screwed...
-										// 1942 SCORE/HISCORE is screwed...
-//		*ptr = 0xFF;					// Work for all cases
+		uint8 v = 0;
+		switch (RAMInitOption)
+		{
+			default:
+			case 0: v = (x & 4) ? 0xFF : 0x00; break;
+			case 1: v = 0xFF; break;
+			case 2: v = 0x00; break;
+			case 3: v = uint8(rand()); break;
+
+			// the default is this 8 byte pattern: 00 00 00 00 FF FF FF FF
+			// it has been used in FCEUX since time immemorial
+
+			// Some games to examine uninitialied RAM problems with:
+			// * Cybernoid - music option starts turned off with default pattern
+			// * Huang Di - debug mode is enabled with default pattern
+			// * Minna no Taabou no Nakayoshi Daisakusen - fails to boot with some patterns
+			// * F-15 City War - high score table
+			// * 1942 - high score table
+			// * Cheetahmen II - may start in different levels with different RAM startup
+		}
+		*ptr = v;
 		x++;
 		size--;
 		ptr++;
@@ -798,13 +842,6 @@ void PowerNES(void) {
 
 	FCEU_GeniePower();
 
-	//dont do this, it breaks some games: Cybernoid; Minna no Taabou no Nakayoshi Daisakusen; and maybe mechanized attack
-	//memset(RAM,0xFF,0x800);
-	//this fixes the above, but breaks Huang Di, which expects $100 to be non-zero or else it believes it has debug cheats enabled, giving you moon jump and other great but likely unwanted things
-	//FCEU_MemoryRand(RAM,0x800);
-	//this should work better, based on observational evidence. fixes all of the above:
-	//for(int i=0;i<0x800;i++) if(i&1) RAM[i] = 0xAA; else RAM[i] = 0x55;
-	//but we're leaving this for now until we collect some more data
 	FCEU_MemoryRand(RAM, 0x800);
 
 	SetReadHandler(0x0000, 0xFFFF, ANull);
@@ -845,7 +882,7 @@ void PowerNES(void) {
 	Update_RAM_Search(); // Update_RAM_Watch() is also called.
 #endif
 
-	//FCEU_DispMessage("Power on", 0);
+	FCEU_DispMessage("Power on", 0);
 }
 
 void FCEU_ResetVidSys(void) {
@@ -861,6 +898,14 @@ void FCEU_ResetVidSys(void) {
 
 	PAL = w ? 1 : 0;
 
+	if (PAL)
+		dendy = 0;
+
+	if (newppu)
+		overclock_enabled = 0;
+
+	normalscanlines = (dendy ? 290 : 240)+newppu; // use flag as number!
+	totalscanlines = normalscanlines + (overclock_enabled ? postrenderscanlines : 0);
 	FCEUPPU_SetVideoSystem(w || dendy);
 	SetSoundVariables();
 }
@@ -868,7 +913,6 @@ void FCEU_ResetVidSys(void) {
 FCEUS FSettings;
 
 void FCEU_printf(char *format, ...) {
-#ifndef GEKKO
 	char temp[2048];
 
 	va_list ap;
@@ -877,12 +921,17 @@ void FCEU_printf(char *format, ...) {
 	vsnprintf(temp, sizeof(temp), format, ap);
 	FCEUD_Message(temp);
 
-	va_end(ap);
+#if 0
+	FILE *ofile;
+	ofile = fopen("stdout.txt", "ab");
+	fwrite(temp, 1, strlen(temp), ofile);
+	fclose(ofile);
 #endif
+
+	va_end(ap);
 }
 
 void FCEU_PrintError(char *format, ...) {
-#ifndef GEKKO
 	char temp[2048];
 
 	va_list ap;
@@ -892,7 +941,6 @@ void FCEU_PrintError(char *format, ...) {
 	FCEUD_PrintError(temp);
 
 	va_end(ap);
-#endif
 }
 
 void FCEUI_SetRenderedLines(int ntscf, int ntscl, int palf, int pall) {
@@ -925,30 +973,56 @@ int FCEUI_GetCurrentVidSystem(int *slstart, int *slend) {
 		*slend = FSettings.LastSLine;
 	return(PAL);
 }
-/*
-// TODO: make use on SDL
-void FCEUI_SetRegion(int region) {
+
+void FCEUI_SetRegion(int region, int notify) {
 	switch (region) {
 		case 0: // NTSC
+			normalscanlines = 240;
 			pal_emulation = 0;
 			dendy = 0;
+// until it's fixed on sdl. see issue #740
+#ifdef WIN32
+			if (notify)
+			{
+				FCEU_DispMessage("NTSC mode set", 0);
+				FCEUI_printf("NTSC mode set");
+			}
+#endif
 			break;
 		case 1: // PAL
+			normalscanlines = 240;
 			pal_emulation = 1;
 			dendy = 0;
+#ifdef WIN32			
+			if (notify)
+			{
+				FCEU_DispMessage("PAL mode set", 0);
+				FCEUI_printf("PAL mode set");
+			}
+#endif
 			break;
 		case 2: // Dendy
+			normalscanlines = 290;
 			pal_emulation = 0;
 			dendy = 1;
+#ifdef WIN32			
+			if (notify)
+			{
+				FCEU_DispMessage("Dendy mode set", 0);
+				FCEUI_printf("Dendy mode set");
+			}
+#endif
 			break;
 	}
+	normalscanlines += newppu;
+	totalscanlines = normalscanlines + (overclock_enabled ? postrenderscanlines : 0);
 	FCEUI_SetVidSystem(pal_emulation);
 	RefreshThrottleFPS();
 #ifdef WIN32
 	UpdateCheckedMenuItems();
 	PushCurrentVideoSettings();
 #endif
-}*/
+}
 
 //Enable or disable Game Genie option.
 void FCEUI_SetGameGenie(bool a) {
@@ -1052,9 +1126,6 @@ int FCEU_TextScanlineOffsetFromBottom(int y) {
 }
 
 bool FCEU_IsValidUI(EFCEUI ui) {
-#ifdef GEKKO
-	return true;
-#endif
 	switch (ui) {
 	case FCEUI_OPENGAME:
 	case FCEUI_CLOSEGAME:
@@ -1165,8 +1236,6 @@ void FCEUXGameInterface(GI command) {
 	}
 }
 
-
-
 bool FCEUXLoad(const char *name, FCEUFILE *fp) {
 	//read ines header
 	iNES_HEADER head;
@@ -1218,11 +1287,26 @@ bool FCEUXLoad(const char *name, FCEUFILE *fp) {
 	return true;
 }
 
-
 uint8 FCEU_ReadRomByte(uint32 i) {
 	extern iNES_HEADER head;
-	if (i < 16) return *((unsigned char*)&head + i);
-	if (i < 16 + PRGsize[0]) return PRGptr[0][i - 16];
-	if (i < 16 + PRGsize[0] + CHRsize[0]) return CHRptr[0][i - 16 - PRGsize[0]];
+	if (i < 16)
+		return *((unsigned char*)&head + i);
+	if (i < 16 + PRGsize[0])
+		return PRGptr[0][i - 16];
+	if (i < 16 + PRGsize[0] + CHRsize[0])
+		return CHRptr[0][i - 16 - PRGsize[0]];
 	return 0;
+}
+
+void FCEU_WriteRomByte(uint32 i, uint8 value) {
+	if (i < 16)
+#ifdef WIN32
+		MessageBox(hMemView,"Sorry", "You can't edit the ROM header.", MB_OK);
+#else
+		printf("Sorry, you can't edit the ROM header.\n");
+#endif
+	if (i < 16 + PRGsize[0])
+		PRGptr[0][i - 16] = value;
+	else if (i < 16 + PRGsize[0] + CHRsize[0])
+		CHRptr[0][i - 16 - PRGsize[0]] = value;
 }
