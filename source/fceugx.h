@@ -12,6 +12,7 @@
 #ifndef _FCEUGX_H_
 #define _FCEUGX_H_
 
+#define MAXPATHLEN 1024
 #include <unistd.h>
 
 #include "fceultra/driver.h"

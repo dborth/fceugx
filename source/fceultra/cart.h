@@ -66,21 +66,21 @@ void setprg8(uint32 A, uint32 V);
 void setprg16(uint32 A, uint32 V);
 void setprg32(uint32 A, uint32 V);
 
-void setprg2r(int r, unsigned int A, unsigned int V);
-void setprg4r(int r, unsigned int A, unsigned int V);
-void setprg8r(int r, unsigned int A, unsigned int V);
-void setprg16r(int r, unsigned int A, unsigned int V);
-void setprg32r(int r, unsigned int A, unsigned int V);
+void setprg2r(int r, uint32 A, uint32 V);
+void setprg4r(int r, uint32 A, uint32 V);
+void setprg8r(int r, uint32 A, uint32 V);
+void setprg16r(int r, uint32 A, uint32 V);
+void setprg32r(int r, uint32 A, uint32 V);
 
-void setchr1r(int r, unsigned int A, unsigned int V);
-void setchr2r(int r, unsigned int A, unsigned int V);
-void setchr4r(int r, unsigned int A, unsigned int V);
-void setchr8r(int r, unsigned int V);
+void setchr1r(int r, uint32 A, uint32 V);
+void setchr2r(int r, uint32 A, uint32 V);
+void setchr4r(int r, uint32 A, uint32 V);
+void setchr8r(int r, uint32 V);
 
-void setchr1(unsigned int A, unsigned int V);
-void setchr2(unsigned int A, unsigned int V);
-void setchr4(unsigned int A, unsigned int V);
-void setchr8(unsigned int V);
+void setchr1(uint32 A, uint32 V);
+void setchr2(uint32 A, uint32 V);
+void setchr4(uint32 A, uint32 V);
+void setchr8(uint32 V);
 
 void setmirror(int t);
 void setmirrorw(int a, int b, int c, int d);

@@ -156,7 +156,7 @@ void ShutdownAudio()
  * Puts incoming mono samples into mixbuffer
  * Splits mono samples into two channels (stereo)
  ****************************************************************************/
-void PlaySound( int *Buffer, int count )
+void PlaySound( int32 *Buffer, int count )
 {
 	int i;
 	u16 sample;

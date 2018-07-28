@@ -331,7 +331,7 @@ int FileSortCallback(const void *f1, const void *f2)
 	if(((BROWSERENTRY *)f1)->isdir && !(((BROWSERENTRY *)f2)->isdir)) return -1;
 	if(!(((BROWSERENTRY *)f1)->isdir) && ((BROWSERENTRY *)f2)->isdir) return 1;
 
-	return stricmp(((BROWSERENTRY *)f1)->filename, ((BROWSERENTRY *)f2)->filename);
+	return strcasecmp(((BROWSERENTRY *)f1)->filename, ((BROWSERENTRY *)f2)->filename);
 }
 
 /****************************************************************************
@@ -366,7 +366,7 @@ static bool IsValidROM()
 			
 			char * zippedFilename = NULL;
 
-			if(stricmp(p, ".zip") == 0 && !inSz)
+			if(strcasecmp(p, ".zip") == 0 && !inSz)
 			{
 				// we need to check the file extension of the first file in the archive
 				zippedFilename = GetFirstZipFilename ();
@@ -380,12 +380,12 @@ static bool IsValidROM()
 			if(p != NULL)
 			{
 				if (
-					stricmp(p, ".nes") == 0 ||
-					stricmp(p, ".fds") == 0 ||
-					stricmp(p, ".nsf") == 0 ||
-					stricmp(p, ".unf") == 0 ||
-					stricmp(p, ".nez") == 0 ||
-					stricmp(p, ".unif") == 0
+					strcasecmp(p, ".nes") == 0 ||
+					strcasecmp(p, ".fds") == 0 ||
+					strcasecmp(p, ".nsf") == 0 ||
+					strcasecmp(p, ".unf") == 0 ||
+					strcasecmp(p, ".nez") == 0 ||
+					strcasecmp(p, ".unif") == 0
 				)
 				{
 					if(zippedFilename) free(zippedFilename);
@@ -411,7 +411,7 @@ bool IsSz()
 		char * p = strrchr(browserList[browser.selIndex].filename, '.');
 
 		if (p != NULL)
-			if(stricmp(p, ".7z") == 0)
+			if(strcasecmp(p, ".7z") == 0)
 				return true;
 	}
 	return false;
