@@ -34,7 +34,7 @@ int FDSSwitchRequested;
 /*** External 2D Video ***/
 /*** 2D Video Globals ***/
 GXRModeObj *vmode  = NULL; // Graphics Mode Object
-static unsigned int *xfb[2] = { NULL, NULL }; // Framebuffers
+static u32 *xfb[2] = { NULL, NULL }; // Framebuffers
 static int whichfb = 0; // Frame buffer toggle
 int screenheight = 480;
 int screenwidth = 640;
