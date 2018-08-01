@@ -3,6 +3,12 @@
 
 //include this file LAST, or else the #defines will overwrite CRT and STL symbols
 
+#ifdef GEKKO
+#undef _X
+#undef _S
+#undef _P
+#endif
+
 #define _PC        X.PC
 #define _A         X.A
 #define _X         X.X

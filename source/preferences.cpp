@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
+#include <sys/stat.h>
 #include <ogcsys.h>
 #include <mxml.h>
 
@@ -275,17 +276,12 @@ decodePrefsData ()
 				int verMajor = version[0] - '0';
 				int verMinor = version[2] - '0';
 				int verPoint = version[4] - '0';
-				int curMajor = APPVERSION[0] - '0';
-				int curMinor = APPVERSION[2] - '0';
-				int curPoint = APPVERSION[4] - '0';
 
-				// first we'll check that the versioning is valid
-				if(!(verMajor >= 0 && verMajor <= 9 &&
+				// check that the versioning is valid
+				if(!(verMajor >= 3 && verMajor <= 9 &&
 					verMinor >= 0 && verMinor <= 9 &&
 					verPoint >= 0 && verPoint <= 9))
 					result = false;
-				else if(verMajor < 3) // less than version 3.0.0
-					result = false; // reset settings
 				else
 					result = true;
 			}
@@ -583,6 +579,8 @@ bool LoadPrefs()
 	sprintf(filepath[0], "carda:/%s", APPFOLDER);
 	sprintf(filepath[1], "cardb:/%s", APPFOLDER);
 #endif
+
+	printf("in load prefs\n");
 
 	for(int i=0; i<numDevices; i++)
 	{

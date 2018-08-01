@@ -12,7 +12,6 @@
 #ifndef _FCEUGX_H_
 #define _FCEUGX_H_
 
-#define MAXPATHLEN 1024
 #include <unistd.h>
 
 #include "fceultra/driver.h"
@@ -22,6 +21,7 @@
 #define APPFOLDER 		"fceugx"
 #define PREF_FILE_NAME	"settings.xml"
 
+#define MAXPATHLEN 1024
 #define NOTSILENT 0
 #define SILENT 1
 

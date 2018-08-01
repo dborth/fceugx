@@ -28,18 +28,22 @@ INCLUDES	:=	source
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-CFLAGS		=	-g -O3 -LTO -Wall $(MACHDEP) $(INCLUDE) \
+SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) \
 				-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
-				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DUSE_VM \
+				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DNOUNCRYPT -DNO_SOUND -DUSE_VM \
 				-fomit-frame-pointer \
-				-Wno-unused-parameter -Wno-strict-aliasing -Wno-write-strings
-CXXFLAGS	=	$(CFLAGS)
-LDFLAGS		=	-g $(MACHDEP) -LTO -Wl,-Map,$(notdir $@).map
+				-Wno-format -Wno-format-overflow -Wno-stringop-overflow -Wno-format-truncation \
+				-Wno-unused-parameter -Wno-strict-aliasing -Wno-write-strings -Wno-stringop-truncation -Wno-sign-compare \
+				-Wno-unused-variable -Wno-parentheses -Wno-unused-function -Wno-switch -Wno-unused-but-set-variable \
+				-Wno-narrowing -Wno-misleading-indentation -Wno-restrict -Wno-maybe-uninitialized
+CFLAGS		=	$(SHAREDFLAGS) -Wno-incompatible-pointer-types
+CXXFLAGS	=	$(SHAREDFLAGS) -Wno-catch-value -Wno-class-memaccess
+LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lpng -lmxml -ltinysmb -lbba -lfat -liso9660 -lvorbisidec -lasnd -lz -logc -lfreetype
+LIBS	:= -lpng -lmxml -ltinysmb -lbba -lfat -liso9660 -lasnd -lz -logc -lfreetype
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -71,7 +75,6 @@ SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 TTFFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.ttf)))
 LANGFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.lang)))
 PNGFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.png)))
-OGGFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.ogg)))
 PCMFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.pcm)))
 
 #---------------------------------------------------------------------------------
@@ -87,7 +90,7 @@ export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(sFILES:.s=.o) $(SFILES:.S=.o) \
 					$(TTFFILES:.ttf=.ttf.o) $(LANGFILES:.lang=.lang.o) \
 					$(PNGFILES:.png=.png.o) \
-					$(OGGFILES:.ogg=.ogg.o) $(PCMFILES:.pcm=.pcm.o) 
+					$(PCMFILES:.pcm=.pcm.o) 
 
 #---------------------------------------------------------------------------------
 # build a list of include paths
@@ -138,7 +141,7 @@ $(OUTPUT).dol: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
 
 #---------------------------------------------------------------------------------
-# This rule links in binary data with these extensions: ttf lang png ogg pcm
+# This rule links in binary data with these extensions: ttf lang png pcm
 #---------------------------------------------------------------------------------
 %.ttf.o : %.ttf
 	@echo $(notdir $<)
@@ -149,10 +152,6 @@ $(OUTPUT).elf: $(OFILES)
 	$(bin2o)
 
 %.png.o : %.png
-	@echo $(notdir $<)
-	$(bin2o)
-
-%.ogg.o : %.ogg
 	@echo $(notdir $<)
 	$(bin2o)
 
