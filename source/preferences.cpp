@@ -580,8 +580,6 @@ bool LoadPrefs()
 	sprintf(filepath[1], "cardb:/%s", APPFOLDER);
 #endif
 
-	printf("in load prefs\n");
-
 	for(int i=0; i<numDevices; i++)
 	{
 		prefFound = LoadPrefsFromMethod(filepath[i]);
@@ -594,6 +592,13 @@ bool LoadPrefs()
 
 	if(prefFound)
 		FixInvalidSettings();
+
+	// attempt to create screenshots directory if it doesn't exist
+	if(GCSettings.LoadMethod != DEVICE_AUTO) {
+		char dirPath[MAXPATHLEN];
+		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.ScreenshotsFolder);
+		CreateDirectory(dirPath);
+	}
 
 	ResetText();
 	return prefFound;
