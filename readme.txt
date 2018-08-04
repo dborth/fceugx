@@ -37,6 +37,13 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.4.0]
+
+* Allow loader to pass two arguments instead of three (libertyernie)
+* Add PocketNES interoperability (load ROMs and read/write SRAM)
+* Add option to not append " Auto" on saves
+* Compiled with latest libOGC/devkitPPC
+
 [3.3.9 - December 10, 2016]
 
 * Hide saving dialog that pops up briefly when returning from a game
