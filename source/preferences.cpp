@@ -372,7 +372,7 @@ void FixInvalidSettings()
 	if(!(GCSettings.yshift > -50 && GCSettings.yshift < 50))
 		GCSettings.yshift = 0;
 	if(!(GCSettings.MusicVolume >= 0 && GCSettings.MusicVolume <= 100))
-		GCSettings.MusicVolume = 40;
+		GCSettings.MusicVolume = 20;
 	if(!(GCSettings.SFXVolume >= 0 && GCSettings.SFXVolume <= 100))
 		GCSettings.SFXVolume = 40;
 	if(GCSettings.language < 0 || GCSettings.language >= LANG_LENGTH)
@@ -417,7 +417,7 @@ DefaultSettings ()
 
 	GCSettings.WiimoteOrientation = 0;
 	GCSettings.ExitAction = 0; // Auto
-	GCSettings.MusicVolume = 40;
+	GCSettings.MusicVolume = 20;
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1; // Enabled
 	GCSettings.DisplayVM = 0; // Disabled
@@ -593,10 +593,12 @@ bool LoadPrefs()
 	if(prefFound)
 		FixInvalidSettings();
 
-	// attempt to create screenshots directory if it doesn't exist
+	// attempt to create directories if they don't exist
 	if(GCSettings.LoadMethod != DEVICE_AUTO) {
 		char dirPath[MAXPATHLEN];
 		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.ScreenshotsFolder);
+		CreateDirectory(dirPath);
+		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.CheatFolder);
 		CreateDirectory(dirPath);
 	}
 
