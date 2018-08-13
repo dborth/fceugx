@@ -13,12 +13,11 @@
 #endif
 #endif
 
-#include <stdint.h>
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifdef GEKKO
 typedef uint8_t uint8 ;
 typedef int8_t int8 ;
 
@@ -27,6 +26,16 @@ typedef int16_t int16 ;
 
 typedef uint32_t uint32 ;
 typedef int32_t int32 ;
+#else
+typedef unsigned char uint8 ;
+typedef signed char int8 ;
+
+typedef unsigned short uint16 ;
+typedef signed short int16 ;
+
+typedef unsigned int uint32 ;
+typedef signed int int32 ;
+#endif
 
 #define PI 3.14159265358979323846
 

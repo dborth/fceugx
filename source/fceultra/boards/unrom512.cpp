@@ -197,7 +197,7 @@ static void UNROM512LSync() {
 		}
 		else if (latche==0x10)
 		{
-			for(int i=0;i<(ROM_size*4);i++)
+			for(uint32 i=0;i<(ROM_size*4);i++)
 				inc_flash_write_count(i>>2,i<<12);
 			memset(flashdata,0xFF,ROM_size*0x4000);	//Erasing the rom chip as instructed. Crash rate calulated to be 99.9% :)
 		}
@@ -240,8 +240,24 @@ void UNROM512_Init(CartInfo *info) {
 		chrram_mask = 0x20;
 	else
 		chrram_mask = 0x60;
-	
-	SetupCartMirroring(info->mirror,(info->mirror>=MI_0)?0:1,0);
+
+	int mirror = (head.ROM_type & 1) | ((head.ROM_type & 8) >> 2);
+	switch (mirror)
+	{
+	case 0: // hard horizontal, internal
+		SetupCartMirroring(MI_H, 1, NULL);
+		break;
+	case 1: // hard vertical, internal
+		SetupCartMirroring(MI_V, 1, NULL);
+		break;
+	case 2: // switchable 1-screen, internal (flags: 4-screen + horizontal)
+		SetupCartMirroring(MI_0, 0, NULL);
+		break;
+	case 3: // hard four screen, last 8k of 32k RAM (flags: 4-screen + vertical)
+		SetupCartMirroring(   4, 1, VROM + (info->vram_size - 8192));
+		break;
+	}
+
 	bus_conflict = !info->battery;
 	latcheinit = 0;
 	WLSync = UNROM512LSync;

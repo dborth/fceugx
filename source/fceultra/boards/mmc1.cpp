@@ -22,12 +22,13 @@
 #include "mapinc.h"
 
 static void GenMMC1Power(void);
-static void GenMMC1Init(CartInfo *info, int prg, int chr, int wram, int battery);
+static void GenMMC1Init(CartInfo *info, int prg, int chr, int wram, int bram);
 
 static uint8 DRegs[4];
 static uint8 Buffer, BufferShift;
 
-static int mmc1opts;
+static uint32 WRAMSIZE;
+static uint32 NONBRAMSIZE; // size of non-battery-backed portion of WRAM
 
 static void (*MMC1CHRHook4)(uint32 A, uint8 V);
 static void (*MMC1PRGHook16)(uint32 A, uint8 V);
@@ -48,9 +49,9 @@ static DECLFR(MAWRAM) {
 }
 
 static void MMC1CHR(void) {
-	if (mmc1opts & 4) {
-		if (DRegs[0] & 0x10)
-			setprg8r(0x10, 0x6000, (DRegs[1] >> 4) & 1);
+	if (WRAMSIZE > 0x2000) {
+		if (WRAMSIZE > 0x4000)
+			setprg8r(0x10, 0x6000, (DRegs[1] >> 2) & 3);
 		else
 			setprg8r(0x10, 0x6000, (DRegs[1] >> 3) & 1);
 	}
@@ -73,37 +74,38 @@ static void MMC1CHR(void) {
 }
 
 static void MMC1PRG(void) {
-	uint8 offs = DRegs[1] & 0x10;
+	uint8 offs_16banks = DRegs[1] & 0x10;
+	uint8 prg_reg = DRegs[3] & 0xF; //homebrewers arent allowed to use more banks on MMC1. use another mapper.
 	if (MMC1PRGHook16) {
 		switch (DRegs[0] & 0xC) {
 		case 0xC:
-			MMC1PRGHook16(0x8000, (DRegs[3] + offs));
-			MMC1PRGHook16(0xC000, 0xF + offs);
+			MMC1PRGHook16(0x8000, (prg_reg + offs_16banks));
+			MMC1PRGHook16(0xC000, 0xF + offs_16banks);
 			break;
 		case 0x8:
-			MMC1PRGHook16(0xC000, (DRegs[3] + offs));
-			MMC1PRGHook16(0x8000, offs);
+			MMC1PRGHook16(0xC000, (prg_reg + offs_16banks));
+			MMC1PRGHook16(0x8000, offs_16banks);
 			break;
 		case 0x0:
 		case 0x4:
-			MMC1PRGHook16(0x8000, ((DRegs[3] & ~1) + offs));
-			MMC1PRGHook16(0xc000, ((DRegs[3] & ~1) + offs + 1));
+			MMC1PRGHook16(0x8000, ((prg_reg & ~1) + offs_16banks));
+			MMC1PRGHook16(0xc000, ((prg_reg & ~1) + offs_16banks + 1));
 			break;
 		}
 	} else {
 		switch (DRegs[0] & 0xC) {
 		case 0xC:
-			setprg16(0x8000, (DRegs[3] + offs));
-			setprg16(0xC000, 0xF + offs);
+			setprg16(0x8000, (prg_reg + offs_16banks));
+			setprg16(0xC000, 0xF + offs_16banks);
 			break;
 		case 0x8:
-			setprg16(0xC000, (DRegs[3] + offs));
-			setprg16(0x8000, offs);
+			setprg16(0xC000, (prg_reg + offs_16banks));
+			setprg16(0x8000, offs_16banks);
 			break;
 		case 0x0:
 		case 0x4:
-			setprg16(0x8000, ((DRegs[3] & ~1) + offs));
-			setprg16(0xc000, ((DRegs[3] & ~1) + offs + 1));
+			setprg16(0x8000, ((prg_reg & ~1) + offs_16banks));
+			setprg16(0xc000, ((prg_reg & ~1) + offs_16banks + 1));
 			break;
 		}
 	}
@@ -178,20 +180,39 @@ static void MMC1CMReset(void) {
 	MMC1PRG();
 }
 
-static int DetectMMC1WRAMSize(uint32 crc32) {
-	switch (crc32) {
+static int DetectMMC1WRAMSize(CartInfo *info, int *bs) {
+	int ws = 8;
+	switch (info->CRC32) {
 	case 0xc6182024:	// Romance of the 3 Kingdoms
+	case 0xabbf7217:	// ""        "" (J) (PRG0)
+	case 0xccf35c02:	// ""        "" (J) (PRG1)
 	case 0x2225c20f:	// Genghis Khan
+	case 0xfb69743a:	// ""        "" (J)
 	case 0x4642dda6:	// Nobunaga's Ambition
-	case 0x29449ba9:	// ""        "" (J)
-	case 0x2b11e0b0:	// ""        "" (J)
-	case 0xb8747abf:	// Best Play Pro Yakyuu Special (J)
-	case 0xc9556b36:	// Final Fantasy I & II (J) [!]
-		FCEU_printf(" >8KB external WRAM present.  Use UNIF if you hack the ROM image.\n");
-		return(16);
+	case 0x3f7ad415:	// ""        "" (J) (PRG0)
+	case 0x2b11e0b0:	// ""        "" (J) (PRG1)
+		*bs = 8;
+		ws = 16;
 		break;
-	default: return(8);
+	case 0xb8747abf:	// Best Play Pro Yakyuu Special (J) (PRG0)
+	case 0xc3de7c69:	// ""        "" (J) (PRG1)
+	case 0xc9556b36:	// Final Fantasy I & II (J) [!]
+		*bs = 32;
+		ws = 32;
+		break;
+	default:
+		if(info->ines2) {
+			ws = (info->wram_size + info->battery_wram_size) / 1024;
+			*bs = info->battery_wram_size / 1024;
+			// we only support sizes between 8K and 32K
+			if (ws > 0 && ws < 8) ws = 8;
+			if (ws > 32) ws = 32;
+			if (*bs > ws) *bs = ws;
+		}
 	}
+	if (ws > 8)
+		FCEU_printf(" >8KB external WRAM present.  Use NES 2.0 if you hack the ROM image.\n");
+	return ws;
 }
 
 static uint32 NWCIRQCount;
@@ -243,17 +264,16 @@ void Mapper105_Init(CartInfo *info) {
 
 static void GenMMC1Power(void) {
 	lreset = 0;
-	if (mmc1opts & 1) {
-		FCEU_CheatAddRAM(8, 0x6000, WRAM);
-		if (mmc1opts & 4)
-			FCEU_dwmemset(WRAM, 0, 8192)
-		else if (!(mmc1opts & 2))
-			FCEU_dwmemset(WRAM, 0, 8192);	// wtf?
-	}
 	SetWriteHandler(0x8000, 0xFFFF, MMC1_write);
 	SetReadHandler(0x8000, 0xFFFF, CartBR);
 
-	if (mmc1opts & 1) {
+	if (WRAMSIZE) {
+		FCEU_CheatAddRAM(8, 0x6000, WRAM);
+
+		// clear non-battery-backed portion of WRAM
+		if (NONBRAMSIZE)
+			FCEU_MemoryRand(WRAM, NONBRAMSIZE, true);
+
 		SetReadHandler(0x6000, 0x7FFF, MAWRAM);
 		SetWriteHandler(0x6000, 0x7FFF, MBWRAM);
 		setprg8r(0x10, 0x6000, 0);
@@ -270,31 +290,24 @@ static void GenMMC1Close(void) {
 	CHRRAM = WRAM = NULL;
 }
 
-static void GenMMC1Init(CartInfo *info, int prg, int chr, int wram, int battery) {
+static void GenMMC1Init(CartInfo *info, int prg, int chr, int wram, int bram) {
 	is155 = 0;
 
 	info->Close = GenMMC1Close;
 	MMC1PRGHook16 = MMC1CHRHook4 = 0;
-	mmc1opts = 0;
+	WRAMSIZE = wram * 1024;
+	NONBRAMSIZE = (wram - bram) * 1024;
 	PRGmask16[0] &= (prg >> 14) - 1;
 	CHRmask4[0] &= (chr >> 12) - 1;
 	CHRmask8[0] &= (chr >> 13) - 1;
 
-	if (wram) {
-		WRAM = (uint8*)FCEU_gmalloc(wram * 1024);
-		//mbg 17-jun-08 - this shouldve been cleared to re-initialize save ram
-		//ch4 10-dec-08 - nope, this souldn't
-		//mbg 29-mar-09 - no time to debate this, we need to keep from breaking some old stuff.
-		//we really need to make up a policy for how compatibility and accuracy can be resolved.
-		memset(WRAM, 0, wram * 1024);
-		mmc1opts |= 1;
-		if (wram > 8) mmc1opts |= 4;
-		SetupCartPRGMapping(0x10, WRAM, wram * 1024, 1);
-		AddExState(WRAM, wram * 1024, 0, "WRAM");
-		if (battery) {
-			mmc1opts |= 2;
-			info->SaveGame[0] = WRAM + ((mmc1opts & 4) ? 8192 : 0);
-			info->SaveGameLen[0] = 8192;
+	if (WRAMSIZE) {
+		WRAM = (uint8*)FCEU_gmalloc(WRAMSIZE);
+		SetupCartPRGMapping(0x10, WRAM, WRAMSIZE, 1);
+		AddExState(WRAM, WRAMSIZE, 0, "WRAM");
+		if (bram) {
+			info->SaveGame[0] = WRAM + NONBRAMSIZE;
+			info->SaveGameLen[0] = bram * 1024;
 		}
 	}
 	if (!chr) {
@@ -312,13 +325,14 @@ static void GenMMC1Init(CartInfo *info, int prg, int chr, int wram, int battery)
 }
 
 void Mapper1_Init(CartInfo *info) {
-	int ws = DetectMMC1WRAMSize(info->CRC32);
-	GenMMC1Init(info, 512, 256, ws, info->battery);
+	int bs = info->battery ? 8 : 0;
+	int ws = DetectMMC1WRAMSize(info, &bs);
+	GenMMC1Init(info, 512, 256, ws, bs);
 }
 
 /* Same as mapper 1, without respect for WRAM enable bit. */
 void Mapper155_Init(CartInfo *info) {
-	GenMMC1Init(info, 512, 256, 8, info->battery);
+	GenMMC1Init(info, 512, 256, 8, info->battery ? 8 : 0);
 	is155 = 1;
 }
 
@@ -330,7 +344,7 @@ void Mapper171_Init(CartInfo *info) {
 }
 
 void SAROM_Init(CartInfo *info) {
-	GenMMC1Init(info, 128, 64, 8, info->battery);
+	GenMMC1Init(info, 128, 64, 8, info->battery ? 8 : 0);
 }
 
 void SBROM_Init(CartInfo *info) {
@@ -350,7 +364,7 @@ void SGROM_Init(CartInfo *info) {
 }
 
 void SKROM_Init(CartInfo *info) {
-	GenMMC1Init(info, 256, 64, 8, info->battery);
+	GenMMC1Init(info, 256, 64, 8, info->battery ? 8 : 0);
 }
 
 void SLROM_Init(CartInfo *info) {
@@ -382,11 +396,9 @@ void SHROM_Init(CartInfo *info) {
 /*              */
 
 void SNROM_Init(CartInfo *info) {
-	GenMMC1Init(info, 256, 0, 8, info->battery);
+	GenMMC1Init(info, 256, 0, 8, info->battery ? 8 : 0);
 }
 
 void SOROM_Init(CartInfo *info) {
-	GenMMC1Init(info, 256, 0, 16, info->battery);
+	GenMMC1Init(info, 256, 0, 16, info->battery ? 8 : 0);
 }
-
-

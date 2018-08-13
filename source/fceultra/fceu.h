@@ -7,13 +7,22 @@ extern int fceuindbg;
 extern int newppu;
 void ResetGameLoaded(void);
 
+//overclocking-related
+extern bool overclock_enabled;
+extern bool overclocking;
+extern bool skip_7bit_overclocking;
+extern int normalscanlines;
+extern int totalscanlines;
+extern int postrenderscanlines;
+extern int vblankscanlines;
+
 extern bool AutoResumePlay;
 extern char romNameWhenClosingEmulator[];
 
 #define DECLFR(x) uint8 x (uint32 A)
 #define DECLFW(x) void x (uint32 A, uint8 V)
 
-void FCEU_MemoryRand(uint8 *ptr, uint32 size);
+void FCEU_MemoryRand(uint8 *ptr, uint32 size, bool default_zero=false);
 void SetReadHandler(int32 start, int32 end, readfunc func);
 void SetWriteHandler(int32 start, int32 end, writefunc func);
 writefunc GetWriteHandler(int32 a);
@@ -54,6 +63,7 @@ extern  uint8  *RAM;            //shared memory modifications
 extern int EmulationPaused;
 
 uint8 FCEU_ReadRomByte(uint32 i);
+void FCEU_WriteRomByte(uint32 i, uint8 value);
 
 extern readfunc ARead[0x10000];
 extern writefunc BWrite[0x10000];
@@ -121,7 +131,7 @@ void FCEU_DispMessage(char *format, int disppos, ...);
 void FCEU_DispMessageOnMovie(char *format, ...);
 void FCEU_TogglePPU();
 
-void SetNESDeemph(uint8 d, int force);
+void SetNESDeemph_OldHacky(uint8 d, int force);
 void DrawTextTrans(uint8 *dest, uint32 width, uint8 *textmsg, uint8 fgcolor);
 void FCEU_PutImage(void);
 #ifdef FRAMESKIP
@@ -134,7 +144,7 @@ extern void PushCurrentVideoSettings();
 #endif
 
 extern uint8 Exit;
-extern uint8 pale;
+extern int default_palette_selection;
 extern uint8 vsdip;
 
 //#define FCEUDEF_DEBUGGER //mbg merge 7/17/06 - cleaning out conditional compiles

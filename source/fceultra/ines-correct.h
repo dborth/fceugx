@@ -62,6 +62,7 @@
 	{0x02cc3973,	  3,		1},	/* Ninja Kid */
 	{0xbc065fc3,	  3,		1},	/* Pipe Dream */
 	{0xc9ee15a7,	  3,	   -1},	/* 3 is probably best.  41 WILL NOT WORK. */
+	{0x13e09d7a,	  4,		0}, /*Dragon Wars (U) (proto) - comes with erroneous 4-screen mirroring set*/
 	{0x22d6d5bd,	  4,		1},
 	{0xd97c31b0,	  4,		1},	//Rasaaru Ishii no Childs Quest (J)
 	{0x404b2e8b,	  4,		2},	/* Rad Racer 2 */
@@ -83,7 +84,6 @@
 	{0x6e68e31a,	 16,		8},	/* Dragon Ball 3*/
 	{0x33b899c9,	 16,	   -1},	/* Dragon Ball - Dai Maou Fukkatsu (J) [!] */
 	{0xa262a81f,	 16,	   -1},	/* Rokudenashi Blues (J) */
-	{0x286fcd20,	 23,	   -1},	/* Ganbare Goemon Gaiden 2 - Tenka no Zaihou (J) [!] */
 	{0xe4a291ce,	 23,	   -1},	/* World Hero (Unl) [!] */
 	{0x51e9cd33,	 23,	   -1},	/* World Hero (Unl) [b1] */
 	{0x105dd586,	 27,	   -1},	/* Mi Hun Che variations... */
@@ -257,10 +257,28 @@
 	{0x345ee51a,	245,	   -1},	/* DQ4c */
 	{0x57514c6c,	245,	   -1},	/* Yong Zhe Dou E Long - Dragon Quest VI (Ch) */
 
+	// added a new mask bit to define these mappers as a dupes of the UNIF format boards
+
 	{0x1d75fd35,	256|0x1000,-1}, /* 2-in-1 - Street Dance + Hit Mouse (Unl) [!] */
 	{0x6eef8bb7,	257|0x1000,-1}, /* PEC-586 Chinese */
 	{0xac7e98fb,	257|0x1000,-1}, /* PEC-586 Chinese No Tape Out */
 	{0x8d51a23b,	257|0x1000,-1}, /* [KeWang] Chao Ji Wu Bi Han Ka (C) V1 */
 	{0x25c76773,	257|0x1000,-1}, /* [KeWang] Chao Ji Wu Bi Han Ka (C) V2 */
+	{0x1ca9c322,	258|0x1000,-1}, /* Blood Of Jurassic (GD-98)(Unl) */
+	{0x2469c1ae,	259|0x1000,-1}, /* 150-in-1 Unchained FIGHT version */
+
+	{0x99d4464f,	260|0x1000,-1}, /* HP10xx/HP20xx board dumps */
+	{0xb72b2cf4,	260|0x1000,-1},
+	{0x4dc6107d,	260|0x1000,-1},
+	{0x0073dbd8,	260|0x1000,-1},
+	{0x3b098344,	260|0x1000,-1},
+	{0x1fc640c0,	260|0x1000,-1},
+	{0x2f1ad1fc,	260|0x1000,-1},
+	{0xa22214bb,	260|0x1000,-1},
+	{0x5dd9073b,	260|0x1000,-1},
+	{0x26a36cc2,	260|0x1000,-1},
+	{0xd1e52b37,	260|0x1000,-1},
+	{0x4d4a0e1b,	260|0x1000,-1},
+	{0xb6dd2c9d,	260|0x1000,-1},
 
 	{0x00000000,	  -1,	   -1}

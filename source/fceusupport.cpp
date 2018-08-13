@@ -18,6 +18,10 @@
 #include "menu.h"
 
 bool turbo = false;
+bool paldeemphswap = 0;
+int dendy;
+bool swapDuty;
+int KillFCEUXonFrame = 0;
 
 /**
  * Closes a game.  Frees memory, and deinitializes the drivers.
@@ -172,3 +176,4 @@ const char *FCEUD_GetCompilerString() { return NULL; }
 void FCEUI_UseInputPreset(int preset) { }
 void FCEUD_SoundVolumeAdjust(int n) { }
 void FCEUD_SetEmulationSpeed(int cmd) { }
+void GetMouseData(uint32 (&d)[3]) { }

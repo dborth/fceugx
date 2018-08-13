@@ -23,13 +23,15 @@ enum EMOVIE_FLAG
 
 	MOVIE_FLAG_PAL = (1<<2),
 
-	//movie was recorded from poweron. the alternative is from a savestate (or from reset)
+	//movie was recorded from poweron. the alternative is from a savestate (or from reset). OR from saveram.
 	MOVIE_FLAG_FROM_POWERON = (1<<3),
 
 	// set in newer version, used for old movie compatibility
 	//TODO - only use this flag to print a warning that the sync might be bad
 	//so that we can get rid of the sync hack code
-	MOVIE_FLAG_NOSYNCHACK = (1<<4)
+	MOVIE_FLAG_NOSYNCHACK = (1<<4),
+
+	MOVIE_FLAG_FROM_SAVERAM = (1<<5)
 };
 
 typedef struct
@@ -42,6 +44,7 @@ typedef struct
 	uint32 emu_version_used;				// 9813 = 0.98.13
 	MD5DATA md5_of_rom_used;
 	std::string name_of_rom_used;
+	int RAMInitOption, RAMInitSeed;
 
 	std::vector<std::wstring> comments;
 	std::vector<std::string> subtitles;
@@ -177,6 +180,7 @@ public:
 	MD5DATA romChecksum;
 	std::string romFilename;
 	std::vector<uint8> savestate;
+	std::vector<uint8> saveram;
 	std::vector<MovieRecord> records;
 	std::vector<std::wstring> comments;
 	std::vector<std::string> subtitles;
@@ -197,6 +201,8 @@ public:
 	bool microphone;
 
 	int getNumRecords() { return records.size(); }
+
+	int RAMInitOption, RAMInitSeed;
 
 	class TDictionary : public std::map<std::string,std::string>
 	{
@@ -237,6 +243,9 @@ public:
 
 	static bool loadSavestateFrom(std::vector<uint8>* buf);
 	static void dumpSavestateTo(std::vector<uint8>* buf, int compressionLevel);
+
+	static bool loadSaveramFrom(std::vector<uint8>* buf);
+	static void dumpSaveramTo(std::vector<uint8>* buf, int compressionLevel);
 
 private:
 	void installInt(std::string& val, int& var)

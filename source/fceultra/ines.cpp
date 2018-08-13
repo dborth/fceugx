@@ -327,7 +327,7 @@ static void CheckHInfo(void) {
 	{
 		#include "ines-correct.h"
 	};
-	int32 tofix = 0, x;
+	int32 tofix = 0, x, mask;
 	uint64 partialmd5 = 0;
 
 	for (x = 0; x < 8; x++)
@@ -361,9 +361,13 @@ static void CheckHInfo(void) {
 					VROM = NULL;
 					tofix |= 8;
 				}
-				if (MapperNo != (moo[x].mapper & 0xFF)) {
+				if (moo[x].mapper & 0x1000)
+					mask = 0xFFF;
+				else
+					mask = 0xFF;
+				if (MapperNo != (moo[x].mapper & mask)) {
 					tofix |= 1;
-					MapperNo = moo[x].mapper & 0xFF;
+					MapperNo = moo[x].mapper & mask;
 				}
 			}
 			if (moo[x].mirror >= 0) {
@@ -561,7 +565,7 @@ static BMAPPINGLocal bmap[] = {
 	{"FDS UNROM BOARD",		108, Mapper108_Init},
 //	{"",					109, Mapper109_Init},
 //	{"",					110, Mapper110_Init},
-//	{"",					111, Mapper111_Init},
+	{"Cheapocabra",			111, Mapper111_Init},
 	{"ASDER/NTDEC BOARD",	112, Mapper112_Init},
 	{"HACKER/SACHEN BOARD",	113, Mapper113_Init},
 	{"MMC3 SG PROT. A",		114, Mapper114_Init},
@@ -640,7 +644,7 @@ static BMAPPINGLocal bmap[] = {
 	{"",					187, Mapper187_Init},
 	{"",					188, Mapper188_Init},
 	{"",					189, Mapper189_Init},
-//	{"",					190, Mapper190_Init},
+	{"",					190, Mapper190_Init},
 	{"",					191, Mapper191_Init},
 	{"TW MMC3+VRAM Rev. B",	192, Mapper192_Init},
 	{"NTDEC TC-112",		193, Mapper193_Init},	// War in the Gulf
@@ -710,6 +714,18 @@ static BMAPPINGLocal bmap[] = {
 //-------- Mappers 256-511 is the Supplementary Multilingual Plane ----------
 //-------- Mappers 512-767 is the Supplementary Ideographic Plane -----------
 //-------- Mappers 3840-4095 are for rom dumps not publicly released --------
+
+//	An attempt to make working the UNIF BOARD ROMs in INES FORMAT
+//  I don't know if there a complete ines 2.0 mapper list exist, so if it does,
+//  just redefine these numbers to any others which isn't used before
+//  see the ines-correct.h files for the ROMs CHR list
+
+	{"ONE-BUS Systems",		256, UNLOneBus_Init},
+	{"PEC-586 Computer",	257, UNLPEC586Init},
+	{"158B Prot Board",		258, UNL158B_Init},
+	{"F-15 MMC3 Based",		259, BMCF15_Init},
+	{"HP10xx/H20xx Boards",	260, BMCHPxx_Init},
+	{"810544-CA-1",		    261, BMC810544CA1_Init},
 
 	{"",					0, NULL}
 };
@@ -845,7 +861,7 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 		FCEU_printf(" Total VRAM size: %d\n", iNESCart.vram_size + iNESCart.battery_vram_size);
 		if(head.ROM_type & 2)
 		{
-			FCEU_printf(" WRAM backked by battery: %d\n", iNESCart.battery_wram_size);
+			FCEU_printf(" WRAM backed by battery: %d\n", iNESCart.battery_wram_size);
 			FCEU_printf(" VRAM backed by battery: %d\n", iNESCart.battery_vram_size);
 		}
 	}
@@ -895,12 +911,15 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 	}
 
 	GameInterface = iNESGI;
+	currCartInfo = &iNESCart;
 	FCEU_printf("\n");
 
 	// since apparently the iNES format doesn't store this information,
 	// guess if the settings should be PAL or NTSC from the ROM name
 	// TODO: MD5 check against a list of all known PAL games instead?
-	if (OverwriteVidMode) {
+	if (iNES2) {
+		FCEUI_SetVidSystem(((head.TV_system & 3) == 1) ? 1 : 0);
+	} else if (OverwriteVidMode) {
 		if (strstr(name, "(E)") || strstr(name, "(e)")
 			|| strstr(name, "(Europe)") || strstr(name, "(PAL)")
 			|| strstr(name, "(F)") || strstr(name, "(f)")
@@ -990,6 +1009,7 @@ static int iNES_Init(int num) {
 					case 6:
 					case 29:
 					case 30:
+					case 45:
 					case 96:  CHRRAMSize = 32 * 1024; break;
 					case 176: CHRRAMSize = 128 * 1024; break;
 					default:  CHRRAMSize = 8 * 1024; break;
@@ -1004,8 +1024,18 @@ static int iNES_Init(int num) {
 				FCEU_MemoryRand(VROM, CHRRAMSize);
 
 				UNIFchrrama = VROM;
-				SetupCartCHRMapping(0, VROM, CHRRAMSize, 1);
-				AddExState(VROM, CHRRAMSize, 0, "CHRR");
+				if(CHRRAMSize == 0)
+				{
+					//probably a mistake. 
+					//but (for chrram): "Use of $00 with no CHR ROM implies that the game is wired to map nametable memory in CHR space. The value $00 MUST NOT be used if a mapper isn't defined to allow this. "
+					//well, i'm not going to do that now. we'll save it for when it's needed
+					//"it's only mapper 218 and no other mappers"
+				}
+				else
+				{
+					SetupCartCHRMapping(0, VROM, CHRRAMSize, 1);
+					AddExState(VROM, CHRRAMSize, 0, "CHRR");
+				}
 			}
 			if (head.ROM_type & 8)
 				AddExState(ExtraNTARAM, 2048, 0, "EXNR");

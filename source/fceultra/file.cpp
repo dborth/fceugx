@@ -27,10 +27,6 @@
 #include <sys/stat.h>
 #include <fstream>
 
-#ifndef WIN32
-#include <zlib.h>
-#endif
-
 #include "types.h"
 #include "file.h"
 #include "utils/endian.h"
@@ -48,6 +44,10 @@
 #include "movie.h"
 #include "driver.h"
 #include "utils/xstring.h"
+
+#ifndef WIN32
+#include <zlib.h>
+#endif
 
 using namespace std;
 

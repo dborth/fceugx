@@ -30,7 +30,7 @@ https://github.com/dborth/fceugx/releases
 * Cheat support (.CHT files and Game Genie)
 * Famicom 3D System support
 * IPS/UPS automatic patching support
-* NES Compatibility Based on FCEUX 2.2.0+ (r2951)
+* NES Compatibility Based on FCEUX 2.2.3+ (git 21c0971)
 * Open Source!
 
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
@@ -39,6 +39,7 @@ https://github.com/dborth/fceugx/releases
 
 [3.4.0]
 
+* Update to the latest FCEUX core
 * Allow loader to pass two arguments instead of three (libertyernie)
 * Add PocketNES interoperability (load ROMs and read/write SRAM)
 * Add option to not append " Auto" on saves
