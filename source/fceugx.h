@@ -120,7 +120,6 @@ struct SGCSettings
 	int		SFXVolume;
 	int		Rumble;
 	int 	language;
-	int		DisplayVM;
 };
 
 void ExitApp();

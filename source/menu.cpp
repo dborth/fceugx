@@ -1192,26 +1192,6 @@ static int MenuGame()
 	GuiText titleTxt((char *)romFilename, 22, (GXColor){255, 255, 255, 255});
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 	titleTxt.SetPosition(50,40);
-	
-	char memInfo[128];
-	memset(&memInfo[0], 0, 128);
-	#ifdef USE_VM
-		sprintf(&memInfo[0], "Memory Free: RAM %.2fMB VM %.2fMB"
-						,((float)((u32)SYS_GetArena1Hi()-(u32)SYS_GetArena1Lo())/1024/1024)
-						,((float)(vm_size_free())/1024/1024));
-		#else
-		#ifdef HW_RVL
-			sprintf(&memInfo[0], "Memory Free: MEM1 %.2fMB MEM2 %.2fMB"
-							,((float)((u32)SYS_GetArena1Hi()-(u32)SYS_GetArena1Lo())/1024/1024)
-							,((float)((u32)SYS_GetArena2Hi()-(u32)SYS_GetArena2Lo())/1024/1024));
-		#else
-			sprintf(&memInfo[0], "Memory Free: RAM %.2fMB"
-							,((float)((u32)SYS_GetArena1Hi()-(u32)SYS_GetArena1Lo())/1024/1024));
-		#endif
-	#endif
-	GuiText memTxt(memInfo, 18, (GXColor){255, 255, 255, 255});
-	memTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
-	memTxt.SetPosition(50,70);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
@@ -1401,11 +1381,6 @@ static int MenuGame()
 	w.Append(&deleteBtn);
 	w.Append(&resetBtn);
 	w.Append(&gameSettingsBtn);
-
-	if(GCSettings.DisplayVM == 1) //show memory usage
-	{
-		w.Append(&memTxt);
-	}
 		
 	#ifdef HW_RVL
 	w.Append(batteryBtn[0]);
@@ -1427,7 +1402,6 @@ static int MenuGame()
 		bgTopImg->SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_IN, 35);
 		closeBtn.SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_IN, 35);
 		titleTxt.SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_IN, 35);
-		memTxt.SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_IN, 35);
 		mainmenuBtn.SetEffect(EFFECT_SLIDE_BOTTOM | EFFECT_SLIDE_IN, 35);
 		bgBottomImg->SetEffect(EFFECT_SLIDE_BOTTOM | EFFECT_SLIDE_IN, 35);
 		btnLogo->SetEffect(EFFECT_SLIDE_BOTTOM | EFFECT_SLIDE_IN, 35);
@@ -1542,7 +1516,6 @@ static int MenuGame()
 			bgTopImg->SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_OUT, 15);
 			closeBtn.SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_OUT, 15);
 			titleTxt.SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_OUT, 15);
-			memTxt.SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_OUT, 15);
 			mainmenuBtn.SetEffect(EFFECT_SLIDE_BOTTOM | EFFECT_SLIDE_OUT, 15);
 			bgBottomImg->SetEffect(EFFECT_SLIDE_BOTTOM | EFFECT_SLIDE_OUT, 15);
 			btnLogo->SetEffect(EFFECT_SLIDE_BOTTOM | EFFECT_SLIDE_OUT, 15);
@@ -3662,7 +3635,6 @@ static int MenuSettingsMenu()
 	sprintf(options.name[i++], "Sound Effects Volume");
 	sprintf(options.name[i++], "Rumble");
 	sprintf(options.name[i++], "Language");
-	sprintf(options.name[i++], "Display Virtual Memory");
 	options.length = i;
 
 	for(i=0; i < options.length; i++)
@@ -3746,9 +3718,6 @@ static int MenuSettingsMenu()
 				else if(GCSettings.language == LANG_JAPANESE)
 					GCSettings.language = LANG_ENGLISH;
 				break;
-			case 6:
-				GCSettings.DisplayVM ^= 1;
-				break;
 		}
 
 		if(ret >= 0 || firstRun)
@@ -3815,12 +3784,6 @@ static int MenuSettingsMenu()
 				case LANG_CATALAN:			sprintf(options.value[5], "Catalan"); 	break;
 				case LANG_TURKISH:			sprintf(options.value[5], "Turkish"); 	break;
 			}
-
-			if (GCSettings.DisplayVM == 1)
-				sprintf (options.value[6], "Enabled");
-			else
-				sprintf (options.value[6], "Disabled");
-			
 			
 			optionBrowser.TriggerUpdate();
 		}

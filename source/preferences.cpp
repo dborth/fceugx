@@ -163,7 +163,6 @@ preparePrefsData ()
 	createXMLSetting("SFXVolume", "Sound Effects Volume", toStr(GCSettings.SFXVolume));
 	createXMLSetting("Rumble", "Rumble", toStr(GCSettings.Rumble));
 	createXMLSetting("language", "Language", toStr(GCSettings.language));
-	createXMLSetting("DisplayMemory", "Display Virtual Memory", toStr(GCSettings.DisplayVM));
 	
 
 	createXMLSection("Controller", "Controller Settings");
@@ -332,7 +331,6 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.SFXVolume, "SFXVolume");
 			loadXMLSetting(&GCSettings.Rumble, "Rumble");
 			loadXMLSetting(&GCSettings.language, "language");
-			loadXMLSetting(&GCSettings.DisplayVM, "DisplayMemory");
 			
 			// Controller Settings
 
@@ -420,7 +418,6 @@ DefaultSettings ()
 	GCSettings.MusicVolume = 20;
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1; // Enabled
-	GCSettings.DisplayVM = 0; // Disabled
 #ifdef HW_RVL
 	GCSettings.language = CONF_GetLanguage();
 	
