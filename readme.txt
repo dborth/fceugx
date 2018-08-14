@@ -37,7 +37,7 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[3.4.0 - August 14, 2018]
+[3.4.0]
 
 * Update to the latest FCEUX core
 * Allow loader to pass two arguments instead of three (libertyernie)
