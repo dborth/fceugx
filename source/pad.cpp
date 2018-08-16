@@ -39,7 +39,7 @@ static unsigned int myzappers[2][3];
 
 u32 nespadmap[11]; // Original NES controller buttons
 u32 zapperpadmap[11]; // Original NES Zapper controller buttons
-u32 btnmap[2][4][12]; // button mapping
+u32 btnmap[2][5][12]; // button mapping
 
 void ResetControls(int consoleCtrl, int wiiCtrl)
 {
@@ -109,6 +109,23 @@ void ResetControls(int consoleCtrl, int wiiCtrl)
 		btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_LEFT;
 		btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_RIGHT;
 		btnmap[CTRL_PAD][CTRLR_CLASSIC][i++] = WPAD_CLASSIC_BUTTON_FULL_L;
+	}
+
+	/*** Classic Controller Padmap ***/
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && wiiCtrl == CTRLR_WUPC))
+	{
+		i=0;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_Y;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_B;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_X;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_A;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_MINUS;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_PLUS;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_UP;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_DOWN;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_LEFT;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_RIGHT;
+		btnmap[CTRL_PAD][CTRLR_WUPC][i++] = WPAD_CLASSIC_BUTTON_FULL_L;
 	}
 
 	/*** Nunchuk + wiimote Padmap ***/
@@ -366,6 +383,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 	s8 wm_ax = userInput[chan].WPAD_StickX(0);
 	s8 wm_ay = userInput[chan].WPAD_StickY(0);
 	u32 wp = userInput[chan].wpad->btns_h;
+	bool isWUPC = userInput[chan].wpad->exp.classic.type == 2;
 
 	u32 exp_type;
 	if ( WPAD_Probe(chan, &exp_type) != 0 )
@@ -468,7 +486,8 @@ static unsigned char DecodeJoy(unsigned short chan)
 		if ( (jp & btnmap[CTRL_PAD][CTRLR_GCPAD][i])										// gamecube controller
 		#ifdef HW_RVL
 		|| ( (exp_type == WPAD_EXP_NONE) && (wp & btnmap[CTRL_PAD][CTRLR_WIIMOTE][i]) )		// wiimote
-		|| ( (exp_type == WPAD_EXP_CLASSIC) && (wp & btnmap[CTRL_PAD][CTRLR_CLASSIC][i]) )	// classic controller
+		|| ( (exp_type == WPAD_EXP_CLASSIC && !isWUPC) && (wp & btnmap[CTRL_PAD][CTRLR_CLASSIC][i]) )	// classic controller
+		|| ( (exp_type == WPAD_EXP_CLASSIC && isWUPC) && (wp & btnmap[CTRL_PAD][CTRLR_WUPC][i]) )		// wii u pro controller
 		|| ( (exp_type == WPAD_EXP_NUNCHUK) && (wp & btnmap[CTRL_PAD][CTRLR_NUNCHUK][i]) )	// nunchuk + wiimote
 		#endif
 		)
