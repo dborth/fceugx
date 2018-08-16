@@ -379,8 +379,8 @@ void FixInvalidSettings()
 		GCSettings.language = LANG_ENGLISH;
 	if(GCSettings.Controller > CTRL_PAD4 || GCSettings.Controller < CTRL_ZAPPER)
 		GCSettings.Controller = CTRL_PAD2;
-	if(!(GCSettings.render >= 0 && GCSettings.render < 3))
-		GCSettings.render = 2;
+	if(!(GCSettings.render >= 0 && GCSettings.render < 5))
+		GCSettings.render = 4;
 	if(GCSettings.timing < 0 || GCSettings.timing > 2)
 		GCSettings.timing = 2;
 	if(!(GCSettings.videomode >= 0 && GCSettings.videomode < 5))
