@@ -39,11 +39,13 @@ https://github.com/dborth/fceugx/releases
 
 [3.4.0]
 
-* Update to the latest FCEUX core
+* Updated to the latest FCEUX core
 * Allow loader to pass two arguments instead of three (libertyernie)
-* Add PocketNES interoperability (load ROMs and read/write SRAM)
-* Add option to not append " Auto" on saves
-* Compiled with latest libOGC/devkitPPC
+* Added PocketNES interoperability (load ROMs and read/write SRAM)
+* Added option to not append " Auto" on saves
+* Added soft and sharp video filtering options
+* Removed update check completely
+* Compilation fixes for DevkitPPC
 
 [3.3.9 - December 10, 2016]
 
