@@ -3202,7 +3202,7 @@ static int MenuSettingsVideo()
 			}
 
 			sprintf (options.value[3], "%s",
-				GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default Colors");
+				GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default");
  
 			switch(GCSettings.timing)
 			{
