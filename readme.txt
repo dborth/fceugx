@@ -37,11 +37,13 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[3.4.0]
+[3.4.0 - August 23, 2018]
 
 * Updated to the latest FCEUX core
+* Updated color palettes (thanks Tanooki16!)
 * Allow loader to pass two arguments instead of three (libertyernie)
 * Added PocketNES interoperability (load ROMs and read/write SRAM)
+* Fixed audio pop when returning to a game from the menu
 * Added option to not append " Auto" on saves
 * Added soft and sharp video filtering options
 * Removed update check completely
