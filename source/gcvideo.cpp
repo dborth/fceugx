@@ -636,7 +636,6 @@ ResetVideo_Emu ()
 	{
 		rmode = tvmodes[FCEUI_GetCurrentVidSystem(NULL, NULL)];
 		UpdateSampleRate(48220);
-		SetSampleRate();
 	}
 	else
 	{
@@ -648,7 +647,6 @@ ResetVideo_Emu ()
 			ResetFbWidth(512, rmode);
 		
 		UpdateSampleRate(48130);
-		SetSampleRate();
 	}
 
 	SetupVideoMode(rmode); // reconfigure VI

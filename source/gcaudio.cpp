@@ -178,7 +178,10 @@ void PlaySound( int32 *Buffer, int count )
 
 void UpdateSampleRate(int rate)
 {
-	samplerate = rate;
+	if(samplerate != rate) {
+		samplerate = rate;
+		FCEUI_Sound(samplerate);
+	}
 }
 
 void SetSampleRate()
