@@ -42,9 +42,11 @@ static int LoadCheats (int length)
 	int tc=0;
 
 	char * linebreak = strtok((char *)savebuffer, "\n");
+	int line_num = 0;
 
-	while(linebreak != NULL)
+	while(linebreak != NULL && line_num < 500)
 	{
+		line_num++;
 		char *tbuf=linebreak;
 		int doc=0;
 
