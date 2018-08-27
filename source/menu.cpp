@@ -3251,12 +3251,16 @@ static int MenuSettingsVideo()
 static int MenuSettings()
 {
 	int menu = MENU_NONE;
-	char s[10];
+	char gameGenieTxt[10];
+	
+	if(!FindGameGenie()) sprintf(gameGenieTxt, "DISABLED");
+	else if(GCSettings.gamegenie) sprintf(gameGenieTxt, "ON");
+	else sprintf(gameGenieTxt, "OFF");
 
 	GuiText titleTxt("Settings", 26, (GXColor){255, 255, 255, 255});
 	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
 	titleTxt.SetPosition(50,50);
-	
+
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
 	GuiImageData btnOutline(button_long_png);
@@ -3268,44 +3272,6 @@ static int MenuSettings()
 	GuiImageData iconNetwork(icon_settings_network_png);
 	GuiImageData iconCheats(icon_game_cheats_png);
 
-	GuiText backBtnTxt("Go Back", 22, (GXColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.GetWidth(), btnOutline.GetHeight());
-	backBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
-	backBtn.SetPosition(90, -35);
-	backBtn.SetLabel(&backBtnTxt);
-	backBtn.SetImage(&backBtnImg);
-	backBtn.SetImageOver(&backBtnImgOver);
-	backBtn.SetSoundOver(&btnSoundOver);
-	backBtn.SetSoundClick(&btnSoundClick);
-	backBtn.SetTrigger(trigA);
-	backBtn.SetTrigger(trig2);
-	backBtn.SetEffectGrow();
-
-	GuiText resetBtnTxt("Reset Settings", 22, (GXColor){0, 0, 0, 255});
-	GuiImage resetBtnImg(&btnOutline);
-	GuiImage resetBtnImgOver(&btnOutlineOver);
-	GuiButton resetBtn(btnOutline.GetWidth(), btnOutline.GetHeight());
-	resetBtn.SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
-	resetBtn.SetPosition(-90, -35);
-	resetBtn.SetLabel(&resetBtnTxt);
-	resetBtn.SetImage(&resetBtnImg);
-	resetBtn.SetImageOver(&resetBtnImgOver);
-	resetBtn.SetSoundOver(&btnSoundOver);
-	resetBtn.SetSoundClick(&btnSoundClick);
-	resetBtn.SetTrigger(trigA);
-	resetBtn.SetTrigger(trig2);
-	resetBtn.SetEffectGrow();
-	
-	HaltGui();
-	GuiWindow w(screenwidth, screenheight);
-	w.Append(&titleTxt);
-	w.Append(&backBtn);
-	w.Append(&resetBtn);
-	mainWindow->Append(&w);
-	ResumeGui();
-	
 	GuiText savingBtnTxt1("Saving", 22, (GXColor){0, 0, 0, 255});
 	GuiText savingBtnTxt2("&", 18, (GXColor){0, 0, 0, 255});
 	GuiText savingBtnTxt3("Loading", 22, (GXColor){0, 0, 0, 255});
@@ -3364,12 +3330,9 @@ static int MenuSettings()
 	networkBtn.SetTrigger(trigA);
 	networkBtn.SetTrigger(trig2);
 	networkBtn.SetEffectGrow();
-
-	if(!FindGameGenie()) sprintf(s, "DISABLED");
-	else if(GCSettings.gamegenie) sprintf(s, "ON");
-	else sprintf(s, "OFF");
+	
 	GuiText cheatsBtnTxt("Game Genie", 22, (GXColor){0, 0, 0, 255});
-	GuiText cheatsBtnTxt2(s, 18, (GXColor){0, 0, 0, 255});
+	GuiText cheatsBtnTxt2(gameGenieTxt, 18, (GXColor){0, 0, 0, 255});
 	cheatsBtnTxt.SetPosition(0, -16);
 	cheatsBtnTxt2.SetPosition(0, +8);
 	GuiImage cheatsBtnImg(&btnLargeOutline);
@@ -3389,12 +3352,47 @@ static int MenuSettings()
 	cheatsBtn.SetTrigger(trig2);
 	cheatsBtn.SetEffectGrow();
 
-	HaltGui();
+	GuiText backBtnTxt("Go Back", 22, (GXColor){0, 0, 0, 255});
+	GuiImage backBtnImg(&btnOutline);
+	GuiImage backBtnImgOver(&btnOutlineOver);
+	GuiButton backBtn(btnOutline.GetWidth(), btnOutline.GetHeight());
+	backBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.SetPosition(90, -35);
+	backBtn.SetLabel(&backBtnTxt);
+	backBtn.SetImage(&backBtnImg);
+	backBtn.SetImageOver(&backBtnImgOver);
+	backBtn.SetSoundOver(&btnSoundOver);
+	backBtn.SetSoundClick(&btnSoundClick);
+	backBtn.SetTrigger(trigA);
+	backBtn.SetTrigger(trig2);
+	backBtn.SetEffectGrow();
 
+	GuiText resetBtnTxt("Reset Settings", 22, (GXColor){0, 0, 0, 255});
+	GuiImage resetBtnImg(&btnOutline);
+	GuiImage resetBtnImgOver(&btnOutlineOver);
+	GuiButton resetBtn(btnOutline.GetWidth(), btnOutline.GetHeight());
+	resetBtn.SetAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	resetBtn.SetPosition(-90, -35);
+	resetBtn.SetLabel(&resetBtnTxt);
+	resetBtn.SetImage(&resetBtnImg);
+	resetBtn.SetImageOver(&resetBtnImgOver);
+	resetBtn.SetSoundOver(&btnSoundOver);
+	resetBtn.SetSoundClick(&btnSoundClick);
+	resetBtn.SetTrigger(trigA);
+	resetBtn.SetTrigger(trig2);
+	resetBtn.SetEffectGrow();
+
+	HaltGui();
+	GuiWindow w(screenwidth, screenheight);
+	w.Append(&titleTxt);
 	w.Append(&savingBtn);
 	w.Append(&menuBtn);
 	w.Append(&networkBtn);
 	w.Append(&cheatsBtn);
+	w.Append(&backBtn);
+	w.Append(&resetBtn);
+
+	mainWindow->Append(&w);
 
 	ResumeGui();
 
@@ -3425,9 +3423,9 @@ static int MenuSettings()
 			else
 			{
 				GCSettings.gamegenie ^= 1;
-				if (GCSettings.gamegenie) sprintf(s, "ON");
-				else sprintf(s, "OFF");
-				cheatsBtnTxt2.SetText(s);
+				if (GCSettings.gamegenie) sprintf(gameGenieTxt, "ON");
+				else sprintf(gameGenieTxt, "OFF");
+				cheatsBtnTxt2.SetText(gameGenieTxt);
 			}
 		}
 		else if(backBtn.GetState() == STATE_CLICKED)
