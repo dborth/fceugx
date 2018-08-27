@@ -406,10 +406,10 @@ DefaultSettings ()
 	GCSettings.spritelimit = 1; // enforce 8 sprite limit
 	GCSettings.gamegenie = 0; // Off
 
-	GCSettings.render = 2; // Unfiltered
+	GCSettings.render = 3; // Filtered (sharp)
 	GCSettings.hideoverscan = 2; // hide both horizontal and vertical
 
-	GCSettings.widescreen = 0; // no aspect ratio correction
+	GCSettings.widescreen = 1; // aspect ratio correction
 	GCSettings.zoomHor = 1.0; // horizontal zoom level
 	GCSettings.zoomVert = 1.0; // vertical zoom level
 	GCSettings.xshift = 0; // horizontal video shift
