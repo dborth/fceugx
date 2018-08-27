@@ -410,19 +410,19 @@ int main(int argc, char *argv[])
 	InitialiseAudio();
 	InitFreeType((u8*)font_ttf, font_ttf_size); // Initialize font system
 #ifdef USE_VM
+	savebuffer = (unsigned char *)vm_malloc(SAVEBUFFERSIZE);
+	browserList = (BROWSERENTRY *)vm_malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
 	gameScreenPng = (u8 *)vm_malloc(512*1024);
+	nesrom = (unsigned char *)vm_malloc(1024*1024*4);
 #else
-	gameScreenPng = (u8 *)malloc(512*1024);
+	savebuffer = (unsigned char *)memalign(32,SAVEBUFFERSIZE);
+	browserList = (BROWSERENTRY *)memalign(32,sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
+	gameScreenPng = (u8 *)memalign(32,512*1024);
+	nesrom = (unsigned char *)memalign(32,1024*1024*4);
 #endif
-	browserList = (BROWSERENTRY *)malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
+
 	InitGUIThreads();
 
-	// allocate memory to store rom
-#ifdef USE_VM
-	nesrom = (unsigned char *)vm_malloc(1024*1024*4); // 4 MB should be plenty
-#else
-	nesrom = (unsigned char *)memalign(32,1024*1024*4); // 4 MB should be plenty
-#endif
 	/*** Minimal Emulation Loop ***/
 	if (!FCEUI_Initialize())
 		ExitApp();
