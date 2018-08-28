@@ -82,21 +82,21 @@ int GCMemROM(int size)
 		if (FDSBIOS[1] == 0)
 		{
 			size_t biosSize = 0;
-			char * tmpbuffer = (char *) memalign(32, 64 * 1024);
-
 			char filepath[1024];
 
+			AllocSaveBuffer ();
+
 			sprintf (filepath, "%s%s/disksys.rom", pathPrefix[GCSettings.LoadMethod], APPFOLDER);
-			biosSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
+			biosSize = LoadFile(filepath, SILENT);
 			if(biosSize == 0 && strlen(appPath) > 0)
 			{
 				sprintf (filepath, "%s/disksys.rom", appPath);
-				biosSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
+				biosSize = LoadFile(filepath, SILENT);
 			}
 
 			if (biosSize == 8192)
 			{
-				memcpy(FDSBIOS, tmpbuffer, 8192);
+				memcpy(FDSBIOS, savebuffer, 8192);
 			}
 			else
 			{
@@ -107,7 +107,7 @@ int GCMemROM(int size)
 				else
 					ErrorPrompt("FDS BIOS file not found!");
 			}
-			free(tmpbuffer);
+			FreeSaveBuffer ();
 		}
 		if (FDSBIOS[1] != 0)
 		{

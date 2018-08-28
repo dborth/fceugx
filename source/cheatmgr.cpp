@@ -161,41 +161,40 @@ bool FindGameGenie()
 	if(GCSettings.LoadMethod == DEVICE_AUTO)
 		return false;
 
-	char * tmpbuffer = (char *) memalign(32, 512 * 1024);
-	if(!tmpbuffer)
-		return false;
+	AllocSaveBuffer();
 
 	size_t romSize = 0;
 	char filepath[1024];
 
 	sprintf (filepath, "%s%s/gg.rom", pathPrefix[GCSettings.LoadMethod], APPFOLDER);
-	romSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
+	romSize = LoadFile(filepath, SILENT);
 	if(romSize == 0 && strlen(appPath) > 0)
 	{
 		sprintf (filepath, "%s/gg.rom", appPath);
-		romSize = LoadFile(tmpbuffer, filepath, 0, SILENT);
+		romSize = LoadFile(filepath, SILENT);
 	}
 
 	if (romSize > 0)
 	{
 		GENIEROM=(uint8 *)malloc(4096+1024);
 
-		if(tmpbuffer[0]==0x4E)  /* iNES ROM image */
+		if(savebuffer[0]==0x4E)  /* iNES ROM image */
 		{
-			memcpy(GENIEROM,tmpbuffer+16,4096);
-			memcpy(GENIEROM+4096,tmpbuffer+16400,256);
+			memcpy(GENIEROM,savebuffer+16,4096);
+			memcpy(GENIEROM+4096,savebuffer+16400,256);
 		}
 		else
 		{
-			memcpy(GENIEROM,tmpbuffer,4352);
+			memcpy(GENIEROM,savebuffer,4352);
 		}
 
 		/* Workaround for the FCE Ultra CHR page size only being 1KB */
 		for(int x=0; x<4; x++)
 			memcpy(GENIEROM+4096+(x<<8),GENIEROM+4096,256);
 	}
-	free(tmpbuffer);
 	
+	FreeSaveBuffer ();
+
 	if(romSize > 0)
 		return true;
 	
