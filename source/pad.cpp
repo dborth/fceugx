@@ -10,7 +10,6 @@
  ****************************************************************************/
 
 #include <gccore.h>
-#include <math.h>
 #include <ogc/lwp_watchdog.h>
 
 #include "fceugx.h"
@@ -23,6 +22,8 @@
 #include "button_mapping.h"
 #include "fceuload.h"
 #include "gui/gui.h"
+
+#define ANALOG_SENSITIVITY 30
 
 int rumbleRequest[4] = {0,0,0,0};
 GuiTrigger userInput[4];
@@ -305,25 +306,24 @@ static int pos_y = 0;
 static void UpdateCursorPosition (int chan)
 {
 	#define ZAPPERPADCAL 20
-	// gc left joystick
 
-	if (userInput[chan].pad.stickX > ZAPPERPADCAL)
+	if (userInput[chan].pad.stickX > ANALOG_SENSITIVITY)
 	{
 		pos_x += (userInput[chan].pad.stickX*1.0)/ZAPPERPADCAL;
 		if (pos_x > 256) pos_x = 256;
 	}
-	if (userInput[chan].pad.stickX < -ZAPPERPADCAL)
+	else if (userInput[chan].pad.stickX < -ANALOG_SENSITIVITY)
 	{
 		pos_x -= (userInput[chan].pad.stickX*-1.0)/ZAPPERPADCAL;
 		if (pos_x < 0) pos_x = 0;
 	}
 
-	if (userInput[chan].pad.stickY < -ZAPPERPADCAL)
+	if (userInput[chan].pad.stickY < -ANALOG_SENSITIVITY)
 	{
 		pos_y += (userInput[chan].pad.stickY*-1.0)/ZAPPERPADCAL;
 		if (pos_y > 224) pos_y = 224;
 	}
-	if (userInput[chan].pad.stickY > ZAPPERPADCAL)
+	else if (userInput[chan].pad.stickY > ANALOG_SENSITIVITY)
 	{
 		pos_y -= (userInput[chan].pad.stickY*1.0)/ZAPPERPADCAL;
 		if (pos_y < 0) pos_y = 0;
@@ -340,22 +340,22 @@ static void UpdateCursorPosition (int chan)
 		s8 wm_ax = userInput[chan].WPAD_StickX(0);
 		s8 wm_ay = userInput[chan].WPAD_StickY(0);
 
-		if (wm_ax > ZAPPERPADCAL)
+		if (wm_ax > ANALOG_SENSITIVITY)
 		{
 			pos_x += (wm_ax*1.0)/ZAPPERPADCAL;
 			if (pos_x > 256) pos_x = 256;
 		}
-		if (wm_ax < -ZAPPERPADCAL)
+		else if (wm_ax < -ANALOG_SENSITIVITY)
 		{
 			pos_x -= (wm_ax*-1.0)/ZAPPERPADCAL;
 			if (pos_x < 0) pos_x = 0;
 		}
-		if (wm_ay < -ZAPPERPADCAL)
+		if (wm_ay < -ANALOG_SENSITIVITY)
 		{
 			pos_y += (wm_ay*-1.0)/ZAPPERPADCAL;
 			if (pos_y > 224) pos_y = 224;
 		}
-		if (wm_ay > ZAPPERPADCAL)
+		else if (wm_ay > ANALOG_SENSITIVITY)
 		{
 			pos_y -= (wm_ay*1.0)/ZAPPERPADCAL;
 			if (pos_y < 0) pos_y = 0;
@@ -376,8 +376,6 @@ static unsigned char DecodeJoy(unsigned short chan)
 	s8 pad_y = userInput[chan].pad.stickY;
 	u32 jp = userInput[chan].pad.btns_h;
 	unsigned char J = 0;
-	double angle;
-	static const double THRES = 0.38268343236508984; // cos(67.5)
 
 	#ifdef HW_RVL
 	s8 wm_ax = userInput[chan].WPAD_StickX(0);
@@ -393,38 +391,26 @@ static unsigned char DecodeJoy(unsigned short chan)
 	/***
 	Gamecube Joystick input
 	***/
-	// Is XY inside the "zone"?
-	if (pad_x * pad_x + pad_y * pad_y > PADCAL * PADCAL)
-	{
-		angle = atan2(pad_y, pad_x);
- 
-		if(cos(angle) > THRES)
-			J |= JOY_RIGHT;
-		else if(cos(angle) < -THRES)
-			J |= JOY_LEFT;
-		if(sin(angle) > THRES)
-			J |= JOY_UP;
-		else if(sin(angle) < -THRES)
-			J |= JOY_DOWN;
-	}
+	if (pad_y > ANALOG_SENSITIVITY)
+		J |= JOY_UP;
+	else if (pad_y < -ANALOG_SENSITIVITY)
+		J |= JOY_DOWN;
+	if (pad_x < -ANALOG_SENSITIVITY)
+		J |= JOY_LEFT;
+	else if (pad_x > ANALOG_SENSITIVITY)
+		J |= JOY_RIGHT;
 #ifdef HW_RVL
 	/***
 	Wii Joystick (classic, nunchuk) input
 	***/
-	// Is XY inside the "zone"?
-	if (wm_ax * wm_ax + wm_ay * wm_ay > PADCAL * PADCAL)
-	{
-		angle = atan2(wm_ay, wm_ax);
-		 
-		if(cos(angle) > THRES)
-			J |= JOY_RIGHT;
-		else if(cos(angle) < -THRES)
-			J |= JOY_LEFT;
-		if(sin(angle) > THRES)
-			J |= JOY_UP;
-		else if(sin(angle) < -THRES)
-			J |= JOY_DOWN;
-	}
+	if (wm_ay > ANALOG_SENSITIVITY)
+		J |= JOY_UP;
+	else if (wm_ay < -ANALOG_SENSITIVITY)
+		J |= JOY_DOWN;
+	if (wm_ax < -ANALOG_SENSITIVITY)
+		J |= JOY_LEFT;
+	else if (wm_ax > ANALOG_SENSITIVITY)
+		J |= JOY_RIGHT;
 #endif
 
 	bool zapper_triggered = false;
