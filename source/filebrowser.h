@@ -72,5 +72,6 @@ bool IsDeviceRoot(char * path);
 int BrowserLoadSz();
 int BrowserChangeFolder();
 int BrowserLoadFile();
+bool AutoloadGame(char* filepath, char* filename);
 
 #endif

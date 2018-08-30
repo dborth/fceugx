@@ -89,11 +89,8 @@ struct SGCSettings
 	char	LastFileLoaded[MAXPATHLEN]; //Last file loaded filename
 	char	SaveFolder[MAXPATHLEN]; // Path to save files
 	char	CheatFolder[MAXPATHLEN]; // Path to cheat files
-	char	ScreenshotsFolder[MAXPATHLEN]; //Path to screenshots files
-	
-	char	Exit_Dol_File[MAXPATHLEN]; // Exit Path
-	char	LoaderName[20]; // Menu Loader Name
-	u32		Exit_Channel[2]; // Exit Channel
+	char	ScreenshotsFolder[MAXPATHLEN]; // Path to screenshot files
+	int		AutoloadGame;
 	
 	char	smbip[80];
 	char	smbuser[20];

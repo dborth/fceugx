@@ -416,6 +416,7 @@ DefaultSettings ()
 	GCSettings.yshift = 0; // vertical video shift
 
 	GCSettings.WiimoteOrientation = 0;
+	GCSettings.AutoloadGame = 0;
 	GCSettings.ExitAction = 0; // Auto
 	GCSettings.MusicVolume = 20;
 	GCSettings.SFXVolume = 40;
