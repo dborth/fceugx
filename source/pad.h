@@ -15,14 +15,17 @@
 #include <gctypes.h>
 #include <wiiuse/wpad.h>
 
+#include "utils/wiidrc.h"
+
 #define PI 				3.14159265f
 #define PADCAL			50
+#define WIIDRCCAL		20
 #define MAXJP 			11
 #define RAPID_A 		256
 #define RAPID_B			512
 
 extern int rumbleRequest[4];
-extern u32 btnmap[2][5][12];
+extern u32 btnmap[2][6][12];
 
 void SetControllers();
 void ResetControls(int cc = -1, int wc = -1);

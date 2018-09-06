@@ -16,7 +16,8 @@ https://github.com/dborth/fceugx/releases
 
 -=[ Features ]=-
 
-* Wiimote, Nunchuk, Classic, Wii U Pro and Gamecube controller support
+* Wiimote, Nunchuk, Classic, Wii U Pro, and Gamecube controller support
+* Wii U GamePad support (requires homebrew injection into Wii U VC title)
 * iNES, FDS, VS, UNIF, and NSF ROM support
 * 1-4 Player Support
 * Zapper support
@@ -36,6 +37,11 @@ https://github.com/dborth/fceugx/releases
 ×—–­—–­—–­—–­ –­—–­—–­—–­—–­—–­—–­—–­—–­—–­— ­—–­—–­—–­—–­—–­—–­—–­—-­—–­-–•¬
 |0O×øo·                         UPDATE HISTORY                        ·oø×O0|
 `¨•¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨ ¨¨¨¨¨¨¨¨¨¨¨¨¨'
+
+[3.4.1]
+
+* Improved WiiFlow integration
+* Added Wii U GamePad support (thanks Fix94!)
 
 [3.4.0 - August 23, 2018]
 

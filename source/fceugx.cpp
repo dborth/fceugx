@@ -39,6 +39,7 @@
 #include "pad.h"
 #include "filelist.h"
 #include "gui/gui.h"
+#include "utils/wiidrc.h"
 #include "utils/FreeTypeGX.h"
 #ifdef USE_VM
 	#include "vmalloc.h"
@@ -382,6 +383,7 @@ int main(int argc, char *argv[])
 	SYS_SetPowerCallback(ShutdownCB);
 	SYS_SetResetCallback(ResetCB);
 	
+	WiiDRC_Init();
 	WPAD_Init();
 	WPAD_SetPowerButtonCallback((WPADShutdownCallback)ShutdownCB);
 	DI_Init();
