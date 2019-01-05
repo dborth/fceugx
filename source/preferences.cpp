@@ -414,7 +414,7 @@ DefaultSettings ()
 	GCSettings.gamegenie = 0; // Off
 
 	GCSettings.render = 3; // Filtered (sharp)
-	GCSettings.hideoverscan = 2; // hide both horizontal and vertical
+	GCSettings.hideoverscan = 1; // hide vertical
 
 	GCSettings.widescreen = 0;
 
