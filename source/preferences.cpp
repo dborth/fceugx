@@ -416,7 +416,13 @@ DefaultSettings ()
 	GCSettings.render = 3; // Filtered (sharp)
 	GCSettings.hideoverscan = 2; // hide both horizontal and vertical
 
-	GCSettings.widescreen = 1; // aspect ratio correction
+	GCSettings.widescreen = 0;
+
+#ifdef HW_RVL
+	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
+		GCSettings.widescreen = 1;
+#endif
+
 	GCSettings.zoomHor = 1.0; // horizontal zoom level
 	GCSettings.zoomVert = 1.0; // vertical zoom level
 	GCSettings.xshift = 0; // horizontal video shift
