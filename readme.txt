@@ -38,9 +38,10 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[3.4.1]
+[3.4.1 - January 4, 2019]
 
 * Improved WiiFlow integration
+* Fixed controllers with no analog sticks
 * Added Wii U GamePad support (thanks Fix94!)
 
 [3.4.0 - August 23, 2018]
