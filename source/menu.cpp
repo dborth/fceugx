@@ -1048,7 +1048,7 @@ static int MenuGameSelection()
 		if(previousBrowserIndex != browser.selIndex)
 		{			
 			previousBrowserIndex = browser.selIndex;
-			snprintf(screenshotPath, MAXJOLIET, "%s%s/%s.png", pathPrefix[GCSettings.LoadMethod], GCSettings.ScreenshotsFolder, browserList[browser.selIndex].displayname);
+			snprintf(screenshotPath, MAXJOLIET, "%s%s/%s.png", pathPrefix[GCSettings.LoadMethod], ImageFolder(), browserList[browser.selIndex].displayname);
 			
 			AllocSaveBuffer();
 			int width, height;
@@ -3515,6 +3515,8 @@ static int MenuSettingsFile()
 	sprintf(options.name[i++], "Save Folder");
 	sprintf(options.name[i++], "Cheats Folder");
 	sprintf(options.name[i++], "Screenshots Folder");
+	sprintf(options.name[i++], "Covers Folder");
+	sprintf(options.name[i++], "Artwork Folder");
 	sprintf(options.name[i++], "Auto Load");
 	sprintf(options.name[i++], "Auto Save");
 	sprintf(options.name[i++], "Append Auto to .SAV Files");
@@ -3593,18 +3595,26 @@ static int MenuSettingsFile()
 				break;
 
 			case 6:
+				OnScreenKeyboard(GCSettings.CoverFolder, MAXPATHLEN);
+				break;
+
+			case 7:
+				OnScreenKeyboard(GCSettings.ArtworkFolder, MAXPATHLEN);
+				break;
+
+			case 8:
 				GCSettings.AutoLoad++;
 				if (GCSettings.AutoLoad > 2)
 					GCSettings.AutoLoad = 0;
 				break;
 
-			case 7:
+			case 9:
 				GCSettings.AutoSave++;
 				if (GCSettings.AutoSave > 3)
 					GCSettings.AutoSave = 0;
 				break;
 
-			case 8:
+			case 10:
 				GCSettings.AppendAuto++;
 				if (GCSettings.AppendAuto > 1)
 					GCSettings.AppendAuto = 0;
@@ -3671,18 +3681,20 @@ static int MenuSettingsFile()
 			snprintf (options.value[3], 35, "%s", GCSettings.SaveFolder);
 			snprintf (options.value[4], 35, "%s", GCSettings.CheatFolder);
 			snprintf (options.value[5], 35, "%s", GCSettings.ScreenshotsFolder);
+			snprintf (options.value[6], 35, "%s", GCSettings.CoverFolder);
+			snprintf (options.value[7], 35, "%s", GCSettings.ArtworkFolder);
 
-			if (GCSettings.AutoLoad == 0) sprintf (options.value[6],"Off");
-			else if (GCSettings.AutoLoad == 1) sprintf (options.value[6],"RAM");
-			else if (GCSettings.AutoLoad == 2) sprintf (options.value[6],"State");
+			if (GCSettings.AutoLoad == 0) sprintf (options.value[8],"Off");
+			else if (GCSettings.AutoLoad == 1) sprintf (options.value[8],"RAM");
+			else if (GCSettings.AutoLoad == 2) sprintf (options.value[8],"State");
 
 			if (GCSettings.AutoSave == 0) sprintf (options.value[7],"Off");
-			else if (GCSettings.AutoSave == 1) sprintf (options.value[7],"RAM");
-			else if (GCSettings.AutoSave == 2) sprintf (options.value[7],"State");
-			else if (GCSettings.AutoSave == 3) sprintf (options.value[7],"Both");
+			else if (GCSettings.AutoSave == 1) sprintf (options.value[9],"RAM");
+			else if (GCSettings.AutoSave == 2) sprintf (options.value[9],"State");
+			else if (GCSettings.AutoSave == 3) sprintf (options.value[9],"Both");
 
-			if (GCSettings.AppendAuto == 0) sprintf (options.value[8], "Off");
-			else if (GCSettings.AppendAuto == 1) sprintf (options.value[8], "On");
+			if (GCSettings.AppendAuto == 0) sprintf (options.value[10], "Off");
+			else if (GCSettings.AppendAuto == 1) sprintf (options.value[10], "On");
 
 			optionBrowser.TriggerUpdate();
 		}
@@ -3717,6 +3729,7 @@ static int MenuSettingsMenu()
 	sprintf(options.name[i++], "Sound Effects Volume");
 	sprintf(options.name[i++], "Rumble");
 	sprintf(options.name[i++], "Language");
+	sprintf(options.name[i++], "Preview Image");
 	options.length = i;
 
 	for(i=0; i < options.length; i++)
@@ -3800,6 +3813,12 @@ static int MenuSettingsMenu()
 				else if(GCSettings.language == LANG_JAPANESE)
 					GCSettings.language = LANG_ENGLISH;
 				break;
+				
+			case 6:
+				GCSettings.PreviewImage++;
+				if(GCSettings.PreviewImage > 2)
+					GCSettings.PreviewImage = 0;
+				break;
 		}
 
 		if(ret >= 0 || firstRun)
@@ -3865,6 +3884,19 @@ static int MenuSettingsMenu()
 				case LANG_BRAZILIAN_PORTUGUESE: sprintf(options.value[5], "Brazilian Portuguese"); break;
 				case LANG_CATALAN:			sprintf(options.value[5], "Catalan"); 	break;
 				case LANG_TURKISH:			sprintf(options.value[5], "Turkish"); 	break;
+			}
+			
+			switch(GCSettings.PreviewImage)
+			{
+				case 0:	
+					sprintf(options.value[6], "Screenshots");
+					break; 
+				case 1:	
+					sprintf(options.value[6], "Covers");
+					break; 
+				case 2:	
+					sprintf(options.value[6], "Artwork");
+					break; 
 			}
 			
 			optionBrowser.TriggerUpdate();

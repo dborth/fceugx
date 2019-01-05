@@ -556,5 +556,15 @@ int main(int argc, char *argv[])
 			#endif
 
 		} // emulation loop
-    } // main loop
+	} // main loop
+}
+
+char* ImageFolder()
+{
+	switch(GCSettings.PreviewImage)
+	{
+		case 1 : return GCSettings.CoverFolder; break;
+		case 2 : return GCSettings.ArtworkFolder; break;
+		default: return GCSettings.ScreenshotsFolder; break;
+	}
 }

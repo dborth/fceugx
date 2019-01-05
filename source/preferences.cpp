@@ -131,6 +131,8 @@ preparePrefsData ()
 	createXMLSetting("CheatFolder", "Cheats Folder", GCSettings.CheatFolder);
 	createXMLSetting("gamegenie", "Game Genie", toStr(GCSettings.gamegenie));
 	createXMLSetting("ScreenshotsFolder", "Screenshots Folder", GCSettings.ScreenshotsFolder);
+	createXMLSetting("CoverFolder", "Covers Folder", GCSettings.CoverFolder);
+	createXMLSetting("ArtworkFolder", "Artwork Folder", GCSettings.ArtworkFolder);
 
 	createXMLSection("Network", "Network Settings");
 
@@ -163,7 +165,7 @@ preparePrefsData ()
 	createXMLSetting("SFXVolume", "Sound Effects Volume", toStr(GCSettings.SFXVolume));
 	createXMLSetting("Rumble", "Rumble", toStr(GCSettings.Rumble));
 	createXMLSetting("language", "Language", toStr(GCSettings.language));
-	
+	createXMLSetting("PreviewImage", "Preview Image", toStr(GCSettings.PreviewImage));
 
 	createXMLSection("Controller", "Controller Settings");
 
@@ -303,6 +305,8 @@ decodePrefsData ()
 			loadXMLSetting(GCSettings.CheatFolder, "CheatFolder", sizeof(GCSettings.CheatFolder));
 			loadXMLSetting(&GCSettings.gamegenie, "gamegenie");
 			loadXMLSetting(GCSettings.ScreenshotsFolder, "ScreenshotsFolder", sizeof(GCSettings.ScreenshotsFolder));
+			loadXMLSetting(GCSettings.CoverFolder, "CoverFolder", sizeof(GCSettings.CoverFolder));
+			loadXMLSetting(GCSettings.ArtworkFolder, "ArtworkFolder", sizeof(GCSettings.ArtworkFolder));
 
 			// Network Settings
 
@@ -333,6 +337,7 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.SFXVolume, "SFXVolume");
 			loadXMLSetting(&GCSettings.Rumble, "Rumble");
 			loadXMLSetting(&GCSettings.language, "language");
+			loadXMLSetting(&GCSettings.PreviewImage, "PreviewImage");
 			
 			// Controller Settings
 
@@ -423,6 +428,8 @@ DefaultSettings ()
 	GCSettings.MusicVolume = 20;
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1; // Enabled
+	GCSettings.PreviewImage = 0;
+	
 #ifdef HW_RVL
 	GCSettings.language = CONF_GetLanguage();
 	
@@ -441,6 +448,8 @@ DefaultSettings ()
 	sprintf (GCSettings.SaveFolder, "%s/saves", APPFOLDER); // Path to save files
 	sprintf (GCSettings.CheatFolder, "%s/cheats", APPFOLDER); // Path to cheat files
 	sprintf (GCSettings.ScreenshotsFolder, "%s/screenshots", APPFOLDER); // Path to screenshots files
+	sprintf (GCSettings.CoverFolder, "%s/covers", APPFOLDER); // Path to cover files
+	sprintf (GCSettings.ArtworkFolder, "%s/artwork", APPFOLDER); // Path to artwork files
 	GCSettings.AutoLoad = 1; // Auto Load RAM
 	GCSettings.AutoSave = 1; // Auto Save RAM
 }
@@ -600,8 +609,13 @@ bool LoadPrefs()
 		char dirPath[MAXPATHLEN];
 		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.ScreenshotsFolder);
 		CreateDirectory(dirPath);
+		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.CoverFolder);
+		CreateDirectory(dirPath);
+		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.ArtworkFolder);
+		CreateDirectory(dirPath);
 		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.CheatFolder);
 		CreateDirectory(dirPath);
+		
 	}
 
 	ResetText();
