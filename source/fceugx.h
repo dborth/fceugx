@@ -90,6 +90,8 @@ struct SGCSettings
 	char	SaveFolder[MAXPATHLEN]; // Path to save files
 	char	CheatFolder[MAXPATHLEN]; // Path to cheat files
 	char	ScreenshotsFolder[MAXPATHLEN]; // Path to screenshot files
+	char	CoverFolder[MAXPATHLEN]; 	// Path to cover files
+	char	ArtworkFolder[MAXPATHLEN]; 	// Path to artwork files
 	int		AutoloadGame;
 	
 	char	smbip[80];
@@ -117,7 +119,10 @@ struct SGCSettings
 	int		SFXVolume;
 	int		Rumble;
 	int 	language;
+	int		PreviewImage;
 };
+
+char* ImageFolder();
 
 void ExitApp();
 void ShutdownWii();
