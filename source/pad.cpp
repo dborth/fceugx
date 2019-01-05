@@ -244,17 +244,8 @@ UpdatePads()
 		userInput[i].pad.substickY = PAD_SubStickY(i);
 		userInput[i].pad.triggerL = PAD_TriggerL(i);
 		userInput[i].pad.triggerR = PAD_TriggerR(i);
-		#ifdef HW_RVL
-		userInput[i].wiidrcdata.btns_d = 0;
-		userInput[i].wiidrcdata.btns_u = 0;
-		userInput[i].wiidrcdata.btns_h = 0;
-		userInput[i].wiidrcdata.stickX = 0;
-		userInput[i].wiidrcdata.stickY = 0;
-		userInput[i].wiidrcdata.substickX = 0;
-		userInput[i].wiidrcdata.substickY = 0;
-		#endif
-		--i;
 	}
+#ifdef HW_RVL
 	if(WiiDRC_Inited() && WiiDRC_Connected())
 	{
 		userInput[0].wiidrcdata.btns_d = WiiDRC_ButtonsDown();
@@ -265,6 +256,7 @@ UpdatePads()
 		userInput[0].wiidrcdata.substickX = WiiDRC_rStickX();
 		userInput[0].wiidrcdata.substickY = WiiDRC_rStickY();
 	}
+#endif
 }
 
 /****************************************************************************
