@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <utime.h>
+#include <gccore.h>
 
 #include "unzip.h"
 #include "menu.h"

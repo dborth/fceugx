@@ -18,6 +18,7 @@
 #include <mxml.h>
 
 #include "fceugx.h"
+#include "filelist.h"
 #include "button_mapping.h"
 #include "filebrowser.h"
 #include "menu.h"
@@ -621,8 +622,13 @@ bool LoadPrefs()
 		CreateDirectory(dirPath);
 		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.CheatFolder);
 		CreateDirectory(dirPath);
-		
 	}
+
+#ifdef HW_RVL
+	bg_music = (u8 * )bg_music_ogg;
+	bg_music_size = bg_music_ogg_size;
+	LoadBgMusic();
+#endif
 
 	ChangeLanguage();
 	return prefFound;
