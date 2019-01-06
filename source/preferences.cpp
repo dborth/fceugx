@@ -624,6 +624,6 @@ bool LoadPrefs()
 		
 	}
 
-	ResetText();
+	ChangeLanguage();
 	return prefFound;
 }

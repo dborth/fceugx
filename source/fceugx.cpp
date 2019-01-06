@@ -41,6 +41,9 @@
 #include "gui/gui.h"
 #include "utils/wiidrc.h"
 #include "utils/FreeTypeGX.h"
+#ifdef HW_RVL
+	#include "mem2.h"
+#endif
 #ifdef USE_VM
 	#include "vmalloc.h"
 #endif
@@ -400,6 +403,8 @@ int main(int argc, char *argv[])
 	// store path app was loaded from
 	if(argc > 0 && argv[0] != NULL)
 		CreateAppPath(argv[0]);
+
+	InitMem2Manager();
 	#endif
 
 	DefaultSettings(); // Set defaults
