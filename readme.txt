@@ -38,7 +38,7 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
-[3.4.2]
+[3.4.2 - January 25, 2019]
 
 * Fixed GameCube controllers not working
 * Added ability to load external fonts and activated Japanese/Korean 
