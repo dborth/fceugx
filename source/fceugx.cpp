@@ -413,12 +413,10 @@ int main(int argc, char *argv[])
 #ifdef USE_VM
 	savebuffer = (unsigned char *)vm_malloc(SAVEBUFFERSIZE);
 	browserList = (BROWSERENTRY *)vm_malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
-	gameScreenPng = (u8 *)vm_malloc(512*1024);
 	nesrom = (unsigned char *)vm_malloc(1024*1024*4);
 #else
 	savebuffer = (unsigned char *)memalign(32,SAVEBUFFERSIZE);
 	browserList = (BROWSERENTRY *)memalign(32,sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
-	gameScreenPng = (u8 *)memalign(32,512*1024);
 	nesrom = (unsigned char *)memalign(32,1024*1024*4);
 #endif
 

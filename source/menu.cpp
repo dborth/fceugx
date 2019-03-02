@@ -51,14 +51,11 @@ static GuiImageData * pointer[4];
 
 #ifdef HW_RVL
 	#include "mem2.h"
-#endif
 
-#ifdef USE_VM
-	#include "vmalloc.h"
-	#define MEM_ALLOC(A) (u8*)vm_malloc(A)
-	#define MEM_DEALLOC(A) vm_free(A)
+	#define MEM_ALLOC(A) (u8*)mem2_malloc(A)
+	#define MEM_DEALLOC(A) mem2_free(A)
 #else
-	#define MEM_ALLOC(A) (u8*)memalign(32,A)
+	#define MEM_ALLOC(A) (u8*)memalign(32, A)
 	#define MEM_DEALLOC(A) free(A)
 #endif
 
@@ -1571,8 +1568,7 @@ static int MenuGame()
 				delete gameScreenImg;
 				delete gameScreen;
 				gameScreen = NULL;
-				free(gameScreenPng);
-				gameScreenPng = NULL;
+				ClearScreenshot();
 				if(GCSettings.AutoloadGame) {
 					ExitApp();
 				}
@@ -4279,16 +4275,8 @@ MainMenu (int menu)
 	if(gameScreen)
 		delete gameScreen;
 
-	if(gameScreenPng)
-	{
-		#ifdef USE_VM
-		vm_free(gameScreenPng);
-		#else
-		free(gameScreenPng);
-		#endif
-		gameScreenPng = NULL;
-	}
-	
+	ClearScreenshot();
+
 	// wait for keys to be depressed
 	while(MenuRequested())
 	{
