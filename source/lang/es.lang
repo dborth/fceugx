@@ -1,38 +1,92 @@
 msgid "&"
-msgstr ""
+msgstr "y"
+
+msgid "Up"
+msgstr "Arriba"
+
+msgid "UP"
+msgstr "ARRIBA"
+
+msgid "Down"
+msgstr "Abajo"
+
+msgid "DOWN"
+msgstr "ABAJO"
+
+msgid "Left"
+msgstr "Izquierda"
+
+msgid "LEFT"
+msgstr "IZQUIERDA"
+
+msgid "Right"
+msgstr "Derecha"
+
+msgid "RIGHT"
+msgstr "DERECHA"
+
+msgid "PLUS"
+msgstr "M√ÅS (+)"
+
+msgid "MINUS"
+msgstr "MENOS (-)"
+
+msgid "Fire"
+msgstr "Disparar"
+
+msgid "Aim Offscreen"
+msgstr "Apuntar Fuera de la Pantalla"
+
+msgid "Crosshair"
+msgstr "Cursor"
+
+msgid "Turbo On"
+msgstr "Turbo Activado"
+
+msgid "Turbo Off"
+msgstr "Turbo Desactivado"
+
+msgid "Pause"
+msgstr "Pausa"
+
+msgid "START"
+msgstr "START"
+
+msgid "Left Button"
+msgstr "Bot√≥n Izquierdo"
+
+msgid "Right Button"
+msgstr "Bot√≥n Derecho"
 
 msgid "16:9 Correction"
-msgstr "CorrecciÛn 16:9"
+msgstr "Correcci√≥n 16:9"
 
 msgid "An update is available!"
-msgstr "°ActualizaciÛn disponible!"
+msgstr "¬°Actualizaci√≥n disponible!"
 
 msgid "Are you sure that you want to reset this game? Any unsaved progress will be lost."
-msgstr "øSeguro que desea reiniciar este juego? Se perder· cualquier progreso no salvado."
+msgstr "¬øSeguro que desea reiniciar el juego? Se perder√° cualquier progreso no guardado."
 
 msgid "Are you sure that you want to reset your mappings?"
-msgstr "øSeguro que desea reinicializar los controles?"
+msgstr "¬øSeguro que desea reiniciar los controles?"
 
 msgid "Are you sure that you want to reset your settings?"
-msgstr "øSeguro que desea reinicializar la configuraciÛn?"
-
-msgid "Auto"
-msgstr "Auto"
+msgstr "¬øSeguro que desea reiniciar la configuraci√≥n?"
 
 msgid "Auto Detect"
-msgstr "Auto Detect."
+msgstr "Auto Detectar"
 
 msgid "Auto Load"
 msgstr "Auto Cargar"
 
 msgid "Auto Save"
-msgstr "Auto Salvar"
+msgstr "Auto Guardar"
 
 msgid "Automatic (Recommended)"
-msgstr "Autom·tico (Recomendado)"
+msgstr "Autom√°tico (Recomendado)"
 
 msgid "Back"
-msgstr "Atr·s"
+msgstr "Atr√°s"
 
 msgid "Both"
 msgstr "Ambos"
@@ -47,139 +101,145 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 msgid "Caps"
-msgstr ""
+msgstr "May√∫s."
 
 msgid "Cheats"
-msgstr "Cheats"
+msgstr "Trucos"
 
 msgid "Cheats file not found!"
-msgstr "°Cheats no encontrado!"
+msgstr "¬°Archivo de Trucos no encontrado!"
 
 msgid "Cheats Folder"
-msgstr "Carpeta Cheats"
+msgstr "Carpeta de Trucos"
+
+msgid "Screenshots Folder"
+msgstr "Carpeta de Capturas"
+
+msgid "Covers Folder"
+msgstr "Carpeta de Portadas"
+
+msgid "Artwork Folder"
+msgstr "Carpeta de Arte"
 
 msgid "Choose Game"
 msgstr "Elegir Juego"
 
 msgid "Classic Controller"
-msgstr "Mando Cl·sico"
+msgstr "Mando Cl√°sico"
 
 msgid "Close"
 msgstr "Cerrar"
 
 msgid "Coding"
-msgstr "ProgramaciÛn"
+msgstr "Programaci√≥n"
 
 msgid "Coding & menu design"
-msgstr "CÛdigo & diseÒo de men˙"
+msgstr "Programaci√≥n y dise√±o de men√∫"
 
 msgid "Controller"
 msgstr "Mando"
 
 msgid "Cover View"
-msgstr "Vista Portada"
-
-msgid "Covers Folder"
-msgstr "Carpeta Portadas"
+msgstr "Vista de Portada"
 
 msgid "Credits"
-msgstr "CrÈditos"
+msgstr "Cr√©ditos"
 
 msgid "Default"
 msgstr "Por defecto"
 
 msgid "Disabled"
-msgstr "Deshabilitado"
+msgstr "Desactivado"
+
+msgid "DISABLED"
+msgstr "DESACTIVADO"
+
+msgid "This software is Open Source and may be copied,"
+msgstr "Este software es de C√≥digo Abierto y puede ser copiado,"
 
 msgid "distributed, or modified under the terms of the"
-msgstr "distribuido, o modificado bajo los tÈrminos de"
+msgstr "distribuido, o modificado bajo los t√©rminos de"
+
+msgid "GNU General Public License (GPL) Version 2."
+msgstr "la Licencia P√∫blica General GNU (GPL) Versi√≥n 2."
 
 msgid "Don't Save"
-msgstr "No Salvar"
+msgstr "No Guardar"
 
 msgid "Enabled"
-msgstr "Habilitado"
-
-msgid "Error"
-msgstr "Error"
+msgstr "Activado"
 
 msgid "Exit"
 msgstr "Salir"
 
 msgid "Exit Action"
-msgstr "AcciÛn de Salir"
+msgstr "Acci√≥n al Salir"
 
 msgid "Filtered"
 msgstr "Filtrado"
 
 msgid "Filtering"
-msgstr "Filtrar"
+msgstr "Filtro"
 
 msgid "Game Settings"
-msgstr "ConfiguraciÛn"
+msgstr "Configuraci√≥n"
 
 msgid "Game Settings - Button Mappings"
-msgstr "ConfiguraciÛn - Redefinir Controles"
+msgstr "Configuraci√≥n - Redefinir Controles"
 
 msgid "Game Settings - Cheats"
-msgstr "ConfiguraciÛn - Cheats"
+msgstr "Configuraci√≥n - Trucos"
 
 msgid "Game Settings - Video"
-msgstr "ConfiguraciÛn - VÌdeo"
+msgstr "Configuraci√≥n - V√≠deo"
 
 msgid "GameCube Controller"
 msgstr "Mando de GameCube"
 
-msgid "GNU General Public License (GPL) Version 2."
-msgstr "GNU General Public License (GPL) VersiÛn 2."
-
 msgid "Go Back"
 msgstr "Volver"
 
-msgid "Horizontal"
-msgstr ""
-
 msgid "Information"
-msgstr "InformaciÛn"
+msgstr "Informaci√≥n"
 
 msgid "Justifier"
-msgstr "Justificado"
+msgstr "Pistola Justifier"
 
 msgid "Language"
 msgstr "Idioma"
 
 msgid "Languages Folder"
-msgstr "Carpeta Idiomas"
+msgstr "Carpeta de Idiomas"
 
 msgid "Load"
 msgstr "Cargar"
 
 msgid "Load Device"
-msgstr "Cargar Dispositivo"
+msgstr "Disposit. de Carga"
 
 msgid "Load Folder"
-msgstr "Cargar Carpeta"
+msgstr "Carpeta de Juegos"
 
 msgid "Load Game"
 msgstr "Cargar Juego"
 
 msgid "Loading"
-msgstr "Cargando"
+msgstr "Cargar"
 
 msgid "Main Menu"
-msgstr "Men˙ Principal"
+msgstr "Men√∫ Principal"
 
 msgid "Menu"
-msgstr "Men˙"
+msgstr "Men√∫"
 
 msgid "Menu artwork"
-msgstr "Artwork del men˙"
+msgstr "Men√∫ de Arte"
 
 msgid "Menu sound"
-msgstr "Sonido del men˙"
+msgstr "Men√∫ de Sonido"
 
 msgid "Music Volume"
-msgstr "Volumen M˙sica"
+msgstr "Volumen de la M√∫sica"
 
 msgid "Mute"
 msgstr "Silenciar"
@@ -187,38 +247,20 @@ msgstr "Silenciar"
 msgid "Network"
 msgstr "Red"
 
-msgid "No"
-msgstr "No"
-
 msgid "No game saves found."
-msgstr "No hay partidas salvadas."
-
-msgid "NTSC (480i)"
-msgstr ""
-
-msgid "Nunchuk"
-msgstr ""
+msgstr "No hay partidas guardadas."
 
 msgid "Off"
-msgstr ""
+msgstr "Desactivado"
 
-msgid "Official Site: http://code.google.com/p/snes9x-gx/"
-msgstr "Sitio Oficial: http://code.google.com/p/snes9x-gx/"
+msgid "Official Site: "
+msgstr "P√°gina Oficial: "
 
 msgid "OK"
-msgstr ""
+msgstr "Vale"
 
 msgid "On"
-msgstr ""
-
-msgid "Original"
-msgstr ""
-
-msgid "PAL (50Hz)"
-msgstr ""
-
-msgid "PAL (60Hz)"
-msgstr ""
+msgstr "Activado"
 
 msgid "Please Wait"
 msgstr "Espere, por favor"
@@ -227,28 +269,31 @@ msgid "Power off Wii"
 msgstr "Apagar Wii"
 
 msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
-msgstr "Presione un botÛn en el Mando Cl·sico. Presione HOME para eliminar la configuraciÛn actual."
+msgstr "Presione un bot√≥n en el Mando Cl√°sico. Presione HOME para eliminar la configuraci√≥n actual."
 
 msgid "Press any button on the GameCube Controller now. Press Home or the C-Stick in any direction to clear the existing mapping."
-msgstr "Presione un botÛn en el Mando de GameCube. Presione HOME o mueva el el Stick-C para eliminar la configuraciÛn actual."
+msgstr "Presione un bot√≥n en el Mando de GameCube. Presione HOME o mueva el Stick-C para eliminar la configuraci√≥n actual."
 
 msgid "Press any button on the GameCube Controller now. Press the C-Stick in any direction to clear the existing mapping."
-msgstr "Presione un botÛn en el Mando de GameCube. Presione HOME o mueva el el Stick-C para eliminar la configuraciÛn actual."
+msgstr "Presione un bot√≥n en el Mando de GameCube. Mueva el Stick-C para eliminar la configuraci√≥n actual."
 
 msgid "Press any button on the Wiimote now. Press Home to clear the existing mapping."
-msgstr "Presione un botÛn en el Wiimote. Presione HOME para eliminar la configuraciÛn actual."
+msgstr "Presione un bot√≥n en el Wiimote. Presione HOME para eliminar la configuraci√≥n actual."
 
 msgid "Press any button on the Wiimote or Nunchuk now. Press Home to clear the existing mapping."
-msgstr "Presione un botÛn en el Wiimote o Nunchuck. Presione HOME para eliminar la configuraciÛn actual."
+msgstr "Presione un bot√≥n en el Wiimote o Nunchuck. Presione HOME para eliminar la configuraci√≥n actual."
+
+msgid "Press any button on the Wii U Pro Controller now. Press Home to clear the existing mapping."
+msgstr "Presione un bot√≥n en el Mando Pro de Wii U. Presione HOME para eliminar la configuraci√≥n actual."
 
 msgid "Progressive (480p)"
 msgstr "Progresivo (480p)"
 
 msgid "Quit Game"
-msgstr "Salir"
+msgstr "Salir del Juego"
 
 msgid "Quit this game? Any unsaved progress will be lost."
-msgstr "øSalir? Se perder· cualquier progreso no salvado."
+msgstr "¬øSalir del juego? Se perder√° cualquier progreso no guardado."
 
 msgid "Reboot"
 msgstr "Reiniciar"
@@ -257,16 +302,16 @@ msgid "Rendering"
 msgstr "Renderizado"
 
 msgid "Reset"
-msgstr "Reinicializar"
+msgstr "Reiniciar"
 
 msgid "Reset Game"
-msgstr "Reinicializar"
+msgstr "Reiniciar"
 
 msgid "Reset Mappings"
-msgstr "Reinicializar"
+msgstr "Reiniciar"
 
 msgid "Reset Settings"
-msgstr "Reinicializar"
+msgstr "Reiniciar"
 
 msgid "Retry"
 msgstr "Reintentar"
@@ -275,55 +320,58 @@ msgid "Return to Loader"
 msgstr "Volver al Loader"
 
 msgid "Return to Wii Menu"
-msgstr "Volver al men˙ de Wii"
+msgstr "Volver al men√∫ de Wii"
 
 msgid "Rumble"
-msgstr "VibraciÛn"
+msgstr "Vibraci√≥n"
 
 msgid "Save"
-msgstr "Salvar"
+msgstr "Guardar"
 
 msgid "Save Device"
-msgstr "Salvar Dispositivo"
+msgstr "Disposit. de Guardado"
 
 msgid "Save Folder"
-msgstr "Salvar Carpeta"
+msgstr "Carpeta de Guardado"
 
 msgid "Save Game"
-msgstr "Salvar Juego"
+msgstr "Guardar Juego"
 
 msgid "Save Snapshot?"
-msgstr "Salvar Instant·nea?"
+msgstr "¬øGuardar Instant√°nea?"
 
 msgid "Save SRAM and Snapshot?"
-msgstr "Salvar SRAM e Instant·nea?"
+msgstr "¬øGuardar SRAM e Instant√°nea?"
 
 msgid "Saving"
-msgstr "Grabando"
+msgstr "Guardar"
 
 msgid "Scaling"
-msgstr "Scaling"
+msgstr "Escalado"
+
+msgid "Cropping"
+msgstr "Cortar bordes"
 
 msgid "Screen Position"
-msgstr "PosiciÛn Pantalla"
+msgstr "Posici√≥n de Pantalla"
 
 msgid "Screen Zoom"
-msgstr "Zoom Pantalla"
+msgstr "Zoom de Pantalla"
 
 msgid "Settings"
-msgstr "ConfiguraciÛn"
+msgstr "Configuraci√≥n"
 
 msgid "Settings - Menu"
-msgstr "ConfiguraciÛn - Men˙"
+msgstr "Configuraci√≥n - Men√∫"
 
 msgid "Settings - Network"
-msgstr "ConfiguraciÛn - Red"
+msgstr "Configuraci√≥n - Red"
 
 msgid "Settings - Saving & Loading"
-msgstr "ConfiguraciÛn - Grabar y Cargar"
+msgstr "Configuraci√≥n - Guardar y Cargar"
 
 msgid "Shift"
-msgstr "May˙s."
+msgstr "May√∫s."
 
 msgid "SMB Share IP"
 msgstr "IP del SMB"
@@ -332,61 +380,118 @@ msgid "SMB Share Name"
 msgstr "Nombre del SMB"
 
 msgid "SMB Share Password"
-msgstr "ContraseÒa del SMB"
+msgstr "Contrase√±a del SMB"
 
 msgid "SMB Share Username"
-msgstr "Usuario del SMB"
+msgstr "Nombre de Usuario del SMB"
 
 msgid "Snapshot"
-msgstr "Instant·nea"
+msgstr "Instant√°nea"
 
-msgid "SNES Controller"
-msgstr "Mando de SNES"
+msgid "NES Controller"
+msgstr "Mando de NES"
 
-msgid "SNES Mouse"
-msgstr "RatÛn de SNES"
-
-msgid "Snes9x - Copyright (c) Snes9x Team 1996 - 2006"
-msgstr ""
+msgid "NES Controllers"
+msgstr "Mandos de NES"
 
 msgid "Sound Effects Volume"
-msgstr "Volumen Efectos"
+msgstr "Volumen de los Efectos"
 
-msgid "Super Scope"
-msgstr ""
+msgid "Filtered (Sharp)"
+msgstr "Filtrado (N√≠tido)"
 
-msgid "This software is open source and may be copied,"
-msgstr "Este software es de cÛdigo abierto y puede ser copiado,"
+msgid "Filtered (Soft)"
+msgstr "Filtrado (Suave)"
 
 msgid "Unfiltered"
-msgstr "No filtrado"
+msgstr "Sin filtrado"
 
 msgid "Up One Level"
 msgstr "Subir Nivel"
 
 msgid "Update Available"
-msgstr "ActualizaciÛn disponible"
+msgstr "Actualizaci√≥n disponible"
 
 msgid "Update later"
-msgstr "Actualizar despuÈs"
+msgstr "Actualizar despu√©s"
 
 msgid "Update now"
-msgstr "Actualizar ya"
-
-msgid "Vertical"
-msgstr ""
+msgstr "Actualizar ahora"
 
 msgid "Video"
-msgstr "VÌdeo"
+msgstr "V√≠deo"
 
 msgid "Video Mode"
-msgstr "Modo de VÌdeo"
-
-msgid "Wiimote"
-msgstr ""
+msgstr "Modo de V√≠deo"
 
 msgid "Wiimote Orientation"
-msgstr "OrientaciÛn del Wiimote"
+msgstr "Orientaci√≥n del Wiimote"
 
 msgid "Yes"
-msgstr "SÌ"
+msgstr "S√≠"
+
+msgid "Display Virtual Memory"
+msgstr "Mostrar Memoria Virtual"
+
+msgid "Preview Image"
+msgstr "Imagen de Previsualizaci√≥n"
+
+msgid "Covers"
+msgstr "Portadas"
+
+msgid "Artworks"
+msgstr "Arte"
+
+msgid "Artwork"
+msgstr "Arte"
+
+msgid "ScreenShot"
+msgstr "Captura"
+
+msgid "Screenshots"
+msgstr "Capturas"
+
+msgid "Game Genie ROM not found!"
+msgstr "¬°Game Genie no encontrado!"
+
+msgid "state"
+msgstr "Archivo de Guardado"
+
+msgid "Append Auto to .SAV"
+msgstr "A√±adir "Auto" a .SAV"
+
+msgid "Delete"
+msgstr "Borrar"
+
+msgid "New"
+msgstr "Nuevo"
+
+msgid "No data to save!"
+msgstr "¬°No hay datos para guardar!"
+
+msgid "Save successful"
+msgstr "Guardado con √©xito"
+
+msgid "Delete Saves"
+msgstr "Borrar Partidas"
+
+msgid "Delete this save file? Deleted files can not be restored."
+msgstr "¬øBorrar este archivo de guardado? Los archivos borrados no pueden ser recuperados."
+
+msgid "Palette"
+msgstr "Paleta de Colores"
+
+msgid "Game Timing"
+msgstr "Reloj de Juego"
+
+msgid "Automatic"
+msgstr "Autom√°tico"
+
+msgid "Zapper Crosshair"
+msgstr "Cursor del Zapper"
+
+msgid "Sprite Limit"
+msgstr "L√≠mite de Sprites"
+
+msgid "Save a new Preview Screenshot? Current Screenshot image will be overwritten."
+msgstr "¬øGuardar una nueva captura de pantalla? Se sobreescribir√° la imagen actual."
