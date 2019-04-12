@@ -28,7 +28,7 @@ INCLUDES	:=	source
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) \
+SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) `freetype-config --cflags` \
 				-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DNOUNCRYPT \
 				-fomit-frame-pointer \
@@ -43,8 +43,8 @@ LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-ldi -liso9660 -lpng -lmxml \
-			-lfat -lwiiuse -lz -lbte -lasnd -logc -lvorbisidec -logg -lfreetype -ltinysmb
+LIBS	:=	-ldi -liso9660 -lpng -lmxml `freetype-config --libs` \
+			-lfat -lwiiuse -lz -lbte -lasnd -logc -lvorbisidec -logg -ltinysmb
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -99,7 +99,7 @@ export OFILES	:=	$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 export INCLUDE	:=	$(foreach dir,$(INCLUDES),-I$(CURDIR)/$(dir)) \
 					$(foreach dir,$(LIBDIRS),-I$(dir)/include) \
 					-I$(CURDIR)/$(BUILD) \
-					-I$(LIBOGC_INC) -I$(PORTLIBS)/include/freetype2
+					-I$(LIBOGC_INC)
 
 #---------------------------------------------------------------------------------
 # build a list of library paths
