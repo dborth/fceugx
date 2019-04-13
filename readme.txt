@@ -38,6 +38,15 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.4.3 - April 13, 2019]
+
+* Updated spanish translation (thanks Psycho RFG)
+* Fixed preview image not displaying on GameCube
+* Fixed crash when used as wiiflow plugin
+* Fixed crash on launch when using network shares
+* Fixed issues with on-screen keyboard
+* Updated Korean translation
+
 [3.4.2 - January 25, 2019]
 
 * Fixed GameCube controllers not working
