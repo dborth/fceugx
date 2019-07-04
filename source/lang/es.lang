@@ -31,11 +31,23 @@ msgstr "MÁS (+)"
 msgid "MINUS"
 msgstr "MENOS (-)"
 
+msgid "A (Rapid)"
+msgstr "A (Rápido)"
+
+msgid "B (Rapid)"
+msgstr "B (Rápido)"
+
+msgid "R TRIG"
+msgstr "R"
+
+msgid "L TRIG"
+msgstr "L"
+
 msgid "Fire"
 msgstr "Disparar"
 
 msgid "Aim Offscreen"
-msgstr "Apuntar Fuera de la Pantalla"
+msgstr "Apuntar Fuera de Pantalla"
 
 msgid "Crosshair"
 msgstr "Cursor"
@@ -57,6 +69,12 @@ msgstr "Botón Izquierdo"
 
 msgid "Right Button"
 msgstr "Botón Derecho"
+
+msgid "Insert Coin"
+msgstr "Insertar Moneda"
+
+msgid "Insert Coin / Switch Disk"
+msgstr "Insertar Moneda / Cambiar Disco"
 
 msgid "16:9 Correction"
 msgstr "Corrección 16:9"
@@ -394,6 +412,9 @@ msgstr "Mando de NES"
 msgid "NES Controllers"
 msgstr "Mandos de NES"
 
+msgid "Wii U Pro Controller"
+msgstr "Mando Pro de Wii U"
+
 msgid "Sound Effects Volume"
 msgstr "Volumen de los Efectos"
 
@@ -495,3 +516,45 @@ msgstr "Límite de Sprites"
 
 msgid "Save a new Preview Screenshot? Current Screenshot image will be overwritten."
 msgstr "¿Guardar una nueva captura de pantalla? Se sobreescribirá la imagen actual."
+
+msgid "State"
+msgstr "Estado"
+
+msgid "Append Auto to .SAV Files"
+msgstr "Añadir Auto a arch. .SAV"
+
+msgid "Spanish"
+msgstr "Español"
+
+msgid "Italian"
+msgstr "Italiano"
+
+msgid "Dutch"
+msgstr "Holandés"
+
+msgid "Korean"
+msgstr "Coreano"
+
+msgid "Portuguese"
+msgstr "Portugués"
+
+msgid "Brazilian Portuguese"
+msgstr "Portugués Brasileño"
+
+msgid "Catalan"
+msgstr "Catalán"
+
+msgid "Turkish"
+msgstr "Turco"
+
+msgid "Japanese"
+msgstr "Japonés"
+
+msgid "English"
+msgstr "Inglés"
+
+msgid "German"
+msgstr "Alemán"
+
+msgid "French"
+msgstr "Francés"
