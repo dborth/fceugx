@@ -38,6 +38,13 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.4.4 - February 9, 2020]
+
+* Added back start+A+B+Z trigger to go back to emulator
+* Updated spanish translation
+* Added support for serial port 2 (SP2 / SD2SP2) on Gamecube
+* Compiled with latest libraries
+
 [3.4.3 - April 13, 2019]
 
 * Updated spanish translation (thanks Psycho RFG)
