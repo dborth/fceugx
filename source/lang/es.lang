@@ -76,8 +76,23 @@ msgstr "Insertar Moneda"
 msgid "Insert Coin / Switch Disk"
 msgstr "Insertar Moneda / Cambiar Disco"
 
+msgid "Invalid game file!"
+msgstr "¡Archivo de juego inválido!"
+
+msgid "Invalid network settings - Check settings.xml."
+msgstr "Configuración de red no válida - Compruebe la Configuración de Red."
+
+msgid "Invalid network settings - Share IP is blank."
+msgstr "Configuración de red no válida - La IP del SMB está en blanco."
+
+msgid "Invalid network settings - Share name is blank."
+msgstr "Configuración de red no válida - El nombre del SMB está en blanco."
+
 msgid "16:9 Correction"
 msgstr "Corrección 16:9"
+
+msgid "Additional improvements"
+msgstr "Mejoras adicionales"
 
 msgid "An update is available!"
 msgstr "¡Actualización disponible!"
@@ -86,10 +101,10 @@ msgid "Are you sure that you want to reset this game? Any unsaved progress will 
 msgstr "¿Seguro que desea reiniciar el juego? Se perderá cualquier progreso no guardado."
 
 msgid "Are you sure that you want to reset your mappings?"
-msgstr "¿Seguro que desea reiniciar los controles?"
+msgstr "¿Seguro que desea restablecer los controles?"
 
 msgid "Are you sure that you want to reset your settings?"
-msgstr "¿Seguro que desea reiniciar la configuración?"
+msgstr "¿Seguro que desea restablecer la configuración?"
 
 msgid "Auto Detect"
 msgstr "Auto Detectar"
@@ -110,16 +125,16 @@ msgid "Both"
 msgstr "Ambos"
 
 msgid "Button Mapping"
-msgstr "Controles"
+msgstr "Asignación de botones"
 
 msgid "Button Mappings"
-msgstr "Redefinir Controles"
+msgstr "Controles"
 
 msgid "Cancel"
 msgstr "Cancelar"
 
 msgid "Caps"
-msgstr "Mayús."
+msgstr "BloMay"
 
 msgid "Cheats"
 msgstr "Trucos"
@@ -143,7 +158,7 @@ msgid "Choose Game"
 msgstr "Elegir Juego"
 
 msgid "Classic Controller"
-msgstr "Mando Clásico"
+msgstr "Control Clásico"
 
 msgid "Close"
 msgstr "Cerrar"
@@ -155,13 +170,16 @@ msgid "Coding & menu design"
 msgstr "Programación y diseño de menú"
 
 msgid "Controller"
-msgstr "Mando"
+msgstr "Control"
 
 msgid "Cover View"
 msgstr "Vista de Portada"
 
 msgid "Credits"
 msgstr "Créditos"
+
+msgid "Data DVD"
+msgstr "DVD Datos"
 
 msgid "Default"
 msgstr "Por defecto"
@@ -172,8 +190,8 @@ msgstr "Desactivado"
 msgid "DISABLED"
 msgstr "DESACTIVADO"
 
-msgid "This software is Open Source and may be copied,"
-msgstr "Este software es de Código Abierto y puede ser copiado,"
+msgid "This software is open source and may be copied,"
+msgstr "Este software es de código abierto y puede ser copiado,"
 
 msgid "distributed, or modified under the terms of the"
 msgstr "distribuido, o modificado bajo los términos de"
@@ -193,6 +211,15 @@ msgstr "Salir"
 msgid "Exit Action"
 msgstr "Acción al Salir"
 
+msgid "Failed to connect to network share."
+msgstr "No se pudo conectar a la red compartida."
+
+msgid "FDS BIOS file is invalid!"
+msgstr "¡El archivo FDS BIOS no es válido!"
+
+msgid "FDS BIOS file not found!"
+msgstr "¡Archivo FDS BIOS no encontrado!"
+
 msgid "Filtered"
 msgstr "Filtrado"
 
@@ -203,7 +230,7 @@ msgid "Game Settings"
 msgstr "Configuración"
 
 msgid "Game Settings - Button Mappings"
-msgstr "Configuración - Redefinir Controles"
+msgstr "Configuración - Controles"
 
 msgid "Game Settings - Cheats"
 msgstr "Configuración - Trucos"
@@ -212,7 +239,7 @@ msgid "Game Settings - Video"
 msgstr "Configuración - Vídeo"
 
 msgid "GameCube Controller"
-msgstr "Mando de GameCube"
+msgstr "Control de GameCube"
 
 msgid "Go Back"
 msgstr "Volver"
@@ -233,7 +260,7 @@ msgid "Load"
 msgstr "Cargar"
 
 msgid "Load Device"
-msgstr "Disposit. de Carga"
+msgstr "Dispositivo de Carga"
 
 msgid "Load Folder"
 msgstr "Carpeta de Juegos"
@@ -265,17 +292,20 @@ msgstr "Silenciar"
 msgid "Network"
 msgstr "Red"
 
+msgid "Network Share"
+msgstr "Red compartida"
+
 msgid "No game saves found."
 msgstr "No hay partidas guardadas."
 
 msgid "Off"
 msgstr "Desactivado"
 
-msgid "Official Site: "
-msgstr "Página Oficial: "
+msgid "Official Site: https://github.com/dborth/fceugx"
+msgstr "Sitio oficial: https://github.com/dborth/fceugx"
 
 msgid "OK"
-msgstr "Vale"
+msgstr "Aceptar"
 
 msgid "On"
 msgstr "Activado"
@@ -287,22 +317,25 @@ msgid "Power off Wii"
 msgstr "Apagar Wii"
 
 msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
-msgstr "Presione un botón en el Mando Clásico. Presione HOME para eliminar la configuración actual."
+msgstr "Presione cualquier botón en el Control Clásico. Presione HOME para borrar la asignación existente."
 
 msgid "Press any button on the GameCube Controller now. Press Home or the C-Stick in any direction to clear the existing mapping."
-msgstr "Presione un botón en el Mando de GameCube. Presione HOME o mueva el Stick-C para eliminar la configuración actual."
+msgstr "Presione cualquier botón en el Control de GameCube. Presione HOME o mueva el Stick-C para borrar la asignación existente."
 
 msgid "Press any button on the GameCube Controller now. Press the C-Stick in any direction to clear the existing mapping."
-msgstr "Presione un botón en el Mando de GameCube. Mueva el Stick-C para eliminar la configuración actual."
+msgstr "Presione cualquier botón en el Control de GameCube. Mueva el Stick-C para borrar la asignación existente."
 
 msgid "Press any button on the Wiimote now. Press Home to clear the existing mapping."
-msgstr "Presione un botón en el Wiimote. Presione HOME para eliminar la configuración actual."
+msgstr "Presione cualquier botón en el Wiimote. Presione HOME para borrar la asignación existente."
 
 msgid "Press any button on the Wiimote or Nunchuk now. Press Home to clear the existing mapping."
-msgstr "Presione un botón en el Wiimote o Nunchuck. Presione HOME para eliminar la configuración actual."
+msgstr "Presione cualquier botón en el Wiimote o Nunchuck. Presione HOME para borrar la asignación existente."
 
 msgid "Press any button on the Wii U Pro Controller now. Press Home to clear the existing mapping."
-msgstr "Presione un botón en el Mando Pro de Wii U. Presione HOME para eliminar la configuración actual."
+msgstr "Presione cualquier botón en el Control Pro de Wii U. Presione HOME para borrar la asignación existente."
+
+msgid "Preview Screenshot"
+msgstr "Captura de pantalla"
 
 msgid "Progressive (480p)"
 msgstr "Progresivo (480p)"
@@ -326,10 +359,10 @@ msgid "Reset Game"
 msgstr "Reiniciar"
 
 msgid "Reset Mappings"
-msgstr "Reiniciar"
+msgstr "Restablecer"
 
 msgid "Reset Settings"
-msgstr "Reiniciar"
+msgstr "Restablecer"
 
 msgid "Retry"
 msgstr "Reintentar"
@@ -347,7 +380,7 @@ msgid "Save"
 msgstr "Guardar"
 
 msgid "Save Device"
-msgstr "Disposit. de Guardado"
+msgstr "Dispositivo de Guardado"
 
 msgid "Save Folder"
 msgstr "Carpeta de Guardado"
@@ -356,10 +389,10 @@ msgid "Save Game"
 msgstr "Guardar Juego"
 
 msgid "Save Snapshot?"
-msgstr "¿Guardar Instantánea?"
+msgstr "¿Guardar Captura?"
 
 msgid "Save SRAM and Snapshot?"
-msgstr "¿Guardar SRAM e Instantánea?"
+msgstr "¿Guardar SRAM y Captura?"
 
 msgid "Saving"
 msgstr "Guardar"
@@ -388,8 +421,14 @@ msgstr "Configuración - Red"
 msgid "Settings - Saving & Loading"
 msgstr "Configuración - Guardar y Cargar"
 
+msgid "SD Card"
+msgstr "SD"
+
+msgid "SD card not found!"
+msgstr "¡Tarjeta SD no encontrada!"
+
 msgid "Shift"
-msgstr "Mayús."
+msgstr "Mayús"
 
 msgid "SMB Share IP"
 msgstr "IP del SMB"
@@ -404,16 +443,28 @@ msgid "SMB Share Username"
 msgstr "Nombre de Usuario del SMB"
 
 msgid "Snapshot"
-msgstr "Instantánea"
+msgstr "Captura"
+
+msgid "The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected."
+msgstr "El IOS actual ha sido alterado (falso firmado). La funcionalidad y/o la estabilidad pueden verse afectadas negativamente."
+
+msgid "The current IOS is unsupported. Functionality and/or stability may be adversely affected."
+msgstr "El IOS actual no es compatible. La funcionalidad y/o la estabilidad pueden verse afectadas negativamente."
 
 msgid "NES Controller"
-msgstr "Mando de NES"
+msgstr "Control de NES"
 
-msgid "NES Controllers"
-msgstr "Mandos de NES"
+msgid "NES Controllers (2)"
+msgstr "Controles de NES (2)"
+
+msgid "NES Controllers (4)"
+msgstr "Controles de NES (4)"
+
+msgid "NES Zapper"
+msgstr "Pistola de luz de NES"
 
 msgid "Wii U Pro Controller"
-msgstr "Mando Pro de Wii U"
+msgstr "Control Pro de Wii U"
 
 msgid "Sound Effects Volume"
 msgstr "Volumen de los Efectos"
@@ -428,7 +479,7 @@ msgid "Unfiltered"
 msgstr "Sin filtrado"
 
 msgid "Up One Level"
-msgstr "Subir Nivel"
+msgstr "Subir nivel"
 
 msgid "Update Available"
 msgstr "Actualización disponible"
@@ -438,6 +489,12 @@ msgstr "Actualizar después"
 
 msgid "Update now"
 msgstr "Actualizar ahora"
+
+msgid "USB drive not found!"
+msgstr "¡Unidad USB no encontrada!"
+
+msgid "USB Mass Storage"
+msgstr "USB"
 
 msgid "Video"
 msgstr "Vídeo"
@@ -450,6 +507,9 @@ msgstr "Orientación del Wiimote"
 
 msgid "Yes"
 msgstr "Sí"
+
+msgid "Zapper"
+msgstr "Pistola de luz"
 
 msgid "Display Virtual Memory"
 msgstr "Mostrar Memoria Virtual"
@@ -482,7 +542,7 @@ msgid "Append Auto to .SAV"
 msgstr "Añadir "Auto" a .SAV"
 
 msgid "Delete"
-msgstr "Borrar"
+msgstr "Eliminar"
 
 msgid "New"
 msgstr "Nuevo"
@@ -490,26 +550,32 @@ msgstr "Nuevo"
 msgid "No data to save!"
 msgstr "¡No hay datos para guardar!"
 
+msgid "No disc inserted!"
+msgstr "¡Disco no insertado!"
+
 msgid "Save successful"
 msgstr "Guardado con éxito"
 
 msgid "Delete Saves"
-msgstr "Borrar Partidas"
+msgstr "Eliminar partidas"
+
+msgid "Delete File"
+msgstr "Eliminar archivo"
 
 msgid "Delete this save file? Deleted files can not be restored."
-msgstr "¿Borrar este archivo de guardado? Los archivos borrados no pueden ser recuperados."
+msgstr "¿Eliminar esta partida guardada?"
 
 msgid "Palette"
 msgstr "Paleta de Colores"
 
 msgid "Game Timing"
-msgstr "Reloj de Juego"
+msgstr "Región del Juego"
 
 msgid "Automatic"
 msgstr "Automático"
 
 msgid "Zapper Crosshair"
-msgstr "Cursor del Zapper"
+msgstr "Cursor de la Pistola"
 
 msgid "Sprite Limit"
 msgstr "Límite de Sprites"
