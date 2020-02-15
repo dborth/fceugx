@@ -174,7 +174,7 @@ bool IsDeviceRoot(char * path)
 		strcmp(path, "smb:/")   == 0 ||
 		strcmp(path, "carda:/") == 0 ||
 		strcmp(path, "cardb:/") == 0 ||
-        strcmp(path, "port2:/") )
+        strcmp(path, "port2:/") == 0 )
 	{
 		return true;
 	}
