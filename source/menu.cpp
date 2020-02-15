@@ -3767,7 +3767,7 @@ static int MenuSettingsFile()
 			else if (GCSettings.AutoLoad == 1) sprintf (options.value[8],"RAM");
 			else if (GCSettings.AutoLoad == 2) sprintf (options.value[8],"State");
 
-			if (GCSettings.AutoSave == 0) sprintf (options.value[7],"Off");
+			if (GCSettings.AutoSave == 0) sprintf (options.value[9],"Off");
 			else if (GCSettings.AutoSave == 1) sprintf (options.value[9],"RAM");
 			else if (GCSettings.AutoSave == 2) sprintf (options.value[9],"State");
 			else if (GCSettings.AutoSave == 3) sprintf (options.value[9],"Both");
