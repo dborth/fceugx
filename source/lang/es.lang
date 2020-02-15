@@ -478,6 +478,12 @@ msgstr "Filtrado (Suave)"
 msgid "Unfiltered"
 msgstr "Sin filtrado"
 
+msgid "Unknown file type!"
+msgstr "¡Tipo de archivo desconocido!"
+
+msgid "Unrecognized DVD format."
+msgstr "Formato de DVD no reconocido."
+
 msgid "Up One Level"
 msgstr "Subir nivel"
 
