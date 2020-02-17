@@ -410,12 +410,11 @@ int main(int argc, char *argv[])
 	DefaultSettings(); // Set defaults
 	InitialiseAudio();
 	InitFreeType((u8*)font_ttf, font_ttf_size); // Initialize font system
+	savebuffer = (unsigned char *)memalign(32,SAVEBUFFERSIZE);
 #ifdef USE_VM
-	savebuffer = (unsigned char *)vm_malloc(SAVEBUFFERSIZE);
 	browserList = (BROWSERENTRY *)vm_malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
 	nesrom = (unsigned char *)vm_malloc(1024*1024*4);
 #else
-	savebuffer = (unsigned char *)memalign(32,SAVEBUFFERSIZE);
 	browserList = (BROWSERENTRY *)memalign(32,sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
 	nesrom = (unsigned char *)memalign(32,1024*1024*4);
 #endif
