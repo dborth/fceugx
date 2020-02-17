@@ -38,6 +38,13 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.4.5 - February 17, 2020]
+
+* Fixed box art not working on GameCube
+* Fixed some 3rd party controllers with invalid calibration data
+* Fixed file browser issues
+* Fixed issue changing Auto Save option
+
 [3.4.4 - February 9, 2020]
 
 * Added back start+A+B+Z trigger to go back to emulator
