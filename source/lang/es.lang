@@ -1,6 +1,24 @@
 msgid "&"
 msgstr "y"
 
+msgid "7z decompression failed: Archive contains too many files."
+msgstr "Descompresión 7z falló: El archivo contiene demasiados archivos."
+
+msgid "7z decompression failed: Failed to read file data."
+msgstr "Descompresión 7z falló: Error al leer los datos del archivo."
+
+msgid "7z decompression failed: File is corrupt."
+msgstr "Descompresión 7z falló: El archivo está dañado."
+
+msgid "7z decompression failed: File is corrupt (CRC mismatch)."
+msgstr "Descompresión 7z falló: El archivo está dañado (CRC no coincide)"
+
+msgid "7z decompression failed: File uses too high of compression settings (dictionary size is too large)."
+msgstr "Descompresión 7z falló: El archivo utiliza una compresión muy alta (el tamaño del diccionario es muy grande)."
+
+msgid "7z decompression failed: File uses unsupported compression settings."
+msgstr "Descompresión 7z falló: El archivo utiliza una compresión no compatible."
+
 msgid "Up"
 msgstr "Arriba"
 
@@ -18,6 +36,9 @@ msgstr "Izquierda"
 
 msgid "LEFT"
 msgstr "IZQUIERDA"
+
+msgid "RAM saving is not available for FDS games!"
+msgstr "¡El guardado de RAM no está disponible para juegos FDS!"
 
 msgid "Right"
 msgstr "Derecha"
@@ -46,9 +67,6 @@ msgstr "L"
 msgid "Fire"
 msgstr "Disparar"
 
-msgid "Aim Offscreen"
-msgstr "Apuntar Fuera de Pantalla"
-
 msgid "Crosshair"
 msgstr "Cursor"
 
@@ -58,17 +76,8 @@ msgstr "Turbo Activado"
 msgid "Turbo Off"
 msgstr "Turbo Desactivado"
 
-msgid "Pause"
-msgstr "Pausa"
-
 msgid "START"
 msgstr "START"
-
-msgid "Left Button"
-msgstr "Botón Izquierdo"
-
-msgid "Right Button"
-msgstr "Botón Derecho"
 
 msgid "Insert Coin"
 msgstr "Insertar Moneda"
@@ -80,22 +89,22 @@ msgid "Invalid game file!"
 msgstr "¡Archivo de juego inválido!"
 
 msgid "Invalid network settings - Check settings.xml."
-msgstr "Configuración de red no válida - Compruebe la Configuración de Red."
+msgstr "Configuración de red no válida.\nCompruebe la Configuración de Red."
 
 msgid "Invalid network settings - Share IP is blank."
-msgstr "Configuración de red no válida - La IP del SMB está en blanco."
+msgstr "Configuración de red no válida.\nLa IP del SMB está en blanco."
 
 msgid "Invalid network settings - Share name is blank."
-msgstr "Configuración de red no válida - El nombre del SMB está en blanco."
+msgstr "Configuración de red no válida.\nEl nombre del SMB está en blanco."
+
+msgid "IOS: "
+msgstr "IOS: "
 
 msgid "16:9 Correction"
 msgstr "Corrección 16:9"
 
 msgid "Additional improvements"
 msgstr "Mejoras adicionales"
-
-msgid "An update is available!"
-msgstr "¡Actualización disponible!"
 
 msgid "Are you sure that you want to reset this game? Any unsaved progress will be lost."
 msgstr "¿Seguro que desea reiniciar el juego? Se perderá cualquier progreso no guardado."
@@ -120,6 +129,9 @@ msgstr "Automático (Recomendado)"
 
 msgid "Back"
 msgstr "Atrás"
+
+msgid "Backsp"
+msgstr "Retroceso"
 
 msgid "Both"
 msgstr "Ambos"
@@ -152,7 +164,13 @@ msgid "Covers Folder"
 msgstr "Carpeta de Portadas"
 
 msgid "Artwork Folder"
-msgstr "Carpeta de Arte"
+msgstr "Carpeta de Artes"
+
+msgid "Attempting to determine load device..."
+msgstr "Intentando determinar el dispositivo para carga..."
+
+msgid "Attempting to determine save device..."
+msgstr "Intentando determinar el dispositivo para guardados..."
 
 msgid "Choose Game"
 msgstr "Elegir Juego"
@@ -163,17 +181,14 @@ msgstr "Control Clásico"
 msgid "Close"
 msgstr "Cerrar"
 
-msgid "Coding"
-msgstr "Programación"
-
 msgid "Coding & menu design"
 msgstr "Programación y diseño de menú"
 
+msgid "Connecting to network share..."
+msgstr "Conectando a la red compartida..."
+
 msgid "Controller"
 msgstr "Control"
-
-msgid "Cover View"
-msgstr "Vista de Portada"
 
 msgid "Credits"
 msgstr "Créditos"
@@ -182,13 +197,13 @@ msgid "Data DVD"
 msgstr "DVD Datos"
 
 msgid "Default"
-msgstr "Por defecto"
+msgstr "Por Defecto"
 
 msgid "Disabled"
 msgstr "Desactivado"
 
 msgid "DISABLED"
-msgstr "DESACTIVADO"
+msgstr "Desactivado"
 
 msgid "This software is open source and may be copied,"
 msgstr "Este software es de código abierto y puede ser copiado,"
@@ -200,10 +215,37 @@ msgid "GNU General Public License (GPL) Version 2."
 msgstr "la Licencia Pública General GNU (GPL) Versión 2."
 
 msgid "Don't Save"
-msgstr "No Guardar"
+msgstr "No"
 
 msgid "Enabled"
 msgstr "Activado"
+
+msgid "Error - Invalid ZIP file!"
+msgstr "Error archivo ZIP inválido!"
+
+msgid "Error creating file!"
+msgstr "¡Error al crear el archivo!"
+
+msgid "Error loading font!"
+msgstr "¡Error al cargar la fuente!"
+
+msgid "Error loading game!"
+msgstr "¡Error al cargar el juego!"
+
+msgid "Error opening archive!"
+msgstr "¡Error al abrir el archivo!"
+
+msgid "Error opening directory!"
+msgstr "¡Error al abrir el directorio!"
+
+msgid "Error opening file!"
+msgstr "¡Error al abrir el archivo!"
+
+msgid "Error reading file!"
+msgstr "¡Error al leer el archivo!"
+
+msgid "Error saving file!"
+msgstr "¡Error al guardar el archivo!"
 
 msgid "Exit"
 msgstr "Salir"
@@ -215,16 +257,22 @@ msgid "Failed to connect to network share."
 msgstr "No se pudo conectar a la red compartida."
 
 msgid "FDS BIOS file is invalid!"
-msgstr "¡El archivo FDS BIOS no es válido!"
+msgstr "¡Archivo de BIOS FDS inválido!"
 
 msgid "FDS BIOS file not found!"
-msgstr "¡Archivo FDS BIOS no encontrado!"
+msgstr "¡Archivo de BIOS FDS no encontrado!"
 
 msgid "Filtered"
 msgstr "Filtrado"
 
 msgid "Filtering"
 msgstr "Filtro"
+
+msgid "Font file not found!"
+msgstr "¡Archivo de fuente no encontrado!"
+
+msgid "Font file is too large!"
+msgstr "¡El archivo de fuente es demasiado grande!"
 
 msgid "Game Settings"
 msgstr "Configuración"
@@ -247,29 +295,32 @@ msgstr "Volver"
 msgid "Information"
 msgstr "Información"
 
-msgid "Justifier"
-msgstr "Pistola Justifier"
+msgid "Initializing network..."
+msgstr "Iniciando red..."
 
 msgid "Language"
 msgstr "Idioma"
-
-msgid "Languages Folder"
-msgstr "Carpeta de Idiomas"
 
 msgid "Load"
 msgstr "Cargar"
 
 msgid "Load Device"
-msgstr "Dispositivo de Carga"
+msgstr "Dispositivo para Carga"
 
 msgid "Load Folder"
 msgstr "Carpeta de Juegos"
 
 msgid "Load Game"
-msgstr "Cargar Juego"
+msgstr "Cargar partida"
 
 msgid "Loading"
 msgstr "Cargar"
+
+msgid "Loading..."
+msgstr "Cargando..."
+
+msgid "Loading DVD..."
+msgstr "Cargando DVD..."
 
 msgid "Main Menu"
 msgstr "Menú Principal"
@@ -278,10 +329,10 @@ msgid "Menu"
 msgstr "Menú"
 
 msgid "Menu artwork"
-msgstr "Menú de Arte"
+msgstr "Ilustraciones del menú"
 
 msgid "Menu sound"
-msgstr "Menú de Sonido"
+msgstr "Sonido del menú"
 
 msgid "Music Volume"
 msgstr "Volumen de la Música"
@@ -293,10 +344,13 @@ msgid "Network"
 msgstr "Red"
 
 msgid "Network Share"
-msgstr "Red compartida"
+msgstr "Red Compartida"
 
 msgid "No game saves found."
 msgstr "No hay partidas guardadas."
+
+msgid "OFF"
+msgstr "Desactivado"
 
 msgid "Off"
 msgstr "Desactivado"
@@ -307,6 +361,9 @@ msgstr "Sitio oficial: https://github.com/dborth/fceugx"
 msgid "OK"
 msgstr "Aceptar"
 
+msgid "ON"
+msgstr "Activado"
+
 msgid "On"
 msgstr "Activado"
 
@@ -315,6 +372,9 @@ msgstr "Espere, por favor"
 
 msgid "Power off Wii"
 msgstr "Apagar Wii"
+
+msgid "Preferences saved"
+msgstr "Configuraciones guardadas"
 
 msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
 msgstr "Presione cualquier botón en el Control Clásico. Presione HOME para borrar la asignación existente."
@@ -356,7 +416,7 @@ msgid "Reset"
 msgstr "Reiniciar"
 
 msgid "Reset Game"
-msgstr "Reiniciar"
+msgstr "Reiniciar el juego"
 
 msgid "Reset Mappings"
 msgstr "Restablecer"
@@ -380,22 +440,25 @@ msgid "Save"
 msgstr "Guardar"
 
 msgid "Save Device"
-msgstr "Dispositivo de Guardado"
+msgstr "Dispositivo para Guardados"
+
+msgid "Save file not found"
+msgstr "Partida guardada no encontrada"
 
 msgid "Save Folder"
-msgstr "Carpeta de Guardado"
+msgstr "Carpeta de Guardados"
 
 msgid "Save Game"
-msgstr "Guardar Juego"
+msgstr "Guardar partida"
 
-msgid "Save Snapshot?"
-msgstr "¿Guardar Captura?"
-
-msgid "Save SRAM and Snapshot?"
-msgstr "¿Guardar SRAM y Captura?"
+msgid "Save State?"
+msgstr "¿Guardar partida?"
 
 msgid "Saving"
 msgstr "Guardar"
+
+msgid "Saving..."
+msgstr "Guardando..."
 
 msgid "Scaling"
 msgstr "Escalado"
@@ -445,9 +508,6 @@ msgstr "Contraseña del SMB"
 msgid "SMB Share Username"
 msgstr "Nombre de Usuario del SMB"
 
-msgid "Snapshot"
-msgstr "Captura"
-
 msgid "The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected."
 msgstr "El IOS actual ha sido alterado (falso firmado). La funcionalidad y/o la estabilidad pueden verse afectadas negativamente."
 
@@ -464,7 +524,7 @@ msgid "NES Controllers (4)"
 msgstr "Controles de NES (4)"
 
 msgid "NES Zapper"
-msgstr "Pistola de luz de NES"
+msgstr "Pistola"
 
 msgid "Wii U Pro Controller"
 msgstr "Control Pro de Wii U"
@@ -480,6 +540,18 @@ msgstr "Filtrado (Suave)"
 
 msgid "Unfiltered"
 msgstr "Sin filtrado"
+
+msgid "Out of memory: too many files!"
+msgstr "¡Sin memoria: demasiados archivos!"
+
+msgid "Unable to initialize network!"
+msgstr "¡No se puede iniciar la red!"
+
+msgid "Unable to locate a load device!"
+msgstr "¡No se puede localizar un dispositivo para carga!"
+
+msgid "Unable to locate a save device!"
+msgstr "¡No se puede encontrar un dispositivo para guardados!"
 
 msgid "Unknown file type!"
 msgstr "¡Tipo de archivo desconocido!"
@@ -518,7 +590,7 @@ msgid "Yes"
 msgstr "Sí"
 
 msgid "Zapper"
-msgstr "Pistola de luz"
+msgstr "Pistola"
 
 msgid "Display Virtual Memory"
 msgstr "Mostrar Memoria Virtual"
@@ -528,9 +600,6 @@ msgstr "Imagen de Previsualización"
 
 msgid "Covers"
 msgstr "Portadas"
-
-msgid "Artworks"
-msgstr "Arte"
 
 msgid "Artwork"
 msgstr "Arte"
@@ -542,13 +611,7 @@ msgid "Screenshots"
 msgstr "Capturas"
 
 msgid "Game Genie ROM not found!"
-msgstr "¡Game Genie no encontrado!"
-
-msgid "state"
-msgstr "Archivo de Guardado"
-
-msgid "Append Auto to .SAV"
-msgstr "Añadir "Auto" a .SAV"
+msgstr "¡ROM de Game Genie no encontrado!"
 
 msgid "Delete"
 msgstr "Eliminar"
@@ -563,7 +626,7 @@ msgid "No disc inserted!"
 msgstr "¡Disco no insertado!"
 
 msgid "Save successful"
-msgstr "Guardado con éxito"
+msgstr "Guardado con éxito."
 
 msgid "Delete Saves"
 msgstr "Eliminar partidas"
@@ -572,7 +635,7 @@ msgid "Delete File"
 msgstr "Eliminar archivo"
 
 msgid "Delete this save file? Deleted files can not be restored."
-msgstr "¿Eliminar esta partida guardada?"
+msgstr "¿Eliminar este archivo guardado?"
 
 msgid "Palette"
 msgstr "Paleta de Colores"
@@ -596,7 +659,7 @@ msgid "State"
 msgstr "Estado"
 
 msgid "Append Auto to .SAV Files"
-msgstr "Añadir Auto a arch. .SAV"
+msgstr "Añadir Auto a archivos .SAV"
 
 msgid "Spanish"
 msgstr "Español"
@@ -633,3 +696,102 @@ msgstr "Alemán"
 
 msgid "French"
 msgstr "Francés"
+
+msgid "Jan"
+msgstr "Enero"
+
+msgid "Feb"
+msgstr "Febrero"
+
+msgid "Mar"
+msgstr "Marzo"
+
+msgid "Apr"
+msgstr "Abril"
+
+msgid "May"
+msgstr "Mayo"
+
+msgid "Jun"
+msgstr "Junio"
+
+msgid "Jul"
+msgstr "Julio"
+
+msgid "Aug"
+msgstr "Agosto"
+
+msgid "Sep"
+msgstr "Septiembre"
+
+msgid "Nunchuk"
+msgstr "Nunchuk"
+
+msgid "Nunchuk + Wiimote"
+msgstr "Wiimote y Nunchuk"
+
+msgid "Oct"
+msgstr "Obtubre"
+
+msgid "Nov"
+msgstr "Noviembre"
+
+msgid "Dec"
+msgstr "Diciembre"
+
+msgid "Mon"
+msgstr "Lunes"
+
+msgid "Tue"
+msgstr "Martes"
+
+msgid "Wed"
+msgstr "Miércoles"
+
+msgid "Thu"
+msgstr "Jueves"
+
+msgid "Fri"
+msgstr "Viernes"
+
+msgid "Sat"
+msgstr "Sábado"
+
+msgid "Sun"
+msgstr "Domingo"
+
+msgid "Smooth (FBX)"
+msgstr "Smooth (FBX)"
+
+msgid "PVM Style D93 (FBX)""
+msgstr "PVM Style D93 (FBX)""
+
+msgid "Composite Direct (FBX)"
+msgstr "Composite Direct (FBX)"
+
+msgid "NES Classic (FBX-FS)"
+msgstr "NES Classic (FBX-FS)"
+
+msgid "PC-10"
+msgstr "PC-10"
+
+msgid "Sony CXA"
+msgstr "Sony CXA"
+
+msgid "Wavebeam"
+msgstr "Wavebeam"
+
+msgid "NTSC"
+msgstr "NTSC"
+
+msgid "PAL"
+msgstr "PAL"
+
+msgid "NTSC (480i)"
+msgstr "NTSC (480i)"
+
+msgid "PAL (50Hz)"
+msgstr "PAL (50Hz)"
+
+msgid "PAL (60Hz)"
+msgstr "PAL (60Hz)"
