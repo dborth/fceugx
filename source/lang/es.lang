@@ -79,12 +79,6 @@ msgstr "Turbo Desactivado"
 msgid "START"
 msgstr "START"
 
-msgid "Left Button"
-msgstr "Botón Izquierdo"
-
-msgid "Right Button"
-msgstr "Botón Derecho"
-
 msgid "Insert Coin"
 msgstr "Insertar Moneda"
 
@@ -195,9 +189,6 @@ msgstr "Conectando a la red compartida..."
 
 msgid "Controller"
 msgstr "Control"
-
-msgid "Cover View"
-msgstr "Vista de Portada"
 
 msgid "Credits"
 msgstr "Créditos"
@@ -381,6 +372,9 @@ msgstr "Espere, por favor"
 
 msgid "Power off Wii"
 msgstr "Apagar Wii"
+
+msgid "Preferences saved"
+msgstr "Configuraciones guardadas"
 
 msgid "Press any button on the Classic Controller now. Press Home to clear the existing mapping."
 msgstr "Presione cualquier botón en el Control Clásico. Presione HOME para borrar la asignación existente."
@@ -711,6 +705,9 @@ msgstr "Febrero"
 
 msgid "Mar"
 msgstr "Marzo"
+
+msgid "Apr"
+msgstr "Abril"
 
 msgid "May"
 msgstr "Mayo"
