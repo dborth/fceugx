@@ -38,6 +38,11 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.4.6 - March 4, 2020]
+
+* Fixed 3rd party controllers (again)
+* Fixed GameCube version issues with SD2SP2 
+
 [3.4.5 - February 17, 2020]
 
 * Fixed box art not working on GameCube

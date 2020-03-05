@@ -301,7 +301,6 @@ void MountAllFAT()
 #else
 	MountFAT(DEVICE_SD_SLOTA, SILENT);
 	MountFAT(DEVICE_SD_SLOTB, SILENT);
-	MountFAT(DEVICE_SD_PORT2, SILENT);
 #endif
 }
 
