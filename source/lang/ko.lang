@@ -1,8 +1,8 @@
 msgid "&"
-msgstr "&"
+msgstr ""
 
 msgid "16:9 Correction"
-msgstr "16:9  보정"
+msgstr "16:9 수정"
 
 msgid "7z decompression failed: Archive contains too many files."
 msgstr "7z 압축 해제 실패: 압축 파일에 너무 많은 파일이 포함되었습니다."
@@ -23,7 +23,7 @@ msgid "7z decompression failed: File uses unsupported compression settings."
 msgstr "7z 압축 해제 실패: 파일이 지원되지 않는 압축 설정을 사용합니다."
 
 msgid "Additional improvements"
-msgstr "Additional improvements"
+msgstr ""
 
 msgid "AM"
 msgstr "오전"
@@ -149,10 +149,10 @@ msgid "Delete"
 msgstr "삭제하기"
 
 msgid "Delete File"
-msgstr "Delete File"
+msgstr ""
 
 msgid "Delete Saves"
-msgstr "Delete Saves"
+msgstr ""
 
 msgid "Delete this save file? Deleted files can not be restored."
 msgstr "이 저장 파일을 삭제 하겠습니까? 삭제 파일은 복원할 수 없습니다."
@@ -239,7 +239,7 @@ msgid "Fire"
 msgstr "발사"
 
 msgid "Font file is too large!"
-msgstr "Font file is too large!"
+msgstr ""
 
 msgid "Font file not found!"
 msgstr "폰트 파일을 찾을 수 없습니다!"
@@ -290,7 +290,7 @@ msgid "Invalid network settings - Share name is blank."
 msgstr "잘못된 네트워크 설정 - 공유명이 비었습니다."
 
 msgid "IOS: "
-msgstr "IOS: "
+msgstr ""
 
 msgid "Italian"
 msgstr "이탈리아어"
@@ -395,13 +395,13 @@ msgid "Nov"
 msgstr "11월"
 
 msgid "NTSC (480i)"
-msgstr "NTSC (480i)"
+msgstr ""
 
 msgid "Nunchuk"
 msgstr "눈챠크"
 
 msgid "Nunchuk + Wiimote"
-msgstr "Nunchuk + Wiimote"
+msgstr ""
 
 msgid "Oct"
 msgstr "10월"
@@ -425,10 +425,10 @@ msgid "Out of memory: too many files!"
 msgstr "메모리 부족: 너무 많은 파일!"
 
 msgid "PAL (50Hz)"
-msgstr "PAL (50Hz)"
+msgstr ""
 
 msgid "PAL (60Hz)"
-msgstr "PAL (60Hz)"
+msgstr ""
 
 msgid "Please Wait"
 msgstr "잠시만 기다려주세요"
@@ -458,7 +458,7 @@ msgid "Press any button on the GameCube Controller now. Press the C-Stick in any
 msgstr "지금 클래식 컨트롤러의 아무 버튼이나 누릅니다. C-스틱을 눌러 기존 매핑을 정리합니다."
 
 msgid "Press any button on the Wii U Pro Controller now. Press Home to clear the existing mapping."
-msgstr "Press any button on the Wii U Pro Controller now. Press Home to clear the existing mapping."
+msgstr ""
 
 msgid "Press any button on the Wiimote now. Press Home to clear the existing mapping."
 msgstr "지금 위모트의 아무 버튼이나 누릅니다. 홈 버튼을 눌러 기존 매핑을 정리합니다."
@@ -469,14 +469,14 @@ msgstr "지금 위모트 또는 눈챠크의 아무 버튼이나 누릅니다. �
 msgid "Preview Image"
 msgstr "이미지 미리보기"
 
-msgid "Preview Screenshot "
+msgid "Preview Screenshot"
 msgstr "스크린샷 미리보기"
 
 msgid "Progressive (480p)"
 msgstr "프로그레시브 (480p)"
 
 msgid "Quit Game"
-msgstr "Quit Game"
+msgstr ""
 
 msgid "Quit this game? Any unsaved progress will be lost."
 msgstr "이 게임을 종료하겠습니까? 저장되지 않는 진행은 손실됩니다."
@@ -518,7 +518,7 @@ msgid "Rumble"
 msgstr "진동"
 
 msgid "Sat"
-msgstr "Sat"
+msgstr "토"
 
 msgid "Save"
 msgstr "저장하기"
@@ -575,7 +575,7 @@ msgid "SD card not found!"
 msgstr "SD 카드를 찾을 수 없습니다!"
 
 msgid "SD in SP2"
-msgstr "SD in SP2"
+msgstr "SD 에 SP2"
 
 msgid "Select"
 msgstr "선택"
@@ -767,7 +767,7 @@ msgid "No data to save!"
 msgstr "저장 데이터가 없습니다!"
 
 msgid "NTSC"
-msgstr "NTSC"
+msgstr ""
 
 msgid "OFF"
 msgstr "끔"
@@ -776,10 +776,10 @@ msgid "ON"
 msgstr "켬"
 
 msgid "PAL"
-msgstr "PAL"
+msgstr ""
 
 msgid "PC-10"
-msgstr "PC-10"
+msgstr ""
 
 msgid "PVM Style D93 (FBX)"
 msgstr "PVM 방식 D93 (FBX)"
@@ -791,7 +791,7 @@ msgid "R TRIG"
 msgstr "R 트리거"
 
 msgid "RAM"
-msgstr "RAM"
+msgstr ""
 
 msgid "RAM saving is not available for FDS games!"
 msgstr "RAM 저장은 FDS에선 가능하지 않습니다!"
