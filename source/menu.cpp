@@ -2034,7 +2034,7 @@ static int MenuGameSettings()
 	controllerBtn.SetTrigger(trig2);
 	controllerBtn.SetEffectGrow();
 
-	GuiText screenshotBtnTxt("ScreenShot", 22, (GXColor){0, 0, 0, 255});
+	GuiText screenshotBtnTxt("Screenshot", 22, (GXColor){0, 0, 0, 255});
 	GuiImage screenshotBtnImg(&btnLargeOutline);
 	GuiImage screenshotBtnImgOver(&btnLargeOutlineOver);
 	GuiImage screenshotBtnIcon(&iconScreenshot);
