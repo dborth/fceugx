@@ -2195,7 +2195,7 @@ static int MenuGameCheats()
 		if(!FCEUI_GetCheat(i,&name,NULL,NULL,NULL,&status,NULL))
 			break;
 
-		snprintf (options.name[i], 300, "%s", name);
+		snprintf (options.name[i], 100, "%s", name);
 		sprintf (options.value[i], status ? "On" : "Off");
 	}
 
