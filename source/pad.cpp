@@ -597,6 +597,9 @@ bool MenuRequested()
 	{
 		if (
 			(userInput[i].pad.substickX < -70) ||
+			(userInput[i].pad.btns_h & PAD_TRIGGER_L &&
+			userInput[i].pad.btns_h & PAD_TRIGGER_R &&
+			userInput[i].pad.btns_h & PAD_BUTTON_START) ||
 			(userInput[i].pad.btns_h & PAD_BUTTON_START &&
 			userInput[i].pad.btns_h & PAD_BUTTON_A &&
 			userInput[i].pad.btns_h & PAD_BUTTON_B &&
