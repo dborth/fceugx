@@ -1864,17 +1864,17 @@ static int MenuGameSaves(int action)
 						case FILE_RAM:
 							strncpy(deletepath, filepath, 1024);
 							deletepath[strlen(deletepath)-4] = 0;
-							sprintf(deletepath, "%s.sav", deletepath);
+							strcat(deletepath, ".sav");
 							remove(deletepath); // Delete the *.sav file (Battery save file)
 						break;
 						case FILE_STATE:
 							strncpy(deletepath, filepath, 1024);
 							deletepath[strlen(deletepath)-4] = 0;
-							sprintf(deletepath, "%s.png", deletepath);
+							strcat(deletepath, ".png");
 							remove(deletepath); // Delete the *.png file (Screenshot file)
 							strncpy(deletepath, filepath, 1024);
 							deletepath[strlen(deletepath)-4] = 0;
-							sprintf(deletepath, "%s.fcs", deletepath);
+							strcat(deletepath, ".fcs");
 							remove(deletepath); // Delete the *.fcs file (Save State file)
 						break;
 					}							
