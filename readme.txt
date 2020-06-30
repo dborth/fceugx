@@ -38,6 +38,14 @@ https://github.com/dborth/fceugx/releases
 |0Oื๘oท                         UPDATE HISTORY                        ทo๘ืO0|
 `จ•จจจจจ จจจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจ จจจจจจจจจจจจจจจจจจจจ จจจจจจจจจจจจจ'
 
+[3.4.7 - June 29, 2020]
+
+* Compiled with latest devkitPPC/libogc
+* Translation updates
+* Added Wii U vWii Channel, widescreen patch, and now reports console/CPU speed
+* Added additional exit combo to match the other emulators (L+R+START)
+* Other minor fixes
+
 [3.4.6 - March 4, 2020]
 
 * Fixed 3rd party controllers (again)
