@@ -8,11 +8,11 @@ Wii/GameCube.
 
 ## Nightly builds
 
-|Download nightly builds from continuous integration: 	| [![Build Status][fceugx_gamecube-wii]][cirrus-ci] 
+|Download nightly builds from continuous integration: 	| [![Build Status][Build]][Actions] 
 |-------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 
-[cirrus-ci]: https://cirrus-ci.com/github/dborth/fceugx
-[fceugx_gamecube-wii]: https://api.cirrus-ci.com/github/dborth/fceugx.svg?task=fceugx_gamecube-wii
+[Actions]: https://github.com/dborth/fceugx/actions
+[Build]: https://github.com/dborth/fceugx/workflows/FCE%20Ultra%20GX%20Build/badge.svg
 
 
 ## Features
