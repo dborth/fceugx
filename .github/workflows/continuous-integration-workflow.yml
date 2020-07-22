@@ -1,4 +1,4 @@
-name: FCE Ultra GX
+name: FCE Ultra GX Build
 
 on: [push, pull_request]
 
