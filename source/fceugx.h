@@ -123,8 +123,6 @@ struct SGCSettings
 	int		PreviewImage;
 };
 
-char* ImageFolder();
-
 void ExitApp();
 void ShutdownWii();
 bool SupportedIOS(u32 ios);

@@ -1125,27 +1125,18 @@ static int MenuGameSelection()
 		{			
 			previousBrowserIndex = browser.selIndex;
 			previousPreviewImg = GCSettings.PreviewImage;
-			snprintf(screenshotPath, MAXJOLIET, "%s%s/%s.png", pathPrefix[GCSettings.LoadMethod], ImageFolder(), browserList[browser.selIndex].displayname);
+			snprintf(screenshotPath, MAXJOLIET, "%s%s/%s.png", pathPrefix[GCSettings.LoadMethod], getImageFolder(), browserList[browser.selIndex].displayname);
 			
-			AllocSaveBuffer();
 			int width, height;
-			if(LoadFile(screenshotPath, SILENT))
+			if(DecodePNGFromFile(imagePath, &width, &height, imgBuffer, 512, 512))
 			{
-				if(DecodePNG(savebuffer, &width, &height, imgBuffer, 512, 512))
-				{
-					preview.SetImage(imgBuffer, width, height);
-					preview.SetScale( MIN(225.0f / width, 235.0f / height) );
-				}
-				else
-				{
-					preview.SetImage(NULL, 0, 0);
-				}
+				preview.SetImage(imgBuffer, width, height);
+				preview.SetScale( MIN(225.0f / width, 235.0f / height) );
 			}
-			else 
+			else
 			{
 				preview.SetImage(NULL, 0, 0);
 			}
-			FreeSaveBuffer();
 		}
 
 		if(settingsBtn.GetState() == STATE_CLICKED)
