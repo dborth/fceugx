@@ -955,6 +955,16 @@ static void WindowCredits(void * ptr)
  * Displays a list of games on the specified load device, and allows the user
  * to browse and select from this list.
  ***************************************************************************/
+static char* getImageFolder()
+{
+	switch(GCSettings.PreviewImage)
+	{
+		case 1 : return GCSettings.CoverFolder; break;
+		case 2 : return GCSettings.ArtworkFolder; break;
+		default: return GCSettings.ScreenshotsFolder; break;
+	}
+}
+
 static int MenuGameSelection()
 {
 	int menu = MENU_NONE;
