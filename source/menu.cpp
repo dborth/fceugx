@@ -1038,7 +1038,7 @@ static int MenuGameSelection()
 	preview.SetPosition(175, -8);
 	u8* imgBuffer = MEM_ALLOC(512 * 512 * 4);
 	int  previousBrowserIndex = -1;
-	char screenshotPath[MAXJOLIET + 1];
+	char imagePath[MAXJOLIET + 1];
 
 	HaltGui();
 	btnLogo->SetAlignment(ALIGN_RIGHT, ALIGN_TOP);
@@ -1125,7 +1125,7 @@ static int MenuGameSelection()
 		{			
 			previousBrowserIndex = browser.selIndex;
 			previousPreviewImg = GCSettings.PreviewImage;
-			snprintf(screenshotPath, MAXJOLIET, "%s%s/%s.png", pathPrefix[GCSettings.LoadMethod], getImageFolder(), browserList[browser.selIndex].displayname);
+			snprintf(imagePath, MAXJOLIET, "%s%s/%s.png", pathPrefix[GCSettings.LoadMethod], getImageFolder(), browserList[browser.selIndex].displayname);
 			
 			int width, height;
 			if(DecodePNGFromFile(imagePath, &width, &height, imgBuffer, 512, 512))
