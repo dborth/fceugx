@@ -924,7 +924,17 @@ int iNESLoad(const char *name, FCEUFILE *fp, int OverwriteVidMode) {
 			|| strstr(name, "(Europe)") || strstr(name, "(PAL)")
 			|| strstr(name, "(F)") || strstr(name, "(f)")
 			|| strstr(name, "(G)") || strstr(name, "(g)")
-			|| strstr(name, "(I)") || strstr(name, "(i)"))
+			|| strstr(name, "(I)") || strstr(name, "(i)")
+			|| strstr(name, "(Europe)") || strstr(name, "(PAL)")
+			|| strstr(name, "(F)") || strstr(name, "(f)")
+			|| strstr(name, "(G)") || strstr(name, "(g)")
+			|| strstr(name, "(I)") || strstr(name, "(i)")
+			|| strstr(name, "(S)") || strstr(name, "(s)")
+			|| strstr(name, "(France)") || strstr(name, "(Germany)")
+			|| strstr(name, "(Italy)") || strstr(name, "(Spain)")
+			|| strstr(name, "(Sweden)") || strstr(name, "(Sw)")
+			|| strstr(name, "(Australia)") || strstr(name, "(A)")
+			|| strstr(name, "(a)"))
 			FCEUI_SetVidSystem(1);
 		else
 			FCEUI_SetVidSystem(0);
