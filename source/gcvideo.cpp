@@ -125,9 +125,9 @@ static GXRModeObj PAL_240p =
 	512,             // fbWidth
 	240,             // efbHeight
 	240,             // xfbHeight
-	(VI_MAX_WIDTH_PAL - 640)/2,         // viXOrigin
+	(VI_MAX_WIDTH_PAL - 644)/2,         // viXOrigin
 	(VI_MAX_HEIGHT_PAL - 480)/2,        // viYOrigin
-	640,             // viWidth
+	644,             // viWidth
 	480,             // viHeight
 	VI_XFBMODE_SF,   // xFBmode
 	GX_FALSE,        // field_rendering
@@ -162,9 +162,9 @@ static GXRModeObj NTSC_240p =
 	512,             // fbWidth
 	240,             // efbHeight
 	240,             // xfbHeight
-	(VI_MAX_WIDTH_NTSC - 640)/2,	// viXOrigin
+	(VI_MAX_WIDTH_NTSC - 644)/2,	// viXOrigin
 	(VI_MAX_HEIGHT_NTSC - 480)/2,	// viYOrigin
-	640,             // viWidth
+	644,             // viWidth
 	480,             // viHeight
 	VI_XFBMODE_SF,   // xFBmode
 	GX_FALSE,        // field_rendering
