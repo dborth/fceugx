@@ -644,7 +644,11 @@ ResetVideo_Emu ()
 	if (GCSettings.render == 0)
 	{
 		rmode = tvmodes[FCEUI_GetCurrentVidSystem(NULL, NULL)];
-		UpdateSampleRate(48220);
+
+		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1) // PAL
+			UpdateSampleRate(48070);
+		else
+			UpdateSampleRate(48220);
 	}
 	else
 	{
@@ -655,7 +659,10 @@ ResetVideo_Emu ()
 		else
 			ResetFbWidth(512, rmode);
 		
-		UpdateSampleRate(48130);
+		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1) // PAL
+			UpdateSampleRate(48080);
+		else
+			UpdateSampleRate(48130);
 	}
 
 	SetupVideoMode(rmode); // reconfigure VI
