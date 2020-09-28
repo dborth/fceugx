@@ -26,6 +26,7 @@
 #define ANALOG_SENSITIVITY 30
 
 int rumbleRequest[4] = {0,0,0,0};
+int playerMapping[4] = {0,1,2,3};
 GuiTrigger userInput[4];
 
 #ifdef HW_RVL
@@ -637,7 +638,7 @@ void GetJoy()
 		ScreenshotRequested = 1; // go to the menu
 
 	for (i = 0; i < 4; i++)
-		pad[i] = DecodeJoy(i);
+		pad[playerMapping[i]] = DecodeJoy(i);
 
 	JSReturn = pad[0] | pad[1] << 8 | pad[2] << 16 | pad[3] << 24;
 }

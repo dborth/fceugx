@@ -25,6 +25,7 @@
 #define RAPID_B			512
 
 extern int rumbleRequest[4];
+extern int playerMapping[4];
 extern u32 btnmap[2][6][12];
 
 void SetControllers();
