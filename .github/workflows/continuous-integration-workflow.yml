@@ -19,21 +19,25 @@ jobs:
     
     - name: Copy files
       run: | 
-        cp -f hbc/* package/FCEUltraGX/apps/fceugx/
-        cp -f hbc/* package/FCEUltraGX-GameCube/
+        mkdir -p dist/FCEUltraGX/apps/fceugx
+        mkdir -p dist/FCEUltraGX/fceugx/roms
+        mkdir dist/FCEUltraGX/fceugx/cheats
+        mkdir dist/FCEUltraGX/fceugx/saves
+        mkdir dist/FCEUltraGX-GameCube/
+        cp hbc/* dist/FCEUltraGX/apps/fceugx/
+        cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
+        cp executables/fceugx-gc.dol dist/FCEUltraGX-GameCube/
 
     - name: Upload Wii Build Artifacts
       uses: actions/upload-artifact@v2
       with: 
         name: FCEUltraGX-Nightly
         path: |
-         package/FCEUltraGX/
-         !package/FCEUltraGX/apps/fceugx/*.elf
+         dist/FCEUltraGX/
     
     - name: Upload GameCube Build Artifacts
       uses: actions/upload-artifact@v2
       with: 
         name: FCEUltraGX-Nightly-GameCube
         path: |
-         package/FCEUltraGX-GameCube/
-         !package/FCEUltraGX-GameCube/*.elf
+         dist/FCEUltraGX-GameCube/
