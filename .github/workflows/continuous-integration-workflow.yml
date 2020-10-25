@@ -16,9 +16,26 @@ jobs:
     - name: Build
       run: |
         make -j2
+    
+    - name: Copy files
+      run: | 
+        cp -f hbc/* executables/FCEUltraGX/apps/fceugx/
+        cp -f hbc/* executables/FCEUltraGX-GameCube/
+        cp -f README.md executables/FCEUltraGX/apps/fceugx/
+        cp -f README.md executables/FCEUltraGX-GameCube/
 
-    - name: Upload a Build Artifact
+    - name: Upload Wii Build Artifacts
       uses: actions/upload-artifact@v2
       with: 
-        name: executables
-        path: executables/*
+        name: FCEUltraGX-Nightly
+        path: |
+         executables/FCEUltraGX/
+         !executables/FCEUltraGX/apps/fceugx/*.elf
+    
+    - name: Upload GameCube Build Artifacts
+      uses: actions/upload-artifact@v2
+      with: 
+        name: FCEUltraGX-Nightly-GameCube
+        path: |
+         executables/FCEUltraGX-GameCube/
+         !executables/FCEUltraGX-GameCube/*.elf

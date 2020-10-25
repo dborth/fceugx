@@ -11,13 +11,18 @@ include $(DEVKITPPC)/wii_rules
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
+# TARGETDIR is the directory where the output files will be placed
+# SUBDIR are the directories where the cheats, roms and saves need to be placed
+# ROOTDIR is the root directory of the build
 # BUILD is the directory where object files & intermediate files will be placed
 # SOURCES is a list of directories containing source code
 # INCLUDES is a list of directories containing extra header files
 #---------------------------------------------------------------------------------
-TARGET		:=	fceugx-wii
-TARGETDIR	:=  executables
-BUILD			:=	build_wii
+TARGET		:=	boot
+TARGETDIR	:=  executables/FCEUltraGX/apps/fceugx
+ROOTDIR		:=	executables/FCEUltraGX
+SUBDIR		:=	executables/FCEUltraGX/fceugx/{cheats,roms,saves}
+BUILD		:=	build_wii
 SOURCES		:=	source source/gui source/utils source/utils/sz source/utils/unzip \
 				source/fceultra source/fceultra/boards source/fceultra/input \
 				source/fceultra/utils source/fceultra/mbshare \
@@ -112,13 +117,13 @@ export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
-	@[ -d $(TARGETDIR) ] || mkdir -p $(TARGETDIR)
+	@[ -d $(TARGETDIR) ] || mkdir -p $(TARGETDIR) $(SUBDIR)
 	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.wii
 
 #---------------------------------------------------------------------------------
 clean:
 	@echo clean ...
-	@rm -fr $(BUILD) $(OUTPUT).elf $(OUTPUT).dol
+	@rm -fr $(BUILD) $(ROOTDIR)
 
 #---------------------------------------------------------------------------------
 run:
