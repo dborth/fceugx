@@ -31,13 +31,13 @@ jobs:
     - name: Upload Wii Build Artifacts
       uses: actions/upload-artifact@v2
       with: 
-        name: FCEUltraGX-Nightly
+        name: FCEUltraGX
         path: |
          dist/FCEUltraGX/
     
     - name: Upload GameCube Build Artifacts
       uses: actions/upload-artifact@v2
       with: 
-        name: FCEUltraGX-Nightly-GameCube
+        name: FCEUltraGX-GameCube
         path: |
          dist/FCEUltraGX-GameCube/
