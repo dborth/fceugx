@@ -34,6 +34,8 @@
 
 extern unsigned char * nesrom;
 
+int GetFCEUTiming();
+void UpdateDendy();
 void RebuildSubCheats(void);
 int AddCheatEntry(char *name, uint32 addr, uint8 val, int compare, int status, int type);
 

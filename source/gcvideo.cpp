@@ -204,7 +204,7 @@ static u32 normaldiff;
 
 void setFrameTimer()
 {
-	if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1) // PAL
+	if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1 || GCSettings.timing == 3) // PAL
 		normaldiff = 20000; // 50hz
 	else
 		normaldiff = 16667; // 60hz
@@ -643,9 +643,10 @@ ResetVideo_Emu ()
 
 	if (GCSettings.render == 0)
 	{
-		rmode = tvmodes[FCEUI_GetCurrentVidSystem(NULL, NULL)];
+		int timing = GCSettings.timing == 3 ? 1 : FCEUI_GetCurrentVidSystem(NULL, NULL);
+		rmode = tvmodes[timing];
 
-		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1) // PAL
+		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1 || GCSettings.timing == 3) // PAL
 			UpdateSampleRate(48070);
 		else
 			UpdateSampleRate(48220);
@@ -659,7 +660,7 @@ ResetVideo_Emu ()
 		else
 			ResetFbWidth(512, rmode);
 		
-		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1) // PAL
+		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1 || GCSettings.timing == 3) // PAL
 			UpdateSampleRate(48080);
 		else
 			UpdateSampleRate(48130);

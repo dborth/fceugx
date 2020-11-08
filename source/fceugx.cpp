@@ -472,7 +472,8 @@ int main(int argc, char *argv[])
 
 		if(currentTiming != GCSettings.timing)
 		{
-			GameInfo->vidsys=(EGIV)GCSettings.timing;
+			GameInfo->vidsys=(EGIV)GetFCEUTiming();
+			UpdateDendy();
 			FCEU_ResetVidSys(); // causes a small 'pop' in the audio
 		}
 

@@ -389,7 +389,7 @@ void FixInvalidSettings()
 		GCSettings.Controller = CTRL_PAD2;
 	if(!(GCSettings.render >= 0 && GCSettings.render < 5))
 		GCSettings.render = 4;
-	if(GCSettings.timing < 0 || GCSettings.timing > 2)
+	if(GCSettings.timing < 0 || GCSettings.timing > 3)
 		GCSettings.timing = 2;
 	if(!(GCSettings.videomode >= 0 && GCSettings.videomode < 5))
 		GCSettings.videomode = 0;

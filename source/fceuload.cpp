@@ -47,7 +47,8 @@ int GCMemROM(int size)
 	/*** Set some default values ***/
 	GameInfo->name=0;
 	GameInfo->type=GIT_CART;
-	GameInfo->vidsys=(EGIV)GCSettings.timing;
+	GameInfo->vidsys=(EGIV)GetFCEUTiming();
+	UpdateDendy();
 	GameInfo->input[0]=GameInfo->input[1]=SI_UNSET;
 	GameInfo->inputfc=SIFC_UNSET;
 	GameInfo->cspecial=SIS_NONE;

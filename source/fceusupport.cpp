@@ -23,6 +23,21 @@ int dendy;
 bool swapDuty;
 int KillFCEUXonFrame = 0;
 
+int GetFCEUTiming()
+{
+	return GCSettings.timing == 3 ? 2 : GCSettings.timing;
+}
+
+void UpdateDendy()
+{
+	if(GCSettings.timing == 3) {
+		dendy = 1;
+	}
+	else {
+		dendy = 0;
+	}
+}
+
 /**
  * Closes a game.  Frees memory, and deinitializes the drivers.
  */

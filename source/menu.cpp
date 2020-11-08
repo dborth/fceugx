@@ -3392,7 +3392,7 @@ static int MenuSettingsVideo()
 
 			case 4: // timing
 				GCSettings.timing++;
-				if(GCSettings.timing > 2)
+				if(GCSettings.timing > 3)
 					GCSettings.timing = 0;
 				break;
 
@@ -3459,6 +3459,7 @@ static int MenuSettingsVideo()
 				case 0: sprintf (options.value[4], "NTSC"); break;
 				case 1: sprintf (options.value[4], "PAL"); break;
 				case 2: sprintf (options.value[4], "Automatic"); break;
+				case 3: sprintf (options.value[4], "Dendy"); break;
 			}
 
 			sprintf (options.value[5], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
