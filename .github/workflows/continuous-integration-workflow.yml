@@ -24,6 +24,9 @@ jobs:
         mkdir dist/FCEUltraGX/fceugx/cheats
         mkdir dist/FCEUltraGX/fceugx/saves
         mkdir dist/FCEUltraGX-GameCube/
+        touch dist/FCEUltraGX/fceugx/roms/romsdir
+        touch dist/FCEUltraGX/fceugx/cheats/cheatsdir
+        touch dist/FCEUltraGX/fceugx/saves/savesdir
         cp hbc/* dist/FCEUltraGX/apps/fceugx/
         cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
         cp executables/fceugx-gc.dol dist/FCEUltraGX-GameCube/
