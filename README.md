@@ -38,6 +38,17 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[3.4.8 - January 18, 2021]
+
+* Compiled with latest devkitPPC/libogc
+* Added ability to change the player mapped to a connected controller
+* Corrected aspect ratio by changing viWidth to 644 (vaguerant)
+* Fixed PAL audio blips (thanks Tanooki16!)
+* Improved PAL game detection (thanks Tanooki16!)
+* Significant memory usage reductions (fonts and loading cover images)
+* Added Dendy support
+* Other minor fixes
+
 [3.4.7 - June 29, 2020]
 
 * Compiled with latest devkitPPC/libogc
