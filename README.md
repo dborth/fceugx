@@ -38,6 +38,11 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[3.4.9 - January 31, 2021]
+
+* Fixed SD2SP2 issues
+* Changed max game image dimensions to 640x480 to support screenshots
+
 [3.4.8 - January 18, 2021]
 
 * Compiled with latest devkitPPC/libogc
