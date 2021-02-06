@@ -38,6 +38,10 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[3.5.0 - February 6, 2021]
+
+* Fixed SD2SP2 / SD gecko issues (again)
+
 [3.4.9 - January 31, 2021]
 
 * Fixed SD2SP2 issues
