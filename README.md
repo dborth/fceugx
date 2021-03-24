@@ -38,6 +38,12 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[3.5.1 - March 23, 2021]
+
+* Added L+R+START for back to menu for Wii Classic Controller
+* Updated French translation (thanks Tanooki16!)
+* Fixed issue with displaying screenshots
+
 [3.5.0 - February 6, 2021]
 
 * Fixed SD2SP2 / SD gecko issues (again)
