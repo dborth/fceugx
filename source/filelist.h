@@ -2,7 +2,7 @@
  * FCE Ultra
  * Nintendo Wii/Gamecube Port
  *
- * Tantric 2009-2021
+ * Tantric 2009-2022
  *
  * filelist.h
  *
