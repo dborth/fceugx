@@ -4317,8 +4317,8 @@ MainMenu (int menu)
 
 		if(!SupportedIOS(ios))
 			ErrorPrompt("The current IOS is unsupported. Functionality and/or stability may be adversely affected.");
-		else if(!SaneIOS(ios))
-			ErrorPrompt("The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected.");
+		// else if(!SaneIOS(ios))
+		//	ErrorPrompt("The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected.");
 	}
 #endif
 
