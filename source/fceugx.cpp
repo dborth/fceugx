@@ -363,7 +363,7 @@ int main(int argc, char *argv[])
 
 	if(!SupportedIOS(ios))
 	{
-		s32 preferred = IOS_GetPreferredVersion();
+		s32 preferred = 58; // IOS_GetPreferredVersion();
 
 		if(SupportedIOS(preferred))
 			IOS_ReloadIOS(preferred);
