@@ -469,8 +469,8 @@ void CreateAppPath(char * origpath)
 		path[1] = 's';
 		path[2] = 'd';
 	}
-	if(ChangeInterface(&path[pos], SILENT))
-		snprintf(appPath, MAXPATHLEN-1, "%s", &path[pos]);
+	ChangeInterface(&path[pos], SILENT);
+	snprintf(appPath, MAXPATHLEN-1, "%s", &path[pos]);
 
 	free(path);
 }
