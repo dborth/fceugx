@@ -438,7 +438,7 @@ DefaultSettings ()
 	GCSettings.PreviewImage = 0;
 	
 #ifdef HW_RVL
-	GCSettings.language = CONF_GetLanguage();
+	GCSettings.language = LANG_DEFAULT; // CONF_GetLanguage();
 	
 	if(GCSettings.language == LANG_TRAD_CHINESE)
 		GCSettings.language = LANG_SIMP_CHINESE;
