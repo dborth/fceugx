@@ -3423,10 +3423,6 @@ static int MenuSettingsVideo()
 		{
 			firstRun = false;
 
-			// don't allow original render mode if progressive video mode detected
-			if (GCSettings.render==0 && progressive)
-				GCSettings.render++;
-
 			if (GCSettings.render == 0)
 				sprintf (options.value[0], "Original");
 			else if (GCSettings.render == 1)
