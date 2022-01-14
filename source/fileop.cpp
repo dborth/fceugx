@@ -462,15 +462,15 @@ void CreateAppPath(char * origpath)
 
 	int pos = 0;
 
-	// replace fat:/ or sd1:/ with sd:/
-	if (strncmp(path, "fat:/", 5) == 0 || strncmp(path, "sd1:/", 5) == 0)
+	// replace fat:/ with sd:/
+	if(strncmp(path, "fat:/", 5) == 0 || strncmp(path, "sd1:/", 5) == 0)
 	{
 		pos++;
 		path[1] = 's';
 		path[2] = 'd';
 	}
-	ChangeInterface(&path[pos], SILENT);
-	snprintf(appPath, MAXPATHLEN-1, "%s", &path[pos]);
+	if(ChangeInterface(&path[pos], SILENT))
+		snprintf(appPath, MAXPATHLEN-1, "%s", &path[pos]);
 
 	free(path);
 }
