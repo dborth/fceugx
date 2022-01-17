@@ -403,7 +403,6 @@ int main(int argc, char *argv[])
 	
 	#ifdef HW_RVL
 	// store path app was loaded from
-	snprintf(appPath, MAXPATHLEN - 1, "sd:/apps/%s", APPFOLDER);
 	if(argc > 0 && argv[0] != NULL)
 		CreateAppPath(argv[0]);
 
