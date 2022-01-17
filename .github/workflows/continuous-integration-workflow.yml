@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        image: ["Wii", "GameCube"]
+        image: ["Wii"] # ["Wii", "GameCube"]
     container: devkitpro/devkitppc:latest
  
     steps:
@@ -39,7 +39,7 @@ jobs:
       uses: actions/upload-artifact@v2
       if: ${{ matrix.image == 'Wii' }}
       with: 
-        name: FCEUltraGX
+        name: FCEUltraGX-Chinese
         path: |
          dist/FCEUltraGX/
      
