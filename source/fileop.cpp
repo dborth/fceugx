@@ -446,12 +446,14 @@ bool ChangeInterface(char * filepath, bool silent)
 	return ChangeInterface(device, silent);
 }
 
-void CreateAppPath(char * origpath)
+void CreateAppPath(int argc, char* argv[])
 {
-	if(!origpath || origpath[0] == 0)
+	snprintf(appPath, MAXPATHLEN - 1, "sd:/apps/%s", APPFOLDER);
+
+	if(argc <= 0 || !argv[0] || argv[0][0] == 0)
 		return;
 
-	char * path = strdup(origpath); // make a copy so we don't mess up original
+	char * path = strdup(argv[0]); // make a copy so we don't mess up original
 
 	if(!path)
 		return;
@@ -462,15 +464,15 @@ void CreateAppPath(char * origpath)
 
 	int pos = 0;
 
-	// replace fat:/ or sd1:/ with sd:/
-	if (strncmp(path, "fat:/", 5) == 0 || strncmp(path, "sd1:/", 5) == 0)
+	// replace fat:/ with sd:/
+	if(strncmp(path, "fat:/", 5) == 0 || strncmp(path, "sd1:/", 5) == 0)
 	{
 		pos++;
 		path[1] = 's';
 		path[2] = 'd';
 	}
-	ChangeInterface(&path[pos], SILENT);
-	snprintf(appPath, MAXPATHLEN-1, "%s", &path[pos]);
+	if(ChangeInterface(&path[pos], SILENT))
+		snprintf(appPath, MAXPATHLEN-1, "%s", &path[pos]);
 
 	free(path);
 }
