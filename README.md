@@ -20,8 +20,8 @@ Wii/GameCube.
 |Download nightly builds from continuous integration: 	| [![Build Status][Build]][Actions] 
 |-------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 
-[Actions]: https://github.com/dborth/fceugx/actions
-[Build]: https://github.com/dborth/fceugx/workflows/FCE%20Ultra%20GX%20Build/badge.svg
+[Actions]: https://github.com/dborth/fceugx/actions/workflows/continuous-integration-workflow.yml
+[Build]: https://github.com/dborth/fceugx/actions/workflows/continuous-integration-workflow.yml/badge.svg
 
 
 ## FEATURES
