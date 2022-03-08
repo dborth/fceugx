@@ -6,16 +6,25 @@ system for x86 (Windows/Linux) PCs. With it you can play NES games on your
 Wii/GameCube.
 
 
-## Nightly builds
+## TABLE OF CONTENTS
+ - [Nightly Builds](#nightly-builds)
+ - [Features](#features)
+ - [Update History](#update-history)
+ - [Setup & Installation](#setup--installation)
+ - [Credits](#credits)
+ - [Links](#links)
+
+
+## NIGHTLY BUILDS
 
 |Download nightly builds from continuous integration: 	| [![Build Status][Build]][Actions] 
 |-------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 
-[Actions]: https://github.com/dborth/fceugx/actions
-[Build]: https://github.com/dborth/fceugx/workflows/FCE%20Ultra%20GX%20Build/badge.svg
+[Actions]: https://github.com/dborth/fceugx/actions/workflows/continuous-integration-workflow.yml
+[Build]: https://github.com/dborth/fceugx/actions/workflows/continuous-integration-workflow.yml/badge.svg
 
 
-## Features
+## FEATURES
 
 * Wiimote, Nunchuk, Classic, Wii U Pro, and Gamecube controller support
 * Wii U GamePad support (requires homebrew injection into Wii U VC title)
