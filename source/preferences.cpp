@@ -155,6 +155,7 @@ preparePrefsData ()
 	createXMLSetting("hideoverscan", "Video Cropping", toStr(GCSettings.hideoverscan));
 	createXMLSetting("xshift", "Horizontal Video Shift", toStr(GCSettings.xshift));
 	createXMLSetting("yshift", "Vertical Video Shift", toStr(GCSettings.yshift));
+	createXMLSetting("TurboModeEnabled", "Turbo Mode Enabled", toStr(GCSettings.TurboModeEnabled));
 
 	createXMLSection("Menu", "Menu Settings");
 
@@ -329,6 +330,7 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
 			loadXMLSetting(&GCSettings.xshift, "xshift");
 			loadXMLSetting(&GCSettings.yshift, "yshift");
+			loadXMLSetting(&GCSettings.TurboModeEnabled, "TurboModeEnabled");
 
 			// Menu Settings
 
@@ -456,6 +458,7 @@ DefaultSettings ()
 	sprintf (GCSettings.ArtworkFolder, "%s/artwork", APPFOLDER); // Path to artwork files
 	GCSettings.AutoLoad = 1; // Auto Load RAM
 	GCSettings.AutoSave = 1; // Auto Save RAM
+	GCSettings.TurboModeEnabled = 1; // Enabled by default
 }
 
 /****************************************************************************
