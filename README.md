@@ -1,4 +1,4 @@
-# FCE Ultra GX (Turbo Mode modified)
+# FCE Ultra GX
 https://github.com/dborth/fceugx (Under GPL License)
  
 FCE Ultra GX is a modified port of the FCE Ultra Nintendo Entertainment
