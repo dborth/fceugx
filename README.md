@@ -47,7 +47,7 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
-[3.5.2 - June 16, 2022]
+[3.5.2 - June 15, 2022]
 
 * Updated to the latest FCEUX 2.6.4 (git def5768)
 * Compiled with latest devkitPPC/libogc
