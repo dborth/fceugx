@@ -22,7 +22,7 @@ int offsetStringToInt(unsigned int type, const char* offsetBuffer)
 {
 	int offset = -1;
 
-	if (sscanf(offsetBuffer,"%4X",&offset) == EOF)
+	if (sscanf(offsetBuffer,"%7X",(unsigned int *)&offset) == EOF)
 	{
 		return -1;
 	}
@@ -35,14 +35,24 @@ int offsetStringToInt(unsigned int type, const char* offsetBuffer)
 	{
 		return offset & 0x00FF;
 	}
+	else if (type & BT_R)
+	{
+		return offset;
+	}
 	else // BT_C
 	{
-		if (GameInfo->type == GIT_NSF) { //NSF Breakpoint keywords
+		int type = GIT_CART;
+
+		if (GameInfo)
+		{
+			type = GameInfo->type;
+		}
+		if (type == GIT_NSF) { //NSF Breakpoint keywords
 			if (strcmp(offsetBuffer,"LOAD") == 0) return (NSFHeader.LoadAddressLow | (NSFHeader.LoadAddressHigh<<8));
 			if (strcmp(offsetBuffer,"INIT") == 0) return (NSFHeader.InitAddressLow | (NSFHeader.InitAddressHigh<<8));
 			if (strcmp(offsetBuffer,"PLAY") == 0) return (NSFHeader.PlayAddressLow | (NSFHeader.PlayAddressHigh<<8));
 		}
-		else if (GameInfo->type == GIT_FDS) { //FDS Breakpoint keywords
+		else if (type == GIT_FDS) { //FDS Breakpoint keywords
 			if (strcmp(offsetBuffer,"NMI1") == 0) return (GetMem(0xDFF6) | (GetMem(0xDFF7)<<8));
 			if (strcmp(offsetBuffer,"NMI2") == 0) return (GetMem(0xDFF8) | (GetMem(0xDFF9)<<8));
 			if (strcmp(offsetBuffer,"NMI3") == 0) return (GetMem(0xDFFA) | (GetMem(0xDFFB)<<8));
@@ -56,7 +66,7 @@ int offsetStringToInt(unsigned int type, const char* offsetBuffer)
 		}
 	}
 
-	return offset;
+	return offset & 0xFFFF;
 }
 
 // Returns the value of a given type or register
@@ -194,6 +204,9 @@ unsigned int NewBreak(const char* name, int start, int end, unsigned int type, c
 		watchpoint[num].flags|=BT_S;
 		watchpoint[num].flags&=~WP_X; //disable execute flag!
 	}
+	if (type & BT_R) {
+		watchpoint[num].flags|=BT_R;
+	}
 
 	if (watchpoint[num].desc)
 		free(watchpoint[num].desc);
@@ -208,11 +221,27 @@ int GetPRGAddress(int A){
 	int result;
 	if(A > 0xFFFF)
 		return -1;
-	result = &Page[A>>11][A]-PRGptr[0];
-	if((result > (int)PRGsize[0]) || (result < 0))
-		return -1;
-	else
-		return result;
+	if (GameInfo->type == GIT_FDS) {
+		if (A < 0xE000) {
+			result = &Page[A >> 11][A] - PRGptr[1];
+			if ((result > (int)PRGsize[1]) || (result < 0))
+				return -1;
+			else
+				return result;
+		} else {
+			result = &Page[A >> 11][A] - PRGptr[0];
+			if ((result > (int)PRGsize[0]) || (result < 0))
+				return -1;
+			else
+				return result + PRGsize[1];
+		}
+	} else {
+		result = &Page[A >> 11][A] - PRGptr[0];
+		if ((result > (int)PRGsize[0]) || (result < 0))
+			return -1;
+		else
+			return result;
+	}
 }
 
 /**
@@ -421,12 +450,12 @@ int condition(watchpointinfo* wp)
 
 //---------------------
 
-volatile int codecount, datacount, undefinedcount;
-unsigned char *cdloggerdata;
+volatile int codecount = 0, datacount = 0, undefinedcount = 0;
+unsigned char *cdloggerdata = NULL;
 unsigned int cdloggerdataSize = 0;
-static int indirectnext;
+static int indirectnext = 0;
 
-int debug_loggingCD;
+int debug_loggingCD = 0;
 
 //called by the cpu to perform logging if CDLogging is enabled
 void LogCDVectors(int which){
@@ -448,20 +477,29 @@ void LogCDVectors(int which){
 	}
 }
 
-void LogCDData(uint8 *opcode, uint16 A, int size) {
+bool break_on_unlogged_code = false;
+bool break_on_unlogged_data = false;
+
+void LogCDData(uint8 *opcode, uint16 A, int size)
+{
 	int i, j;
 	uint8 memop = 0;
+	bool newCodeHit = false, newDataHit = false;
 
-	if((j = GetPRGAddress(_PC)) != -1)
-		for (i = 0; i < size; i++) {
-			if(cdloggerdata[j+i] & 1)continue; //this has been logged so skip
+	if ((j = GetPRGAddress(_PC)) != -1)
+	{
+		for (i = 0; i < size; i++)
+		{
+			if (cdloggerdata[j+i] & 1) continue; //this has been logged so skip
 			cdloggerdata[j+i] |= 1;
 			cdloggerdata[j+i] |= ((_PC + i) >> 11) & 0x0c;
 			cdloggerdata[j+i] |= ((_PC & 0x8000) >> 8) ^ 0x80;	// 19/07/14 used last reserved bit, if bit 7 is 1, then code is running from lowe area (6000)
-			if(indirectnext)cdloggerdata[j+i] |= 0x10;
+			if (indirectnext)cdloggerdata[j+i] |= 0x10;
 			codecount++;
-			if(!(cdloggerdata[j+i] & 2))undefinedcount--;
+			if (!(cdloggerdata[j+i] & 2))undefinedcount--;
+			newCodeHit = true;
 		}
+	}
 
 	//log instruction jumped to in an indirect jump
 	if(opcode[0] == 0x6c)
@@ -474,14 +512,43 @@ void LogCDData(uint8 *opcode, uint16 A, int size) {
 		case 4: memop = 0x20; break;
 	}
 
-	if((j = GetPRGAddress(A)) != -1) {
-		if(!(cdloggerdata[j] & 2)) {
-			cdloggerdata[j] |= 2;
-			cdloggerdata[j] |=(A>>11)&0x0c;
-			cdloggerdata[j] |= memop;
-			datacount++;
-			if(!(cdloggerdata[j] & 1))undefinedcount--;
+	if ((j = GetPRGAddress(A)) != -1)
+	{
+		if (opwrite[opcode[0]] == 0)
+		{
+			if (!(cdloggerdata[j] & 2))
+			{
+				cdloggerdata[j] |= 2;
+				cdloggerdata[j] |= (A >> 11) & 0x0c;
+				cdloggerdata[j] |= memop;
+				cdloggerdata[j] |= ((A & 0x8000) >> 8) ^ 0x80;	
+				datacount++;
+				if (!(cdloggerdata[j] & 1))undefinedcount--;
+				newDataHit = true;
+			}
 		}
+		else
+		{
+			if (cdloggerdata[j] & 1)
+			{
+				codecount--;
+			}
+			if (cdloggerdata[j] & 2)
+			{
+				datacount--;
+			}
+			if ((cdloggerdata[j] & 3) != 0) undefinedcount++;
+			cdloggerdata[j] = 0;
+		}
+	}
+
+	if ( break_on_unlogged_code && newCodeHit )
+	{
+		BreakHit( BREAK_TYPE_UNLOGGED_CODE );
+	}
+	else if ( break_on_unlogged_data && newDataHit )
+	{
+		BreakHit( BREAK_TYPE_UNLOGGED_DATA );
 	}
 }
 
@@ -533,40 +600,41 @@ void IncrementInstructionsCounters()
 	delta_instructions++;
 }
 
-void BreakHit(int bp_num, bool force)
-{
-	if(!force)
+bool CondForbidTest(int bp_num) {
+	if (bp_num >= 0 && !condition(&watchpoint[bp_num]))
 	{
-		if (bp_num >= 0 && !condition(&watchpoint[bp_num]))
-		{
-			return; // condition rejected
-		}
+		return false;	// condition rejected
+	}
 
-		//check to see whether we fall in any forbid zone
-		for (int i = 0; i < numWPs; i++)
-		{
-			watchpointinfo& wp = watchpoint[i];
-			if(!(wp.flags & WP_F) || !(wp.flags & WP_E))
-				continue;
+	//check to see whether we fall in any forbid zone
+	for (int i = 0; i < numWPs; i++)
+	{
+		watchpointinfo& wp = watchpoint[i];
+		if (!(wp.flags & WP_F) || !(wp.flags & WP_E))
+			continue;
 
-			if (condition(&wp))
-			{
-				if (wp.endaddress) {
-					if( (wp.address <= _PC) && (wp.endaddress >= _PC) )
-						return;	//forbid
-				} else {
-					if(wp.address == _PC)
-						return; //forbid
-				}
+		if (condition(&wp))
+		{
+			if (wp.endaddress) {
+				if ((wp.address <= _PC) && (wp.endaddress >= _PC))
+					return false;	// forbid
+			}
+			else {
+				if (wp.address == _PC)
+					return false;	// forbid
 			}
 		}
 	}
+	return true;
+}
 
+void BreakHit(int bp_num)
+{
 	FCEUI_SetEmulationPaused(EMULATIONPAUSED_PAUSED); //mbg merge 7/19/06 changed to use EmulationPaused()
 
-#ifdef WIN32
+//#ifdef WIN32
 	FCEUD_DebugBreakpoint(bp_num);
-#endif
+//#endif
 }
 
 int StackAddrBackup;
@@ -574,10 +642,10 @@ uint16 StackNextIgnorePC = 0xFFFF;
 
 ///fires a breakpoint
 static void breakpoint(uint8 *opcode, uint16 A, int size) {
-	int i, j;
+	int i, j, romAddrPC;
 	uint8 brk_type;
 	uint8 stackop=0;
-	uint8 stackopstartaddr,stackopendaddr;
+	uint8 stackopstartaddr=0,stackopendaddr=0;
 
 	debugLastAddress = A;
 	debugLastOpcode = opcode[0];
@@ -585,17 +653,17 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 	if (break_asap)
 	{
 		break_asap = false;
-		BreakHit(BREAK_TYPE_LUA, true);
+		BreakHit(BREAK_TYPE_LUA);
 	}
 
 	if (break_on_cycles && ((timestampbase + (uint64)timestamp - total_cycles_base) > break_cycles_limit))
-		BreakHit(BREAK_TYPE_CYCLES_EXCEED, true);
+		BreakHit(BREAK_TYPE_CYCLES_EXCEED);
 	if (break_on_instructions && (total_instructions > break_instructions_limit))
-		BreakHit(BREAK_TYPE_INSTRUCTIONS_EXCEED, true);
+		BreakHit(BREAK_TYPE_INSTRUCTIONS_EXCEED);
 
 	//if the current instruction is bad, and we are breaking on bad opcodes, then hit the breakpoint
 	if(dbgstate.badopbreak && (size == 0))
-		BreakHit(BREAK_TYPE_BADOP, true);
+		BreakHit(BREAK_TYPE_BADOP);
 
 	//if we're stepping out, track the nest level
 	if (dbgstate.stepout) {
@@ -614,7 +682,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 	//if we're stepping, then we'll always want to break
 	if (dbgstate.step) {
 		dbgstate.step = false;
-		BreakHit(BREAK_TYPE_STEP, true);
+		BreakHit(BREAK_TYPE_STEP);
 		return;
 	}
 
@@ -626,7 +694,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 		if (diff<=0)
 		{
 			dbgstate.runline=false;
-			BreakHit(BREAK_TYPE_STEP, true);
+			BreakHit(BREAK_TYPE_STEP);
 			return;
 		}
 	}
@@ -635,9 +703,11 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 	if ((watchpoint[64].address == _PC) && (watchpoint[64].flags)) {
 		watchpoint[64].address = 0;
 		watchpoint[64].flags = 0;
-		BreakHit(BREAK_TYPE_STEP, true);
+		BreakHit(BREAK_TYPE_STEP);
 		return;
 	}
+
+	romAddrPC = GetNesFileAddress(_PC);
 
 	brk_type = opbrktype[opcode[0]] | WP_X;
 
@@ -657,7 +727,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 		default: break;
 	}
 
-	#define BREAKHIT(x) { breakHit = (x); goto STOPCHECKING; }
+#define BREAKHIT(x) { if (CondForbidTest(x)) { breakHit = (x); goto STOPCHECKING; } }
 	int breakHit = -1;
 	for (i = 0; i < numWPs; i++)
 	{
@@ -708,11 +778,31 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 						if (((watchpoint[i].flags & (WP_R | WP_W)) && (watchpoint[i].address <= A) && (watchpoint[i].endaddress >= A)) ||
 							((watchpoint[i].flags & WP_X) && (watchpoint[i].address <= _PC) && (watchpoint[i].endaddress >= _PC)))
 							BREAKHIT(i);
-					} else
+					}
+					else
 					{
-						if (((watchpoint[i].flags & (WP_R | WP_W)) && (watchpoint[i].address == A)) ||
-							((watchpoint[i].flags & WP_X) && (watchpoint[i].address == _PC)))
-							BREAKHIT(i);
+						if (watchpoint[i].flags & BT_R)
+						{
+							if ( (watchpoint[i].flags & WP_X) && (watchpoint[i].address == romAddrPC) )
+							{
+								BREAKHIT(i);
+							}
+							//else if ( (watchpoint[i].flags & WP_R) && (watchpoint[i].address == A) )
+							//{
+							//	BREAKHIT(i);
+							//}	
+						}
+						else
+						{
+							if ( (watchpoint[i].flags & (WP_R | WP_W)) && (watchpoint[i].address == A)) 
+							{
+								BREAKHIT(i);
+							}
+							else if ( (watchpoint[i].flags & WP_X) && (watchpoint[i].address == _PC) )
+							{
+								BREAKHIT(i);
+							}
+						}
 					}
 				} else
 				{
@@ -864,10 +954,5 @@ void DebugCycle()
 	if(debug_loggingCD)
 		LogCDData(opcode, A, size);
 
-#ifdef WIN32
-	//This needs to be windows only or else the linux build system will fail since logging is declared in a
-	//windows source file
 	FCEUD_TraceInstruction(opcode, size);
-#endif
-
 }

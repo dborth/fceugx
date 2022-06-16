@@ -43,8 +43,9 @@
 #endif
 
 //TODO - we really need some kind of global platform-specific options api
-#ifdef WIN32
+#ifdef __WIN_DRIVER__
 #include "drivers/win/main.h"
+#include "drivers/win/cheat.h"
 #include "drivers/win/ram_search.h"
 #include "drivers/win/ramwatch.h"
 #endif
@@ -60,14 +61,14 @@
 
 using namespace std;
 
-static void (*SPreSave)(void);
-static void (*SPostSave)(void);
+static void (*SPreSave)(void) = NULL;
+static void (*SPostSave)(void) = NULL;
 
 static int SaveStateStatus[10];
 static int StateShow;
 
 //tells the save system innards that we're loading the old format
-bool FCEU_state_loading_old_format;
+bool FCEU_state_loading_old_format = false;
 
 char lastSavestateMade[2048]; //Stores the filename of the last savestate made (needed for UndoSavestate)
 bool undoSS = false;		  //This will be true if there is lastSavestateMade, it was made since ROM was loaded, a backup state for lastSavestateMade exists
@@ -311,7 +312,7 @@ static bool ReadStateChunks(EMUFILE* is, int32 totalsize)
 
 				//MBG TODO - can this be moved to a better place?
 				//does it even make sense, displaying XBuf when its XBackBuf we just loaded?
-#ifdef WIN32
+#ifdef __WIN_DRIVER__
 				else
 				{
 					FCEUD_BlitScreen(XBuf);
@@ -412,7 +413,7 @@ bool FCEUSS_SaveMS(EMUFILE* outstream, int compressionLevel)
 
 	if(SPreSave) SPreSave();
 	totalsize+=WriteStateChunk(os,0x10,SFMDATA);
-	if(SPreSave) SPostSave();
+	if(SPostSave) SPostSave();
 
 	//save the length of the file
 	int len = memory_savestate.size();
@@ -794,7 +795,7 @@ bool FCEUSS_Load(const char *fname, bool display_message)
 		}
 		#endif
 
-#ifdef WIN32
+#ifdef __WIN_DRIVER__
 	Update_RAM_Search(); // Update_RAM_Watch() is also called.
 #endif
 
@@ -847,7 +848,7 @@ void ResetExState(void (*PreSave)(void), void (*PostSave)(void))
 	for(x=0;x<SFEXINDEX;x++)
 	{
 		if(SFMDATA[x].desc)
-			free(SFMDATA[x].desc);
+			free( (void*)SFMDATA[x].desc);
 	}
 	// adelikat, 3/14/09:  had to add this to clear out the size parameter.  NROM(mapper 0) games were having savestate crashes if loaded after a non NROM game	because the size variable was carrying over and causing savestates to save too much data
 	SFMDATA[0].s = 0;
@@ -857,8 +858,11 @@ void ResetExState(void (*PreSave)(void), void (*PostSave)(void))
 	SFEXINDEX=0;
 }
 
-void AddExState(void *v, uint32 s, int type, char *desc)
+void AddExState(void *v, uint32 s, int type, const char *desc)
 {
+	//do not accept extra state information if a null pointer was provided for v, so list won't terminate early
+	if (v == 0) return;
+
 	if(s==~0)
 	{
 		SFORMAT* sf = (SFORMAT*)v;
@@ -884,8 +888,8 @@ void AddExState(void *v, uint32 s, int type, char *desc)
 
 	if(desc)
 	{
-		SFMDATA[SFEXINDEX].desc=(char *)FCEU_malloc(strlen(desc)+1);
-		strcpy(SFMDATA[SFEXINDEX].desc,desc);
+		SFMDATA[SFEXINDEX].desc=(const char *)FCEU_malloc(strlen(desc)+1);
+		strcpy( (char*)SFMDATA[SFEXINDEX].desc,desc);
 	}
 	else
 		SFMDATA[SFEXINDEX].desc=0;
@@ -917,8 +921,8 @@ void FCEUI_SelectStateNext(int n)
 
 int FCEUI_SelectState(int w, int show)
 {
-	FCEUSS_CheckStates();
 	int oldstate=CurrentState;
+	FCEUSS_CheckStates();
 	if(w == -1) { StateShow = 0; return 0; } //mbg merge 7/17/06 had to make return a value
 
 	CurrentState=w;

@@ -4,23 +4,27 @@
 #define EMPTY_PALETTE_64 EMPTY_PALETTE_16 EMPTY_PALETTE_16 EMPTY_PALETTE_16 EMPTY_PALETTE_16
 #define EMPTY_PALETTE_DEEMPH_X_7 EMPTY_PALETTE_64 EMPTY_PALETTE_64 EMPTY_PALETTE_64 EMPTY_PALETTE_64 EMPTY_PALETTE_64 EMPTY_PALETTE_64 EMPTY_PALETTE_64
 
-pal rp2c04001[512] = {
- #include "rp2c04001.h"
+pal rp2c04_0001[512] = {
+ #include "rp2c04-0001.h"
 	EMPTY_PALETTE_DEEMPH_X_7
 };
 
-pal rp2c04002[512] = {
- #include "rp2c04002.h"
+pal rp2c04_0002[512] = {
+ #include "rp2c04-0002.h"
 	EMPTY_PALETTE_DEEMPH_X_7
 };
 
-pal rp2c04003[512] = {
- #include "rp2c04003.h"
+pal rp2c04_0003[512] = {
+ #include "rp2c04-0003.h"
 	EMPTY_PALETTE_DEEMPH_X_7
 };
-pal rp2c05004[512] = {
- #include "rp2c05004.h"
+pal rp2c04_0004[512] = {
+ #include "rp2c04-0004.h"
 	EMPTY_PALETTE_DEEMPH_X_7
+};
+
+pal rp2c03[512] = {
+ #include "rp2c03.h"
 };
 
 // Fixed palette entries used by the GUI
