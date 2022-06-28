@@ -585,7 +585,7 @@ BMAPPINGLocal bmap[] = {
 	{"MMC3 PIRATE H2288",	123, UNLH2288_Init},
 //	{"",					124, Mapper124_Init},
 	{"FDS LH32",			125, LH32_Init},
-//	{"",					126, Mapper126_Init},
+	{"PowerJoy 84-in-1",	126, Mapper126_Init},
 //	{"",					127, Mapper127_Init},
 //	{"",					128, Mapper128_Init},
 //	{"",					129, Mapper129_Init},
