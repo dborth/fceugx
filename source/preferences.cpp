@@ -23,6 +23,7 @@
 #include "filebrowser.h"
 #include "menu.h"
 #include "fileop.h"
+#include "gcvideo.h"
 #include "pad.h"
 
 struct SGCSettings GCSettings;
@@ -631,6 +632,10 @@ bool LoadPrefs()
 		CreateDirectory(dirPath);
 		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.CheatFolder);
 		CreateDirectory(dirPath);
+	}
+
+	if(GCSettings.videomode > 0) {
+		ResetVideo_Menu();
 	}
 
 #ifdef HW_RVL
