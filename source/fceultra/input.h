@@ -74,7 +74,7 @@ struct INPUTCFC
 extern struct JOYPORT
 {
 	JOYPORT(int _w)
-		: w(_w)
+		: w(_w), attrib(0), type(SI_UNSET), ptr(0), driver(0)
 	{}
 
 	int w;
@@ -248,6 +248,17 @@ enum EMUCMD
 	EMUCMD_FPS_DISPLAY_TOGGLE,
 	EMUCMD_TOOL_DEBUGSTEPINTO,
 
+	EMUCMD_MOVIE_TOGGLE_RECORDING,
+	EMUCMD_MOVIE_TRUNCATE,
+	EMUCMD_MOVIE_INSERT_1_FRAME,
+	EMUCMD_MOVIE_DELETE_1_FRAME,
+
+	EMUCMD_MOVIE_NEXT_RECORD_MODE,
+	EMUCMD_MOVIE_PREV_RECORD_MODE,
+	EMUCMD_MOVIE_RECORD_MODE_TRUNCATE,
+	EMUCMD_MOVIE_RECORD_MODE_OVERWRITE,
+	EMUCMD_MOVIE_RECORD_MODE_INSERT,
+
 	EMUCMD_MAX
 };
 
@@ -284,7 +295,7 @@ struct EMUCMDTABLE
 	EMUCMDFN* fn_on;
 	EMUCMDFN* fn_off;
 	int state;
-	char* name;
+	const char* name;
 	int flags; //EMUCMDFLAG
 };
 
@@ -295,5 +306,6 @@ extern bool lagCounterDisplay;
 extern char lagFlag;
 extern bool turbo;
 void LagCounterReset();
+EMUCMDTABLE* GetEmuCommandById(int cmd);
 
 #endif //_INPUT_H_

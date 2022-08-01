@@ -124,7 +124,6 @@
 	{0x054bd3e9,	 74,	   -1},	/* Di 4 Ci - Ji Qi Ren Dai Zhan (As) */
 	{0x496ac8f7,	 74,	   -1},	/* Ji Jia Zhan Shi (As) */
 	{0xae854cef,	 74,	   -1},	/* Jia A Fung Yun (Chinese) */
-	{0xba51ac6f,	 78,		2},
 	{0x3d1c3137,	 78,		8},	/* Uchuusen - Cosmo Carrier */
 	{0xa4fbb438,	 79,		0},
 	{0xd4a76b07,	 79,		0},	/* F-15 City Wars*/
@@ -280,5 +279,7 @@
 	{0xd1e52b37,	260|0x1000,-1},
 	{0x4d4a0e1b,	260|0x1000,-1},
 	{0xb6dd2c9d,	260|0x1000,-1},
+
+	{0xb02fcb57,    406|0x1000,-1},	/* Haradius Zero ver 1.2a 2019 */
 
 	{0x00000000,	  -1,	   -1}

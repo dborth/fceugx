@@ -15,12 +15,15 @@
 #define BT_C       0x00  //break type, cpu mem
 #define BT_P       0x20  //break type, ppu mem
 #define BT_S       0x40  //break type, sprite mem
+#define BT_R       0x80  //break type, rom mem
 
 #define BREAK_TYPE_STEP -1
 #define BREAK_TYPE_BADOP -2
 #define BREAK_TYPE_CYCLES_EXCEED -3
 #define BREAK_TYPE_INSTRUCTIONS_EXCEED -4
 #define BREAK_TYPE_LUA -5
+#define BREAK_TYPE_UNLOGGED_CODE -6
+#define BREAK_TYPE_UNLOGGED_DATA -7
 
 //opbrktype is used to grab the breakpoint type that each instruction will cause.
 //WP_X is not used because ALL opcodes will have the execute bit set.
@@ -46,9 +49,9 @@ static const uint8 opbrktype[256] = {
 
 
 typedef struct {
-	uint16 address;
-	uint16 endaddress;
-	uint8 flags;
+	uint32 address;
+	uint32 endaddress;
+	uint16 flags;
 
 	Condition* cond;
 	char* condText;
@@ -59,6 +62,7 @@ typedef struct {
 //mbg merge 7/18/06 had to make this extern
 extern watchpointinfo watchpoint[65]; //64 watchpoints, + 1 reserved for step over
 
+extern unsigned int debuggerPageSize;
 int getBank(int offs);
 int GetNesFileAddress(int A);
 int GetPRGAddress(int A);
@@ -93,9 +97,12 @@ static INLINE int FCEUI_GetLoggingCD() { return debug_loggingCD; }
 extern int iaPC;
 extern uint32 iapoffset; //mbg merge 7/18/06 changed from int
 void DebugCycle();
-void BreakHit(int bp_num, bool force = false);
+bool CondForbidTest(int bp_num);
+void BreakHit(int bp_num);
 
 extern bool break_asap;
+extern bool break_on_unlogged_code;
+extern bool break_on_unlogged_data;
 extern uint64 total_cycles_base;
 extern uint64 delta_cycles_base;
 extern bool break_on_cycles;
@@ -113,8 +120,9 @@ extern void IncrementInstructionsCounters();
 
 //internal variables that debuggers will want access to
 extern uint8 *vnapage[4],*VPage[8];
-extern uint8 PPU[4],PALRAM[0x20],SPRAM[0x100],VRAMBuffer,PPUGenLatch,XOffset;
+extern uint8 PPU[4],PALRAM[0x20],UPALRAM[3],SPRAM[0x100],VRAMBuffer,PPUGenLatch,XOffset;
 extern uint32 FCEUPPU_PeekAddress();
+extern uint8 READPAL_MOTHEROFALL(uint32 A);
 extern int numWPs;
 
 ///encapsulates the operational state of the debugger core

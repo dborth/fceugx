@@ -43,48 +43,43 @@ extern uint8 *VROM;
 extern uint32 VROM_size;
 extern uint32 ROM_size;
 extern uint8 *ExtraNTARAM;
-extern int iNesSave(); //bbit Edited: line added
-extern int iNesSaveAs(char* name);
+extern int iNesSave(void); //bbit Edited: line added
+extern int iNesSaveAs(const char* name);
 extern char LoadedRomFName[2048]; //bbit Edited: line added
+extern char *iNesShortFName(void);
 extern const TMasterRomInfo* MasterRomInfo;
 extern TMasterRomInfoParams MasterRomInfoParams;
 
 //mbg merge 7/19/06 changed to c++ decl format
 struct iNES_HEADER {
-	char ID[4]; /*NES^Z*/
-	uint8 ROM_size;
-	uint8 VROM_size;
-	uint8 ROM_type;
-	uint8 ROM_type2;
-	uint8 ROM_type3;
-	uint8 Upper_ROM_VROM_size;
-	uint8 RAM_size;
-	uint8 VRAM_size;
-	uint8 TV_system;
-	uint8 VS_hardware;
-	uint8 reserved[2];
+	char ID[4]; /*NES^Z*/        // 0-3
+	uint8 ROM_size;              // 4
+	uint8 VROM_size;             // 5
+	uint8 ROM_type;              // 6
+	uint8 ROM_type2;             // 7
+	uint8 ROM_type3;             // 8
+	uint8 Upper_ROM_VROM_size;   // 9
+	uint8 RAM_size;              // 10
+	uint8 VRAM_size;             // 11
+	uint8 TV_system;             // 12
+	uint8 VS_hardware;           // 13
+	uint8 reserved[2];           // 14, 15
 
 	void cleanup()
 	{
-		if(!memcmp((char *)(this)+0x7,"DiskDude",8))
-		{
-			memset((char *)(this)+0x7,0,0x9);
-		}
+		if(!memcmp((char*)(this) + 0x7, "DiskDude", 8) || !memcmp((char*)(this) + 0x7, "demiforce", 9))
+			memset((char*)(this) + 0x7, 0, 0x9);
 
-		if(!memcmp((char *)(this)+0x7,"demiforce",9))
+		if(!memcmp((char*)(this) + 0xA, "Ni03", 4))
 		{
-			memset((char *)(this)+0x7,0,0x9);
-		}
-
-		if(!memcmp((char *)(this)+0xA,"Ni03",4))
-		{
-			if(!memcmp((char *)(this)+0x7,"Dis",3))
-				memset((char *)(this)+0x7,0,0x9);
+			if(!memcmp((char*)(this) + 0x7, "Dis", 3))
+				memset((char*)(this) + 0x7, 0, 0x9);
 			else
-				memset((char *)(this)+0xA,0,0x6);
+				memset((char*)(this) + 0xA, 0, 0x6);
 		}
 	}
 };
+
 extern struct iNES_HEADER head; //for mappers usage
 
 void NSFVRC6_Init(void);
@@ -187,6 +182,7 @@ void Mapper119_Init(CartInfo *);
 void Mapper120_Init(CartInfo *);
 void Mapper121_Init(CartInfo *);
 void Mapper125_Init(CartInfo *);
+void Mapper126_Init(CartInfo *);
 void Mapper134_Init(CartInfo *);
 void Mapper140_Init(CartInfo *);
 void Mapper144_Init(CartInfo *);
@@ -220,6 +216,7 @@ void Mapper186_Init(CartInfo *);
 void Mapper187_Init(CartInfo *);
 void Mapper188_Init(CartInfo *);
 void Mapper189_Init(CartInfo *);
+void Mapper190_Init(CartInfo *);
 void Mapper191_Init(CartInfo *);
 void Mapper192_Init(CartInfo *);
 void Mapper193_Init(CartInfo *);
@@ -246,6 +243,7 @@ void Mapper213_Init(CartInfo *);
 void Mapper214_Init(CartInfo *);
 void Mapper216_Init(CartInfo *);
 void Mapper217_Init(CartInfo *);
+void Mapper218_Init(CartInfo *);
 void Mapper220_Init(CartInfo *);
 void Mapper222_Init(CartInfo *);
 void Mapper225_Init(CartInfo *);
@@ -272,5 +270,11 @@ void Mapper250_Init(CartInfo *);
 void Mapper252_Init(CartInfo *);
 void Mapper253_Init(CartInfo *);
 void Mapper254_Init(CartInfo *);
+void Mapper406_Init(CartInfo *);
 
+typedef struct {
+	const char *name;
+	int32 number;
+	void (*init)(CartInfo *);
+} BMAPPINGLocal;
 #endif

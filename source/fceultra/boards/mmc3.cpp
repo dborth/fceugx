@@ -113,6 +113,9 @@ void MMC3RegReset(void) {
 	DRegBuf[6] = 0;
 	DRegBuf[7] = 1;
 
+// KT-008 boards hack 2-in-1, TODO assign to new ines mapper, most dump of KT-boards on the net are mapper 4, so need database or goodnes fix support
+	kt_extra = 0;
+
 	FixMMC3PRG(0);
 	FixMMC3CHR(0);
 }
@@ -187,7 +190,14 @@ DECLFW(MMC3_IRQWrite) {
 DECLFW(KT008HackWrite) {
 //	FCEU_printf("%04x:%04x\n",A,V);
 	switch (A & 3) {
-	case 0: kt_extra = V; FixMMC3PRG(MMC3_cmd); break;
+	case 0: {
+			if (V == 0x27)			// FF Xn hack! one more mapper in one
+				kt_extra = 0;
+			else
+				kt_extra = V;
+			FixMMC3PRG(MMC3_cmd);
+			break;
+	}
 	case 1: break;	// unk
 	case 2: break;	// unk
 	case 3: break;	// unk
@@ -1352,4 +1362,31 @@ void TQROM_Init(CartInfo *info) {
 
 void HKROM_Init(CartInfo *info) {
 	GenMMC3_Init(info, 512, 512, 1, info->battery);
+}
+
+// -------------------------------- iNES 2.0 ----------------------------
+
+// ---------------------------- Mapper 406 ------------------------------
+
+static DECLFW(M406CMDWrite) {
+	MMC3_CMDWrite((A & 0xFFFE) | ((A & 2) >> 1), V);
+}
+
+static DECLFW(M406IRQWrite) {
+	MMC3_IRQWrite((A & 0xFFFE) | ((A & 2) >> 1), V);
+}
+
+static DECLFW(M406Write) {
+}
+
+static void M406_Power(void) {
+	GenMMC3Power();
+	// TODO : FLASH
+	SetWriteHandler(0x8000, 0xBFFF, M406CMDWrite);
+	SetWriteHandler(0xC000, 0xFFFF, M406IRQWrite);
+}
+
+void Mapper406_Init(CartInfo *info) {
+	GenMMC3_Init(info, 512, 256, 0, 0);
+	info->Power = M406_Power;
 }

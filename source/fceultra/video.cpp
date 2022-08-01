@@ -37,7 +37,7 @@
 #include "fceulua.h"
 #endif
 
-#ifdef WIN32
+#ifdef __WIN_DRIVER__
 #include "drivers/win/common.h" //For DirectX constants
 #include "drivers/win/input.h"
 #endif
@@ -72,6 +72,8 @@ static u8 *xbsave=NULL;
 GUIMESSAGE guiMessage;
 GUIMESSAGE subtitleMessage;
 
+bool vidGuiMsgEna = true;
+
 //for input display
 extern int input_display;
 extern uint32 cur_input_display;
@@ -87,23 +89,23 @@ std::string FCEUI_GetSnapshotAsName() { return AsSnapshotName; }
 
 void FCEU_KillVirtualVideo(void)
 {
-	//mbg merge TODO 7/17/06 temporarily removed
-	//if(xbsave)
-	//{
-	// free(xbsave);
-	// xbsave=0;
-	//}
-	//if(XBuf)
-	//{
-	//UnmapViewOfFile(XBuf);
-	//CloseHandle(mapXBuf);
-	//mapXBuf=NULL;
-	//}
-	//if(XBackBuf)
-	//{
-	// free(XBackBuf);
-	// XBackBuf=0;
-	//}
+	if ( XBuf )
+	{
+		FCEU_free(XBuf); XBuf = NULL;
+	}
+	if ( XBackBuf )
+	{
+		FCEU_free(XBackBuf); XBackBuf = NULL;
+	}
+	if ( XDBuf )
+	{
+		FCEU_free(XDBuf); XDBuf = NULL;
+	}
+	if ( XDBackBuf )
+	{
+		FCEU_free(XDBackBuf); XDBackBuf = NULL;
+	}
+	//printf("Video Core Cleanup\n");
 }
 
 /**
@@ -178,6 +180,31 @@ static void ReallySnap(void)
 		FCEU_DispMessage("Screen snapshot %d saved.",0,x-1);
 }
 
+static uint32 GetButtonColor(uint32 held, uint32 c, uint32 ci, int bit)
+{
+	uint32 on = FCEUMOV_Mode(MOVIEMODE_PLAY) ? 0x90 : 0xA7;	//Standard, or Gray depending on movie mode
+	uint32 oni = 0xA0;		//Color for immediate keyboard buttons
+	uint32 blend = 0xB6;	//Blend of immiate and last held buttons
+	uint32 ahold = 0x87;	//Auto hold
+	uint32 off = 0xCF;
+
+	uint32 color;
+	uint8 mask = 1u << bit;
+	if (held & mask) { //If auto-hold
+		if (!(ci & mask))
+			color = ahold;
+		else
+			color = (c & mask) ? on : off; //If the button is pressed down (immediate) that negates auto hold, however it is only off if the previous frame the button wasn't pressed!
+	}
+	else {
+		if (c & mask)
+			color = (ci & mask) ? blend : on; //If immedaite buttons are pressed and they match the previous frame, blend the colors
+		else
+			color = (ci & mask) ? oni : off;
+	}
+	return color;
+}
+
 void FCEU_PutImage(void)
 {
 	if(dosnapsave==2)	//Save screenshot as, currently only flagged & run by the Win32 build. //TODO SDL: implement this?
@@ -246,20 +273,10 @@ void FCEU_PutImage(void)
 	//Fancy input display code
 	if(input_display)
 	{
-		extern uint32 JSAutoHeld;
-		uint32 held;
-
-		int controller, c, ci, color;
 		int i, j;
-		uint32 on  = FCEUMOV_Mode(MOVIEMODE_PLAY) ? 0x90:0xA7;	//Standard, or Gray depending on movie mode
-		uint32 oni = 0xA0;		//Color for immediate keyboard buttons
-		uint32 blend = 0xB6;		//Blend of immiate and last held buttons
-		uint32 ahold = 0x87;		//Auto hold
-		uint32 off = 0xCF;
-
 		uint8 *t = XBuf+(FSettings.LastSLine-9)*256 + 20;		//mbg merge 7/17/06 changed t to uint8*
 		if(input_display > 4) input_display = 4;
-		for(controller = 0; controller < input_display; controller++, t += 56)
+		for(int controller = 0; controller < input_display; controller++, t += 56)
 		{
 			for(i = 0; i < 34;i++)
 				for(j = 0; j <9 ; j++)
@@ -267,33 +284,28 @@ void FCEU_PutImage(void)
 			for(i = 3; i < 6; i++)
 				for(j = 3; j< 6; j++)
 					t[i+j*256] = 0xCF;
-			c = cur_input_display >> (controller * 8);
 
+			uint32 held = 0;
+			uint32 c = cur_input_display >> (controller * 8);
+			uint32 ci = 0;
+			uint32 color;
+
+#ifdef __WIN_DRIVER__
+			extern uint32 JSAutoHeld;
 			// This doesn't work in anything except windows for now.
 			// It doesn't get set anywhere in other ports.
-#ifdef WIN32
-			if (!oldInputDisplay) ci = FCEUMOV_Mode(MOVIEMODE_PLAY) ? 0:GetGamepadPressedImmediate() >> (controller * 8);
-			else ci = 0;
+			if (!oldInputDisplay)
+				ci = FCEUMOV_Mode(MOVIEMODE_PLAY) ? 0 : GetGamepadPressedImmediate() >> (controller * 8);
 
-			if (!oldInputDisplay && !FCEUMOV_Mode(MOVIEMODE_PLAY)) held = (JSAutoHeld >> (controller * 8));
-			else held = 0;
+			if (!oldInputDisplay && !FCEUMOV_Mode(MOVIEMODE_PLAY))
+				held = (JSAutoHeld >> (controller * 8));
 #else
 			// Put other port info here
-			ci = 0;
-			held = 0;
 #endif
 
 			//adelikat: I apologize to anyone who ever sifts through this color assignment
 			//A
-			if (held&1)	{ //If auto-hold
-				if (!(ci&1) ) color = ahold;
-				else
-					color = (c&1) ? on : off; //If the button is pressed down (immediate) that negates auto hold, however it is only off if the previous frame the button wasn't pressed!
-			}
-			else {
-				if (c&1) color = (ci&1) ? blend : on;	//If immedaite buttons are pressed and they match the previous frame, blend the colors
-				else color = (ci&1) ? oni : off;
-			}
+			color = GetButtonColor(held, c, ci, 0);
 			for(i=0; i < 4; i++)
 			{
 				for(j = 0; j < 4; j++)
@@ -304,15 +316,7 @@ void FCEU_PutImage(void)
 				}
 			}
 			//B
-			if (held&2)	{ //If auto-hold
-				if (!(ci&2) ) color = ahold;
-				else
-					color = (c&2) ? on : off; //If the button is pressed down (immediate) that negates auto hold, however it is only off if the previous frame the button wasn't pressed!
-			}
-			else {
-				if (c&2) color = (ci&2) ? blend : on;	//If immedaite buttons are pressed and they match the previous frame, blend the colors
-				else color = (ci&2) ? oni : off;
-			}
+			color = GetButtonColor(held, c, ci, 1);
 			for(i=0; i < 4; i++)
 			{
 				for(j = 0; j < 4; j++)
@@ -323,45 +327,21 @@ void FCEU_PutImage(void)
 				}
 			}
 			//Select
-			if (held&4)	{ //If auto-hold
-				if (!(ci&4) ) color = ahold;
-				else
-					color = (c&4) ? on : off; //If the button is pressed down (immediate) that negates auto hold, however it is only off if the previous frame the button wasn't pressed!
-			}
-			else {
-				if (c&4) color = (ci&4) ? blend : on;	//If immedaite buttons are pressed and they match the previous frame, blend the colors
-				else color = (ci&4) ? oni : off;
-			}
+			color = GetButtonColor(held, c, ci, 2);
 			for(i = 0; i < 4; i++)
 			{
 				t[11+5*256+i] = color;
 				t[11+6*256+i] = color;
 			}
 			//Start
-			if (held&8)	{ //If auto-hold
-				if (!(ci&8) ) color = ahold;
-				else
-					color = (c&8) ? on : off; //If the button is pressed down (immediate) that negates auto hold, however it is only off if the previous frame the button wasn't pressed!
-			}
-			else {
-				if (c&8) color = (ci&8) ? blend : on;	//If immedaite buttons are pressed and they match the previous frame, blend the colors
-				else color = (ci&8) ? oni : off;
-			}
+			color = GetButtonColor(held, c, ci, 3);
 			for(i = 0; i < 4; i++)
 			{
 				t[17+5*256+i] = color;
 				t[17+6*256+i] = color;
 			}
 			//Up
-			if (held&16)	{ //If auto-hold
-				if (!(ci&16) ) color = ahold;
-				else
-					color = (c&16) ? on : off; //If the button is pressed down (immediate) that negates auto hold, however it is only off if the previous frame the button wasn't pressed!
-			}
-			else {
-				if (c&16) color = (ci&16) ? blend : on;	//If immedaite buttons are pressed and they match the previous frame, blend the colors
-				else color = (ci&16) ? oni : off;
-			}
+			color = GetButtonColor(held, c, ci, 4);
 			for(i = 0; i < 3; i++)
 			{
 				for(j = 0; j < 3; j++)
@@ -370,15 +350,7 @@ void FCEU_PutImage(void)
 				}
 			}
 			//Down
-			if (held&32)	{ //If auto-hold
-				if (!(ci&32) ) color = ahold;
-				else
-					color = (c&32) ? on : off; //If the button is pressed down (immediate) that negates auto hold, however it is only off if the previous frame the button wasn't pressed!
-			}
-			else {
-				if (c&32) color = (ci&32) ? blend : on;	//If immedaite buttons are pressed and they match the previous frame, blend the colors
-				else color = (ci&32) ? oni : off;
-			}
+			color = GetButtonColor(held, c, ci, 5);
 			for(i = 0; i < 3; i++)
 			{
 				for(j = 0; j < 3; j++)
@@ -387,15 +359,7 @@ void FCEU_PutImage(void)
 				}
 			}
 			//Left
-			if (held&64)	{ //If auto-hold
-				if (!(ci&64) ) color = ahold;
-				else
-					color = (c&64) ? on : off; //If the button is pressed down (immediate) that negates auto hold, however it is only off if the previous frame the button wasn't pressed!
-			}
-			else {
-				if (c&64) color = (ci&64) ? blend : on;	//If immedaite buttons are pressed and they match the previous frame, blend the colors
-				else color = (ci&64) ? oni : off;
-			}
+			color = GetButtonColor(held, c, ci, 6);
 			for(i = 0; i < 3; i++)
 			{
 				for(j = 0; j < 3; j++)
@@ -404,15 +368,7 @@ void FCEU_PutImage(void)
 				}
 			}
 			//Right
-			if (held&128)	{ //If auto-hold
-				if (!(ci&128) ) color = ahold;
-				else
-					color = (c&128) ? on : off; //If the button is pressed down (immediate) that negates auto hold, however it is only off if the previous frame the button wasn't pressed!
-			}
-			else {
-				if (c&128) color = (ci&128) ? blend : on;	//If immedaite buttons are pressed and they match the previous frame, blend the colors
-				else color = (ci&128) ? oni : off;
-			}
+			color = GetButtonColor(held, c, ci, 7);
 			for(i = 0; i < 3; i++)
 			{
 				for(j = 0; j < 3; j++)
@@ -444,7 +400,7 @@ void snapAVI()
 		FCEUI_AviVideoUpdate(XBuf);
 }
 
-void FCEU_DispMessageOnMovie(char *format, ...)
+void FCEU_DispMessageOnMovie(const char *format, ...)
 {
 	va_list ap;
 
@@ -452,7 +408,10 @@ void FCEU_DispMessageOnMovie(char *format, ...)
 	vsnprintf(guiMessage.errmsg,sizeof(guiMessage.errmsg),format,ap);
 	va_end(ap);
 
-	guiMessage.howlong = 180;
+	if ( vidGuiMsgEna )
+	{
+		guiMessage.howlong = 180;
+	}
 	guiMessage.isMovieMessage = true;
 	guiMessage.linesFromBottom = 0;
 
@@ -460,7 +419,7 @@ void FCEU_DispMessageOnMovie(char *format, ...)
 		guiMessage.howlong = 0;
 }
 
-void FCEU_DispMessage(char *format, int disppos=0, ...)
+void FCEU_DispMessage(const char *format, int disppos=0, ...)
 {
 	va_list ap;
 
@@ -475,7 +434,10 @@ void FCEU_DispMessage(char *format, int disppos=0, ...)
 	strcat(temp, "\n");
 	FCEU_printf(temp);
 
-	guiMessage.howlong = 180;
+	if ( vidGuiMsgEna )
+	{
+		guiMessage.howlong = 180;
+	}
 	guiMessage.isMovieMessage = false;
 
 	guiMessage.linesFromBottom = disppos;
@@ -501,7 +463,7 @@ void FCEU_ResetMessages()
 }
 
 
-static int WritePNGChunk(FILE *fp, uint32 size, char *type, uint8 *data)
+static int WritePNGChunk(FILE *fp, uint32 size, const char *type, uint8 *data)
 {
 	uint32 crc;
 
@@ -631,7 +593,7 @@ int SaveSnapshot(void)
 			dest++;
 			for(x=256;x;x--)
 			{
-				u32 color = ModernDeemphColorMap(tmp,XBuf,1,1);
+				u32 color = ModernDeemphColorMap(tmp,XBuf,1);
 				*dest++=(color>>0x10)&0xFF;
 				*dest++=(color>>0x08)&0xFF;
 				*dest++=(color>>0x00)&0xFF;
@@ -774,29 +736,54 @@ bool FCEUI_ShowFPS()
 }
 void FCEUI_SetShowFPS(bool showFPS)
 {
+	if ( Show_FPS != showFPS )
+	{
+		ResetFPS();
+	}
 	Show_FPS = showFPS;
 }
 void FCEUI_ToggleShowFPS()
 {
 	Show_FPS ^= 1;
+
+	ResetFPS();
 }
 
-static uint64 boop[60];
-static int boopcount = 0;
+static uint64 boop_ts = 0;
+static unsigned int boopcount = 0;
+
+void ResetFPS(void)
+{
+	boop_ts = 0;
+	boopcount = 0;
+}
 
 void ShowFPS(void)
 {
 #ifndef GEKKO
-	if(Show_FPS == false)
+	if (Show_FPS == false)
+	{
 		return;
-	uint64 da = FCEUD_GetTime() - boop[boopcount];
-	char fpsmsg[16];
-	int booplimit = PAL?50:60;
-	boop[boopcount] = FCEUD_GetTime();
+	}
+	static char fpsmsg[16] = { 0 };
+	uint64 ts = FCEUD_GetTime();
+	uint64 da;
 
-	sprintf(fpsmsg, "%.1f", (double)booplimit / ((double)da / FCEUD_GetTimeFreq()));
+	if ( boop_ts == 0 )
+	{
+		boop_ts = ts;
+	}
+	da = ts - boop_ts;
+
+	if ( da > FCEUD_GetTimeFreq() )
+	{
+		sprintf(fpsmsg, "%.1f", (double)boopcount / ((double)da / FCEUD_GetTimeFreq()));
+
+		boopcount = 0;
+		boop_ts = ts;
+	}
+	boopcount++;
+
 	DrawTextTrans(XBuf + ((256 - ClipSidesOffset) - 40) + (FSettings.FirstSLine + 4) * 256, 256, (uint8*)fpsmsg, 0xA0);
-	// It's not averaging FPS over exactly 1 second, but it's close enough.
-	boopcount = (boopcount + 1) % booplimit;
 #endif
 }

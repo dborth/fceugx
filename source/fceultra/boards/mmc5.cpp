@@ -22,6 +22,8 @@
 
 #include "mapinc.h"
 
+#include <array>
+
 #define ABANKS MMC5SPRVPage
 #define BBANKS MMC5BGVPage
 #define SpriteON    (PPU[1] & 0x10)	//Show Sprite
@@ -81,10 +83,11 @@ static INLINE void MMC5BGVROM_BANK8(uint32 V) {
 	}
 }
 
-static uint8 PRGBanks[4];
+static std::array<uint8,4> PRGBanks;
 static uint8 WRAMPage;
-static uint16 CHRBanksA[8], CHRBanksB[4];
-static uint8 WRAMMaskEnable[2];
+static std::array<uint16,8> CHRBanksA;
+static std::array<uint16,4> CHRBanksB;
+static std::array<uint8,2> WRAMMaskEnable;
 uint8 mmc5ABMode;                /* A=0, B=1 */
 
 static uint8 IRQScanline, IRQEnable;
@@ -93,18 +96,20 @@ static uint8 CHRMode, NTAMirroring, NTFill, ATFill;
 static uint8 MMC5IRQR;
 static uint8 MMC5LineCounter;
 static uint8 mmc5psize, mmc5vsize;
-static uint8 mul[2];
+static std::array<uint8,2> mul;
 
 static uint32 WRAMSIZE = 0;
 static uint8 *WRAM = NULL;
 static uint8 *MMC5fill = NULL;
 static uint8 *ExRAM = NULL;
+static uint8 MMC5battery = 0;
 
-static uint8 MMC5WRAMsize; //configuration, not state
-static uint8 MMC5WRAMIndex[8]; //configuration, not state
+const int MMC5WRAMMAX = 1<<7; // 7 bits in register interface (real MMC5 has only 4 pins, however)
+static uint8 MMC5WRAMsize=0; //configuration, not state
+static uint8 MMC5WRAMIndex[MMC5WRAMMAX]; //configuration, not state
 
-static uint8 MMC5ROMWrProtect[4];
-static uint8 MMC5MemIn[5];
+static std::array<uint8,4> MMC5ROMWrProtect;
+static std::array<uint8,5> MMC5MemIn;
 
 static void MMC5CHRA(void);
 static void MMC5CHRB(void);
@@ -146,12 +151,18 @@ uint8* MMC5BGVRAMADR(uint32 A)
 static void mmc5_PPUWrite(uint32 A, uint8 V) {
 	uint32 tmp = A;
 	extern uint8 PALRAM[0x20];
+	extern uint8 UPALRAM[0x03];
 
 	if (tmp >= 0x3F00) {
-		// hmmm....
-		if (!(tmp & 0xf))
-			PALRAM[0x00] = PALRAM[0x04] = PALRAM[0x08] = PALRAM[0x0C] = V & 0x3F;
-		else if (tmp & 3) PALRAM[(tmp & 0x1f)] = V & 0x3f;
+		if (!(tmp & 3)) {
+			if (!(tmp & 0xC)) {
+				PALRAM[0x00] = PALRAM[0x04] = PALRAM[0x08] = PALRAM[0x0C] = V & 0x3F;
+				PALRAM[0x10] = PALRAM[0x14] = PALRAM[0x18] = PALRAM[0x1C] = V & 0x3F;
+			}
+			else
+				UPALRAM[((tmp & 0xC) >> 2) - 1] = V & 0x3F;
+		} else
+			PALRAM[tmp & 0x1F] = V & 0x3F;
 	} else if (tmp < 0x2000) {
 		if (PPUCHRRAM & (1 << (tmp >> 10)))
 			VPage[tmp >> 10][tmp] = V;
@@ -308,6 +319,8 @@ int DetectMMC5WRAMSize(uint32 crc32) {
 }
 
 static void BuildWRAMSizeTable(void) {
+	bool other = false; // non-standard configuration
+	// fill first 8 entries
 	int x;
 	for (x = 0; x < 8; x++) {
 		switch (MMC5WRAMsize) {
@@ -315,8 +328,21 @@ static void BuildWRAMSizeTable(void) {
 		case 1: MMC5WRAMIndex[x] = (x > 3) ? 255 : 0; break;        //0,0,0,0,X,X,X,X
 		case 2: MMC5WRAMIndex[x] = (x & 4) >> 2; break;             //0,0,0,0,1,1,1,1
 		case 4: MMC5WRAMIndex[x] = (x > 3) ? 255 : (x & 3); break;  //0,1,2,3,X,X,X,X
-		case 8: MMC5WRAMIndex[x] = x; break; 						//0,1,2,3,4,5,6,7
+		case 8: MMC5WRAMIndex[x] = x; break;                        //0,1,2,3,4,5,6,7
+		default: MMC5WRAMIndex[x] = x; other = true; break;         //0,1,2...
 		}
+	}
+	// extend to fill complete table
+	if (other)
+	{
+		for (x = 0; x < MMC5WRAMMAX && x < MMC5WRAMsize; ++x) MMC5WRAMIndex[x] = x; // linear mapping
+		for (x = MMC5WRAMsize; x < MMC5WRAMMAX; ++x) MMC5WRAMIndex[x] = MMC5WRAMIndex[x-MMC5WRAMsize]; // repeat to fill table
+		// theoretically the table fill should decompose into powers of two for possible mismatched SRAM combos,
+		// but I don't want to complicate the code with unnecessary hypotheticals
+	}
+	else
+	{
+		for (x = 8; x < MMC5WRAMMAX; ++x) MMC5WRAMIndex[x] = MMC5WRAMIndex[x & 7]; // fill table, repeating groups of 8
 	}
 }
 
@@ -385,7 +411,7 @@ static void MMC5CHRB(void) {
 }
 
 static void MMC5WRAM(uint32 A, uint32 V) {
-	V = MMC5WRAMIndex[V & 7];
+	V = MMC5WRAMIndex[V & (MMC5WRAMMAX-1)];
 	if (V != 255) {
 		setprg8r(0x10, A, V);
 		FCEU_CheatAddRAM(8, 0x6000, (WRAM + ((V * 8192) & (WRAMSIZE - 1))));
@@ -410,8 +436,8 @@ static void MMC5PRG(void) {
 			MMC5MemIn[1] = MMC5MemIn[2] = 1;
 		} else {
 			MMC5ROMWrProtect[0] = MMC5ROMWrProtect[1] = 0;
-			MMC5WRAM(0x8000, PRGBanks[1] & 7 & 0xFE);
-			MMC5WRAM(0xA000, (PRGBanks[1] & 7 & 0xFE) + 1);
+			MMC5WRAM(0x8000, PRGBanks[1] & (MMC5WRAMMAX-1) & 0xFE);
+			MMC5WRAM(0xA000, (PRGBanks[1] & (MMC5WRAMMAX-1) & 0xFE) + 1);
 		}
 		MMC5MemIn[3] = MMC5MemIn[4] = 1;
 		MMC5ROMWrProtect[2] = MMC5ROMWrProtect[3] = 1;
@@ -424,8 +450,8 @@ static void MMC5PRG(void) {
 			setprg16(0x8000, (PRGBanks[1] & 0x7F) >> 1);
 		} else {
 			MMC5ROMWrProtect[0] = MMC5ROMWrProtect[1] = 0;
-			MMC5WRAM(0x8000, PRGBanks[1] & 7 & 0xFE);
-			MMC5WRAM(0xA000, (PRGBanks[1] & 7 & 0xFE) + 1);
+			MMC5WRAM(0x8000, PRGBanks[1] & (MMC5WRAMMAX-1) & 0xFE);
+			MMC5WRAM(0xA000, (PRGBanks[1] & (MMC5WRAMMAX-1) & 0xFE) + 1);
 		}
 		if (PRGBanks[2] & 0x80) {
 			MMC5ROMWrProtect[2] = 1;
@@ -433,7 +459,7 @@ static void MMC5PRG(void) {
 			setprg8(0xC000, PRGBanks[2] & 0x7F);
 		} else {
 			MMC5ROMWrProtect[2] = 0;
-			MMC5WRAM(0xC000, PRGBanks[2] & 7);
+			MMC5WRAM(0xC000, PRGBanks[2] & (MMC5WRAMMAX-1));
 		}
 		MMC5MemIn[4] = 1;
 		MMC5ROMWrProtect[3] = 1;
@@ -447,7 +473,7 @@ static void MMC5PRG(void) {
 				MMC5MemIn[1 + x] = 1;
 			} else {
 				MMC5ROMWrProtect[x] = 0;
-				MMC5WRAM(0x8000 + (x << 13), PRGBanks[x] & 7);
+				MMC5WRAM(0x8000 + (x << 13), PRGBanks[x] & (MMC5WRAMMAX-1));
 			}
 		MMC5MemIn[4] = 1;
 		MMC5ROMWrProtect[3] = 1;
@@ -510,7 +536,7 @@ static DECLFW(Mapper5_write) {
 			break;
 		case 0x5113:
 			WRAMPage = V;
-			MMC5WRAM(0x6000, V & 7);
+			MMC5WRAM(0x6000, V & (MMC5WRAMMAX-1));
 			break;
 		case 0x5114:
 		case 0x5115:
@@ -606,7 +632,7 @@ void MMC5Synco(void) {
 		case 3: PPUNTARAM &= ~(1 << x); vnapage[x] = MMC5fill; break;
 		}
 	}
-	MMC5WRAM(0x6000, WRAMPage & 7);
+	MMC5WRAM(0x6000, WRAMPage & (MMC5WRAMMAX-1));
 	if (!mmc5ABMode) {
 		MMC5CHRB();
 		MMC5CHRA();
@@ -869,22 +895,42 @@ void NSFMMC5_Close(void) {
 	if (WRAM)
 		FCEU_gfree(WRAM);
 	WRAM = NULL;
+	MMC5WRAMsize = 0;
 	FCEU_gfree(ExRAM);
 	ExRAM = NULL;
 }
 
-static void GenMMC5Reset(void) {
-	int x;
+static void GenMMC5Power(void) {
 
-	for (x = 0; x < 4; x++) PRGBanks[x] = ~0;
-	for (x = 0; x < 8; x++) CHRBanksA[x] = ~0;
-	for (x = 0; x < 4; x++) CHRBanksB[x] = ~0;
-	WRAMMaskEnable[0] = WRAMMaskEnable[1] = ~0;
-
-	mmc5psize = mmc5vsize = 3;
+	PRGBanks.fill(0xFF);
+	WRAMPage = 0;
+	CHRBanksA.fill(0xFF);
+	CHRBanksB.fill(0xFF);
+	WRAMMaskEnable.fill(0xFF);
+	mmc5ABMode = 0;
+	IRQScanline = 0;
+	IRQEnable = 0;
 	CHRMode = 0;
-
 	NTAMirroring = NTFill = ATFill = 0xFF;
+	MMC5IRQR = 0;
+	MMC5LineCounter = 0;
+	mmc5psize = mmc5vsize = 3;
+	mul.fill(0);
+
+	MMC5ROMWrProtect.fill(0);
+	MMC5MemIn.fill(0);
+
+	// MMC5fill is and 8-bit tile index, and a 2-bit attribute implented as a mirrored nametable
+	u8 nval = MMC5fill[0x000];
+	u8 aval = MMC5fill[0x3C0] & 3; aval = aval | (aval << 2) | (aval << 4) | (aval << 6);
+	FCEU_dwmemset(MMC5fill + 0x000, nval | (nval<<8) | (nval<<16) | (nval<<24), 0x3C0);
+	FCEU_dwmemset(MMC5fill + 0x3C0, aval | (aval<<8) | (aval<<16) | (aval<<24), 0x040);
+
+	if(MMC5battery == 0) {
+		FCEU_MemoryRand(WRAM, MMC5WRAMsize * 8 * 1024);
+		FCEU_MemoryRand(MMC5fill,1024);
+		FCEU_MemoryRand(ExRAM,1024);
+	}
 
 	MMC5Synco();
 
@@ -907,11 +953,11 @@ static void GenMMC5Reset(void) {
 }
 
 static SFORMAT MMC5_StateRegs[] = {
-	{ PRGBanks, 4, "PRGB" },
-	{ CHRBanksA, 16, "CHRA" },
-	{ CHRBanksB, 8, "CHRB" },
+	{ &PRGBanks, 4, "PRGB" },
+	{ &CHRBanksA, 16, "CHRA" },
+	{ &CHRBanksB, 8, "CHRB" },
 	{ &WRAMPage, 1, "WRMP" },
-	{ WRAMMaskEnable, 2, "WRME" },
+	{ &WRAMMaskEnable, 2, "WRME" },
 	{ &mmc5ABMode, 1, "ABMD" },
 	{ &IRQScanline, 1, "IRQS" },
 	{ &IRQEnable, 1, "IRQE" },
@@ -925,9 +971,9 @@ static SFORMAT MMC5_StateRegs[] = {
 	{ &MMC5LineCounter, 1, "LCTR" },
 	{ &mmc5psize, 1, "PSIZ" },
 	{ &mmc5vsize, 1, "VSIZ" },
-	{ mul, 2, "MUL2" },
-	{ MMC5ROMWrProtect, 4, "WRPR" },
-	{ MMC5MemIn, 5, "MEMI" },
+	{ &mul, 2, "MUL2" },
+	{ &MMC5ROMWrProtect, 4, "WRPR" },
+	{ &MMC5MemIn, 5, "MEMI" },
 
 	{ &MMC5Sound.wl[0], 2 | FCEUSTATE_RLSB, "SDW0" },
 	{ &MMC5Sound.wl[1], 2 | FCEUSTATE_RLSB, "SDW1" },
@@ -950,19 +996,17 @@ static SFORMAT MMC5_StateRegs[] = {
 
 static void GenMMC5_Init(CartInfo *info, int wsize, int battery) {
 	if (wsize) {
-		WRAM = (uint8*)FCEU_gmalloc(wsize * 1024);
+		WRAM = (uint8*)FCEU_malloc(wsize * 1024);
+		FCEU_MemoryRand(WRAM, wsize * 1024);
 		SetupCartPRGMapping(0x10, WRAM, wsize * 1024, 1);
 		AddExState(WRAM, wsize * 1024, 0, "WRAM");
 	}
 
-	MMC5fill = (uint8*)FCEU_gmalloc(1024);
-	ExRAM = (uint8*)FCEU_gmalloc(1024);
+	MMC5fill = (uint8*)FCEU_malloc(1024);
+	ExRAM = (uint8*)FCEU_malloc(1024);
 
-	// MMC5fill is and 8-bit tile index, and a 2-bit attribute implented as a mirrored nametable
-	u8 nval = MMC5fill[0x000];
-	u8 aval = MMC5fill[0x3C0] & 3; aval = aval | (aval << 2) | (aval << 4) | (aval << 6);
-	FCEU_dwmemset(MMC5fill + 0x000, nval | (nval<<8) | (nval<<16) | (nval<<24), 0x3C0);
-	FCEU_dwmemset(MMC5fill + 0x3C0, aval | (aval<<8) | (aval<<16) | (aval<<24), 0x040);
+	FCEU_MemoryRand(MMC5fill,1024);
+	FCEU_MemoryRand(ExRAM,1024);
 
 	AddExState(ExRAM, 1024, 0, "ERAM");
 	AddExState(&MMC5HackSPMode, 1, 0, "SPLM");
@@ -974,19 +1018,26 @@ static void GenMMC5_Init(CartInfo *info, int wsize, int battery) {
 	MMC5WRAMsize = wsize / 8;
 	BuildWRAMSizeTable();
 	GameStateRestore = MMC5_StateRestore;
-	info->Power = GenMMC5Reset;
+	info->Power = GenMMC5Power;
 
+	MMC5battery = battery;
 	if (battery) {
 		info->SaveGame[0] = WRAM;
-
-		//this is more complex than it looks because it MUST BE, I guess. is there an assumption that only 8KB of 16KB is battery backed? That's NES mappers for you
-		//I added 64KB for the new 64KB homebrews
-		if (wsize <= 16)
-			info->SaveGameLen[0] = 8192;
-		else if(wsize == 64)
-			info->SaveGameLen[0] = 64*1024;
+		if (info->ines2)
+		{
+			info->SaveGameLen[0] = info->battery_wram_size;
+		}
 		else
-			info->SaveGameLen[0] = 32768;
+		{
+			//this is more complex than it looks because it MUST BE, I guess. is there an assumption that only 8KB of 16KB is battery backed? That's NES mappers for you
+			//I added 64KB for the new 64KB homebrews
+			if (wsize <= 16)
+				info->SaveGameLen[0] = 8192;
+			else if(wsize == 64)
+				info->SaveGameLen[0] = 64*1024;
+			else
+				info->SaveGameLen[0] = 32768;
+		}
 	}
 
 	MMC5HackVROMMask = CHRmask4[0];
@@ -1002,7 +1053,14 @@ static void GenMMC5_Init(CartInfo *info, int wsize, int battery) {
 }
 
 void Mapper5_Init(CartInfo *info) {
-	WRAMSIZE = DetectMMC5WRAMSize(info->CRC32);
+	if (info->ines2)
+	{
+		WRAMSIZE = (info->wram_size + info->battery_wram_size) / 1024;
+	}
+	else
+	{
+		WRAMSIZE = DetectMMC5WRAMSize(info->CRC32);
+	}
 	GenMMC5_Init(info, WRAMSIZE, info->battery);
 }
 

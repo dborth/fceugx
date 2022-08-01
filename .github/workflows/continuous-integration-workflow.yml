@@ -5,16 +5,17 @@ on: [push, pull_request]
 jobs:
   build:
     name: Build FCE Ultra GX
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         image: ["Wii"] # ["Wii", "GameCube"]
     container: devkitpro/devkitppc:latest
  
     steps:
-    - uses: actions/checkout@v1
+    - name: Checkout fceugx repo
+      uses: actions/checkout@v2
       with:
-        submodules: true
+        fetch-depth: 0
 
     - name: Build Wii
       if: ${{ matrix.image == 'Wii' }}

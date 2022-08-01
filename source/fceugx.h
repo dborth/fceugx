@@ -17,7 +17,7 @@
 #include "fceultra/driver.h"
 
 #define APPNAME			"FCE Ultra GX"
-#define APPVERSION		"3.5.1"
+#define APPVERSION		"3.5.2"
 #define APPFOLDER 		"fceugx"
 #define PREF_FILE_NAME	"settings.xml"
 
@@ -122,6 +122,7 @@ struct SGCSettings
 	int		Rumble;
 	int 	language;
 	int		PreviewImage;
+	int		TurboModeEnabled; // 0 - disabled, 1 - enabled
 };
 
 void ExitApp();

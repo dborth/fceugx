@@ -76,9 +76,9 @@ static void ZapperFrapper(int w, uint8 *bg, uint8 *spr, uint32 linets, int final
 	}
 endo:
 	ZD[w].zappo=final;
-	
+
 #ifndef GEKKO
-	//if this was a miss, clear out the hit
+    //if this was a miss, clear out the hit
     if(ZD[w].mzb&2)
         ZD[w].zaphit=0;
 #endif
@@ -87,8 +87,8 @@ endo:
 static INLINE int CheckColor(int w)
 {
 	FCEUPPU_LineUpdate();
-	
-	if(newppu)
+
+    if(newppu)
     {
         int x = (int)ZD[w].mzx;
         int y = (int)ZD[w].mzy;
@@ -184,23 +184,28 @@ static void UpdateZapper(int w, void *data, int arg)
 	ZD[w].mzy=ptr[1];
 	ZD[w].mzb=ptr[2];
 #else
-    bool newclicked = (ptr[2]&3)!=0;
-    bool oldclicked = (ZD[w].lastInput)!=0;
+	bool newclicked = (ptr[2]&3)!=0;
+	bool oldclicked = (ZD[w].lastInput)!=0;
 
 	if(ZD[w].bogo)
-    {
+	{
 		ZD[w].bogo--;	
-    }
+	}
 
-    ZD[w].lastInput = ptr[2]&3;
+	ZD[w].lastInput = ptr[2]&3;
 
     //woah.. this looks like broken bit logic.
-	if(newclicked && !oldclicked)
-    {
+	if (newclicked && !oldclicked)
+	{
 		ZD[w].bogo=5;
-	    ZD[w].mzb=ptr[2];
-	    ZD[w].mzx=ptr[0];
-	    ZD[w].mzy=ptr[1];
+		ZD[w].mzb=ptr[2];
+		ZD[w].mzx=ptr[0];
+		ZD[w].mzy=ptr[1];
+	}
+	// Always update X,Y so that gunsight draw function
+	// is always following the cursor.
+	ZD[w].mzx=ptr[0];
+	ZD[w].mzy=ptr[1];
     }
 #endif
 }
@@ -230,7 +235,7 @@ static INPUTC ZAPVSC={ReadZapperVS,0,StrobeZapperVS,UpdateZapper,ZapperFrapper,D
 INPUTC *FCEU_InitZapper(int w)
 {
 	memset(&ZD[w],0,sizeof(ZAPPER));
-	if(GameInfo->type == GIT_VSUNI)
+	if ( (GameInfo != NULL) && (GameInfo->type == GIT_VSUNI) )
 		return(&ZAPVSC);
 	else
 		return(&ZAPC);

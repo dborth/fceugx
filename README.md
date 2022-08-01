@@ -6,16 +6,25 @@ system for x86 (Windows/Linux) PCs. With it you can play NES games on your
 Wii/GameCube.
 
 
-## Nightly builds
+## TABLE OF CONTENTS
+ - [Nightly Builds](#nightly-builds)
+ - [Features](#features)
+ - [Update History](#update-history)
+ - [Setup & Installation](#setup--installation)
+ - [Credits](#credits)
+ - [Links](#links)
+
+
+## NIGHTLY BUILDS
 
 |Download nightly builds from continuous integration: 	| [![Build Status][Build]][Actions] 
 |-------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
 
-[Actions]: https://github.com/dborth/fceugx/actions
-[Build]: https://github.com/dborth/fceugx/workflows/FCE%20Ultra%20GX%20Build/badge.svg
+[Actions]: https://github.com/dborth/fceugx/actions/workflows/continuous-integration-workflow.yml
+[Build]: https://github.com/dborth/fceugx/actions/workflows/continuous-integration-workflow.yml/badge.svg
 
 
-## Features
+## FEATURES
 
 * Wiimote, Nunchuk, Classic, Wii U Pro, and Gamecube controller support
 * Wii U GamePad support (requires homebrew injection into Wii U VC title)
@@ -32,11 +41,21 @@ Wii/GameCube.
 * Cheat support (.CHT files and Game Genie)
 * Famicom 3D System support
 * IPS/UPS automatic patching support
-* NES Compatibility Based on FCEUX 2.2.3+ (git 21c0971)
+* NES Compatibility Based on FCEUX 2.6.4+ (git def5768)
 * Open Source!
 
 
 ## UPDATE HISTORY
+
+[3.5.2 - June 15, 2022]
+
+* Updated to the latest FCEUX 2.6.4 (git def5768)
+* Compiled with latest devkitPPC/libogc
+* Added "Enable Turbo Mode" toggle to the Video Settings menu (based on InfiniteBlueGX's code)
+* Updated translations
+* Improved forwarder support
+* Added ability to use "Original" render mode in 480p configurations (niuus)
+* Added more color palettes (saulfabregwiivc)
 
 [3.5.1 - March 23, 2021]
 

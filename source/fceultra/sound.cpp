@@ -67,6 +67,7 @@ static int32 RectDutyCount[2];
 static uint8 sweepon[2];
 /*static*/ int32 curfreq[2];
 static uint8 SweepCount[2];
+static uint8 SweepReload[2];
 
 static uint16 nreg=0;
 
@@ -99,7 +100,7 @@ extern const uint32 NoiseFreqTableNTSC[0x10] =
 
 extern const uint32 NoiseFreqTablePAL[0x10] =
 {
-	4, 7, 14, 30, 60, 88, 118, 148, 188,
+	4, 8, 14, 30, 60, 88, 118, 148, 188,
 	236, 354, 472, 708,  944, 1890, 3778
 };
 
@@ -180,6 +181,7 @@ void LogDPCM(int romaddress, int dpcmsize){
 	for (int dpcmstart = i; dpcmstart < (i + dpcmsize); dpcmstart++) {
 		if(!(cdloggerdata[dpcmstart] & 0x40)) {
 			cdloggerdata[dpcmstart] |= 0x40;
+			cdloggerdata[dpcmstart] |= (romaddress >> 11) & 0x0c;
 
 			if(!(cdloggerdata[dpcmstart] & 2)){
 				datacount++;
@@ -206,22 +208,15 @@ void LogDPCM(int romaddress, int dpcmsize){
 
 static void SQReload(int x, uint8 V)
 {
-           if(EnabledChannels&(1<<x))
-           {
-            if(x)
-             DoSQ2();
-            else
-             DoSQ1();
-            lengthcount[x]=lengthtable[(V>>3)&0x1f];
-	   }
+	if(EnabledChannels&(1<<x))
+		lengthcount[x]=lengthtable[(V>>3)&0x1f];
 
-           sweepon[x]=PSG[(x<<2)|1]&0x80;
-           curfreq[x]=PSG[(x<<2)|0x2]|((V&7)<<8);
-           SweepCount[x]=((PSG[(x<<2)|0x1]>>4)&7)+1;
-
-           RectDutyCount[x]=7;
-	   EnvUnits[x].reloaddec=1;
-	   //reloadfreq[x]=1;
+	/* use the low 8 bits data from pulse period
+	 * instead of from the sweep period */
+	/* https://forums.nesdev.com/viewtopic.php?t=219&p=1431 */
+	curfreq[x]=(curfreq[x] & 0xff)|((V&7)<<8);
+	RectDutyCount[x]=7;
+	EnvUnits[x].reloaddec=1;
 }
 
 static DECLFW(Write_PSG)
@@ -237,7 +232,9 @@ static DECLFW(Write_PSG)
 			V = (V&0x3F)|((V&0x80)>>1)|((V&0x40)<<1);
 		break;
 	case 0x1:
+		DoSQ1();
 		sweepon[0]=V&0x80;
+		SweepReload[0]=1;
 		break;
 	case 0x2:
 		DoSQ1();
@@ -245,6 +242,7 @@ static DECLFW(Write_PSG)
 		curfreq[0]|=V;
 		break;
 	case 0x3:
+		DoSQ1();
 		SQReload(0,V);
 		break;
 	case 0x4:
@@ -255,7 +253,9 @@ static DECLFW(Write_PSG)
 			V = (V&0x3F)|((V&0x80)>>1)|((V&0x40)<<1);
 		break;
 	case 0x5:
+		DoSQ2();
 		sweepon[1]=V&0x80;
+		SweepReload[1]=1;
 		break;
 	case 0x6:
 		DoSQ2();
@@ -263,6 +263,7 @@ static DECLFW(Write_PSG)
 		curfreq[1]|=V;
 		break;
 	case 0x7:
+		DoSQ2();
 		SQReload(1,V);
 		break;
 	case 0xa:
@@ -421,44 +422,28 @@ static void FrameSoundStuff(int V)
    /* Frequency Sweep Code Here */
    /* xxxx 0000 */
    /* xxxx = hz.  120/(x+1)*/
-   if(sweepon[P])
+   /* http://wiki.nesdev.com/w/index.php/APU_Sweep */
+   /* https://forums.nesdev.com/viewtopic.php?t=219&p=1431 */
+   if (SweepCount[P] > 0) SweepCount[P]--;
+   if (SweepCount[P] <= 0)
    {
-    int32 mod=0;
-
-    if(SweepCount[P]>0) SweepCount[P]--;
-    if(SweepCount[P]<=0)
+    int sweepShift = (PSG[(P << 2) + 0x1] & 7);
+    if (sweepon[P] && sweepShift && curfreq[P] >= 8)
     {
-     SweepCount[P]=((PSG[(P<<2)+0x1]>>4)&7)+1; //+1;
-     if(PSG[(P<<2)+0x1]&0x8)
-     {
-      mod-=(P^1)+((curfreq[P])>>(PSG[(P<<2)+0x1]&7));
-      if(curfreq[P] && (PSG[(P<<2)+0x1]&7)/* && sweepon[P]&0x80*/)
-      {
-       curfreq[P]+=mod;
-      }
-     }
-     else
-     {
-      mod=curfreq[P]>>(PSG[(P<<2)+0x1]&7);
-      if((mod+curfreq[P])&0x800)
-      {
-       sweepon[P]=0;
-       curfreq[P]=0;
-      }
-      else
-      {
-       if(curfreq[P] && (PSG[(P<<2)+0x1]&7)/* && sweepon[P]&0x80*/)
-       {
-        curfreq[P]+=mod;
-       }
-      }
-     }
+     int32 mod = (curfreq[P] >> sweepShift);
+     if (PSG[(P << 2) + 0x1] & 0x8)
+      curfreq[P] -= (mod + (P ^ 1));
+     else if ((mod + curfreq[P]) < 0x800)
+      curfreq[P] += mod;
     }
+
+    SweepCount[P] = (((PSG[(P << 2) + 0x1] >> 4) & 7) + 1);
    }
-   else  /* Sweeping is disabled: */
+
+   if (SweepReload[P])
    {
-    //curfreq[P]&=0xFF00;
-    //curfreq[P]|=PSG[(P<<2)|0x2]; //|((PSG[(P<<2)|3]&7)<<8);
+    SweepCount[P] = (((PSG[(P << 2) + 0x1] >> 4) & 7) + 1);
+    SweepReload[P] = 0;
    }
   }
  }
@@ -579,9 +564,10 @@ void FCEU_SoundCPUHook(int cycles)
    /* Unbelievably ugly hack */
    if(FSettings.SndRate)
    {
-    soundtsoffs+=DMCacc;
-    DoPCM();
-    soundtsoffs-=DMCacc;
+		const uint32 fudge = std::min<uint32>(-DMCacc, soundtsoffs + timestamp);
+		soundtsoffs -= fudge;
+		DoPCM();
+		soundtsoffs += fudge;
    }
    RawDALatch+=t;
    if(RawDALatch&0x80)
@@ -1096,8 +1082,9 @@ int FlushEmulateSound(void)
 
    SexyFilter(Wave,WaveFinal,end>>4);
 
-   //if(FSettings.lowpass)
-   // SexyFilter2(WaveFinal,end>>4);
+   if(FSettings.lowpass)
+    SexyFilter2(WaveFinal,end>>4);
+
    if(end&0xF)
     Wave[0]=Wave[(end>>4)];
    Wave[end>>4]=0;
