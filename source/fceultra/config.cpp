@@ -13,18 +13,23 @@
 
 static char *aboutString = 0;
 
+#ifndef FCEUX_BUILD_TIMESTAMP
+#define FCEUX_BUILD_TIMESTAMP  __TIME__ " " __DATE__
+#endif
+
 // returns a string suitable for use in an aboutbox
-char *FCEUI_GetAboutString() {
+const char *FCEUI_GetAboutString(void) 
+{
 	const char *aboutTemplate =
 		FCEU_NAME_AND_VERSION "\n\n"
 		"Administrators:\n"
-		"zeromus, punkrockguy318 (Lukas Sabota), feos\n"
+		"zeromus, feos\n"
 		"\n"
 		"Current Contributors:\n"
-		"CaH4e3, rainwarrior\n"
+		"CaH4e3, rainwarrior, owomomo, punkrockguy318\n"
 		"\n"
 		"Past Contributors:\n"
-		"xhainingx, gocha, AnS\n"
+		"xhainingx, gocha, AnS, mjbudd77\n"
 		"\n"
 		"FCEUX 2.0:\n"
 		"mz, nitsujrehtona, SP, Ugly Joe,\n"
@@ -40,13 +45,17 @@ char *FCEUI_GetAboutString() {
 		"FCEU TAS - blip & nitsuja\n"
 		"FCEU TAS+ - Luke Gustafson\n"
 		"\n"
+		"Logo/icon:\n"
+		"Terwilf\n"
+		"\n"
 		"FCEUX is dedicated to the fallen heroes\n"
 		"of NES emulation. In Memoriam --\n"
 		"ugetab\n"
 		"\n"
-		__TIME__ " " __DATE__ "\n";
+		"\n"
+		FCEUX_BUILD_TIMESTAMP "\n";
 
-	if(aboutString) return aboutString;
+	if (aboutString) return aboutString;
 
 	const char *compilerString = FCEUD_GetCompilerString();
 
@@ -54,6 +63,6 @@ char *FCEUI_GetAboutString() {
 	if (!(aboutString = (char*)FCEU_dmalloc(strlen(aboutTemplate) + strlen(compilerString) + 1)))
         return NULL;
 
-    sprintf(aboutString,"%s%s",aboutTemplate,compilerString);
+	sprintf(aboutString,"%s%s",aboutTemplate,compilerString);
 	return aboutString;
 }

@@ -41,11 +41,21 @@ Wii/GameCube.
 * Cheat support (.CHT files and Game Genie)
 * Famicom 3D System support
 * IPS/UPS automatic patching support
-* NES Compatibility Based on FCEUX 2.2.3+ (git 21c0971)
+* NES Compatibility Based on FCEUX 2.6.4+ (git def5768)
 * Open Source!
 
 
 ## UPDATE HISTORY
+
+[3.5.2 - June 15, 2022]
+
+* Updated to the latest FCEUX 2.6.4 (git def5768)
+* Compiled with latest devkitPPC/libogc
+* Added "Enable Turbo Mode" toggle to the Video Settings menu (based on InfiniteBlueGX's code)
+* Updated translations
+* Improved forwarder support
+* Added ability to use "Original" render mode in 480p configurations (niuus)
+* Added more color palettes (saulfabregwiivc)
 
 [3.5.1 - March 23, 2021]
 

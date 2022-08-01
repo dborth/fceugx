@@ -3319,6 +3319,7 @@ static int MenuSettingsVideo()
 	sprintf(options.name[i++], "Zapper Crosshair");
 	sprintf(options.name[i++], "Sprite Limit");
 	sprintf(options.name[i++], "Video Mode");
+	sprintf(options.name[i++], "Enable Turbo Mode");
 	options.length = i;
 
 	for(i=0; i < options.length; i++)
@@ -3417,6 +3418,9 @@ static int MenuSettingsVideo()
 				if(GCSettings.videomode > 4)
 					GCSettings.videomode = 0;
 				break;
+			case 10:
+				GCSettings.TurboModeEnabled ^= 1;
+				break;
 		}
 
 		if(ret >= 0 || firstRun)
@@ -3476,6 +3480,7 @@ static int MenuSettingsVideo()
 				case 4:
 					sprintf (options.value[9], "PAL (60Hz)"); break;
 			}
+			sprintf (options.value[10], "%s", GCSettings.TurboModeEnabled == 1 ? "On" : "Off");
 			optionBrowser.TriggerUpdate();
 		}
 

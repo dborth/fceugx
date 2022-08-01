@@ -134,25 +134,30 @@ void NSFGI(GI h)
 {
 	switch(h)
 	{
-	case GI_CLOSE:
-		if(NSFDATA) {free(NSFDATA);NSFDATA=0;}
-		if(ExWRAM) {free(ExWRAM);ExWRAM=0;}
-		if(NSFHeader.SoundChip&1) {
-			//   NSFVRC6_Init();
-		} else if(NSFHeader.SoundChip&2) {
-			//   NSFVRC7_Init();
-		} else if(NSFHeader.SoundChip&4) {
-			//   FDSSoundReset();
-		} else if(NSFHeader.SoundChip&8) {
-			NSFMMC5_Close();
-		} else if(NSFHeader.SoundChip&0x10) {
-			//   NSFN106_Init();
-		} else if(NSFHeader.SoundChip&0x20) {
-			//   NSFAY_Init();
-		}
+		case GI_CLOSE:
+			if(NSFDATA) {free(NSFDATA);NSFDATA=0;}
+			if(ExWRAM) {free(ExWRAM);ExWRAM=0;}
+			if(NSFHeader.SoundChip&1) {
+				//   NSFVRC6_Init();
+			} else if(NSFHeader.SoundChip&2) {
+				//   NSFVRC7_Init();
+			} else if(NSFHeader.SoundChip&4) {
+				//   FDSSoundReset();
+			} else if(NSFHeader.SoundChip&8) {
+				NSFMMC5_Close();
+			} else if(NSFHeader.SoundChip&0x10) {
+				//   NSFN106_Init();
+			} else if(NSFHeader.SoundChip&0x20) {
+				//   NSFAY_Init();
+			}
 		break;
-	case GI_RESETM2:
-	case GI_POWER: NSF_init();break;
+		case GI_RESETM2:
+		case GI_POWER:
+			NSF_init();
+		break;
+		default:
+			//Unhandled cases
+		break;
 	}
 }
 
@@ -174,7 +179,7 @@ int NSFLoad(const char *name, FCEUFILE *fp)
 	FCEU_fseek(fp,0,SEEK_SET);
 	FCEU_fread(&NSFHeader,1,0x80,fp);
 	if(memcmp(NSFHeader.ID,"NESM\x1a",5))
-		return 0;
+		return LOADER_INVALID_FORMAT;
 	NSFHeader.SongName[31]=NSFHeader.Artist[31]=NSFHeader.Copyright[31]=0;
 
 	LoadAddr=NSFHeader.LoadAddressLow;
@@ -183,7 +188,7 @@ int NSFLoad(const char *name, FCEUFILE *fp)
 	if(LoadAddr<0x6000)
 	{
 		FCEUD_PrintError("Invalid load address.");
-		return(0);
+		return LOADER_HANDLED_ERROR;
 	}
 	InitAddr=NSFHeader.InitAddressLow;
 	InitAddr|=NSFHeader.InitAddressHigh<<8;
@@ -196,8 +201,11 @@ int NSFLoad(const char *name, FCEUFILE *fp)
 	NSFMaxBank=((NSFSize+(LoadAddr&0xfff)+4095)/4096);
 	NSFMaxBank=PRGsize[0]=uppow2(NSFMaxBank);
 
-	if(!(NSFDATA=(uint8 *)FCEU_malloc(NSFMaxBank*4096)))
-		return 0;
+	if (!(NSFDATA = (uint8 *)FCEU_malloc(NSFMaxBank * 4096)))
+	{
+		FCEU_PrintError("Unable to allocate memory.");
+		return LOADER_HANDLED_ERROR;
+	}
 
 	FCEU_fseek(fp,0x80,SEEK_SET);
 	memset(NSFDATA,0x00,NSFMaxBank*4096);
@@ -262,7 +270,7 @@ int NSFLoad(const char *name, FCEUFILE *fp)
 	FCEU_printf(" Name:       %s\n Artist:     %s\n Copyright:  %s\n\n",NSFHeader.SongName,NSFHeader.Artist,NSFHeader.Copyright);
 	if(NSFHeader.SoundChip)
 	{
-		static char *tab[6]={"Konami VRCVI","Konami VRCVII","Nintendo FDS","Nintendo MMC5","Namco 106","Sunsoft FME-07"};
+		static const char *tab[6]={"Konami VRCVI","Konami VRCVII","Nintendo FDS","Nintendo MMC5","Namco 106","Sunsoft FME-07"};
 
 		for(x=0;x<6;x++)
 			if(NSFHeader.SoundChip&(1<<x))
@@ -288,7 +296,7 @@ int NSFLoad(const char *name, FCEUFILE *fp)
 
 	FCEUI_SetVidSystem(NSFHeader.VideoSystem);
 
-	return 1;
+	return LOADER_OK;
 }
 
 static DECLFR(NSFVectorRead)

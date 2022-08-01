@@ -132,6 +132,11 @@ void SetupCartCHRMapping(int chip, uint8 *p, uint32 size, int ram) {
 	CHRmask4[chip] = (size >> 12) - 1;
 	CHRmask8[chip] = (size >> 13) - 1;
 
+	if (CHRmask1[chip] >= (unsigned int)(-1)) CHRmask1[chip] = 0;
+	if (CHRmask2[chip] >= (unsigned int)(-1)) CHRmask2[chip] = 0;
+	if (CHRmask4[chip] >= (unsigned int)(-1)) CHRmask4[chip] = 0;
+	if (CHRmask8[chip] >= (unsigned int)(-1)) CHRmask8[chip] = 0;
+
 	CHRram[chip] = ram;
 }
 
@@ -242,7 +247,7 @@ void setchr2r(int r, uint32 A, uint32 V) {
 		PPUCHRRAM &= ~(3 << (A >> 10));
 }
 
-void setchr4r(int r, uint32 A, uint32 V) {
+void setchr4r(int r, unsigned int A, unsigned int V) {
 	if (!CHRptr[r]) return;
 	FCEUPPU_LineUpdate();
 	V &= CHRmask4[r];

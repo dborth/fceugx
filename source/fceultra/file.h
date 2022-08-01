@@ -42,7 +42,7 @@ struct FCEUFILE {
 
 	FCEUFILE()
 		: stream(0)
-		, archiveCount(-1)
+		, archiveCount(-1), archiveIndex(0), size(0), mode(READ)
 	{}
 
 	~FCEUFILE()
@@ -122,7 +122,7 @@ struct ArchiveScanRecord
 };
 
 
-FCEUFILE *FCEU_fopen(const char *path, const char *ipsfn, char *mode, char *ext, int index=-1, const char** extensions = 0);
+FCEUFILE *FCEU_fopen(const char *path, const char *ipsfn, const char *mode, char *ext, int index=-1, const char** extensions = 0, int* userCancel = 0);
 bool FCEU_isFileInArchive(const char *path);
 int FCEU_fclose(FCEUFILE*);
 uint64 FCEU_fread(void *ptr, size_t size, size_t nmemb, FCEUFILE*);
