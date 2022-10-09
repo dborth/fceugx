@@ -121,6 +121,7 @@ struct SGCSettings
 	int		Rumble;
 	int 	language;
 	int		PreviewImage;
+	int		HideRAMSaving;
 	int		TurboModeEnabled; // 0 - disabled, 1 - enabled
 };
 

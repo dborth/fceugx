@@ -169,6 +169,7 @@ preparePrefsData ()
 	createXMLSetting("Rumble", "Rumble", toStr(GCSettings.Rumble));
 	createXMLSetting("language", "Language", toStr(GCSettings.language));
 	createXMLSetting("PreviewImage", "Preview Image", toStr(GCSettings.PreviewImage));
+	createXMLSetting("HideRAMSaving", "Hide RAM Saving", toStr(GCSettings.HideRAMSaving));
 
 	createXMLSection("Controller", "Controller Settings");
 
@@ -342,6 +343,7 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.Rumble, "Rumble");
 			loadXMLSetting(&GCSettings.language, "language");
 			loadXMLSetting(&GCSettings.PreviewImage, "PreviewImage");
+			loadXMLSetting(&GCSettings.HideRAMSaving, "HideRAMSaving");
 			
 			// Controller Settings
 
@@ -439,6 +441,7 @@ DefaultSettings ()
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1; // Enabled
 	GCSettings.PreviewImage = 0;
+	GCSettings.HideRAMSaving = 0;
 	
 #ifdef HW_RVL
 	GCSettings.language = CONF_GetLanguage();

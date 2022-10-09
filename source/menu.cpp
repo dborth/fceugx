@@ -1998,20 +1998,7 @@ static int MenuGameSaves(int action)
 			}
 			else // save
 			{
-				if(ret == -2) // new RAM
-				{
-					for(i=1; i < 100; i++)
-						if(saves.files[FILE_RAM][i] == 0)
-							break;
-
-					if(i < 100)
-					{
-						MakeFilePath(filepath, FILE_RAM, romFilename, i);
-						SaveRAM(filepath, NOTSILENT);
-						menu = MENU_GAME_SAVE;
-					}
-				}
-				else if(ret == -1) // new State
+				if(ret == -2) // new State
 				{
 					for(i=1; i < 100; i++)
 						if(saves.files[FILE_STATE][i] == 0)
@@ -2021,6 +2008,19 @@ static int MenuGameSaves(int action)
 					{
 						MakeFilePath(filepath, FILE_STATE, romFilename, i);
 						SaveState(filepath, NOTSILENT);
+						menu = MENU_GAME_SAVE;
+					}
+				}
+				else if(ret == -1 && GCSettings.HideRAMSaving == 0) // new RAM
+				{
+					for(i=1; i < 100; i++)
+						if(saves.files[FILE_RAM][i] == 0)
+							break;
+
+					if(i < 100)
+					{
+						MakeFilePath(filepath, FILE_RAM, romFilename, i);
+						SaveRAM(filepath, NOTSILENT);
 						menu = MENU_GAME_SAVE;
 					}
 				}
@@ -3943,6 +3943,7 @@ static int MenuSettingsMenu()
 	sprintf(options.name[i++], "Rumble");
 	sprintf(options.name[i++], "Language");
 	sprintf(options.name[i++], "Preview Image");
+	sprintf(options.name[i++], "Hide RAM Saving");
 	options.length = i;
 
 	for(i=0; i < options.length; i++)
@@ -4028,6 +4029,9 @@ static int MenuSettingsMenu()
 				if(GCSettings.PreviewImage > 2)
 					GCSettings.PreviewImage = 0;
 				break;
+			case 7:
+				GCSettings.HideRAMSaving ^= 1;
+				break;
 		}
 
 		if(ret >= 0 || firstRun)
@@ -4076,6 +4080,11 @@ static int MenuSettingsMenu()
 				sprintf (options.value[4], "Enabled");
 			else
 				sprintf (options.value[4], "Disabled");
+
+			if (GCSettings.HideRAMSaving == 1)
+				sprintf (options.value[7], "On");
+			else
+				sprintf (options.value[7], "Off");
 
 			switch(GCSettings.language)
 			{
