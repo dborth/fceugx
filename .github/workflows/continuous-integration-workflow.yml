@@ -36,7 +36,7 @@ jobs:
         cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
 
     - name: Upload Wii artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.0
       if: ${{ matrix.image == 'Wii' }}
       with: 
         name: FCEUltraGX
@@ -55,7 +55,7 @@ jobs:
         cp executables/fceugx-gc.dol dist/FCEUltraGX-GameCube/
         
     - name: Upload GameCube artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3.1.0
       if: ${{ matrix.image == 'GameCube' }}
       with: 
         name: FCEUltraGX-GameCube
