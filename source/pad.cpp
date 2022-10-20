@@ -596,26 +596,55 @@ bool MenuRequested()
 {
 	for(int i=0; i<4; i++)
 	{
-		if (
-			(userInput[i].pad.substickX < -70) ||
-			(userInput[i].pad.btns_h & PAD_TRIGGER_L &&
-			userInput[i].pad.btns_h & PAD_TRIGGER_R &&
-			userInput[i].pad.btns_h & PAD_BUTTON_START) ||
-			(userInput[i].pad.btns_h & PAD_BUTTON_START &&
-			userInput[i].pad.btns_h & PAD_BUTTON_A &&
-			userInput[i].pad.btns_h & PAD_BUTTON_B &&
-			userInput[i].pad.btns_h & PAD_TRIGGER_Z)
-			#ifdef HW_RVL
-			|| (userInput[i].wpad->btns_h & WPAD_BUTTON_HOME) ||
-			(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_HOME) ||
-			(userInput[i].wiidrcdata.btns_h & WIIDRC_BUTTON_HOME) ||
-			(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_L &&
-			userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_R &&
-			userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_PLUS)
-			#endif
-		)
+		if (GCSettings.GamepadMenuToggle == 1) // Home (WiiPad) or Right Stick (GC/3rd party gamepad) only
 		{
-			return true;
+			if (
+				(userInput[i].pad.substickX < -70)
+				#ifdef HW_RVL
+				|| (userInput[i].wpad->btns_h & WPAD_BUTTON_HOME) ||
+				(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_HOME) ||
+				(userInput[i].wiidrcdata.btns_h & WIIDRC_BUTTON_HOME)
+				#endif
+			)
+			{
+				return true;
+			}
+		}
+		else if (GCSettings.GamepadMenuToggle == 2) // L+R+Start combo only
+		{
+			if (
+				(userInput[i].pad.btns_h & PAD_TRIGGER_L &&
+				userInput[i].pad.btns_h & PAD_TRIGGER_R &&
+				userInput[i].pad.btns_h & PAD_BUTTON_START)
+				#ifdef HW_RVL
+				|| (userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_L &&
+				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_R &&
+				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_PLUS)
+				#endif
+			)
+			{
+				return true;
+			}
+		}
+		else // All toggle options enabled
+		{
+			if (
+				(userInput[i].pad.substickX < -70) ||
+				(userInput[i].pad.btns_h & PAD_TRIGGER_L &&
+				userInput[i].pad.btns_h & PAD_TRIGGER_R &&
+				userInput[i].pad.btns_h & PAD_BUTTON_START)
+				#ifdef HW_RVL
+				|| (userInput[i].wpad->btns_h & WPAD_BUTTON_HOME) ||
+				(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_HOME) ||
+				(userInput[i].wiidrcdata.btns_h & WIIDRC_BUTTON_HOME) ||
+				(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_L &&
+				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_R &&
+				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_PLUS)
+				#endif
+			)
+			{
+				return true;
+			}
 		}
 	}
 	return false;
