@@ -79,6 +79,7 @@ static GuiText * settingText2 = NULL;
 static int lastMenu = MENU_NONE;
 static int mapMenuCtrl = 0;
 static int mapMenuCtrlNES = 0;
+static bool showCredits = false;
 
 static lwp_t guithread = LWP_THREAD_NULL;
 static lwp_t progressthread = LWP_THREAD_NULL;
@@ -802,7 +803,7 @@ SettingWindow(const char * title, GuiWindow * w)
  ***************************************************************************/
 static void WindowCredits(void * ptr)
 {
-	if(btnLogo->GetState() != STATE_CLICKED)
+	if(btnLogo->GetState() != STATE_CLICKED && !showCredits)
 		return;
 
 	btnLogo->ResetState();
@@ -820,7 +821,7 @@ static void WindowCredits(void * ptr)
 	creditsBoxImg.SetAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
 	creditsWindowBox.Append(&creditsBoxImg);
 
-	int numEntries = 26;
+	int numEntries = 27;
 	GuiText * txt[numEntries];
 
 	txt[i] = new GuiText("Credits", 30, (GXColor){0, 0, 0, 255});
@@ -849,8 +850,10 @@ static void WindowCredits(void * ptr)
 	txt[i]->SetPosition(335,y); i++; y+=24;
 	txt[i] = new GuiText("Additional improvements");
 	txt[i]->SetPosition(40,y); i++;
-	txt[i] = new GuiText("Zopenko, Askot, others");
-	txt[i]->SetPosition(335,y); i++; y+=48;
+	txt[i] = new GuiText("Zopenko, Askot,");
+	txt[i]->SetPosition(335,y); i++; y+=24;
+	txt[i] = new GuiText("InfiniteBlue, others");
+	txt[i]->SetPosition(335,y); i++; y+=24;
 
 	txt[i] = new GuiText("FCE Ultra GX GameCube");
 	txt[i]->SetPosition(40,y); i++;
@@ -936,6 +939,7 @@ static void WindowCredits(void * ptr)
 		   (userInput[3].wpad->btns_d || userInput[3].pad.btns_d || userInput[3].wiidrcdata.btns_d))
 		{
 			exit = true;
+			showCredits = false;
 		}
 		usleep(THREAD_SLEEP);
 	}
@@ -3776,7 +3780,7 @@ static int MenuSettings()
 	GuiImage networkBtnIcon(&iconNetwork);
 	GuiButton networkBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	networkBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	networkBtn.SetPosition(-125, 250);
+	networkBtn.SetPosition(-200, 250);
 	networkBtn.SetLabel(&networkBtnTxt);
 	networkBtn.SetImage(&networkBtnImg);
 	networkBtn.SetImageOver(&networkBtnImgOver);
@@ -3796,7 +3800,7 @@ static int MenuSettings()
 	GuiImage cheatsBtnIcon(&iconCheats);
 	GuiButton cheatsBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	cheatsBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	cheatsBtn.SetPosition(125, 250);
+	cheatsBtn.SetPosition(0, 250);
 	cheatsBtn.SetLabel(&cheatsBtnTxt, 0);
 	cheatsBtn.SetLabel(&cheatsBtnTxt2, 1);
 	cheatsBtn.SetImage(&cheatsBtnImg);
@@ -3807,6 +3811,23 @@ static int MenuSettings()
 	cheatsBtn.SetTrigger(trigA);
 	cheatsBtn.SetTrigger(trig2);
 	cheatsBtn.SetEffectGrow();
+
+	GuiText creditsBtnTxt("Credits", 22, (GXColor){0, 0, 0, 255});
+	creditsBtnTxt.SetWrap(true, btnLargeOutline.GetWidth()-20);
+	GuiImage creditsBtnImg(&btnLargeOutline);
+	GuiImage creditsBtnImgOver(&btnLargeOutlineOver);
+	GuiButton creditsBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
+	creditsBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	creditsBtn.SetPosition(200, 250);
+	creditsBtn.SetLabel(&creditsBtnTxt);
+	creditsBtn.SetImage(&creditsBtnImg);
+	creditsBtn.SetImageOver(&creditsBtnImgOver);
+	creditsBtn.SetSoundOver(&btnSoundOver);
+	creditsBtn.SetSoundClick(&btnSoundClick);
+	creditsBtn.SetTrigger(trigA);
+	creditsBtn.SetTrigger(trig2);
+	creditsBtn.SetEffectGrow();
+	creditsBtn.SetUpdateCallback(WindowCredits);
 
 	GuiText backBtnTxt("Go Back", 22, (GXColor){0, 0, 0, 255});
 	GuiImage backBtnImg(&btnOutline);
@@ -3847,6 +3868,7 @@ static int MenuSettings()
 	w.Append(&menuBtn);
 	w.Append(&networkBtn);
 	w.Append(&cheatsBtn);
+	w.Append(&creditsBtn);
 	w.Append(&backBtn);
 	w.Append(&resetBtn);
 
@@ -3869,6 +3891,11 @@ static int MenuSettings()
 		else if(networkBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_SETTINGS_NETWORK;
+		}
+		else if(creditsBtn.GetState() == STATE_CLICKED)
+		{
+			showCredits = true;
+			creditsBtn.SetState(STATE_SELECTED);
 		}
 		else if(cheatsBtn.GetState() == STATE_CLICKED)
 		{
@@ -4633,6 +4660,11 @@ MainMenu (int menu)
 				break;
 		}
 		lastMenu = currentMenu;
+		if (btnLogo->GetState() == STATE_CLICKED)
+		{
+			showCredits = true;
+			btnLogo->ResetState();
+		}
 		usleep(THREAD_SLEEP);
 	}
 
