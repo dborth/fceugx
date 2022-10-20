@@ -157,6 +157,7 @@ preparePrefsData ()
 	createXMLSetting("xshift", "Horizontal Video Shift", toStr(GCSettings.xshift));
 	createXMLSetting("yshift", "Vertical Video Shift", toStr(GCSettings.yshift));
 	createXMLSetting("TurboModeEnabled", "Turbo Mode Enabled", toStr(GCSettings.TurboModeEnabled));
+	createXMLSetting("TurboModeButton", "Turbo Mode Button", toStr(GCSettings.TurboModeButton));
 
 	createXMLSection("Menu", "Menu Settings");
 
@@ -333,6 +334,7 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.xshift, "xshift");
 			loadXMLSetting(&GCSettings.yshift, "yshift");
 			loadXMLSetting(&GCSettings.TurboModeEnabled, "TurboModeEnabled");
+			loadXMLSetting(&GCSettings.TurboModeButton, "TurboModeButton");
 
 			// Menu Settings
 
@@ -463,6 +465,7 @@ DefaultSettings ()
 	GCSettings.AutoLoad = 1; // Auto Load RAM
 	GCSettings.AutoSave = 1; // Auto Save RAM
 	GCSettings.TurboModeEnabled = 1; // Enabled by default
+	GCSettings.TurboModeButton = 0; // Default is Right Analog Stick (0)
 }
 
 /****************************************************************************

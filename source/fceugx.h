@@ -79,6 +79,24 @@ enum
 	LANG_LENGTH
 };
 
+enum {
+	TURBO_BUTTON_RSTICK = 0,
+	TURBO_BUTTON_A,
+	TURBO_BUTTON_B,
+	TURBO_BUTTON_X,
+	TURBO_BUTTON_Y,
+	TURBO_BUTTON_L,
+	TURBO_BUTTON_R,
+	TURBO_BUTTON_ZL,
+	TURBO_BUTTON_ZR,
+	TURBO_BUTTON_Z,
+	TURBO_BUTTON_C,
+	TURBO_BUTTON_1,
+	TURBO_BUTTON_2,
+	TURBO_BUTTON_PLUS,
+	TURBO_BUTTON_MINUS,
+};
+
 struct SGCSettings
 {
 	int		AutoLoad;
@@ -123,6 +141,7 @@ struct SGCSettings
 	int		PreviewImage;
 	int		HideRAMSaving;
 	int		TurboModeEnabled; // 0 - disabled, 1 - enabled
+	int		TurboModeButton;
 };
 
 void ExitApp();

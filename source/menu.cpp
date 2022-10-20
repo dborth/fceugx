@@ -3330,6 +3330,7 @@ static int MenuSettingsOtherMappings()
 	OptionList options;
 
 	sprintf(options.name[i++], "Enable Turbo Mode");
+	sprintf(options.name[i++], "Turbo Mode Button");
 
 	options.length = i;
 
@@ -3389,12 +3390,52 @@ static int MenuSettingsOtherMappings()
 			case 0:
 				GCSettings.TurboModeEnabled ^= 1;
 				break;
+
+			case 1:
+				GCSettings.TurboModeButton++;
+				if (GCSettings.TurboModeButton > 14)
+					GCSettings.TurboModeButton = 0;
+				break;
 		}
 
 		if(ret >= 0 || firstRun)
 		{
 			firstRun = false;
 			sprintf (options.value[0], "%s", GCSettings.TurboModeEnabled == 1 ? "On" : "Off");
+
+			switch(GCSettings.TurboModeButton)
+			{
+				case 0:
+					sprintf (options.value[1], "Right Stick (default)"); break;
+				case 1:
+					sprintf (options.value[1], "A"); break;
+				case 2:
+					sprintf (options.value[1], "B"); break;
+				case 3:
+					sprintf (options.value[1], "X"); break;
+				case 4:
+					sprintf (options.value[1], "Y"); break;
+				case 5:
+					sprintf (options.value[1], "L"); break;
+				case 6:
+					sprintf (options.value[1], "R"); break;
+				case 7:
+					sprintf (options.value[1], "ZL"); break;
+				case 8:
+					sprintf (options.value[1], "ZR"); break;
+				case 9:
+					sprintf (options.value[1], "Z"); break;
+				case 10:
+					sprintf (options.value[1], "C"); break;
+				case 11:
+					sprintf (options.value[1], "1"); break;
+				case 12:
+					sprintf (options.value[1], "2"); break;
+				case 13:
+					sprintf (options.value[1], "Plus"); break;
+				case 14:
+					sprintf (options.value[1], "Minus"); break;
+			}
 
 			optionBrowser.TriggerUpdate();
 		}
