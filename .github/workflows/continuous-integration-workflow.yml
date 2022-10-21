@@ -13,7 +13,7 @@ jobs:
  
     steps:
     - name: Checkout fceugx repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
@@ -36,7 +36,7 @@ jobs:
         cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
 
     - name: Upload Wii artifacts
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v3
       if: ${{ matrix.image == 'Wii' }}
       with: 
         name: FCEUltraGX
@@ -55,7 +55,7 @@ jobs:
         cp executables/fceugx-gc.dol dist/FCEUltraGX-GameCube/
         
     - name: Upload GameCube artifact
-      uses: actions/upload-artifact@v3.1.0
+      uses: actions/upload-artifact@v3
       if: ${{ matrix.image == 'GameCube' }}
       with: 
         name: FCEUltraGX-GameCube
