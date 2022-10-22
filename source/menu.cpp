@@ -3500,7 +3500,7 @@ static int MenuSettingsOtherMappings()
 				case 1:
 					sprintf (options.value[2], "Home / Right Stick"); break;
 				case 2:
-					sprintf (options.value[2], "L+R+Start"); break;
+					sprintf (options.value[2], "L+R+Start / 1+2+Plus"); break;
 			}
 
 			optionBrowser.TriggerUpdate();

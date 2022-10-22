@@ -610,7 +610,7 @@ bool MenuRequested()
 				return true;
 			}
 		}
-		else if (GCSettings.GamepadMenuToggle == 2) // L+R+Start combo only
+		else if (GCSettings.GamepadMenuToggle == 2) // L+R+Start / 1+2+Plus (Wiimote) combo only
 		{
 			if (
 				(userInput[i].pad.btns_h & PAD_TRIGGER_L &&
@@ -620,6 +620,9 @@ bool MenuRequested()
 				|| (userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_L &&
 				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_R &&
 				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_PLUS)
+				|| (userInput[i].wpad->btns_h & WPAD_BUTTON_PLUS &&
+				userInput[i].wpad->btns_h & WPAD_BUTTON_1 &&
+				userInput[i].wpad->btns_h & WPAD_BUTTON_2)
 				#endif
 			)
 			{
@@ -640,6 +643,9 @@ bool MenuRequested()
 				(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_L &&
 				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_R &&
 				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_PLUS)
+				|| (userInput[i].wpad->btns_h & WPAD_BUTTON_PLUS &&
+				userInput[i].wpad->btns_h & WPAD_BUTTON_1 &&
+				userInput[i].wpad->btns_h & WPAD_BUTTON_2)
 				#endif
 			)
 			{
