@@ -3371,7 +3371,7 @@ static int MenuSettingsOtherMappings()
 	bool firstRun = true;
 	OptionList options;
 
-	sprintf(options.name[i++], "Enable Turbo Mode");
+	sprintf(options.name[i++], "Turbo Mode");
 	sprintf(options.name[i++], "Turbo Mode Button");
 	sprintf(options.name[i++], "Menu Toggle");
 
@@ -3462,7 +3462,7 @@ static int MenuSettingsOtherMappings()
 			switch(GCSettings.TurboModeButton)
 			{
 				case 0:
-					sprintf (options.value[1], "Right Stick (default)"); break;
+					sprintf (options.value[1], "Default (Right Stick)"); break;
 				case 1:
 					sprintf (options.value[1], "A"); break;
 				case 2:
@@ -3649,7 +3649,7 @@ static int MenuSettingsVideo()
 			firstRun = false;
 
 			if (GCSettings.render == 0)
-				sprintf (options.value[0], "Original");
+				sprintf (options.value[0], "Original (240p)");
 			else if (GCSettings.render == 1)
 				sprintf (options.value[0], "Filtered");
 			else if (GCSettings.render == 2)
@@ -4306,7 +4306,7 @@ static int MenuSettingsMenu()
 			if (GCSettings.ExitAction == 1)
 				sprintf (options.value[0], "Return to Wii Menu");
 			else if (GCSettings.ExitAction == 2)
-				sprintf (options.value[0], "Power off Wii");
+				sprintf (options.value[0], "Power Off Wii");
 			else if (GCSettings.ExitAction == 3)
 				sprintf (options.value[0], "Return to Loader");
 			else
