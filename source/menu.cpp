@@ -221,6 +221,11 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	GuiImageData btnOutline(button_prompt_png);
 	GuiImageData btnOutlineOver(button_prompt_over_png);
 
+	GuiTrigger trigB;
+	GuiTrigger trig1;
+	trigB.SetButtonOnlyTrigger(-1, WPAD_BUTTON_B | WPAD_CLASSIC_BUTTON_B, PAD_BUTTON_B, WIIDRC_BUTTON_B);
+	trig1.SetButtonOnlyTrigger(-1, WPAD_BUTTON_1, 0, 0);
+
 	GuiImageData dialogBox(dialogue_box_png);
 	GuiImage dialogBoxImg(&dialogBox);
 
@@ -246,6 +251,8 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	{
 		btn1.SetAlignment(ALIGN_CENTRE, ALIGN_BOTTOM);
 		btn1.SetPosition(0, -25);
+		btn1.SetTrigger(&trigB);
+		btn1.SetTrigger(&trig1);
 	}
 
 	btn1.SetLabel(&btn1Txt);
@@ -279,7 +286,11 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	promptWindow.Append(&btn1);
 
 	if(btn2Label)
+	{
 		promptWindow.Append(&btn2);
+		btn2.SetTrigger(&trigB);
+		btn2.SetTrigger(&trig1);
+	}	
 
 	promptWindow.SetEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_IN, 50);
 	CancelAction();
@@ -3371,7 +3382,7 @@ static int MenuSettingsOtherMappings()
 	bool firstRun = true;
 	OptionList options;
 
-	sprintf(options.name[i++], "Enable Turbo Mode");
+	sprintf(options.name[i++], "Turbo Mode");
 	sprintf(options.name[i++], "Turbo Mode Button");
 	sprintf(options.name[i++], "Menu Toggle");
 
@@ -3462,7 +3473,7 @@ static int MenuSettingsOtherMappings()
 			switch(GCSettings.TurboModeButton)
 			{
 				case 0:
-					sprintf (options.value[1], "Right Stick (default)"); break;
+					sprintf (options.value[1], "Default (Right Stick)"); break;
 				case 1:
 					sprintf (options.value[1], "A"); break;
 				case 2:
@@ -3500,7 +3511,7 @@ static int MenuSettingsOtherMappings()
 				case 1:
 					sprintf (options.value[2], "Home / Right Stick"); break;
 				case 2:
-					sprintf (options.value[2], "L+R+Start"); break;
+					sprintf (options.value[2], "L+R+Start / 1+2+Plus"); break;
 			}
 
 			optionBrowser.TriggerUpdate();
@@ -3649,7 +3660,7 @@ static int MenuSettingsVideo()
 			firstRun = false;
 
 			if (GCSettings.render == 0)
-				sprintf (options.value[0], "Original");
+				sprintf (options.value[0], "Original (240p)");
 			else if (GCSettings.render == 1)
 				sprintf (options.value[0], "Filtered");
 			else if (GCSettings.render == 2)
@@ -4306,7 +4317,7 @@ static int MenuSettingsMenu()
 			if (GCSettings.ExitAction == 1)
 				sprintf (options.value[0], "Return to Wii Menu");
 			else if (GCSettings.ExitAction == 2)
-				sprintf (options.value[0], "Power off Wii");
+				sprintf (options.value[0], "Power Off Wii");
 			else if (GCSettings.ExitAction == 3)
 				sprintf (options.value[0], "Return to Loader");
 			else
