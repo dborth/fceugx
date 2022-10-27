@@ -90,6 +90,7 @@ static char progressTitle[101];
 static char progressMsg[201];
 static int progressDone = 0;
 static int progressTotal = 0;
+static bool buttonMappingCancelled = false;
 
 u8 * bg_music;
 u32 bg_music_size;
@@ -2865,7 +2866,8 @@ ButtonMappingWindow()
 
 	u32 pressed = 0;
 
-	while(pressed == 0)
+	buttonMappingCancelled = false;
+	while(pressed == 0 && !buttonMappingCancelled)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -2881,10 +2883,22 @@ ButtonMappingWindow()
 
 			if(userInput[0].wpad->btns_d == WPAD_BUTTON_HOME)
 				pressed = WPAD_BUTTON_HOME;
+
+			if(userInput[0].wpad->btns_d & WPAD_CLASSIC_BUTTON_B ||
+					userInput[0].wpad->btns_d & WPAD_BUTTON_B ||
+					userInput[0].wpad->btns_d & WPAD_BUTTON_1 ||
+					userInput[0].wiidrcdata.btns_d & WIIDRC_BUTTON_B)
+				buttonMappingCancelled = true; 
 		}
 		else if(mapMenuCtrl == CTRLR_WIIDRC)
 		{
 			pressed = userInput[0].wiidrcdata.btns_d;
+
+			if(userInput[0].wpad->btns_d & WPAD_CLASSIC_BUTTON_B ||
+					userInput[0].wpad->btns_d & WPAD_BUTTON_B ||
+					userInput[0].wpad->btns_d & WPAD_BUTTON_1 ||
+					userInput[0].pad.btns_d & PAD_BUTTON_B)
+				buttonMappingCancelled = true; 
 		}
 		else
 		{
@@ -2898,24 +2912,47 @@ ButtonMappingWindow()
 					case CTRLR_WIIMOTE:
 						if(pressed > 0x1000)
 							pressed = 0; // not a valid input
+						if(userInput[0].pad.btns_d & PAD_BUTTON_B || 
+								userInput[0].wiidrcdata.btns_d & WIIDRC_BUTTON_B ||
+								userInput[0].wpad->btns_d & WPAD_CLASSIC_BUTTON_B)
+							buttonMappingCancelled = true;
 						break;
 
 					case CTRLR_CLASSIC:
 						if(userInput[0].wpad->exp.type != WPAD_EXP_CLASSIC && userInput[0].wpad->exp.classic.type < 2)
 							pressed = 0; // not a valid input
+						else if(userInput[0].wpad->exp.type == WPAD_EXP_NUNCHUK)
+							pressed = 0; // not a valid input (Nunchuk Z/C is assigned as Classic Controller Up/Left for some reason)
 						else if(pressed <= 0x1000)
 							pressed = 0;
+						if(userInput[0].pad.btns_d & PAD_BUTTON_B || 
+								userInput[0].wiidrcdata.btns_d & WIIDRC_BUTTON_B ||
+								userInput[0].wpad->btns_d & WPAD_BUTTON_B ||
+								userInput[0].wpad->btns_d & WPAD_BUTTON_1)
+							buttonMappingCancelled = true;
 						break;
+
 					case CTRLR_WUPC:
 						if(userInput[0].wpad->exp.type != WPAD_EXP_CLASSIC && userInput[0].wpad->exp.classic.type == 2)
 							pressed = 0; // not a valid input
 						else if(pressed <= 0x1000)
 							pressed = 0;
+						if(userInput[0].pad.btns_d & PAD_BUTTON_B || 
+								userInput[0].wiidrcdata.btns_d & WIIDRC_BUTTON_B ||
+								userInput[0].wpad->btns_d & WPAD_BUTTON_B ||
+								userInput[0].wpad->btns_d & WPAD_BUTTON_1)
+							buttonMappingCancelled = true;
 						break;
 
 					case CTRLR_NUNCHUK:
 						if(userInput[0].wpad->exp.type != WPAD_EXP_NUNCHUK)
 							pressed = 0; // not a valid input
+						if((userInput[0].wpad->exp.type != WPAD_EXP_NUNCHUK && userInput[0].wpad->btns_d & WPAD_BUTTON_B) ||
+								(userInput[0].wpad->exp.type != WPAD_EXP_NUNCHUK && userInput[0].wpad->btns_d & WPAD_BUTTON_1) ||
+								userInput[0].pad.btns_d & PAD_BUTTON_B || 
+								userInput[0].wiidrcdata.btns_d & WIIDRC_BUTTON_B ||
+								userInput[0].wpad->btns_d & WPAD_CLASSIC_BUTTON_B)
+							buttonMappingCancelled = true;
 						break;
 				}
 			}
@@ -3068,8 +3105,13 @@ static int MenuSettingsMappingsMap()
 
 		if(ret >= 0)
 		{
-			// get a button selection from user
-			btnmap[mapMenuCtrlNES][mapMenuCtrl][ret] = ButtonMappingWindow();
+			int buttonPressed = ButtonMappingWindow();
+
+			if (!buttonMappingCancelled)
+			{
+				// get a button selection from user if the remap wasn't cancelled
+				btnmap[mapMenuCtrlNES][mapMenuCtrl][ret] = buttonPressed;
+			}
 		}
 
 		if(ret >= 0 || firstRun)
