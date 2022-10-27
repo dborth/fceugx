@@ -3110,7 +3110,7 @@ static int MenuSettingsMappingsMap()
 			if (!buttonMappingCancelled)
 			{
 				// get a button selection from user if the remap wasn't cancelled
-				btnmap[mapMenuCtrlSNES][mapMenuCtrl][ret] = buttonPressed;
+				btnmap[mapMenuCtrlNES][mapMenuCtrl][ret] = buttonPressed;
 			}
 		}
 
