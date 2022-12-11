@@ -157,6 +157,8 @@ preparePrefsData ()
 	createXMLSetting("xshift", "Horizontal Video Shift", toStr(GCSettings.xshift));
 	createXMLSetting("yshift", "Vertical Video Shift", toStr(GCSettings.yshift));
 	createXMLSetting("TurboModeEnabled", "Turbo Mode Enabled", toStr(GCSettings.TurboModeEnabled));
+	createXMLSetting("TurboModeButton", "Turbo Mode Button", toStr(GCSettings.TurboModeButton));
+	createXMLSetting("GamepadMenuToggle", "Gamepad Menu Toggle", toStr(GCSettings.GamepadMenuToggle));
 
 	createXMLSection("Menu", "Menu Settings");
 
@@ -169,6 +171,7 @@ preparePrefsData ()
 	createXMLSetting("Rumble", "Rumble", toStr(GCSettings.Rumble));
 	createXMLSetting("language", "Language", toStr(GCSettings.language));
 	createXMLSetting("PreviewImage", "Preview Image", toStr(GCSettings.PreviewImage));
+	createXMLSetting("HideRAMSaving", "Hide RAM Saving", toStr(GCSettings.HideRAMSaving));
 
 	createXMLSection("Controller", "Controller Settings");
 
@@ -331,7 +334,12 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
 			loadXMLSetting(&GCSettings.xshift, "xshift");
 			loadXMLSetting(&GCSettings.yshift, "yshift");
+
+			// Other Mappings
+
 			loadXMLSetting(&GCSettings.TurboModeEnabled, "TurboModeEnabled");
+			loadXMLSetting(&GCSettings.TurboModeButton, "TurboModeButton");
+			loadXMLSetting(&GCSettings.GamepadMenuToggle, "GamepadMenuToggle");
 
 			// Menu Settings
 
@@ -342,6 +350,7 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.Rumble, "Rumble");
 			loadXMLSetting(&GCSettings.language, "language");
 			loadXMLSetting(&GCSettings.PreviewImage, "PreviewImage");
+			loadXMLSetting(&GCSettings.HideRAMSaving, "HideRAMSaving");
 			
 			// Controller Settings
 
@@ -439,6 +448,7 @@ DefaultSettings ()
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1; // Enabled
 	GCSettings.PreviewImage = 0;
+	GCSettings.HideRAMSaving = 0;
 	
 #ifdef HW_RVL
 	GCSettings.language = LANG_DEFAULT; // CONF_GetLanguage();
@@ -460,6 +470,8 @@ DefaultSettings ()
 	GCSettings.AutoLoad = 1; // Auto Load RAM
 	GCSettings.AutoSave = 1; // Auto Save RAM
 	GCSettings.TurboModeEnabled = 1; // Enabled by default
+	GCSettings.TurboModeButton = 0; // Default is Right Analog Stick (0)
+	GCSettings.GamepadMenuToggle = 0; // 0 = All options (default), 1 = Home / C-Stick left, 2 = R+L+Start
 }
 
 /****************************************************************************
@@ -622,7 +634,9 @@ bool LoadPrefs()
 		FixInvalidSettings();
 
 	// attempt to create directories if they don't exist
-	if(GCSettings.LoadMethod == DEVICE_SD || GCSettings.LoadMethod == DEVICE_USB) {
+	if((GCSettings.LoadMethod == DEVICE_SD && ChangeInterface(DEVICE_SD, SILENT))
+		|| (GCSettings.LoadMethod == DEVICE_USB && ChangeInterface(DEVICE_USB, SILENT)))  
+	{
 		char dirPath[MAXPATHLEN];
 		sprintf(dirPath, "%s%s", pathPrefix[GCSettings.LoadMethod], GCSettings.ScreenshotsFolder);
 		CreateDirectory(dirPath);

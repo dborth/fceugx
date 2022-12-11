@@ -596,29 +596,143 @@ bool MenuRequested()
 {
 	for(int i=0; i<4; i++)
 	{
-		if (
-			(userInput[i].pad.substickX < -70) ||
-			(userInput[i].pad.btns_h & PAD_TRIGGER_L &&
-			userInput[i].pad.btns_h & PAD_TRIGGER_R &&
-			userInput[i].pad.btns_h & PAD_BUTTON_START) ||
-			(userInput[i].pad.btns_h & PAD_BUTTON_START &&
-			userInput[i].pad.btns_h & PAD_BUTTON_A &&
-			userInput[i].pad.btns_h & PAD_BUTTON_B &&
-			userInput[i].pad.btns_h & PAD_TRIGGER_Z)
-			#ifdef HW_RVL
-			|| (userInput[i].wpad->btns_h & WPAD_BUTTON_HOME) ||
-			(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_HOME) ||
-			(userInput[i].wiidrcdata.btns_h & WIIDRC_BUTTON_HOME) ||
-			(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_L &&
-			userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_R &&
-			userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_PLUS)
-			#endif
-		)
+		if (GCSettings.GamepadMenuToggle == 1) // Home (WiiPad) or Right Stick (GC/3rd party gamepad) only
 		{
-			return true;
+			if (
+				(userInput[i].pad.substickX < -70)
+				#ifdef HW_RVL
+				|| (userInput[i].wpad->btns_h & WPAD_BUTTON_HOME) ||
+				(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_HOME) ||
+				(userInput[i].wiidrcdata.btns_h & WIIDRC_BUTTON_HOME)
+				#endif
+			)
+			{
+				return true;
+			}
+		}
+		else if (GCSettings.GamepadMenuToggle == 2) // L+R+Start / 1+2+Plus (Wiimote) combo only
+		{
+			if (
+				(userInput[i].pad.btns_h & PAD_TRIGGER_L &&
+				userInput[i].pad.btns_h & PAD_TRIGGER_R &&
+				userInput[i].pad.btns_h & PAD_BUTTON_START)
+				#ifdef HW_RVL
+				|| (userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_L &&
+				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_R &&
+				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_PLUS)
+				|| (userInput[i].wpad->btns_h & WPAD_BUTTON_PLUS &&
+				userInput[i].wpad->btns_h & WPAD_BUTTON_1 &&
+				userInput[i].wpad->btns_h & WPAD_BUTTON_2)
+				#endif
+			)
+			{
+				return true;
+			}
+		}
+		else // All toggle options enabled
+		{
+			if (
+				(userInput[i].pad.substickX < -70) ||
+				(userInput[i].pad.btns_h & PAD_TRIGGER_L &&
+				userInput[i].pad.btns_h & PAD_TRIGGER_R &&
+				userInput[i].pad.btns_h & PAD_BUTTON_START)
+				#ifdef HW_RVL
+				|| (userInput[i].wpad->btns_h & WPAD_BUTTON_HOME) ||
+				(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_HOME) ||
+				(userInput[i].wiidrcdata.btns_h & WIIDRC_BUTTON_HOME) ||
+				(userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_L &&
+				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_R &&
+				userInput[i].wpad->btns_h & WPAD_CLASSIC_BUTTON_PLUS)
+				|| (userInput[i].wpad->btns_h & WPAD_BUTTON_PLUS &&
+				userInput[i].wpad->btns_h & WPAD_BUTTON_1 &&
+				userInput[i].wpad->btns_h & WPAD_BUTTON_2)
+				#endif
+			)
+			{
+				return true;
+			}
 		}
 	}
 	return false;
+}
+
+bool IsTurboModeInputPressed()
+{
+	switch(GCSettings.TurboModeButton)
+	{
+		case TURBO_BUTTON_RSTICK:
+			return (
+				userInput[0].pad.substickX > 70 ||
+				userInput[0].WPAD_StickX(1) > 70 ||
+				userInput[0].wiidrcdata.substickX > 45);
+		case TURBO_BUTTON_A:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_A ||
+				userInput[0].wpad->btns_h & WPAD_BUTTON_A ||
+				userInput[0].pad.btns_h & PAD_BUTTON_A ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_A);
+		case TURBO_BUTTON_B:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_B ||
+				userInput[0].wpad->btns_h & WPAD_BUTTON_B ||
+				userInput[0].pad.btns_h & PAD_BUTTON_B ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_B);
+		case TURBO_BUTTON_X:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_X ||
+				userInput[0].pad.btns_h & PAD_BUTTON_X ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_X);
+		case TURBO_BUTTON_Y:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_Y ||
+				userInput[0].pad.btns_h & PAD_BUTTON_Y ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_Y);
+		case TURBO_BUTTON_L:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_L ||
+				userInput[0].pad.btns_h & PAD_TRIGGER_L ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_L);
+		case TURBO_BUTTON_R:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_FULL_R ||
+				userInput[0].pad.btns_h & PAD_TRIGGER_R ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_R);
+		case TURBO_BUTTON_ZL:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_ZL ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_ZL);
+		case TURBO_BUTTON_ZR:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_ZR ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_ZR);
+		case TURBO_BUTTON_Z:
+			return (
+				userInput[0].pad.btns_h & PAD_TRIGGER_Z ||
+				(userInput[0].wpad->exp.type == WPAD_EXP_NUNCHUK &&
+				userInput[0].wpad->btns_h & WPAD_NUNCHUK_BUTTON_Z));
+		case TURBO_BUTTON_C:
+			return (
+				userInput[0].wpad->exp.type == WPAD_EXP_NUNCHUK &&
+				userInput[0].wpad->btns_h & WPAD_NUNCHUK_BUTTON_C);
+		case TURBO_BUTTON_1:
+			return (
+				userInput[0].wpad->btns_h & WPAD_BUTTON_1);
+		case TURBO_BUTTON_2:
+			return (
+				userInput[0].wpad->btns_h & WPAD_BUTTON_2);
+		case TURBO_BUTTON_PLUS:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_PLUS ||
+				userInput[0].wpad->btns_h & WPAD_BUTTON_PLUS ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_PLUS);
+		case TURBO_BUTTON_MINUS:
+			return (
+				userInput[0].wpad->btns_h & WPAD_CLASSIC_BUTTON_MINUS ||
+				userInput[0].wpad->btns_h & WPAD_BUTTON_MINUS ||
+				userInput[0].wiidrcdata.btns_h & WIIDRC_BUTTON_MINUS);
+		default:
+			return false;
+	}
 }
 
 void GetJoy()
@@ -631,12 +745,9 @@ void GetJoy()
 
 	// Turbo mode
 	// RIGHT on c-stick and on classic ctrlr right joystick
-	if (GCSettings.TurboModeEnabled == 1)
+	if (GCSettings.TurboModeEnabled)
 	{
-		if(userInput[0].pad.substickX > 70 || userInput[0].WPAD_StickX(1) > 70 || userInput[0].wiidrcdata.substickX > 45)
-			turbomode = 1;
-		else
-			turbomode = 0;
+		turbomode = IsTurboModeInputPressed();
 	}
 	// request to go back to menu
 	if(MenuRequested())

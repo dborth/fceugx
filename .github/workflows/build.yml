@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-    name: Build FCE Ultra GX
+    name: Build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -13,7 +13,7 @@ jobs:
  
     steps:
     - name: Checkout fceugx repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
@@ -37,7 +37,7 @@ jobs:
         cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
 
     - name: Upload Wii artifacts
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: ${{ matrix.image == 'Wii' }}
       with: 
         name: FCEUltraGX-Chinese
@@ -56,9 +56,47 @@ jobs:
         cp executables/fceugx-gc.dol dist/FCEUltraGX-GameCube/
         
     - name: Upload GameCube artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       if: ${{ matrix.image == 'GameCube' }}
       with: 
         name: FCEUltraGX-GameCube
         path: |
          dist/FCEUltraGX-GameCube/
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/master'
+    
+    steps:
+    - uses: actions/checkout@v3
+      name: Download Artifacts
+    
+    - uses: actions/download-artifact@v3
+      with:
+        path: dist
+    
+    - name: Re-zip artifacts
+      run: |
+        cd dist
+        rm -r FCEUltraGX/fceugx/cheats/*
+        rm -r FCEUltraGX/fceugx/roms/*
+        rm -r FCEUltraGX/fceugx/saves/*
+        zip -r FCEUltraGX.zip FCEUltraGX
+        zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
+    
+    - name: Update Git Tag
+      run: |
+        git tag -f Pre-release
+        git push -f origin Pre-release
+    
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        prerelease: true
+        allowUpdates: true
+        removeArtifacts: true
+        replacesArtifacts: false
+        tag: Pre-release
+        artifacts: "dist/*.zip"
