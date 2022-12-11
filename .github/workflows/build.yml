@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: ["Wii"] # ["Wii", "GameCube"]
+        # image: ["Wii", "GameCube"]
+        image: ["Wii"] # only for Wii
     container: devkitpro/devkitppc:latest
  
     steps:
@@ -33,14 +34,17 @@ jobs:
         touch dist/FCEUltraGX/fceugx/cheats/cheatsdir
         touch dist/FCEUltraGX/fceugx/saves/savesdir
         cp hbc/* dist/FCEUltraGX/apps/fceugx/
-        cp fonts/* dist/FCEUltraGX/apps/fceugx/
+        cp fonts/jp.ttf dist/FCEUltraGX/apps/fceugx/ # copy Japanese font
+        cp fonts/ko.ttf dist/FCEUltraGX/apps/fceugx/ # copy Korean font
         cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
 
     - name: Upload Wii artifacts
       uses: actions/upload-artifact@v3
       if: ${{ matrix.image == 'Wii' }}
-      with: 
-        name: FCEUltraGX-Chinese
+      with:
+        # the final .zip file name 
+        # name: FCEUltraGX
+        name: FCEUltraGX-cn
         path: |
          dist/FCEUltraGX/
      
