@@ -403,7 +403,7 @@ int main(int argc, char *argv[])
 	
 	#ifdef HW_RVL
 	// store path app was loaded from
-	CreateAppPath(arc, argv);
+	CreateAppPath(argc, argv);
 
 	InitMem2Manager();
 	#endif
