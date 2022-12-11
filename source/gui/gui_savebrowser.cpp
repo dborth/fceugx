@@ -269,7 +269,10 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 		}
 		else
 		{
-			selectedItem -= 1;
+			if(saveBtn[selectedItem-1]->IsVisible())
+			{
+				selectedItem -= 1;
+			}
 		}
 	}
 	else if(t->Down() || arrowDownBtn->GetState() == STATE_CLICKED)
@@ -307,7 +310,10 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 		}
 		else
 		{
-			selectedItem -= 2;
+			if(saveBtn[selectedItem-2]->IsVisible())
+			{
+				selectedItem -= 2;
+			}
 		}
 	}
 
@@ -324,20 +330,25 @@ void GuiSaveBrowser::Update(GuiTrigger * t)
 		if(listOffset+i < 0 && action == 1)
 		{
 			saveDate[0]->SetText(NULL);
-			saveDate[1]->SetText(NULL);
 			saveTime[0]->SetText("New");
-			saveTime[1]->SetText("New");
-			saveType[0]->SetText("RAM");
-			saveType[1]->SetText("State");
+			saveType[0]->SetText("State");
 			savePreviewImg[0]->SetImage(gameSaveBlank);
-			savePreviewImg[1]->SetImage(gameSaveBlank);
 			saveBtn[0]->SetVisible(true);
-			saveBtn[1]->SetVisible(true);
 
 			if(saveBtn[0]->GetState() == STATE_DISABLED)
 				saveBtn[0]->SetState(STATE_DEFAULT);
-			if(saveBtn[1]->GetState() == STATE_DISABLED)
-				saveBtn[1]->SetState(STATE_DEFAULT);
+
+			if (GCSettings.HideRAMSaving == 0)
+			{
+				saveDate[1]->SetText(NULL);
+				saveTime[1]->SetText("New");
+				saveType[1]->SetText("RAM");
+				savePreviewImg[1]->SetImage(gameSaveBlank);
+				saveBtn[1]->SetVisible(true);
+
+				if(saveBtn[1]->GetState() == STATE_DISABLED)
+					saveBtn[1]->SetState(STATE_DEFAULT);
+			}
 		}
 		else if(listOffset+i < saves->length)
 		{
