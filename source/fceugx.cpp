@@ -363,7 +363,7 @@ int main(int argc, char *argv[])
 
 	if(!SupportedIOS(ios))
 	{
-		s32 preferred = 58; // IOS_GetPreferredVersion();
+		s32 preferred = IOS_GetPreferredVersion();
 
 		if(SupportedIOS(preferred))
 			IOS_ReloadIOS(preferred);
@@ -403,7 +403,8 @@ int main(int argc, char *argv[])
 	
 	#ifdef HW_RVL
 	// store path app was loaded from
-	CreateAppPath(argc, argv);
+	if(argc > 0 && argv[0] != NULL)
+		CreateAppPath(argv[0]);
 
 	InitMem2Manager();
 	#endif
