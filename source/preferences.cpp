@@ -451,7 +451,8 @@ DefaultSettings ()
 	GCSettings.HideRAMSaving = 0;
 	
 #ifdef HW_RVL
-	GCSettings.language = LANG_DEFAULT; // CONF_GetLanguage();
+	// GCSettings.language = CONF_GetLanguage();
+	GCSettings.language = LANG_DEFAULT;
 	
 	if(GCSettings.language == LANG_TRAD_CHINESE)
 		GCSettings.language = LANG_SIMP_CHINESE;

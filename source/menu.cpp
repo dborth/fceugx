@@ -154,7 +154,8 @@ void ChangeLanguage() {
 		return;
 	}
 
-	if(GCSettings.language == LANG_JAPANESE || GCSettings.language == LANG_KOREAN || GCSettings.language == LANG_SIMP_CHINESE) {
+	// if(GCSettings.language == LANG_JAPANESE || GCSettings.language == LANG_KOREAN || GCSettings.language == LANG_SIMP_CHINESE) {
+	if(GCSettings.language == LANG_JAPANESE || GCSettings.language == LANG_KOREAN) {
 #ifdef HW_RVL
 		char filepath[MAXPATHLEN];
 
