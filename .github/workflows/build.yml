@@ -34,8 +34,8 @@ jobs:
         touch dist/FCEUltraGX/fceugx/cheats/cheatsdir
         touch dist/FCEUltraGX/fceugx/saves/savesdir
         cp hbc/* dist/FCEUltraGX/apps/fceugx/
-        cp fonts/jp.ttf dist/FCEUltraGX/apps/fceugx/ # copy Japanese font
-        cp fonts/ko.ttf dist/FCEUltraGX/apps/fceugx/ # copy Korean font
+        # cp fonts/jp.ttf dist/FCEUltraGX/apps/fceugx/
+        # cp fonts/ko.ttf dist/FCEUltraGX/apps/fceugx/
         cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
 
     - name: Upload Wii artifacts

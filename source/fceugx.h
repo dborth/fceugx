@@ -138,7 +138,26 @@ struct SGCSettings
 	int		MusicVolume;
 	int		SFXVolume;
 	int		Rumble;
+
+#ifdef MULTI_LANGUAGE_SUPPORT
+private:
 	int 	language;
+public:
+	int Language() { return language; }
+	void SetLanguage(int value)
+	{
+		if (value == LANG_TRAD_CHINESE) // skip (not supported)
+			value = LANG_SIMP_CHINESE;
+		else if (value < 0 || value >= LANG_LENGTH)
+			value = LANG_DEFAULT;
+		language = value;
+		
+	}
+#else
+	int Language() { return LANG_DEFAULT; }
+	void SetLanguage(int value) {}
+#endif
+
 	int		PreviewImage;
 	int		HideRAMSaving;
 	int		TurboModeEnabled; // 0 - disabled, 1 - enabled
