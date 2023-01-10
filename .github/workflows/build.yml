@@ -34,8 +34,10 @@ jobs:
         touch dist/FCEUltraGX/fceugx/cheats/cheatsdir
         touch dist/FCEUltraGX/fceugx/saves/savesdir
         cp hbc/* dist/FCEUltraGX/apps/fceugx/
-        # cp fonts/jp.ttf dist/FCEUltraGX/apps/fceugx/
-        # cp fonts/ko.ttf dist/FCEUltraGX/apps/fceugx/
+        cp fonts/en.ttf dist/FCEUltraGX/apps/fceugx/
+        cp fonts/jp.ttf dist/FCEUltraGX/apps/fceugx/
+        cp fonts/ko.ttf dist/FCEUltraGX/apps/fceugx/
+        # cp fonts/zh.ttf dist/FCEUltraGX/apps/fceugx/
         cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
 
     - name: Upload Wii artifacts
@@ -43,8 +45,7 @@ jobs:
       if: ${{ matrix.image == 'Wii' }}
       with:
         # the final .zip file name 
-        # name: FCEUltraGX
-        name: FCEUltraGX-cn
+        name: FCEUltraGX-CN
         path: |
          dist/FCEUltraGX/
      
@@ -62,7 +63,7 @@ jobs:
     - name: Upload GameCube artifact
       uses: actions/upload-artifact@v3
       if: ${{ matrix.image == 'GameCube' }}
-      with: 
+      with:
         name: FCEUltraGX-GameCube
         path: |
          dist/FCEUltraGX-GameCube/
@@ -90,8 +91,8 @@ jobs:
         rm -r FCEUltraGX/fceugx/cheats/*
         rm -r FCEUltraGX/fceugx/roms/*
         rm -r FCEUltraGX/fceugx/saves/*
-        zip -r FCEUltraGX.zip FCEUltraGX
-        zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
+        zip -r FCEUltraGX-CN.zip FCEUltraGX-CN
+        # zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
     
     - name: Update Git Tag
       run: |
