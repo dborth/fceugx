@@ -241,6 +241,12 @@ msgstr "滤镜"
 msgid "Fire"
 msgstr "开火"
 
+msgid "Font file is too large!"
+msgstr "字体文件太大！"
+
+msgid "Font file not found!"
+msgstr "找不到字体文件！"
+
 msgid "French"
 msgstr "法语"
 
