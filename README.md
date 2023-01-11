@@ -1,4 +1,13 @@
 # FCE Ultra GX
+
+
+- [FCEUltraGX 中文版简介](./docs/README.md)
+- [官方版本 vs. 中文版本](./docs/what-i-did-in-fceugx-cn.md)
+- [如何把默认语种设置成简体中文](./docs/how-to-set-default-language.md)
+- [如何去掉对多语种的支持](./docs/how-to-remove-multi-language-support.md)
+
+---
+
 https://github.com/dborth/fceugx (Under GPL License)
  
 FCE Ultra GX is a modified port of the FCE Ultra Nintendo Entertainment
