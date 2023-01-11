@@ -90,7 +90,7 @@ jobs:
         rm -r FCEUltraGX/fceugx/cheats/*
         rm -r FCEUltraGX/fceugx/roms/*
         rm -r FCEUltraGX/fceugx/saves/*
-        zip -r FCEUltraGX-CN.zip FCEUltraGX
+        zip -r FCEUltraGX-CN.zip FCEUltraGX/*
         # zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
     
     - name: Update Git Tag
