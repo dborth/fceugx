@@ -86,11 +86,8 @@ jobs:
     
     - name: Re-zip artifacts
       run: |
-        cd dist
-        rm -r FCEUltraGX/fceugx/cheats/*
-        rm -r FCEUltraGX/fceugx/roms/*
-        rm -r FCEUltraGX/fceugx/saves/*
-        zip -r FCEUltraGX-CN.zip FCEUltraGX/apps FCEUltraGX/fceugx
+        cd dist/FCEUltraGX
+        zip -r FCEUltraGX-CN.zip ./apps ./fceugx
         # zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
     
     - name: Update Git Tag
@@ -106,4 +103,4 @@ jobs:
         removeArtifacts: true
         replacesArtifacts: false
         tag: Pre-release
-        artifacts: "dist/*.zip"
+        artifacts: "dist/FCEUltraGX/*.zip"
