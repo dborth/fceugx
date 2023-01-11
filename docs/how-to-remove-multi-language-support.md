@@ -13,7 +13,7 @@
 
 ## 2. 在代码中定义要使用的语种
 
-使用什么语种在代码中由枚举常量 `LANG_DEFAULT` 的取值决定。简体中文版本使用的语种自然就是简体中文，因此在项目 `source\fceugx.h` 文件的第 80 行，可以看到下面的代码：
+使用什么语种在代码中由枚举常量 `LANG_DEFAULT` 的取值决定。中文版使用的语种是简体中文，因此在项目 `source\fceugx.h` 文件的第 80 行，可以看到下面的代码：
 
 ``` c++
 LANG_DEFAULT = LANG_SIMP_CHINESE
@@ -23,11 +23,11 @@ LANG_DEFAULT = LANG_SIMP_CHINESE
 
 - 默认字体文件，位于项目的 `source\fonts\font.ttf`。启动编译之后，编译器会根据这个路径找到 `font.ttf`，并把它作为内部资源，合并到最后编译生成的 `.dol` 文件中；
 
-- `master` 分支上的默认字体文件对应的是英语，所以在创建好 `develop` 分支之后，原来的默认字体文件 `source\fonts\font.ttf` 被转存到了 `fonts\en.ttf`；
+- `master` 分支上的默认字体文件对应的是英语，所以在创建好 `cn-full` 分支之后，原来的默认字体文件 `source\fonts\font.ttf` 被转存到了 `fonts\en.ttf`；
 
-- `develop` 分支上的默认语种是简体中文，所以 `develop` 分支上的默认字体文件 `source\fonts\font.ttf` 已经被换成了 `fonts\zh.ttf`；
+- `cn-full` 分支上的默认语种是简体中文，所以 `cn-full` 分支上的默认字体文件 `source\fonts\font.ttf` 已经被换成了 `fonts\zh.ttf`；
 
-- `cn-only` 分支和 `develop` 分支的默认语种、默认字体都是简体中文。
+- `cn-only` 分支和 `cn-full` 分支的默认字体都是简体中文。
 
 ## 4. 不需要打包字体文件
 

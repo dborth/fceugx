@@ -71,7 +71,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     needs: [build]
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/cn-full'
     
     steps:
     - name: Checkout fceugx repo
@@ -87,7 +87,7 @@ jobs:
     - name: Re-zip artifacts
       run: |
         cd dist/FCEUltraGX
-        zip -r FCEUltraGX-CN.zip ./apps ./fceugx
+        zip -r FCEUltraGX-CN-Full.zip ./apps ./fceugx
         # zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
     
     - name: Update Git Tag
