@@ -1,4 +1,4 @@
-# 如何构建支持多语种切换的简体中文版本
+# 如何把默认语种设置成简体中文版
 
 
 主要需要修改四个地方：
@@ -13,7 +13,7 @@
 
 ## 2. 在代码中定义默认语种
 
-代码中的默认语种由枚举常量 `LANG_DEFAULT` 的取值决定。简体中文版本的默认语种自然就是简体中文，因此在项目 `source\fceugx.h` 文件的第 80 行，可以看到下面的代码：
+默认语种在代码中由枚举常量 `LANG_DEFAULT` 的取值决定。简体中文版本的默认语种自然就是简体中文，因此在项目 `source\fceugx.h` 文件的第 80 行，可以看到下面的代码：
 
 ``` c++
 LANG_DEFAULT = LANG_SIMP_CHINESE
@@ -29,7 +29,7 @@ LANG_DEFAULT = LANG_SIMP_CHINESE
 
 ## 4. 打包非默认语种对应的字体文件
 
-对于简体中文版本来说，非默认语种对应的字体文件有三个，即 `en.ttf`、`jp.ttf` 和 `ko.ttf`，详情可以参考《[关于官方版本和简体中文版本的说明](./multi-language-support.md)》中 1.2 部分的表格。因此在 `develop` 分支的 Build 脚本（`workflows\build.yml`）中需要增加以下拷贝字体文件的操作：
+对于简体中文版本来说，非默认语种对应的字体文件有三个，即 `en.ttf`、`jp.ttf` 和 `ko.ttf`，详情可以参考《[官方版本 vs. 简体中文版本](./what-i-did-in-fceugx-cn.md)》中 1.2 部分的表格。因此在 `develop` 分支的 Build 脚本（`workflows\build.yml`）中需要增加以下拷贝字体文件的操作：
 
 ```
 cp fonts/en.ttf dist/FCEUltraGX/apps/fceugx/
@@ -42,7 +42,7 @@ cp fonts/ko.ttf dist/FCEUltraGX/apps/fceugx/
 
 ## 5. 举一反三，以此类推
 
-参考以上四步构建简体中文版本的做法，如果想构建一个支持多语种切换的日本语版本给你的老师，主要的操作就是：
+参考以上四步的做法，如果想把默认语种设置成日本语，方便你的老师使用，相应的操作就是：
 
 - 打开宏定义
   ``` c++
@@ -53,7 +53,7 @@ cp fonts/ko.ttf dist/FCEUltraGX/apps/fceugx/
   LANG_DEFAULT = LANG_JAPANESE
   ```
 - 替换默认字体文件，用项目的 `fonts\jp.ttf` 替换 `source\fonts\font.ttf`
-- 拷贝字体文件
+- 在 Build 脚本中拷贝字体文件
   ```
   cp fonts/en.ttf dist/FCEUltraGX/apps/fceugx/
   # cp fonts/jp.ttf dist/FCEUltraGX/apps/fceugx/

@@ -1,4 +1,4 @@
-# 如何构建简体中文版本，并禁用多语种切换
+# 如何去掉对多语言的支持
 
 
 主要需要修改四个地方：
@@ -11,15 +11,15 @@
 // #define MULTI_LANGUAGE_SUPPORT
 ```
 
-## 2. 在代码中定义默认语种
+## 2. 在代码中定义要使用的语种
 
-代码中的默认语种由枚举常量 `LANG_DEFAULT` 的取值决定。简体中文版本的默认语种自然就是简体中文，因此在项目 `source\fceugx.h` 文件的第 80 行，可以看到下面的代码：
+使用什么语种在代码中由枚举常量 `LANG_DEFAULT` 的取值决定。简体中文版本使用的语种自然就是简体中文，因此在项目 `source\fceugx.h` 文件的第 80 行，可以看到下面的代码：
 
 ``` c++
 LANG_DEFAULT = LANG_SIMP_CHINESE
 ```
 
-## 3. 确认默认字体文件与默认语种对应
+## 3. 确认默认字体文件与语种对应
 
 - 默认字体文件，位于项目的 `source\fonts\font.ttf`。启动编译之后，编译器会根据这个路径找到 `font.ttf`，并把它作为内部资源，合并到最后编译生成的 `.dol` 文件中；
 
@@ -42,7 +42,7 @@ LANG_DEFAULT = LANG_SIMP_CHINESE
 
 ## 5. 举一反三，以此类推
 
-参考以上四步构建简体中文版本的做法，如果想构建一个日本语版本给你的老师，并禁用多语种切换，主要的操作就是：
+参考以上四步的做法，如果想构建一个日本语版本给你的老师用，相应的操作就是：
 
 - 关闭宏定义
   ``` c++
@@ -53,7 +53,7 @@ LANG_DEFAULT = LANG_SIMP_CHINESE
   LANG_DEFAULT = LANG_JAPANESE
   ```
 - 替换默认字体文件，用项目的 `fonts\jp.ttf` 替换 `source\fonts\font.ttf`
-- 不需要拷贝字体文件
+- 移除 Build 脚本中拷贝字体文件的操作
   ```
   # cp fonts/en.ttf dist/FCEUltraGX/apps/fceugx/
   # cp fonts/jp.ttf dist/FCEUltraGX/apps/fceugx/
