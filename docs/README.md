@@ -37,10 +37,10 @@ FCEUltraGX 是 Wii 上面著名的红白机模拟器，[官方版本](http://wii
 
 ## 3. FCEUltraGX-Channel-Installer.zip
 
-会在系统桌面安装一个Wii频道，打开频道就可以打开模拟器，见下图第二行的第一个频道
+会在系统桌面安装一个Wii频道，打开频道就可以打开模拟器，见系统桌面第二行的第一个频道
 
 ![频道安装器](./channel-installer.png)
 
-![频道图标](./channel-logo.png)
+![频道图标](./channel-icon.png)
 
-![频道预览](./channel-preview.png)
+![频道预览](./channel-banner.png)
