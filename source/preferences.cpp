@@ -169,7 +169,7 @@ preparePrefsData ()
 	createXMLSetting("MusicVolume", "Music Volume", toStr(GCSettings.MusicVolume));
 	createXMLSetting("SFXVolume", "Sound Effects Volume", toStr(GCSettings.SFXVolume));
 	createXMLSetting("Rumble", "Rumble", toStr(GCSettings.Rumble));
-	createXMLSetting("language", "Language", toStr(GCSettings.language));
+	createXMLSetting("language", "Language", toStr(GCSettings.Language()));
 	createXMLSetting("PreviewImage", "Preview Image", toStr(GCSettings.PreviewImage));
 	createXMLSetting("HideRAMSaving", "Hide RAM Saving", toStr(GCSettings.HideRAMSaving));
 
@@ -348,7 +348,11 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.MusicVolume, "MusicVolume");
 			loadXMLSetting(&GCSettings.SFXVolume, "SFXVolume");
 			loadXMLSetting(&GCSettings.Rumble, "Rumble");
-			loadXMLSetting(&GCSettings.language, "language");
+
+			int language = GCSettings.Language();
+			loadXMLSetting(&language, "language");
+			GCSettings.SetLanguage(language);
+
 			loadXMLSetting(&GCSettings.PreviewImage, "PreviewImage");
 			loadXMLSetting(&GCSettings.HideRAMSaving, "HideRAMSaving");
 			
@@ -395,8 +399,6 @@ void FixInvalidSettings()
 		GCSettings.MusicVolume = 20;
 	if(!(GCSettings.SFXVolume >= 0 && GCSettings.SFXVolume <= 100))
 		GCSettings.SFXVolume = 40;
-	if(GCSettings.language < 0 || GCSettings.language >= LANG_LENGTH)
-		GCSettings.language = LANG_ENGLISH;
 	if(GCSettings.Controller > CTRL_PAD4 || GCSettings.Controller < CTRL_ZAPPER)
 		GCSettings.Controller = CTRL_PAD2;
 	if(!(GCSettings.render >= 0 && GCSettings.render < 5))
@@ -450,14 +452,7 @@ DefaultSettings ()
 	GCSettings.PreviewImage = 0;
 	GCSettings.HideRAMSaving = 0;
 	
-#ifdef HW_RVL
-	GCSettings.language = CONF_GetLanguage();
-	
-	if(GCSettings.language == LANG_TRAD_CHINESE)
-		GCSettings.language = LANG_SIMP_CHINESE;
-#else
-	GCSettings.language = LANG_ENGLISH;
-#endif
+	GCSettings.SetLanguage(LANG_DEFAULT);
 
 	GCSettings.LoadMethod = DEVICE_AUTO; // Auto, SD, DVD, USB, Network (SMB)
 	GCSettings.SaveMethod = DEVICE_AUTO; // Auto, SD, USB, Network (SMB)

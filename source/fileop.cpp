@@ -446,12 +446,14 @@ bool ChangeInterface(char * filepath, bool silent)
 	return ChangeInterface(device, silent);
 }
 
-void CreateAppPath(char * origpath)
+void CreateAppPath(int argc, char* argv[])
 {
-	if(!origpath || origpath[0] == 0)
+	snprintf(appPath, MAXPATHLEN - 1, "sd:/apps/%s", APPFOLDER);
+
+	if(argc <= 0 || !argv[0] || argv[0][0] == 0)
 		return;
 
-	char * path = strdup(origpath); // make a copy so we don't mess up original
+	char * path = strdup(argv[0]); // make a copy so we don't mess up original
 
 	if(!path)
 		return;

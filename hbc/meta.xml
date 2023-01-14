@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <app version="1">
-  <name>FCE Ultra GX</name>
+  <name>FCE Ultra GX Full</name>
   <coder>Tantric, Zopenko, Askot, others</coder>
   <version>3.5.2</version>
   <release_date>20220615</release_date>
   <short_description>Nintendo Emulator</short_description>
-  <long_description>A port of FCE Ultra to the Wii.</long_description>
+  <long_description>1. A port of FCE Ultra to the Wii;
+2. Use of Chinese as the default language;
+3. Support multi-language.</long_description>
   <ahb_access />
 </app>

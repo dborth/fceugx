@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        image: ["Wii", "GameCube"]
+        # image: ["Wii", "GameCube"]
+        image: ["Wii"] # only for Wii
     container: devkitpro/devkitppc:latest
  
     steps:
@@ -33,15 +34,16 @@ jobs:
         touch dist/FCEUltraGX/fceugx/cheats/cheatsdir
         touch dist/FCEUltraGX/fceugx/saves/savesdir
         cp hbc/* dist/FCEUltraGX/apps/fceugx/
+        cp fonts/en.ttf dist/FCEUltraGX/apps/fceugx/
         cp fonts/jp.ttf dist/FCEUltraGX/apps/fceugx/
         cp fonts/ko.ttf dist/FCEUltraGX/apps/fceugx/
-        cp fonts/zh.ttf dist/FCEUltraGX/apps/fceugx/
+        # cp fonts/zh.ttf dist/FCEUltraGX/apps/fceugx/
         cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
 
     - name: Upload Wii artifacts
       uses: actions/upload-artifact@v3
       if: ${{ matrix.image == 'Wii' }}
-      with: 
+      with:
         name: FCEUltraGX
         path: |
          dist/FCEUltraGX/
@@ -60,7 +62,7 @@ jobs:
     - name: Upload GameCube artifact
       uses: actions/upload-artifact@v3
       if: ${{ matrix.image == 'GameCube' }}
-      with: 
+      with:
         name: FCEUltraGX-GameCube
         path: |
          dist/FCEUltraGX-GameCube/
@@ -84,12 +86,9 @@ jobs:
     
     - name: Re-zip artifacts
       run: |
-        cd dist
-        rm -r FCEUltraGX/fceugx/cheats/*
-        rm -r FCEUltraGX/fceugx/roms/*
-        rm -r FCEUltraGX/fceugx/saves/*
-        zip -r FCEUltraGX.zip FCEUltraGX
-        zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
+        cd dist/FCEUltraGX
+        zip -r FCEUltraGX-CN-Full.zip ./apps ./fceugx
+        # zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
     
     - name: Update Git Tag
       run: |
@@ -104,4 +103,4 @@ jobs:
         removeArtifacts: true
         replacesArtifacts: false
         tag: Pre-release
-        artifacts: "dist/*.zip"
+        artifacts: "dist/FCEUltraGX/*.zip"

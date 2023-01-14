@@ -28,7 +28,7 @@ bool FindDevice(char * filepath, int * device);
 char * StripDevice(char * path);
 bool ChangeInterface(int device, bool silent);
 bool ChangeInterface(char * filepath, bool silent);
-void CreateAppPath(char * origpath);
+void CreateAppPath(int argc, char* argv[]);
 void FindAndSelectLastLoadedFile();
 int ParseDirectory(bool waitParse = false, bool filter = true);
 bool CreateDirectory(char * path);

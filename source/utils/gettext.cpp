@@ -209,7 +209,7 @@ bool LoadLanguage()
 	
 	char *file, *eof;
 	
-	switch(GCSettings.language)
+	switch(GCSettings.Language())
 	{
 		case LANG_JAPANESE: file = (char *)jp_lang; eof = file + jp_lang_size; break;
 		case LANG_ENGLISH: file = (char *)en_lang; eof = file + en_lang_size; break;
