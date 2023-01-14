@@ -9,7 +9,7 @@
 
 ### 1.1 支持多语种
 
-![设定语言](./set-language.png)
+![设定语言](./settings-menu-language-en.png)
 
 官方版本支持在 Settings - Menu 界面设定 APP 的显示语言，目前支持的语种有：
 

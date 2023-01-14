@@ -21,7 +21,7 @@ FCEUltraGX 是 Wii 上面著名的红白机模拟器，[官方版本](http://wii
 
 ![中文完整版](./cn-full-description.png)
 
-![在设定菜单可切换不同的语言](./settings-menu-language.png)
+![在设定菜单可切换不同的语言](./settings-menu-language-cn.png)
 
 目前支持的语言有：
 
