@@ -13,13 +13,13 @@ FCEUltraGX 是 Wii 上面著名的红白机模拟器，[官方版本](http://wii
 
 打包的是模拟器的中文版，与中文完整版择一下载即可
 
-![中文版](./cn-only.png)
+![中文版](./cn-only-description.png)
 
 ## 2. FCEUltraGX-CN-Full.zip
 
 打包的是模拟器的中文完整版，在设定菜单可切换不同的语言，由于打包了外语字库，所以总的文件体积会略大一些
 
-![中文完整版](./cn-full.png)
+![中文完整版](./cn-full-description.png)
 
 ![在设定菜单可切换不同的语言](./settings-menu-language.png)
 
