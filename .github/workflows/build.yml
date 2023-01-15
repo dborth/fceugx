@@ -25,21 +25,31 @@ jobs:
     
     - name: Copy Wii artifacts
       if: ${{ matrix.image == 'Wii' }}
-      run: | 
+      run: |
+        ##### ./apps/fceugx #####
         mkdir -p dist/FCEUltraGX/apps/fceugx
-        mkdir -p dist/FCEUltraGX/fceugx/roms
-        mkdir dist/FCEUltraGX/fceugx/cheats
-        mkdir dist/FCEUltraGX/fceugx/saves       
-        touch dist/FCEUltraGX/fceugx/roms/romsdir
-        touch dist/FCEUltraGX/fceugx/cheats/cheatsdir
-        touch dist/FCEUltraGX/fceugx/saves/savesdir
-        cp hbc/* dist/FCEUltraGX/apps/fceugx/
+        cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
         cp fonts/en.ttf dist/FCEUltraGX/apps/fceugx/
         cp fonts/jp.ttf dist/FCEUltraGX/apps/fceugx/
         cp fonts/ko.ttf dist/FCEUltraGX/apps/fceugx/
-        # cp fonts/zh.ttf dist/FCEUltraGX/apps/fceugx/
-        cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
-
+        # cp fonts/zh.ttf dist/FCEUltraGX/apps/fceugx/        
+        cp hbc/icon.png dist/FCEUltraGX/apps/fceugx/
+        cp hbc/meta.xml dist/FCEUltraGX/apps/fceugx/
+        ##### ./fceugx  #####
+        mkdir -p dist/FCEUltraGX/fceugx/artwork
+        touch dist/FCEUltraGX/fceugx/artwork/artworkdir
+        mkdir dist/FCEUltraGX/fceugx/cheats
+        touch dist/FCEUltraGX/fceugx/cheats/cheatsdir
+        mkdir dist/FCEUltraGX/fceugx/covers
+        touch dist/FCEUltraGX/fceugx/covers/coversdir
+        mkdir dist/FCEUltraGX/fceugx/roms
+        touch dist/FCEUltraGX/fceugx/roms/romsdir
+        mkdir dist/FCEUltraGX/fceugx/saves
+        touch dist/FCEUltraGX/fceugx/saves/savesdir
+        mkdir dist/FCEUltraGX/fceugx/screenshots
+        touch dist/FCEUltraGX/fceugx/screenshots/screenshotsdir
+        cp sample/* dist/FCEUltraGX/fceugx/
+        
     - name: Upload Wii artifacts
       uses: actions/upload-artifact@v3
       if: ${{ matrix.image == 'Wii' }}
