@@ -23,7 +23,7 @@ FCE Ultra GX 是 Wii 上面著名的红白机模拟器，[官方版本](http://w
 
 在 `设定 - 菜单` 可切换不同的语言：
 
-![在设定菜单可切换不同的语言](./settings-menu-language-cn.png)
+![切换不同的语言](./settings-menu-language-cn.png)
 
 目前支持的语言有：
 
@@ -67,4 +67,4 @@ FCE Ultra GX 是 Wii 上面著名的红白机模拟器，[官方版本](http://w
 
 在 `设定 - 保存 & 读取` 可设置三种预览图片的检索目录：
 
-![插图](./settings-saving-loading.png)
+![设置预览图片的检索目录](./settings-saving-loading.png)
