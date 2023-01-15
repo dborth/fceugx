@@ -7,19 +7,21 @@ FCE Ultra GX 是 Wii 上面著名的红白机模拟器，[官方版本](http://w
 
 ![中文版界面](./fceugx-cn.png)
 
-以下是对下载页面中的三个压缩包的简单说明：
+以下是对下载页面中的四个 .zip 文件的简单说明：
 
 ## 1. FCEUltraGX-CN.zip
 
-打包的是模拟器的中文版，与中文完整版择一下载即可
+模拟器的中文版，与模拟器的中文完整版（FCEUltraGX-CN-Full.zip）择一下载即可：
 
 ![中文版](./cn-only-description.png)
 
 ## 2. FCEUltraGX-CN-Full.zip
 
-打包的是模拟器的中文完整版，在设定菜单可切换不同的语言，由于打包了外语字库，所以总的文件体积会略大一些
+模拟器的中文完整版，由于打包了外语字库，所以总的文件体积会略大一些：
 
 ![中文完整版](./cn-full-description.png)
+
+在 `设定 - 菜单` 可切换不同的语言：
 
 ![在设定菜单可切换不同的语言](./settings-menu-language-cn.png)
 
@@ -37,10 +39,32 @@ FCE Ultra GX 是 Wii 上面著名的红白机模拟器，[官方版本](http://w
 
 ## 3. FCEUltraGX-Channel-Installer.zip
 
-会在系统桌面安装一个Wii频道，打开频道就可以打开模拟器，见系统桌面第二行的第一个频道
+官方提供的频道安装器，会在系统桌面安装一个 Wii 频道：
 
 ![频道安装器](./channel-installer.png)
+
+打开频道就可以打开模拟器：
 
 ![频道图标](./channel-icon.png)
 
 ![频道预览](./channel-banner.png)
+
+## 4. FCEUltraGX-Sample.zip
+
+演示文件，解压到 SD 卡或者 USB 设备的 fceugx 文件夹，即可在模拟器中选择游戏进行试玩，按 (+) 键可切换预览图片的类型。
+
+屏幕截图：
+
+![屏幕截图](./fceugx-cn.png)
+
+封面：
+
+![封面](./preview-image-cover.png)
+
+插图：
+
+![插图](./preview-image-artwork.png)
+
+在 `设定 - 保存 & 读取` 可设置三种预览图片的检索目录：
+
+![插图](./settings-saving-loading.png)
