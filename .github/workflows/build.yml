@@ -48,7 +48,11 @@ jobs:
         touch dist/FCEUltraGX/fceugx/saves/savesdir
         mkdir dist/FCEUltraGX/fceugx/screenshots
         touch dist/FCEUltraGX/fceugx/screenshots/screenshotsdir
-        cp sample/* dist/FCEUltraGX/fceugx/
+        ##### copy sample file
+        cp sample/artwork/* dist/FCEUltraGX/fceugx/artwork/
+        cp sample/covers/* dist/FCEUltraGX/fceugx/covers/
+        cp sample/roms/* dist/FCEUltraGX/fceugx/roms/
+        cp sample/screenshots/* dist/FCEUltraGX/fceugx/screenshots/
         
     - name: Upload Wii artifacts
       uses: actions/upload-artifact@v3
