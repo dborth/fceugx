@@ -39,7 +39,7 @@ FCE Ultra GX 是 Wii 上面著名的红白机模拟器，[官方版本](http://w
 
 ## 3. FCEUltraGX-Channel-Installer.zip
 
-官方提供的频道安装器，会在系统桌面安装一个 Wii 频道：
+官方提供的频道安装器，可以在系统桌面安装一个模拟器的专属频道：
 
 ![频道安装器](./channel-installer.png)
 
