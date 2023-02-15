@@ -57,14 +57,6 @@ jobs:
         path: |
          dist/FCEUltraGX/
 
-    - name: Upload Sample artifacts
-      uses: actions/upload-artifact@v3
-      if: ${{ matrix.image == 'Wii' }}
-      with:
-        name: FCEUltraGX-Sample
-        path: |
-         sample/
-
     - name: Build GameCube
       if: ${{ matrix.image == 'GameCube' }}
       run: |
