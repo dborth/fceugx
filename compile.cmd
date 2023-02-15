@@ -1,2 +1,2 @@
-make -f Makefile.wii -j2
+make -f Makefile.wii
 pause
