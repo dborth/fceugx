@@ -3,7 +3,7 @@
  * Nintendo Wii/Gamecube Port
  *
  * michniewski August 2008
- * Tantric 2008-2022
+ * Tantric 2008-2023
  *
  * button_mapping.c
  *
