@@ -1,4 +1,4 @@
-# FCEUltraGX 自制频道一览
+# FCE Ultra GX 自制频道一览
 
 
 ## FCEUltraGX-Forwarder1-FCEU.wad

@@ -51,7 +51,7 @@ FCE Ultra GX 是 Wii 上面著名的红白机模拟器，[官方版本](http://w
 
 ## 4. FCEUltraGX-Forwarder.zip
 
-网友制作的 FCEUltraGX 频道，界面效果可参考[《FCEUltraGX 自制频道一览》](../forwarder/README.md)。
+网友制作的 FCE Ultra GX 频道安装包，界面效果可参考[《FCE Ultra GX 自制频道一览》](../forwarder/README.md)。
 
 ## 5. FCEUltraGX-Sample.zip
 
