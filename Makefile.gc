@@ -35,7 +35,7 @@ SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) `freetype-config --cflags` \
 				-Wno-format -Wno-format-overflow -Wno-stringop-overflow -Wno-format-truncation \
 				-Wno-unused-parameter -Wno-strict-aliasing -Wno-write-strings -Wno-stringop-truncation -Wno-sign-compare \
 				-Wno-unused-variable -Wno-parentheses -Wno-unused-function -Wno-switch -Wno-unused-but-set-variable \
-				-Wno-narrowing -Wno-misleading-indentation -Wno-restrict -Wno-maybe-uninitialized
+				-Wno-narrowing -Wno-misleading-indentation -Wno-restrict -Wno-maybe-uninitialized -Wno-infinite-recursion
 CFLAGS		=	$(SHAREDFLAGS) -Wno-incompatible-pointer-types
 CXXFLAGS	=	$(SHAREDFLAGS) -Wno-catch-value -Wno-class-memaccess
 LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
