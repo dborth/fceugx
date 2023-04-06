@@ -1,14 +1,27 @@
-# FCE Ultra GX 自制频道一览
+# FCE Ultra GX 频道一览
 
 
-## 一、FCEUltraGX-Forwarder1-FCEU.wad
+## 一、FCEUltraGX-Channel-Installer.zip
+
+官方提供的频道安装器：
+
+![频道安装器](./channel-installer.png)
+
+安装后的界面效果如下：
+
+| Icon | Banner |
+| :---: | :---: |
+| ![Icon](./channel-icon.png) | ![Banner](./channel-banner.png) |
+
+
+## 二、FCEUltraGX-Forwarder1-FCEU.wad
 
 | Icon | Banner |
 | :---: | :---: |
 | ![Icon](./FCEUltraGX-Forwarder1-FCEU-icon.png) | ![Banner](./FCEUltraGX-Forwarder1-FCEU-banner.png) |
 
 
-## 二、FCEUltraGX-Forwarder1-FCEU-ZHTW.wad
+## 三、FCEUltraGX-Forwarder1-FCEU-ZHTW.wad
 
 繁体中文系统专用，基于 FCEUltraGX-Forwarder1-FCEU.wad 制作，提示文字修改为繁体中文：
 
@@ -18,7 +31,7 @@
 | 提示文字修改为繁体中文 | 无改动 |
 
 
-## 三、FCEUltraGX-Forwarder2-FCEU.wad
+## 四、FCEUltraGX-Forwarder2-FCEU.wad
 
 | Icon | Banner |
 | :---: | :---: |
