@@ -1,4 +1,4 @@
-# 3.5.2 - YYYY-MM-DD
+# 3.5.2版本 - Y年M月D日
 
 FCE Ultra GX 是 Wii 上面著名的红白机模拟器，[官方版本](http://wiibrew.org/wiki/FCE_Ultra_GX)为英文，本页面为其中文版的下载页面。
 
