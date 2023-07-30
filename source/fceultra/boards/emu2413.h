@@ -18,6 +18,8 @@ extern "C" {
 #endif
 
 #ifdef GEKKO
+#include <inttypes.h>
+
 typedef uint8_t uint8 ;
 typedef int8_t int8 ;
 
