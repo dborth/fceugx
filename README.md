@@ -47,6 +47,22 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[3.5.3 - July 31, 2023]
+
+* Compiled with latest devkitPPC/libogc
+* Switch to chosen video mode on first load if not automatic
+* Added support for mapper 126 for Power Joy 84-in-1 (Tanooki16)
+* Added a toggle to hide/show the "Save RAM" button (InfiniteBlueGX)
+* Added Other Mappings submenu and move Enable Turbo Mode toggle into it (InfiniteBlueGX)
+* Added turbo mode remap option to Other Mappings (InfiniteBlueGX)
+* Added B button back trigger to submenus (InfiniteBlueGX)
+* Added the menu toggle option to Other Mappings (InfiniteBlueGX)
+* Fixed a crash upon relaunching after removing a SD/USB device (InfiniteBlueGX)
+* Added 1+2+Plus menu toggle option (InfiniteBlueGX)
+* Added B/1 cancel trigger to window prompts (InfiniteBlueGX)
+* Fixed initial game selection menu "jump" when using classic controller (InfiniteBlueGX)
+* Added B/1 button press to cancel button remapping prompt (InfiniteBlueGX)
+
 [3.5.2 - June 15, 2022]
 
 * Updated to the latest FCEUX 2.6.4 (git def5768)
