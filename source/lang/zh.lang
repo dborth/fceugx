@@ -298,6 +298,12 @@ msgstr "磁盘驱动器 BIOS 文件没有找到！"
 msgid "Filtered"
 msgstr "已过滤"
 
+msgid "Filtered (Sharp)"
+msgstr "锐化过滤"
+
+msgid "Filtered (Soft)"
+msgstr "柔化过滤"
+
 msgid "Filtering"
 msgstr "滤镜"
 
@@ -606,6 +612,9 @@ msgstr "原始"
 
 msgid "Original FCE"
 msgstr "最初版的 FCE"
+
+msgid "Original (240p)"
+msgstr "原生 240p"
 
 msgid "Other Mappings"
 msgstr "其他映射"
