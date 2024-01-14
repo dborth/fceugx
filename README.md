@@ -39,6 +39,7 @@ Wii/GameCube.
 * Original/filtered/unfiltered video modes
 * Turbo Mode - up to 2x the normal speed
 * Cheat support (.CHT files and Game Genie)
+* Artwork (artwork, cover or screenshot) support
 * Famicom 3D System support
 * IPS/UPS automatic patching support
 * NES Compatibility Based on FCEUX 2.6.4+ (git def5768)
@@ -596,7 +597,6 @@ Wii/GameCube.
   the program
 * One makefile to make all versions
 
-
 ## SETUP & INSTALLATION
 
 Unzip the archive. You will find the following folders inside:
@@ -607,6 +607,14 @@ apps			Contains Homebrew Channel ready files
 fceugx			Contains the directory structure required for storing
 				roms and saves (see below)
 
+### ARTWORK
+
+Artwork, covers or screenshots will be displayed on the main menu when
+each game is selected. Select which type to display on the menu by going
+to Settings > Menu > Preview Image. Each image resides in the respectively
+named folder (eg: sd:/fceugx/covers). They should be a PNG named exactly 
+the same as as the rom and sized no more than 640px by 480px. Recommendend 
+format is 160px x 224px PNG with a 32bit depth.
 
 ### Loading / Running the Emulator:
 
