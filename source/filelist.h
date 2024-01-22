@@ -32,6 +32,7 @@
 #include "pt_br_lang.h"
 #include "ca_lang.h"
 #include "tr_lang.h"
+#include "sv_lang.h"
 
 // Sounds
 #ifdef HW_RVL
