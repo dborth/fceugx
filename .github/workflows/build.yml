@@ -10,10 +10,10 @@ jobs:
       matrix:
         image: ["Wii", "GameCube"]
     container: devkitpro/devkitppc:latest
- 
+
     steps:
     - name: Checkout fceugx repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
@@ -21,14 +21,14 @@ jobs:
       if: ${{ matrix.image == 'Wii' }}
       run: |
         make -f Makefile.wii -j1
-    
+
     - name: Copy Wii artifacts
       if: ${{ matrix.image == 'Wii' }}
-      run: | 
+      run: |
         mkdir -p dist/FCEUltraGX/apps/fceugx
         mkdir -p dist/FCEUltraGX/fceugx/roms
         mkdir dist/FCEUltraGX/fceugx/cheats
-        mkdir dist/FCEUltraGX/fceugx/saves       
+        mkdir dist/FCEUltraGX/fceugx/saves
         touch dist/FCEUltraGX/fceugx/roms/romsdir
         touch dist/FCEUltraGX/fceugx/cheats/cheatsdir
         touch dist/FCEUltraGX/fceugx/saves/savesdir
@@ -36,49 +36,49 @@ jobs:
         cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
 
     - name: Upload Wii artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: ${{ matrix.image == 'Wii' }}
-      with: 
+      with:
         name: FCEUltraGX
         path: |
-         dist/FCEUltraGX/
-     
+          dist/FCEUltraGX/
+
     - name: Build GameCube
       if: ${{ matrix.image == 'GameCube' }}
       run: |
         make -f Makefile.gc -j1
-        
+
     - name: Copy GameCube artifact
       if: ${{ matrix.image == 'GameCube' }}
-      run: | 
+      run: |
         mkdir -p dist/FCEUltraGX-GameCube
         cp executables/fceugx-gc.dol dist/FCEUltraGX-GameCube/
-        
+
     - name: Upload GameCube artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: ${{ matrix.image == 'GameCube' }}
-      with: 
+      with:
         name: FCEUltraGX-GameCube
         path: |
-         dist/FCEUltraGX-GameCube/
+          dist/FCEUltraGX-GameCube/
 
   release:
     name: Release
     runs-on: ubuntu-latest
     needs: [build]
     if: github.ref == 'refs/heads/master'
-    
+
     steps:
     - name: Checkout fceugx repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         fetch-depth: 0
 
     - name: Download Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         path: dist
-    
+
     - name: Re-zip artifacts
       run: |
         cd dist
@@ -87,12 +87,12 @@ jobs:
         rm -r FCEUltraGX/fceugx/saves/*
         zip -r FCEUltraGX.zip FCEUltraGX
         zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
-    
+
     - name: Update Git Tag
       run: |
         git tag -f Pre-release
         git push -f origin Pre-release
-    
+
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
