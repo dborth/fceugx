@@ -1,8 +1,8 @@
 # FCE Ultra GX
 https://github.com/dborth/fceugx (Under GPL License)
- 
+
 FCE Ultra GX is a modified port of the FCE Ultra Nintendo Entertainment
-system for x86 (Windows/Linux) PCs. With it you can play NES games on your 
+system for x86 (Windows/Linux) PCs. With it you can play NES games on your
 Wii/GameCube.
 
 
@@ -17,11 +17,18 @@ Wii/GameCube.
 
 ## NIGHTLY BUILDS
 
-|Download nightly builds from continuous integration: 	| [![Build Status][Build]][Actions] 
-|-------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+### Download the latest builds from continuous integration:
+
+| Name                    | Status                            | File                                     |
+|-------------------------|-----------------------------------|------------------------------------------|
+| FCE Ultra GX Wii/Wii U  | [![Build Status][Build]][Actions] | [![Emulator][Download]][fceugx-wiiu]     |
+| FCE Ultra GX GameCube   | [![Build Status][Build]][Actions] | [![Emulator][Download]][fceugx-gamecube] |
 
 [Actions]: https://github.com/dborth/fceugx/actions/workflows/build.yml
 [Build]: https://github.com/dborth/fceugx/actions/workflows/build.yml/badge.svg
+[Download]: https://img.shields.io/badge/Download-blue
+[fceugx-wiiu]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX.zip
+[fceugx-gamecube]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX-GameCube.zip
 
 
 ## FEATURES
@@ -111,7 +118,7 @@ Wii/GameCube.
 [3.4.6 - March 4, 2020]
 
 * Fixed 3rd party controllers (again)
-* Fixed GameCube version issues with SD2SP2 
+* Fixed GameCube version issues with SD2SP2
 
 [3.4.5 - February 17, 2020]
 
@@ -139,7 +146,7 @@ Wii/GameCube.
 [3.4.2 - January 25, 2019]
 
 * Fixed GameCube controllers not working
-* Added ability to load external fonts and activated Japanese/Korean 
+* Added ability to load external fonts and activated Japanese/Korean
   translations. Simply put the ko.ttf or jp.ttf in the app directory
 * Added ability to customize background music. Simply put a bg_music.ogg
   in the app directory
@@ -299,7 +306,7 @@ Wii/GameCube.
 
 * Fixed 16:9 correction in Original mode
 * Fixed PAL/NTSC timing switching issue
-* Ability to use both USB ports (requires updated IOS 202 - WARNING: older 
+* Ability to use both USB ports (requires updated IOS 202 - WARNING: older
   versions of IOS 202 are NO LONGER supported)
 * Hide non-ROM files
 * Other minor improvements
@@ -465,10 +472,10 @@ Wii/GameCube.
 
 [3.0.0 - April 13, 2009]
 
-* New GX-based menu, with a completely redesigned layout. Has Wiimote IR 
+* New GX-based menu, with a completely redesigned layout. Has Wiimote IR
   support, sounds, graphics, animation effects, and more
-* Thanks to the3seashells for designing some top-notch artwork, to 
-  Peter de Man for composing the music, and a special thanks to shagkur for 
+* Thanks to the3seashells for designing some top-notch artwork, to
+  Peter de Man for composing the music, and a special thanks to shagkur for
   fixing libogc bugs that would have otherwise prevented the release
 * Onscreen keyboard for changing save/load folders and network settings
 * Menu configuration options (configurable exit button, wiimote orientation,
@@ -548,7 +555,7 @@ Wii/GameCube.
 * 7z support
 * Faster SD/USB (readahead cache enabled)
 * VS coin now mapped to 1 button for VS zapper games
-* Changed GC controller mappings - Select - Z, Start - Start, 
+* Changed GC controller mappings - Select - Z, Start - Start,
   Home - Start+A, Special - L
 
 [2.0.3 - October 1, 2008]
@@ -569,10 +576,10 @@ Wii/GameCube.
 
 [2.0.1 - September 6, 2008]
 
-* Zapper support! Turn this on in the Controller Settings - most games 
+* Zapper support! Turn this on in the Controller Settings - most games
   require you to have the Zapper on Port 2. Thanks go to aksommerville whose
   previous work on the Zapper helped, and michniewski's cursor code
-* RAM game save support! Now you can save your games just like the NES did. 
+* RAM game save support! Now you can save your games just like the NES did.
   By default game saves are saved/loaded automatically. This can be changed
   in the Preferences menu
 * Start/Select reversed mapping fixed for Wii controllers
@@ -585,10 +592,10 @@ Wii/GameCube.
 * Button mapping for all controller types
 * Full support for SD, USB, DVD, GC Memory Card, and Zip files
 * Game starts immediately after loading
-* Load/save preference selector. ROMs, saves, and preferences are 
+* Load/save preference selector. ROMs, saves, and preferences are
   saved/loaded according to these
 * Preliminary Windows file share loading/saving (SMB) support on Wii:
-  You can input your network settings into FCEUGX.xml, or edit 
+  You can input your network settings into FCEUGX.xml, or edit
   fceuconfig.cpp from the source code and compile.
 * 'Auto' settings for save/load - attempts to automatically determine
   your load/save device(s) - SD, USB, Memory Card, DVD, SMB
@@ -612,15 +619,15 @@ fceugx			Contains the directory structure required for storing
 Artwork, covers or screenshots will be displayed on the main menu when
 each game is selected. Select which type to display on the menu by going
 to Settings > Menu > Preview Image. Each image resides in the respectively
-named folder (eg: sd:/fceugx/covers). They should be a PNG named exactly 
-the same as as the rom and sized no more than 640px by 480px. Recommendend 
+named folder (eg: sd:/fceugx/covers). They should be a PNG named exactly
+the same as as the rom and sized no more than 640px by 480px. Recommendend
 format is 160px x 224px PNG with a 32bit depth.
 
 ### Loading / Running the Emulator:
 
 #### Wii - Via Homebrew Channel:
 The most popular method of running homebrew on the Wii is through the Homebrew
-Channel. If you already have the channel installed, just copy over the apps 
+Channel. If you already have the channel installed, just copy over the apps
 folder included in the archive into the root of your SD card.
 
 Remember to also create the fceugx directory structure required. See above.
@@ -629,43 +636,43 @@ If you haven't installed the Homebrew Channel yet, read about how to here:
 http://hbc.hackmii.com/
 
 #### Gamecube:
-You can load FCEUGX via sdload and an SD card in slot A, or by streaming 
-it to your Gamecube, or by booting a bootable DVD with FCEUGX on it. 
+You can load FCEUGX via sdload and an SD card in slot A, or by streaming
+it to your Gamecube, or by booting a bootable DVD with FCEUGX on it.
 This document doesn't cover how to do any of that.
 
 #### ROMS, Preferences, and Saves:
-By default, roms are loaded from "fceugx/roms/" and saves / preferences are 
+By default, roms are loaded from "fceugx/roms/" and saves / preferences are
 stored in "fceugx/saves/".
 
 #### Wii
 On the Wii, you can load roms from SD card (Front SD or SD Gecko), USB, DVD,
-or SMB share. Note that if you are using the Homebrew Channel, to load from 
-USB, DVD, or SMB you will first have to load FCEUGX from SD, and then set 
+or SMB share. Note that if you are using the Homebrew Channel, to load from
+USB, DVD, or SMB you will first have to load FCEUGX from SD, and then set
 your load method preference.
 
-If you are planning to use your Network (LAN) to load and/or save games from 
-you will need to enter in the SMB share settings you haveve setup on your 
-computer via the Settings menu. You will need to enter in the SMB Share IP, 
+If you are planning to use your Network (LAN) to load and/or save games from
+you will need to enter in the SMB share settings you haveve setup on your
+computer via the Settings menu. You will need to enter in the SMB Share IP,
 Share Name, Share Username and Share Password.
 
 #### Gamecube
-You can load roms from DVD or SD card. If you create a bootable 
+You can load roms from DVD or SD card. If you create a bootable
 DVD of FCEUGX you can put roms on the same DVD. You may save preferences and
 game data to SD or Memory Card.
 
 
 #### Famicom Disk System (FDS)
 
-FCE Ultra GX supports loading FDS games. The FDS BIOS is required - put it 
+FCE Ultra GX supports loading FDS games. The FDS BIOS is required - put it
 in your fceugx folder, and name it disksys.rom (should be 8 KB in size).
 You can switch disks using the A button (by default). The mapped button
 can be changed under Controller Configuration ('Special' button).
-Compatibility is limited, so check that the game in question works on 
-FCEUX for Windows before asking for help. 
+Compatibility is limited, so check that the game in question works on
+FCEUX for Windows before asking for help.
 
 #### 3D Game Support
 
-Supported Famicom 3D System games: 
+Supported Famicom 3D System games:
 * Highway Star
 * Famicom Grand Prix II
 * 3D Hot Rally
@@ -695,7 +702,7 @@ Timing - NTSC or PAL (Depends if you're running a PAL or NTSC game)
 			Logo design					mvit
 			Additional updates/fixes	Zopenko, Burnt Lasagna, Askot
 			Beta testing, bug reports	Sindrik, niuus
-			
+
 			FCE Ultra GX GameCube		SoftDev,
 										askot & dsbomb
 
@@ -711,4 +718,4 @@ Timing - NTSC or PAL (Depends if you're running a PAL or NTSC game)
 
                                   FCEUGX Web Site
                           https://github.com/dborth/fceugx
- 
+
