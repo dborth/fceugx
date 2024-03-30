@@ -55,6 +55,11 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[3.5.4 - March 30, 2024]
+* Compiled with latest devkitPPC/libogc
+* Added Swedish translation (IsakTheHacker)
+* Updated translations
+
 [3.5.3 - July 31, 2023]
 
 * Compiled with latest devkitPPC/libogc
