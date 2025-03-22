@@ -55,6 +55,11 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[3.5.5]
+
+* Compiled with latest devkitPPC/libogc2 
+* Added Digital Prime (FBX) palette
+
 [3.5.4 - March 30, 2024]
 * Compiled with latest devkitPPC/libogc
 * Added Swedish translation (IsakTheHacker)
