@@ -23,7 +23,7 @@ ArchiveScanRecord FCEUD_ScanArchive(std::string fname);
 const char *FCEUD_GetCompilerString();
 
 //This makes me feel dirty for some reason.
-void FCEU_printf(const char *format, ...);
+void FCEU_printf( __FCEU_PRINTF_FORMAT const char *format, ...)  __FCEU_PRINTF_ATTRIBUTE( 1, 2 );
 #define FCEUI_printf FCEU_printf
 
 //Video interface
@@ -192,12 +192,12 @@ void TaseditorManualFunction(void);
 int32 FCEUI_GetDesiredFPS(void);
 void FCEUI_SaveSnapshot(void);
 void FCEUI_SaveSnapshotAs(void);
-void FCEU_DispMessage(const char *format, int disppos, ...);
+void FCEU_DispMessage( __FCEU_PRINTF_FORMAT const char *format, int disppos, ...) __FCEU_PRINTF_ATTRIBUTE( 1, 3 );
 #define FCEUI_DispMessage FCEU_DispMessage
 
 int FCEUI_DecodePAR(const char *code, int *a, int *v, int *c, int *type);
 int FCEUI_DecodeGG(const char *str, int *a, int *v, int *c);
-int FCEUI_AddCheat(const char *name, uint32 addr, uint8 val, int compare, int type);
+int FCEUI_AddCheat(const char *name, uint32 addr, uint8 val, int compare, int type, int status = 1, bool rebuild = true);
 int FCEUI_DelCheat(uint32 which);
 int FCEUI_ToggleCheat(uint32 which);
 int FCEUI_GlobalToggleCheat(int global_enable);
@@ -207,10 +207,10 @@ void FCEUI_CheatSearchGetRange(uint32 first, uint32 last, int (*callb)(uint32 a,
 void FCEUI_CheatSearchGet(int (*callb)(uint32 a, uint8 last, uint8 current, void *data), void *data);
 void FCEUI_CheatSearchBegin(void);
 void FCEUI_CheatSearchEnd(int type, uint8 v1, uint8 v2);
-void FCEUI_ListCheats(int (*callb)(char *name, uint32 a, uint8 v, int compare, int s, int type, void *data), void *data);
+void FCEUI_ListCheats(int (*callb)(const char *name, uint32 a, uint8 v, int compare, int s, int type, void *data), void *data);
 
-int FCEUI_GetCheat(uint32 which, char **name, uint32 *a, uint8 *v, int *compare, int *s, int *type);
-int FCEUI_SetCheat(uint32 which, const char *name, int32 a, int32 v, int compare,int s, int type);
+int FCEUI_GetCheat(uint32 which, std::string *name, uint32 *a, uint8 *v, int *compare, int *s, int *type);
+int FCEUI_SetCheat(uint32 which, const std::string *name, int32 a, int32 v, int compare,int s, int type);
 
 void FCEUI_CheatSearchShowExcluded(void);
 void FCEUI_CheatSearchSetCurrentAsOriginal(void);
@@ -254,6 +254,8 @@ void FCEUI_VSUniToggleDIP(int w);
 uint8 FCEUI_VSUniGetDIPs(void);
 void FCEUI_VSUniSetDIP(int w, int state);
 void FCEUI_VSUniCoin(void);
+void FCEUI_VSUniCoin2(void);
+void FCEUI_VSUniService(void);
 
 void FCEUI_FDSInsert(void); //mbg merge 7/17/06 changed to void fn(void) to make it an EMUCMDFN
 //int FCEUI_FDSEject(void);
@@ -271,6 +273,10 @@ void FCEUI_ClearEmulationFrameStepped();
 void FCEUI_SetEmulationPaused(int val);
 ///toggles the paused bit (bit0) for EmulationPaused. caused FCEUD_DebugUpdate() to fire if the emulation pauses
 void FCEUI_ToggleEmulationPause();
+void FCEUI_PauseForDuration(int secs);
+int FCEUI_PauseFramesRemaining();
+void FCEUI_SetNetPlayPause(bool value);
+bool FCEUI_GetNetPlayPause();
 
 //indicates whether input aids should be drawn (such as crosshairs, etc; usually in fullscreen mode)
 bool FCEUD_ShouldDrawInputAids();
@@ -361,7 +367,11 @@ bool FCEU_IsValidUI(EFCEUI ui);
 
 #ifdef __cplusplus
 extern "C"
+{
 #endif
-FILE *FCEUI_UTF8fopen_C(const char *n, const char *m);
+	FILE *FCEUI_UTF8fopen_C(const char *n, const char *m);
+#ifdef __cplusplus
+} // extern C
+#endif
 
 #endif //__DRIVER_H_

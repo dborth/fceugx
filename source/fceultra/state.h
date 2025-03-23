@@ -27,6 +27,7 @@ enum ENUM_SSLOADPARAMS
 
 void FCEUSS_Save(const char *, bool display_message=true);
 bool FCEUSS_Load(const char *, bool display_message=true);
+void FCEUSS_SetLoadCallback( void (*cb)(bool) );
 
  //zlib values: 0 (none) through 9 (max) or -1 (default)
 bool FCEUSS_SaveMS(EMUFILE* outstream, int compressionLevel);
@@ -78,3 +79,16 @@ extern bool backupSavestates;		 //Whether or not to make backups, true by defaul
 bool CheckBackupSaveStateExist();	 //Checks if backupsavestate exists
 
 extern bool compressSavestates;		//Whether or not to compress non-movie savestates (by default, yes)
+
+int FCEU_StateRecorderStart(void);
+int FCEU_StateRecorderStop(void);
+int FCEU_StateRecorderUpdate(void);
+bool FCEU_StateRecorderRunning(void);
+bool FCEU_StateRecorderIsEnabled(void);
+void FCEU_StateRecorderSetEnabled(bool enabled);
+int FCEU_StateRecorderGetMaxSnaps(void);
+int FCEU_StateRecorderGetNumSnapsSaved(void);
+int FCEU_StateRecorderGetStateIndex(void);
+int FCEU_StateRecorderLoadState(int snapIndex);
+int FCEU_StateRecorderLoadPrevState(void);
+int FCEU_StateRecorderLoadNextState(void);

@@ -31,19 +31,17 @@ static u32 WiiFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 {
 	u32 offset = 0;
 
-	if(LocalHWInfo->battery && LocalHWInfo->SaveGame[0])
+	if(LocalHWInfo->battery && !LocalHWInfo->SaveGame.empty())
 	{
-		int x;
-
-		for(x=0;x<4;x++)
+		for (size_t x = 0; x < LocalHWInfo->SaveGame.size(); x++)
 		{
-			if(LocalHWInfo->SaveGame[x])
+			if(LocalHWInfo->SaveGame[x].bufptr)
 			{
 				if(operation == 0) // save to file
-					memcpy(savebuffer+offset, LocalHWInfo->SaveGame[x], LocalHWInfo->SaveGameLen[x]);
+					memcpy(savebuffer+offset, LocalHWInfo->SaveGame[x].bufptr, LocalHWInfo->SaveGame[x].buflen);
 				else // load from file
-					memcpy(LocalHWInfo->SaveGame[x], savebuffer+offset, LocalHWInfo->SaveGameLen[x]);
-				offset += LocalHWInfo->SaveGameLen[x];
+					memcpy(LocalHWInfo->SaveGame[x].bufptr, savebuffer+offset, LocalHWInfo->SaveGame[x].buflen);
+				offset += LocalHWInfo->SaveGame[x].buflen;
 			}
 		}
 	}

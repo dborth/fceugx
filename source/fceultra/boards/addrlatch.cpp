@@ -26,7 +26,8 @@ static uint8 dipswitch;
 static void (*WSync)(void);
 static readfunc defread;
 static uint8 *WRAM = NULL;
-static uint32 WRAMSIZE;
+static uint32 WRAMSIZE=0;
+static uint8 hasBattery = 0;
 
 static DECLFW(LatchWrite) {
 	latche = A;
@@ -77,8 +78,7 @@ static void Latch_Init(CartInfo *info, void (*proc)(void), readfunc func, uint16
 		WRAM = (uint8*)FCEU_gmalloc(WRAMSIZE);
 		SetupCartPRGMapping(0x10, WRAM, WRAMSIZE, 1);
 		if (info->battery) {
-			info->SaveGame[0] = WRAM;
-			info->SaveGameLen[0] = WRAMSIZE;
+			info->addSaveGameBuf( WRAM, WRAMSIZE );
 		}
 		AddExState(WRAM, WRAMSIZE, 0, "WRAM");
 	}
@@ -122,7 +122,7 @@ static void UNL43272Sync(void) {
 	if ((latche & 0x81) == 0x81) {
 		setprg32(0x8000, (latche & 0x38) >> 3);
 	} else
-		FCEU_printf("unrecognized command %04!\n", latche);
+		FCEU_printf("unrecognized command %04x!\n", latche);
 	setchr8(0);
 	setmirror(0);
 }
@@ -181,6 +181,7 @@ void Mapper59_Init(CartInfo *info) {
 }
 
 //------------------ Map 061 ---------------------------
+
 static void M61Sync(void) {
 	if (((latche & 0x10) << 1) ^ (latche & 0x20)) {
 		setprg16(0x8000, ((latche & 0xF) << 1) | (((latche & 0x20) >> 4)));
@@ -195,30 +196,21 @@ void Mapper61_Init(CartInfo *info) {
 	Latch_Init(info, M61Sync, NULL, 0x0000, 0x8000, 0xFFFF, 0);
 }
 
-//------------------ Map 092 ---------------------------
-// Another two-in-one mapper, two Jaleco carts uses similar
-// hardware, but with different wiring.
-// Original code provided by LULU
-// Additionally, PCB contains DSP extra sound chip, used for voice samples (unemulated)
+//------------------ Map 174 ---------------------------
 
-static void M92Sync(void) {
-	uint8 reg = latche & 0xF0;
-	setprg16(0x8000, 0);
-	if (latche >= 0x9000) {
-		switch (reg) {
-		case 0xD0: setprg16(0xc000, latche & 15); break;
-		case 0xE0: setchr8(latche & 15); break;
-		}
+static void M174Sync(void) {
+	if (latche & 0x80) {
+		setprg32(0x8000, (latche >> 5) & 3);
 	} else {
-		switch (reg) {
-		case 0xB0: setprg16(0xc000, latche & 15); break;
-		case 0x70: setchr8(latche & 15); break;
-		}
+		setprg16(0x8000, (latche >> 4) & 7);
+		setprg16(0xC000, (latche >> 4) & 7);
 	}
+	setchr8((latche >> 1) & 7);
+	setmirror((latche & 1) ^ 1);
 }
 
-void Mapper92_Init(CartInfo *info) {
-	Latch_Init(info, M92Sync, NULL, 0x80B0, 0x8000, 0xFFFF, 0);
+void Mapper174_Init(CartInfo *info) {
+	Latch_Init(info, M174Sync, NULL, 0, 0x8000, 0xFFFF, 0);
 }
 
 //------------------ Map 200 ---------------------------
@@ -342,20 +334,17 @@ void Mapper217_Init(CartInfo *info) {
 }
 
 //------------------ Map 227 ---------------------------
-
 static void M227Sync(void) {
 	uint32 S = latche & 1;
 	uint32 p = ((latche >> 2) & 0x1F) + ((latche & 0x100) >> 3);
 	uint32 L = (latche >> 9) & 1;
 
-// ok, according to nesdev wiki (refrenced to the nesdev dumping thread) there is a CHR write protection bit7.
-// however, this bit clearly determined a specific PRG layout for some game but does not meant to have additional
-// functionality. as I see from the menu code, it disables the chr writing before run an actual game.
-// this fix here makes happy both waixing rpgs and multigame menus at once. can't veryfy it on a hardware
-// but if I find some i'll definitly do this.
-
-	if ((latche & 0xF000) == 0xF000)
-		SetupCartCHRMapping(0, CHRptr[0], 0x2000, 0);	
+// Only Waixing appear to have battery flag enabled, while multicarts don't.
+// Multicarts needs CHR-RAM protect in NROM modes, so only apply CHR-RAM protect
+// on non battery-enabled carts.
+	if (!hasBattery && (latche & 0x80) == 0x80)
+		/* CHR-RAM write protect hack, needed for some multicarts */
+		SetupCartCHRMapping(0, CHRptr[0], 0x2000, 0);
 	else
 		SetupCartCHRMapping(0, CHRptr[0], 0x2000, 1);
 
@@ -393,6 +382,7 @@ static void M227Sync(void) {
 
 void Mapper227_Init(CartInfo *info) {
 	Latch_Init(info, M227Sync, NULL, 0x0000, 0x8000, 0xFFFF, 1);
+	hasBattery = info->battery;
 }
 
 //------------------ Map 229 ---------------------------

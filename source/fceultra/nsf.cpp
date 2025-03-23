@@ -32,6 +32,7 @@
 #include "file.h"
 #include "fds.h"
 #include "cart.h"
+#include "ines.h"
 #include "input.h"
 #include "state.h"
 #include "driver.h"
@@ -122,8 +123,6 @@ static uint8 BankCounter; //configuration
 static uint16 PlayAddr; //configuration
 static uint16 InitAddr; //configuration
 static uint16 LoadAddr; //configuration
-
-extern char LoadedRomFName[2048];
 
 NSF_HEADER NSFHeader; //mbg merge 6/29/06 - needs to be global
 
@@ -582,7 +581,7 @@ void DrawNSF(uint8 *XBuf)
 	DrawTextTrans(ClipSidesOffset+XBuf+42*256+4+(((31-strlen((char*)NSFHeader.Copyright))<<2)), 256,NSFHeader.Copyright, kFgColor);
 
 	DrawTextTrans(ClipSidesOffset+XBuf+70*256+4+(((31-strlen("Song:"))<<2)), 256, (uint8*)"Song:", kFgColor);
-	sprintf(snbuf,"<%d/%d>",CurrentSong,NSFHeader.TotalSongs);
+	snprintf(snbuf, sizeof(snbuf), "<%d/%d>",CurrentSong,NSFHeader.TotalSongs);
 	DrawTextTrans(XBuf+82*256+4+(((31-strlen(snbuf))<<2)), 256, (uint8*)snbuf, kFgColor);
 
 	{

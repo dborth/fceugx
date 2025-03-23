@@ -63,6 +63,7 @@ using namespace std;
 
 static void (*SPreSave)(void) = NULL;
 static void (*SPostSave)(void) = NULL;
+static void (*SPostLoad)(bool) = NULL;
 
 static int SaveStateStatus[10];
 static int StateShow;
@@ -84,11 +85,11 @@ bool backupSavestates = true;
 bool compressSavestates = true;  //By default FCEUX compresses savestates when a movie is inactive.
 
 // a temp memory stream. We'll be dumping some data here and then compress
-EMUFILE_MEMORY memory_savestate;
+static EMUFILE_MEMORY memory_savestate;
 // temporary buffer for compressed data of a savestate
-std::vector<uint8> compressed_buf;
+static std::vector<uint8> compressed_buf;
 
-#define SFMDATA_SIZE (64)
+#define SFMDATA_SIZE (128)
 static SFORMAT SFMDATA[SFMDATA_SIZE];
 static int SFEXINDEX;
 
@@ -110,7 +111,7 @@ SFORMAT SFCPU[]={
 	{ &X.Y, 1, "Y\0\0"},
 	{ &X.S, 1, "S\0\0"},
 	{ &X.P, 1, "P\0\0"},
-	{ &X.DB, 1, "DB"},
+	{ &X.DB, 1, "DB\0"},
 	{ &RAM, 0x800 | FCEUSTATE_INDIRECT, "RAM", },
 	{ 0 }
 };
@@ -133,7 +134,7 @@ static int SubWrite(EMUFILE* os, SFORMAT *sf)
 
 	while(sf->v)
 	{
-		if(sf->s==~0)		//Link to another struct
+		if(sf->s==~0u)		//Link to another struct
 		{
 			uint32 tmp;
 
@@ -152,7 +153,7 @@ static int SubWrite(EMUFILE* os, SFORMAT *sf)
 			os->fwrite(sf->desc,4);
 			write32le(sf->s&(~FCEUSTATE_FLAGS),os);
 
-#ifndef LSB_FIRST
+#ifdef FCEU_BIG_ENDIAN
 			if(sf->s&RLSB)
 				FlipByteOrder((uint8*)sf->v,sf->s&(~FCEUSTATE_FLAGS));
 #endif
@@ -163,7 +164,7 @@ static int SubWrite(EMUFILE* os, SFORMAT *sf)
 				os->fwrite((char*)sf->v,sf->s&(~FCEUSTATE_FLAGS));
 
 			//Now restore the original byte order.
-#ifndef LSB_FIRST
+#ifdef FCEU_BIG_ENDIAN
 			if(sf->s&RLSB)
 				FlipByteOrder((uint8*)sf->v,sf->s&(~FCEUSTATE_FLAGS));
 #endif
@@ -191,7 +192,7 @@ static SFORMAT *CheckS(SFORMAT *sf, uint32 tsize, char *desc)
 {
 	while(sf->v)
 	{
-		if(sf->s==~0)		// Link to another SFORMAT structure.
+		if(sf->s==~0u)		// Link to another SFORMAT structure.
 		{
 			SFORMAT *tmp;
 			if((tmp= CheckS((SFORMAT *)sf->v, tsize, desc) ))
@@ -231,7 +232,7 @@ static bool ReadStateChunk(EMUFILE* is, SFORMAT *sf, int size)
 			else
 				is->fread((char *)tmp->v,tmp->s&(~FCEUSTATE_FLAGS));
 
-#ifndef LSB_FIRST
+#ifdef FCEU_BIG_ENDIAN
 			if(tmp->s&RLSB)
 				FlipByteOrder((uint8*)tmp->v,tmp->s&(~FCEUSTATE_FLAGS));
 #endif
@@ -307,13 +308,24 @@ static bool ReadStateChunks(EMUFILE* is, int32 totalsize)
 			// load back buffer
 			{
 				extern uint8 *XBackBuf;
-				if(is->fread((char*)XBackBuf,size) != size)
-					ret = false;
+				//ignore 8 garbage bytes, whose idea was it to write these or even have them there in the first place
+				if(size == 256*256+8)
+				{
+					if(is->fread((char*)XBackBuf,256*256) != 256*256)
+						ret = false;
+					is->fseek(8,SEEK_CUR);
+				}
+				else
+				{
+					if(is->fread((char*)XBackBuf,size) != size)
+						ret = false;
+				}
+
 
 				//MBG TODO - can this be moved to a better place?
 				//does it even make sense, displaying XBuf when its XBackBuf we just loaded?
 #ifdef __WIN_DRIVER__
-				else
+				if(ret)
 				{
 					FCEUD_BlitScreen(XBuf);
 					UpdateFCEUWindow();
@@ -334,7 +346,7 @@ static bool ReadStateChunks(EMUFILE* is, int32 totalsize)
 			if(!warned)
 			{
 				char str [256];
-				sprintf(str, "Warning: Found unknown save chunk of type %d.\nThis could indicate the save state is corrupted\nor made with a different (incompatible) emulator version.", t);
+				snprintf(str, sizeof(str), "Warning: Found unknown save chunk of type %d.\nThis could indicate the save state is corrupted\nor made with a different (incompatible) emulator version.", t);
 				FCEUD_PrintError(str);
 				warned=true;
 			}
@@ -404,7 +416,7 @@ bool FCEUSS_SaveMS(EMUFILE* outstream, int compressionLevel)
 	// save back buffer
 	{
 		extern uint8 *XBackBuf;
-		uint32 size = 256 * 256 + 8;
+		uint32 size = 256 * 256;
 		os->fputc(8);
 		write32le(size, os);
 		os->fwrite((char*)XBackBuf,size);
@@ -416,7 +428,7 @@ bool FCEUSS_SaveMS(EMUFILE* outstream, int compressionLevel)
 	if(SPostSave) SPostSave();
 
 	//save the length of the file
-	int len = memory_savestate.size();
+	size_t len = memory_savestate.size();
 
 	//sanity check: len and totalsize should be the same
 	if(len != totalsize)
@@ -427,7 +439,7 @@ bool FCEUSS_SaveMS(EMUFILE* outstream, int compressionLevel)
 
 	int error = Z_OK;
 	uint8* cbuf = (uint8*)memory_savestate.buf();
-	uLongf comprlen = -1;
+	uLongf comprlen = ~0lu;
 	if(compressionLevel != Z_NO_COMPRESSION && (compressSavestates || FCEUMOV_Mode(MOVIEMODE_TASEDITOR)))
 	{
 		// worst case compression: zlib says "0.1% larger than sourceLen plus 12 bytes"
@@ -446,7 +458,7 @@ bool FCEUSS_SaveMS(EMUFILE* outstream, int compressionLevel)
 
 	//dump it to the destination file
 	outstream->fwrite((char*)header,16);
-	outstream->fwrite((char*)cbuf,comprlen==-1?totalsize:comprlen);
+	outstream->fwrite((char*)cbuf,comprlen==~0lu?totalsize:comprlen);
 
 	return error == Z_OK;
 }
@@ -500,13 +512,12 @@ void FCEUSS_Save(const char *fname, bool display_message)
 		LuaSaveData saveData;
 		CallRegisteredLuaSaveFunctions(CurrentState, saveData);
 
-		char luaSaveFilename [512];
-		strncpy(luaSaveFilename, fn, 512);
-		luaSaveFilename[512-(1+7/*strlen(".luasav")*/)] = '\0';
-		strcat(luaSaveFilename, ".luasav");
+		std::string luaSaveFilename;
+		luaSaveFilename.assign(fn.c_str());
+		luaSaveFilename.append(".luasav");
 		if(saveData.recordList)
 		{
-			FILE* luaSaveFile = fopen(luaSaveFilename, "wb");
+			FILE* luaSaveFile = fopen(luaSaveFilename.c_str(), "wb");
 			if(luaSaveFile)
 			{
 				saveData.ExportRecords(luaSaveFile);
@@ -515,7 +526,7 @@ void FCEUSS_Save(const char *fname, bool display_message)
 		}
 		else
 		{
-			unlink(luaSaveFilename);
+			unlink(luaSaveFilename.c_str());
 		}
 	}
 	#endif
@@ -629,6 +640,11 @@ int FCEUSS_LoadFP_old(EMUFILE* is, ENUM_SSLOADPARAMS params)
 	return(x);
 }
 
+#ifdef __QT_DRIVER__
+// Qt Driver NetPlay state load handler. This is to control state loading
+// during netplay, only hosts can load states and clients can request loads.
+bool NetPlayStateLoadReq(EMUFILE* is);
+#endif
 
 bool FCEUSS_LoadFP(EMUFILE* is, ENUM_SSLOADPARAMS params)
 {
@@ -655,29 +671,37 @@ bool FCEUSS_LoadFP(EMUFILE* is, ENUM_SSLOADPARAMS params)
 		return ret;
 	}
 
-	int totalsize = FCEU_de32lsb(header + 4);
-	int stateversion = FCEU_de32lsb(header + 8);
-	int comprlen = FCEU_de32lsb(header + 12);
+#ifdef __QT_DRIVER__
+	if ( NetPlayStateLoadReq(is) )
+	{
+		return false;
+	}
+#endif
+
+	size_t totalsize  = FCEU_de32lsb(header + 4);
+	int stateversion  = FCEU_de32lsb(header + 8);
+	uint32_t comprlen = FCEU_de32lsb(header + 12);
 
 	// reinit memory_savestate
 	// memory_savestate is global variable which already has its vector of bytes, so no need to allocate memory every time we use save/loadstate
-	if ((int)(memory_savestate.get_vec())->size() < totalsize)
+	if ((memory_savestate.get_vec())->size() < totalsize)
 		(memory_savestate.get_vec())->resize(totalsize);
 	memory_savestate.set_len(totalsize);
 	memory_savestate.unfail();
 	memory_savestate.fseek(0, SEEK_SET);
 
-	if(comprlen != -1)
+	if(comprlen != ~0u)
 	{
 		// the savestate is compressed: read from is to compressed_buf, then decompress from compressed_buf to memory_savestate.vec
-		if ((int)compressed_buf.size() < comprlen) compressed_buf.resize(comprlen);
+		if (compressed_buf.size() < comprlen) compressed_buf.resize(comprlen);
 		is->fread(&compressed_buf[0], comprlen);
 
 		uLongf uncomprlen = totalsize;
 		int error = uncompress(memory_savestate.buf(), &uncomprlen, &compressed_buf[0], comprlen);
 		if(error != Z_OK || uncomprlen != totalsize)
 			return false;	// we dont need to restore the backup here because we havent messed with the emulator state yet
-	} else
+	}
+	else
 	{
 		// the savestate is not compressed: just read from is to memory_savestate.vec
 		is->fread(memory_savestate.buf(), totalsize);
@@ -700,15 +724,25 @@ bool FCEUSS_LoadFP(EMUFILE* is, ENUM_SSLOADPARAMS params)
 		FCEUPPU_LoadState(stateversion);
 		FCEUSND_LoadState(stateversion);
 		x=FCEUMOV_PostLoad();
-	} else if (backup)
+	}
+	else if (backup)
 	{
 		msBackupSavestate.fseek(0,SEEK_SET);
 		FCEUSS_LoadFP(&msBackupSavestate,SSLOADPARAM_NOBACKUP);
 	}
 
+	// Post state load callback that is used to notify driver code that a new state load occurred.
+	if (SPostLoad != NULL)
+	{
+		SPostLoad(x);
+	}
 	return x;
 }
 
+void FCEUSS_SetLoadCallback( void (*cb)(bool) )
+{
+	SPostLoad = cb;
+}
 
 bool FCEUSS_Load(const char *fname, bool display_message)
 {
@@ -759,18 +793,19 @@ bool FCEUSS_Load(const char *fname, bool display_message)
 		{
 			char szFilename[260]={0};
 			splitpath(fname, 0, 0, szFilename, 0);
-            if (display_message)
+			if (display_message)
 			{
-                FCEU_DispMessage("State %s loaded.", 0, szFilename);
-				//FCEU_DispMessage("State %s loaded. Filename: %s", 0, szFilename, fn);
-            }
-		} else
+				FCEU_DispMessage("State %s loaded.", 0, szFilename);
+				//FCEU_DispMessage("State %s loaded. Filename: %s", 0, szFilename, fn.c_str());
+			}
+		}
+		else
 		{
-            if (display_message)
+			if (display_message)
 			{
-                FCEU_DispMessage("State %d loaded.", 0, CurrentState);
-				//FCEU_DispMessage("State %d loaded. Filename: %s", 0, CurrentState, fn);
-            }
+				FCEU_DispMessage("State %d loaded.", 0, CurrentState);
+				//FCEU_DispMessage("State %d loaded. Filename: %s", 0, CurrentState, fn.c_str());
+			}
 			SaveStateStatus[CurrentState] = 1;
 		}
 		delete st;
@@ -780,11 +815,10 @@ bool FCEUSS_Load(const char *fname, bool display_message)
 		{
 			LuaSaveData saveData;
 
-			char luaSaveFilename [512];
-			strncpy(luaSaveFilename, fn, 512);
-			luaSaveFilename[512-(1+7/*strlen(".luasav")*/)] = '\0';
-			strcat(luaSaveFilename, ".luasav");
-			FILE* luaSaveFile = fopen(luaSaveFilename, "rb");
+			std::string luaSaveFilename;
+			luaSaveFilename.assign(fn.c_str());
+			luaSaveFilename.append(".luasav");
+			FILE* luaSaveFile = fopen(luaSaveFilename.c_str(), "rb");
 			if(luaSaveFile)
 			{
 				saveData.ImportRecords(luaSaveFile);
@@ -796,7 +830,7 @@ bool FCEUSS_Load(const char *fname, bool display_message)
 		#endif
 
 #ifdef __WIN_DRIVER__
-	Update_RAM_Search(); // Update_RAM_Watch() is also called.
+		Update_RAM_Search(); // Update_RAM_Watch() is also called.
 #endif
 
 		//Update input display if movie is loaded
@@ -806,7 +840,8 @@ bool FCEUSS_Load(const char *fname, bool display_message)
 		cur_input_display = FCEU_GetJoyJoy(); //Input display should show the last buttons pressed (stored in the savestate)
 
 		return true;
-	} else
+	}
+	else
 	{
 		if(!fname)
 			SaveStateStatus[CurrentState] = 1;
@@ -816,7 +851,6 @@ bool FCEUSS_Load(const char *fname, bool display_message)
 			FCEU_DispMessage("Error(s) reading state %d!", 0, CurrentState);
 			//FCEU_DispMessage("Error(s) reading state %d! Filename: %s", 0, CurrentState, fn);
 		}
-		delete st;
 		return 0;
 	}
 }
@@ -848,7 +882,7 @@ void ResetExState(void (*PreSave)(void), void (*PostSave)(void))
 	for(x=0;x<SFEXINDEX;x++)
 	{
 		if(SFMDATA[x].desc)
-			free( (void*)SFMDATA[x].desc);
+			FCEU_free( (void*)SFMDATA[x].desc);
 	}
 	// adelikat, 3/14/09:  had to add this to clear out the size parameter.  NROM(mapper 0) games were having savestate crashes if loaded after a non NROM game	because the size variable was carrying over and causing savestates to save too much data
 	SFMDATA[0].s = 0;
@@ -1103,7 +1137,7 @@ string GetBackupFileName()
 	string filename;
 	int x;
 
-	filename = strdup(FCEU_MakeFName(FCEUMKF_STATE,CurrentState,0).c_str());	//Generate normal savestate filename
+	filename = FCEU_MakeFName(FCEUMKF_STATE,CurrentState,0);	//Generate normal savestate filename
 	x = filename.find_last_of(".");		//Find last dot
 	filename = filename.substr(0,x);	//Chop off file extension
 	filename.append(".bak.fc0");		//add .bak
@@ -1169,3 +1203,16 @@ void RedoLoadState()
 	redoLS = false;		//Flag that RedoLoadState can not be run again
 	undoLS = true;		//Flag that LoadBackup can be run again
 }
+
+int FCEU_StateRecorderStart(void) { return 0; }
+int FCEU_StateRecorderStop(void) { return 0; }
+int FCEU_StateRecorderUpdate(void) { return 0; }
+bool FCEU_StateRecorderIsEnabled(void) { return false; }
+void FCEU_StateRecorderSetEnabled(bool enabled) { }
+bool FCEU_StateRecorderRunning(void) { return false; }
+int FCEU_StateRecorderGetMaxSnaps(void) { return 0; }
+int FCEU_StateRecorderGetNumSnapsSaved(void) { return 0; }
+int FCEU_StateRecorderLoadState(int snapIndex) { return -1; }
+int FCEU_StateRecorderGetStateIndex(void) { return 0; }
+int FCEU_StateRecorderLoadPrevState(void) { return -1; }
+int FCEU_StateRecorderLoadNextState(void) { return -1; }

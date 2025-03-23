@@ -1,3 +1,9 @@
+#ifdef GEKKO
+int debug_loggingCD = 0;
+int StackAddrBackup;
+void IncrementInstructionsCounters() {}
+#else
+
 /// \file
 /// \brief Implements core debugging facilities
 #include "types.h"
@@ -6,6 +12,7 @@
 #include "cart.h"
 #include "ines.h"
 #include "debug.h"
+#include "debugsymboltable.h"
 #include "driver.h"
 #include "ppu.h"
 
@@ -18,9 +25,22 @@ unsigned int debuggerPageSize = 14;
 int vblankScanLines = 0;	//Used to calculate scanlines 240-261 (vblank)
 int vblankPixel = 0;		//Used to calculate the pixels in vblank
 
-int offsetStringToInt(unsigned int type, const char* offsetBuffer)
+
+struct TraceInstructionCallback
+{
+	void (*func)(uint8 *opcode, int size) = nullptr;
+	TraceInstructionCallback* next = nullptr;
+};
+static TraceInstructionCallback* traceInstructionCB = nullptr;
+
+int offsetStringToInt(unsigned int type, const char* offsetBuffer, bool *conversionOk)
 {
 	int offset = -1;
+
+	if (conversionOk)
+	{
+		*conversionOk = false;
+	}
 
 	if (sscanf(offsetBuffer,"%7X",(unsigned int *)&offset) == EOF)
 	{
@@ -29,18 +49,41 @@ int offsetStringToInt(unsigned int type, const char* offsetBuffer)
 
 	if (type & BT_P)
 	{
+		if (conversionOk)
+		{
+			*conversionOk = (offset >= 0) && (offset < 0x4000);
+		}
 		return offset & 0x3FFF;
 	}
 	else if (type & BT_S)
 	{
+		if (conversionOk)
+		{
+			*conversionOk = (offset >= 0) && (offset < 0x100);
+		}
 		return offset & 0x00FF;
 	}
 	else if (type & BT_R)
 	{
+		if (conversionOk)
+		{
+			*conversionOk = (offset >= 0);
+		}
 		return offset;
 	}
 	else // BT_C
 	{
+		auto sym = debugSymbolTable.getSymbolAtAnyBank(offsetBuffer);
+
+		if (sym)
+		{
+			if (conversionOk)
+			{
+				*conversionOk = true;
+			}
+			return sym->offset() & 0xFFFF;
+		}
+
 		int type = GIT_CART;
 
 		if (GameInfo)
@@ -48,21 +91,26 @@ int offsetStringToInt(unsigned int type, const char* offsetBuffer)
 			type = GameInfo->type;
 		}
 		if (type == GIT_NSF) { //NSF Breakpoint keywords
-			if (strcmp(offsetBuffer,"LOAD") == 0) return (NSFHeader.LoadAddressLow | (NSFHeader.LoadAddressHigh<<8));
-			if (strcmp(offsetBuffer,"INIT") == 0) return (NSFHeader.InitAddressLow | (NSFHeader.InitAddressHigh<<8));
-			if (strcmp(offsetBuffer,"PLAY") == 0) return (NSFHeader.PlayAddressLow | (NSFHeader.PlayAddressHigh<<8));
+			if (strcmp(offsetBuffer,"LOAD") == 0) offset = (NSFHeader.LoadAddressLow | (NSFHeader.LoadAddressHigh<<8));
+			else if (strcmp(offsetBuffer,"INIT") == 0) offset = (NSFHeader.InitAddressLow | (NSFHeader.InitAddressHigh<<8));
+			else if (strcmp(offsetBuffer,"PLAY") == 0) offset = (NSFHeader.PlayAddressLow | (NSFHeader.PlayAddressHigh<<8));
 		}
 		else if (type == GIT_FDS) { //FDS Breakpoint keywords
-			if (strcmp(offsetBuffer,"NMI1") == 0) return (GetMem(0xDFF6) | (GetMem(0xDFF7)<<8));
-			if (strcmp(offsetBuffer,"NMI2") == 0) return (GetMem(0xDFF8) | (GetMem(0xDFF9)<<8));
-			if (strcmp(offsetBuffer,"NMI3") == 0) return (GetMem(0xDFFA) | (GetMem(0xDFFB)<<8));
-			if (strcmp(offsetBuffer,"RST") == 0) return (GetMem(0xDFFC) | (GetMem(0xDFFD)<<8));
-			if ((strcmp(offsetBuffer,"IRQ") == 0) || (strcmp(offsetBuffer,"BRK") == 0)) return (GetMem(0xDFFE) | (GetMem(0xDFFF)<<8));
+			if (strcmp(offsetBuffer,"NMI1") == 0) offset = (GetMem(0xDFF6) | (GetMem(0xDFF7)<<8));
+			else if (strcmp(offsetBuffer,"NMI2") == 0) offset = (GetMem(0xDFF8) | (GetMem(0xDFF9)<<8));
+			else if (strcmp(offsetBuffer,"NMI3") == 0) offset = (GetMem(0xDFFA) | (GetMem(0xDFFB)<<8));
+			else if (strcmp(offsetBuffer,"RST") == 0) offset = (GetMem(0xDFFC) | (GetMem(0xDFFD)<<8));
+			else if ((strcmp(offsetBuffer,"IRQ") == 0) || (strcmp(offsetBuffer,"BRK") == 0)) offset = (GetMem(0xDFFE) | (GetMem(0xDFFF)<<8));
 		}
 		else { //NES Breakpoint keywords
-			if ((strcmp(offsetBuffer,"NMI") == 0) || (strcmp(offsetBuffer,"VBL") == 0)) return (GetMem(0xFFFA) | (GetMem(0xFFFB)<<8));
-			if (strcmp(offsetBuffer,"RST") == 0) return (GetMem(0xFFFC) | (GetMem(0xFFFD)<<8));
-			if ((strcmp(offsetBuffer,"IRQ") == 0) || (strcmp(offsetBuffer,"BRK") == 0)) return (GetMem(0xFFFE) | (GetMem(0xFFFF)<<8));
+			if ((strcmp(offsetBuffer,"NMI") == 0) || (strcmp(offsetBuffer,"VBL") == 0)) offset = (GetMem(0xFFFA) | (GetMem(0xFFFB)<<8));
+			else if (strcmp(offsetBuffer,"RST") == 0) offset = (GetMem(0xFFFC) | (GetMem(0xFFFD)<<8));
+			else if ((strcmp(offsetBuffer,"IRQ") == 0) || (strcmp(offsetBuffer,"BRK") == 0)) offset = (GetMem(0xFFFE) | (GetMem(0xFFFF)<<8));
+		}
+
+		if (conversionOk)
+		{
+			*conversionOk = (offset >= 0) && (offset < 0x10000);
 		}
 	}
 
@@ -131,7 +179,7 @@ int checkCondition(const char* condition, int num)
 		// Remove the old breakpoint condition before adding a new condition.
 		if (watchpoint[num].cond)
 		{
-			freeTree(watchpoint[num].cond);
+			delete watchpoint[num].cond;
 			free(watchpoint[num].condText);
 			watchpoint[num].cond = 0;
 			watchpoint[num].condText = 0;
@@ -145,8 +193,8 @@ int checkCondition(const char* condition, int num)
 		{
 			watchpoint[num].cond = c;
 			watchpoint[num].condText = (char*)malloc(strlen(condition) + 1);
-            if (!watchpoint[num].condText)
-                return 0;
+			if (!watchpoint[num].condText)
+				return 0;
 			strcpy(watchpoint[num].condText, condition);
 		}
 		else
@@ -161,7 +209,7 @@ int checkCondition(const char* condition, int num)
 		// Remove the old breakpoint condition
 		if (watchpoint[num].cond)
 		{
-			freeTree(watchpoint[num].cond);
+			delete watchpoint[num].cond;
 			free(watchpoint[num].condText);
 			watchpoint[num].cond = 0;
 			watchpoint[num].condText = 0;
@@ -258,7 +306,7 @@ int getBank(int offs)
 	//Anything over FFFFF will kill it.
 
 	//GetNesFileAddress doesn't work well with Unif files
-	int addr = GetNesFileAddress(offs)-16;
+	int addr = GetNesFileAddress(offs)-NES_HEADER_SIZE;
 
 	if (GameInfo && GameInfo->type==GIT_NSF)
 		return addr != -1 ? addr / 0x1000 : -1;
@@ -270,12 +318,12 @@ int GetNesFileAddress(int A){
 	if((A < 0x6000) || (A > 0xFFFF))return -1;
 	result = &Page[A>>11][A]-PRGptr[0];
 	if((result > (int)(PRGsize[0])) || (result < 0))return -1;
-	else return result+16; //16 bytes for the header remember
+	else return result+NES_HEADER_SIZE; //16 bytes for the header remember
 }
 
 int GetRomAddress(int A){
 	int i;
-	uint8 *p = GetNesPRGPointer(A-=16);
+	uint8 *p = GetNesPRGPointer(A-=NES_HEADER_SIZE);
 	for(i = 16;i < 32;i++){
 		if((&Page[i][i<<11] <= p) && (&Page[i][(i+1)<<11] > p))break;
 	}
@@ -512,7 +560,7 @@ void LogCDData(uint8 *opcode, uint16 A, int size)
 		case 4: memop = 0x20; break;
 	}
 
-	if ((j = GetPRGAddress(A)) != -1)
+	if (((j = GetPRGAddress(A)) != -1) && (opcode[0] != 0x4C) && (opcode[0] != 0x6C))
 	{
 		if (opwrite[opcode[0]] == 0)
 		{
@@ -527,7 +575,12 @@ void LogCDData(uint8 *opcode, uint16 A, int size)
 				newDataHit = true;
 			}
 		}
-		else
+		// Unclear why the write destination's access types gets reset for FDS...
+		// See:
+		// - https://github.com/TASEmulators/fceux/commit/a4fa6225a04b5ab8d3dfca3fc9abd7190bceec85
+		// - https://github.com/TASEmulators/fceux/commit/b10b6254c3d5c9519a85cb4382cdb22846d2e394
+		// - https://github.com/TASEmulators/fceux/commit/67942accc72149ae028d58f36419b64ea8651db9?diff=unified&w=1
+		else if(GameInfo && GameInfo->type == GIT_FDS)
 		{
 			if (cdloggerdata[j] & 1)
 			{
@@ -642,7 +695,8 @@ uint16 StackNextIgnorePC = 0xFFFF;
 
 ///fires a breakpoint
 static void breakpoint(uint8 *opcode, uint16 A, int size) {
-	int i, j, romAddrPC;
+	int i, romAddrPC;
+	unsigned int j;
 	uint8 brk_type;
 	uint8 stackop=0;
 	uint8 stackopstartaddr=0,stackopendaddr=0;
@@ -783,7 +837,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 					{
 						if (watchpoint[i].flags & BT_R)
 						{
-							if ( (watchpoint[i].flags & WP_X) && (watchpoint[i].address == romAddrPC) )
+							if ( (watchpoint[i].flags & WP_X) && (watchpoint[i].address == static_cast<unsigned int>(romAddrPC)) )
 							{
 								BREAKHIT(i);
 							}
@@ -814,7 +868,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 						// TXS and TSX only deal with the pointer.
 						if (watchpoint[i].flags & stackop)
 						{
-							for (j = (stackopstartaddr|0x0100); j <= (stackopendaddr|0x0100); j++)
+							for (j = (stackopstartaddr|0x0100); j <= (static_cast<unsigned int>(stackopendaddr)|0x0100); j++)
 							{
 								if (watchpoint[i].endaddress)
 								{
@@ -840,7 +894,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 							// Pushes to stack
 							if (watchpoint[i].flags & WP_W)
 							{
-								for (j = (X.S|0x0100); j < (StackAddrBackup|0x0100); j++)
+								for (j = (X.S|0x0100); j < (static_cast<unsigned int>(StackAddrBackup)|0x0100); j++)
 								{
 									if (watchpoint[i].endaddress)
 									{
@@ -858,7 +912,7 @@ static void breakpoint(uint8 *opcode, uint16 A, int size) {
 							// Pulls from stack
 							if (watchpoint[i].flags & WP_R)
 							{
-								for (j = (StackAddrBackup|0x0100); j < (X.S|0x0100); j++)
+								for (j = (StackAddrBackup|0x0100); j < (static_cast<unsigned int>(X.S)|0x0100); j++)
 								{
 									if (watchpoint[i].endaddress)
 									{
@@ -954,5 +1008,83 @@ void DebugCycle()
 	if(debug_loggingCD)
 		LogCDData(opcode, A, size);
 
+#ifdef __WIN_DRIVER__
 	FCEUD_TraceInstruction(opcode, size);
+#else
+	// Use callback pointer that can be null checked, this saves on the overhead
+	// of calling a function for every instruction when we aren't tracing.
+	if (traceInstructionCB != nullptr)
+	{
+		auto* cb = traceInstructionCB;
+		while (cb != nullptr)
+		{
+			cb->func(opcode, size);
+			cb = cb->next;
+		}
+	}
+#endif
 }
+
+void* FCEUI_TraceInstructionRegister( void (*func)(uint8*,int) )
+{
+	TraceInstructionCallback* cb = nullptr;
+
+	if (traceInstructionCB == nullptr)
+	{
+		cb = traceInstructionCB = new TraceInstructionCallback();
+		cb->func = func;
+	}
+	else
+	{
+		cb = traceInstructionCB;
+
+		while (cb != nullptr)
+		{
+			if (cb->func == func)
+			{
+				// This function has already been registered, don't double add.
+				return nullptr;
+			}
+			if (cb->next == nullptr)
+			{
+				auto* newCB = new TraceInstructionCallback();
+				newCB->func = func;
+				cb->next = newCB;
+				return newCB;
+			}
+			cb = cb->next;
+		}
+	}
+	return cb;
+}
+
+bool FCEUI_TraceInstructionUnregisterHandle( void* handle )
+{
+	TraceInstructionCallback* cb, *cb_prev, *cb_handle;
+
+	cb_handle = static_cast<TraceInstructionCallback*>(handle);
+	cb_prev = nullptr;
+	cb = traceInstructionCB;
+
+	while (cb != nullptr)
+	{
+		if (cb == cb_handle)
+		{	// Match we are going to remove from list and delete
+			if (cb_prev != nullptr)
+			{
+				cb_prev = cb->next;
+			}
+			else
+			{
+				traceInstructionCB = cb->next;
+			}
+			delete cb;
+			return true;
+		}
+		cb_prev = cb;
+		cb = cb->next;
+	}
+	return false;
+}
+
+#endif

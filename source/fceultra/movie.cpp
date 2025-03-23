@@ -110,7 +110,7 @@ SFORMAT FCEUMOV_STATEINFO[]={
 	{ 0 }
 };
 
-char curMovieFilename[512] = {0};
+std::string curMovieFilename;
 MovieData currMovieData;
 MovieData defaultMovieData;
 int currRerecordCount; // Keep the global value
@@ -306,7 +306,7 @@ void MovieRecord::dumpJoy(EMUFILE* os, uint8 joystate)
 
 void MovieRecord::parseJoy(EMUFILE* is, uint8& joystate)
 {
-	char buf[8];
+	char buf[8] = {0};
 	is->fread(buf,8);
 	joystate = 0;
 	for(int i=0;i<8;i++)
@@ -468,6 +468,7 @@ MovieData::MovieData()
 	, rerecordCount(0)
 	, binaryFlag(false)
 	, loadFrameCount(-1)
+	, fourscore(false)
 	, microphone(false)
 	, RAMInitOption(0)
 	, RAMInitSeed(0)
@@ -751,7 +752,7 @@ bool LoadFM2(MovieData& movieData, EMUFILE* fp, int size, bool stopAfterHeader)
 		{
 			LoadFM2_binarychunk(movieData, fp, size);
 			return true;
-		} else if (isnewline && movieData.loadFrameCount == movieData.records.size())
+		} else if (isnewline && static_cast<size_t>(movieData.loadFrameCount) == movieData.records.size())
 			// exit prematurely if loaded the specified amound of records
 			return true;
 		switch(state)
@@ -865,7 +866,10 @@ static EMUFILE *openRecordingMovie(const char* fname)
 		FCEU_PrintError("Error opening movie output file: %s", fname);
 		return NULL;
 	}
-	strcpy(curMovieFilename, fname);
+	if ( fname != curMovieFilename.c_str() )
+	{
+		curMovieFilename.assign(fname);
+	}
 
 	return osRecordingMovie;
 }
@@ -885,7 +889,7 @@ static void RedumpWholeMovieFile(bool justToggledRecording = false)
 	bool recording = (movieMode == MOVIEMODE_RECORD);
 	assert((NULL != osRecordingMovie) == (recording != justToggledRecording) && "osRecordingMovie should be consistent with movie mode!");
 
-	if (NULL == openRecordingMovie(curMovieFilename))
+	if (NULL == openRecordingMovie(curMovieFilename.c_str()))
 		return;
 
 	currMovieData.dump(osRecordingMovie, false/*currMovieData.binaryFlag*/, recording);
@@ -933,7 +937,7 @@ static void OnMovieClosed()
 {
 	assert(movieMode == MOVIEMODE_INACTIVE);
 
-	curMovieFilename[0] = 0;			//No longer a current movie filename
+	curMovieFilename.clear();			//No longer a current movie filename
 	freshMovie = false;					//No longer a fresh movie loaded
 	if (bindSavestate) AutoSS = false;	//If bind movies to savestates is true, then there is no longer a valid auto-save to load
 
@@ -1039,23 +1043,23 @@ bool MovieData::loadSaveramFrom(std::vector<uint8>* buf)
 		return false;
 	}
 
-	for(int i=0;i<4;i++)
+	for (size_t i=0;i<currCartInfo->SaveGame.size();i++)
 	{
 		int len = ms.read32le();
 
-		if(!currCartInfo->SaveGame[i] && len!=0)
+		if( (currCartInfo->SaveGame[i].bufptr == nullptr) && (len!=0) )
 		{
 			FCEU_PrintError("movie battery load mismatch 2");
 			return false;
 		}
 
-		if(currCartInfo->SaveGameLen[i] != len)
+		if(currCartInfo->SaveGame[i].buflen != static_cast<size_t>(len))
 		{
 			FCEU_PrintError("movie battery load mismatch 3");
 			return false;
 		}
 
-		ms.fread(currCartInfo->SaveGame[i], len);
+		ms.fread(currCartInfo->SaveGame[i].bufptr, len);
 	}
 
 	return true;
@@ -1066,16 +1070,15 @@ void MovieData::dumpSaveramTo(std::vector<uint8>* buf, int compressionLevel)
 	EMUFILE_MEMORY ms(buf);
 
 	ms.write32le(currCartInfo->battery?1:0);
-	for(int i=0;i<4;i++)
+	for(size_t i=0;i<currCartInfo->SaveGame.size();i++)
 	{
-		if(!currCartInfo->SaveGame[i])
+		if (!currCartInfo->SaveGame[i].bufptr)
 		{
 			ms.write32le((u32)0);
 			continue;
 		}
-
-		ms.write32le(currCartInfo->SaveGameLen[i]);
-		ms.fwrite(currCartInfo->SaveGame[i], currCartInfo->SaveGameLen[i]);
+		ms.write32le( static_cast<uint32>(currCartInfo->SaveGame[i].buflen) );
+		ms.fwrite(currCartInfo->SaveGame[i].bufptr, currCartInfo->SaveGame[i].buflen);
 	}
 
 }
@@ -1098,7 +1101,7 @@ bool FCEUI_LoadMovie(const char *fname, bool _read_only, int _pauseframe)
 
 	currMovieData = MovieData();
 
-	strcpy(curMovieFilename, fname);
+	curMovieFilename.assign(fname);
 	FCEUFILE *fp = FCEU_fopen(fname,0,"rb",0);
 	if (!fp) return false;
 	if(fp->isArchive() && !_read_only) {
@@ -1279,7 +1282,11 @@ void FCEUMOV_AddInputState()
 		if (mr->command_fds_select())
 			FCEU_FDSSelect();
 		if (mr->command_vs_insertcoin())
-			FCEU_VSUniCoin();
+			FCEU_VSUniCoin(0);
+		if (mr->command_vs_insertcoin2())
+			FCEU_VSUniCoin(1);
+		if (mr->command_vs_service())
+			FCEU_VSUniService();
 		_currCommand = 0;
 	} else
 #endif
@@ -1307,14 +1314,18 @@ void FCEUMOV_AddInputState()
 			if(mr->command_fds_select())
 				FCEU_FDSSelect();
 			if (mr->command_vs_insertcoin())
-				FCEU_VSUniCoin();
+				FCEU_VSUniCoin(0);
+			if (mr->command_vs_insertcoin2())
+				FCEU_VSUniCoin(1);
+			if (mr->command_vs_service())
+				FCEU_VSUniService();
 
 			joyports[0].load(mr);
 			joyports[1].load(mr);
 		}
 
 		//if we are on the last frame, then pause the emulator if the player requested it
-		if (currFrameCounter == currMovieData.records.size()-1)
+		if ( static_cast<size_t>(currFrameCounter) == currMovieData.records.size()-1)
 		{
 			if(FCEUD_PauseAfterPlayback())
 			{
@@ -1385,6 +1396,8 @@ void FCEUMOV_AddCommand(int cmd)
 		case FCEUNPCMD_FDSINSERT: cmd = MOVIECMD_FDS_INSERT; break;
 		case FCEUNPCMD_FDSSELECT: cmd = MOVIECMD_FDS_SELECT; break;
 		case FCEUNPCMD_VSUNICOIN: cmd = MOVIECMD_VS_INSERTCOIN; break;
+		case FCEUNPCMD_VSUNICOIN2: cmd = MOVIECMD_VS_INSERTCOIN2; break;
+		case FCEUNPCMD_VSUNISERVICE: cmd = MOVIECMD_VS_SERVICE; break;
 		// all other netplay commands (e.g. FCEUNPCMD_VSUNIDIP0) are not supported by movie recorder for now
 		default: return;
 	}
@@ -1404,22 +1417,22 @@ void FCEU_DrawMovies(uint8 *XBuf)
 		
 		if (movieMode == MOVIEMODE_PLAY)
 		{
-			sprintf(counterbuf, "%d/%d%s%s", currFrameCounter, (int)currMovieData.records.size(), GetMovieRecordModeStr(), GetMovieReadOnlyStr());
+			snprintf(counterbuf, sizeof(counterbuf), "%d/%d%s%s", currFrameCounter, (int)currMovieData.records.size(), GetMovieRecordModeStr(), GetMovieReadOnlyStr());
 		} else if (movieMode == MOVIEMODE_RECORD)
 		{
 			if (movieRecordMode == MOVIE_RECORD_MODE_TRUNCATE)
-				sprintf(counterbuf, "%d%s%s (record)", currFrameCounter, GetMovieRecordModeStr(), GetMovieReadOnlyStr()); // nearly classic
+				snprintf(counterbuf, sizeof(counterbuf), "%d%s%s (record)", currFrameCounter, GetMovieRecordModeStr(), GetMovieReadOnlyStr()); // nearly classic
 			else
-				sprintf(counterbuf, "%d/%d%s%s (record)", currFrameCounter, (int)currMovieData.records.size(), GetMovieRecordModeStr(), GetMovieReadOnlyStr());
+				snprintf(counterbuf, sizeof(counterbuf), "%d/%d%s%s (record)", currFrameCounter, (int)currMovieData.records.size(), GetMovieRecordModeStr(), GetMovieReadOnlyStr());
 		} else if (movieMode == MOVIEMODE_FINISHED)
 		{
-			sprintf(counterbuf,"%d/%d%s%s (finished)",currFrameCounter,(int)currMovieData.records.size(), GetMovieRecordModeStr(), GetMovieReadOnlyStr());
+			snprintf(counterbuf, sizeof(counterbuf), "%d/%d%s%s (finished)",currFrameCounter,(int)currMovieData.records.size(), GetMovieRecordModeStr(), GetMovieReadOnlyStr());
 			color = 0x17; //Show red to get attention
 		} else if (movieMode == MOVIEMODE_TASEDITOR)
 		{
-			sprintf(counterbuf,"%d",currFrameCounter);
+			snprintf(counterbuf, sizeof(counterbuf),"%d",currFrameCounter);
 		} else
-			sprintf(counterbuf,"%d (no movie)",currFrameCounter);
+			snprintf(counterbuf, sizeof(counterbuf),"%d (no movie)",currFrameCounter);
 
 		if (counterbuf[0])
 			DrawTextTrans(ClipSidesOffset+XBuf+FCEU_TextScanlineOffsetFromBottom(30)+1, 256, (uint8*)counterbuf, color+0x80);
@@ -1427,7 +1440,7 @@ void FCEU_DrawMovies(uint8 *XBuf)
 	if (rerecord_display && movieMode != MOVIEMODE_INACTIVE)
 	{
 		char counterbuf[32] = {0};
-		sprintf(counterbuf, "%d", currMovieData.rerecordCount);
+		snprintf(counterbuf, sizeof(counterbuf), "%d", currMovieData.rerecordCount);
 
 		if (counterbuf[0])
 			DrawTextTrans(ClipSidesOffset+XBuf+FCEU_TextScanlineOffsetFromBottom(50)+1, 256, (uint8*)counterbuf, 0x28+0x80);
@@ -1440,7 +1453,7 @@ void FCEU_DrawLagCounter(uint8 *XBuf)
 	{
 		// If currently lagging - display red, else display green
 		uint8 color = (lagFlag) ? (0x16+0x80) : (0x2A+0x80);
-		sprintf(lagcounterbuf, "%d", lagCounter);
+		snprintf(lagcounterbuf, sizeof(lagcounterbuf), "%d", lagCounter);
 		if(lagcounterbuf[0])
 			DrawTextTrans(ClipSidesOffset + XBuf + FCEU_TextScanlineOffsetFromBottom(40) + 1, 256, (uint8*)lagcounterbuf, color);
 	}
@@ -1474,7 +1487,7 @@ int CheckTimelines(MovieData& stateMovie, MovieData& currMovie)
 }
 
 
-static bool load_successful;
+static bool load_successful = false;
 
 bool FCEUMOV_ReadState(EMUFILE* is, uint32 size)
 {
@@ -1493,7 +1506,7 @@ bool FCEUMOV_ReadState(EMUFILE* is, uint32 size)
 #endif
 			movie_readonly = true;
 		}
-		if (FCEU_isFileInArchive(curMovieFilename))
+		if (FCEU_isFileInArchive(curMovieFilename.c_str()))
 		{
 			//a little rule: cant load states in read+write mode with a movie from an archive.
 			//so we are going to switch it to readonly mode in that case
@@ -1628,10 +1641,10 @@ bool FCEUMOV_ReadState(EMUFILE* is, uint32 size)
 					//TODO: turn frame counter to red to get attention
 					if (!backupSavestates)	//If backups are disabled we can just resume normally since we can't restore so stop movie and inform user
 					{
-						FCEU_PrintError("Error: Savestate taken from a frame (%d) after the final frame in the savestated movie (%d) cannot be verified against current movie (%d). This is not permitted.\nUnable to restore backup, movie playback stopped.", currFrameCounter, tempMovieData.records.size() - 1, currMovieData.records.size() - 1);
+						FCEU_PrintError("Error: Savestate taken from a frame (%d) after the final frame in the savestated movie (%zi) cannot be verified against current movie (%zi). This is not permitted.\nUnable to restore backup, movie playback stopped.", currFrameCounter, tempMovieData.records.size() - 1, currMovieData.records.size() - 1);
 						FCEUI_StopMovie();
 					} else
-						FCEU_PrintError("Savestate taken from a frame (%d) after the final frame in the savestated movie (%d) cannot be verified against current movie (%d). This is not permitted.", currFrameCounter, tempMovieData.records.size() - 1, currMovieData.records.size() - 1);
+						FCEU_PrintError("Savestate taken from a frame (%d) after the final frame in the savestated movie (%zi) cannot be verified against current movie (%zi). This is not permitted.", currFrameCounter, tempMovieData.records.size() - 1, currMovieData.records.size() - 1);
 					return false;
 				}
 			}
@@ -1691,18 +1704,20 @@ bool FCEUMOV_PostLoad(void)
 
 void FCEUMOV_IncrementRerecordCount()
 {
+	bool skip = false;
 #ifdef _S9XLUA_H
-	if(!FCEU_LuaRerecordCountSkip())
+	skip = skip || FCEU_LuaRerecordCountSkip();
+#endif
+#ifdef __FCEU_QSCRIPT_ENABLE__
+	extern bool FCEU_JSRerecordCountSkip();
+	skip = skip || FCEU_JSRerecordCountSkip();
+#endif
+
+	if(!skip)
 		if (movieMode != MOVIEMODE_TASEDITOR)
 			currRerecordCount++;
 		else
 			currMovieData.rerecordCount++;
-#else
-	if (movieMode != MOVIEMODE_TASEDITOR)
-		currRerecordCount++;
-	else
-		currMovieData.rerecordCount++;
-#endif
 	if (movieMode != MOVIEMODE_TASEDITOR)
 		currMovieData.rerecordCount = currRerecordCount;
 }
@@ -1787,7 +1802,7 @@ void FCEUI_MovieToggleReadOnly()
 		strcpy(message, "Movie is now Read+Write");
 	
 	strcat(message, GetMovieModeStr());
-	FCEU_DispMessage(message,0);
+	FCEU_DispMessage("%s",0,message);
 }
 
 void FCEUI_MovieToggleRecording()
@@ -1831,7 +1846,7 @@ void FCEUI_MovieToggleRecording()
 
 	strcat(message, GetMovieModeStr());
 
-	FCEU_DispMessage(message, 0);
+	FCEU_DispMessage("%s",0,message);
 }
 
 void FCEUI_MovieInsertFrame()
@@ -1858,7 +1873,7 @@ void FCEUI_MovieInsertFrame()
 		strcat(message, GetMovieModeStr());
 	}
 
-	FCEU_DispMessage(message, 0);
+	FCEU_DispMessage("%s",0,message);
 }
 
 void FCEUI_MovieDeleteFrame()
@@ -1896,7 +1911,7 @@ void FCEUI_MovieDeleteFrame()
 		strcat(message, GetMovieModeStr());
 	}
 
-	FCEU_DispMessage(message, 0);
+	FCEU_DispMessage("%s",0,message);
 }
 
 void FCEUI_MovieTruncate()
@@ -1934,7 +1949,7 @@ void FCEUI_MovieTruncate()
 		strcat(message, GetMovieModeStr());
 	}
 
-	FCEU_DispMessage(message, 0);
+	FCEU_DispMessage("%s",0,message);
 }
 
 void FCEUI_MovieNextRecordMode()
@@ -2004,7 +2019,7 @@ void FCEUI_MoviePlayFromBeginning(void)
 #endif
 }
 
-string FCEUI_GetMovieName(void)
+std::string FCEUI_GetMovieName(void)
 {
 	return curMovieFilename;
 }
@@ -2098,9 +2113,9 @@ void FCEUI_CreateMovieFile(std::string fn)
 void FCEUI_MakeBackupMovie(bool dispMessage)
 {
 	//This function generates backup movie files
-	string currentFn;					//Current movie fillename
-	string backupFn;					//Target backup filename
-	string tempFn;						//temp used in back filename creation
+	std::string currentFn;					//Current movie fillename
+	std::string backupFn;					//Target backup filename
+	std::string tempFn;						//temp used in back filename creation
 	stringstream stream;
 	int x;								//Temp variable for string manip
 	bool exist = false;					//Used to test if filename exists

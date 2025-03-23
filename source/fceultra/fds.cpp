@@ -29,6 +29,7 @@
 #include "state.h"
 #include "file.h"
 #include "cart.h"
+#include "ines.h"
 #include "netplay.h"
 #include "driver.h"
 #include "movie.h"
@@ -578,21 +579,30 @@ void FDSSoundReset(void) {
 static DECLFW(FDSWrite) {
 	switch (A) {
 	case 0x4020:
-		X6502_IRQEnd(FCEU_IQEXT);
 		IRQLatch &= 0xFF00;
 		IRQLatch |= V;
 		break;
 	case 0x4021:
-		X6502_IRQEnd(FCEU_IQEXT);
 		IRQLatch &= 0xFF;
 		IRQLatch |= V << 8;
 		break;
 	case 0x4022:
-		X6502_IRQEnd(FCEU_IQEXT);
-		IRQCount = IRQLatch;
-		IRQa = V & 3;
+		if (FDSRegs[3] & 1) {
+			IRQa = V & 0x03;
+			if (IRQa & IRQ_Enabled) {
+				IRQCount = IRQLatch;
+			} else {
+				X6502_IRQEnd(FCEU_IQEXT);
+			}
+		}
 		break;
-	case 0x4023: break;
+	case 0x4023:
+		if (!(V & 0x01)) {
+			IRQa &= ~IRQ_Enabled;
+			X6502_IRQEnd(FCEU_IQEXT);
+			X6502_IRQEnd(FCEU_IQEXT2);
+		}
+		break;
 	case 0x4024:
 		if (mapperFDS_diskinsert && ~mapperFDS_control & 0x04) {
 
@@ -859,8 +869,8 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 	FDSSoundStateAdd();
 
 	for (x = 0; x < TotalSides; x++) {
-		char temp[5];
-		sprintf(temp, "DDT%d", x);
+		char temp[8];
+		snprintf(temp, sizeof(temp), "DDT%d", x);
 		AddExState(diskdata[x], 65500, 0, temp);
 	}
 

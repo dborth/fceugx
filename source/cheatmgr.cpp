@@ -74,29 +74,30 @@ static int LoadCheats (int length)
 
 		if(doc)
 		{
-			char *neo=&tbuf[4+2+2+1+1+1];
-			if(sscanf(tbuf,"%04x%*[:]%02x%*[:]%02x",&addr,&val,&compare)!=3)
+			char *neo = &tbuf[4+2+2+1+1+1];
+			if(sscanf(tbuf, "%04x%*[:]%02x%*[:]%02x", &addr, &val, &compare) != 3)
 				continue;
 			namebuf=(char *)malloc(strlen(neo)+1);
-			strcpy(namebuf,neo);
+			strcpy(namebuf, neo);
 		}
 		else
 		{
-			char *neo=&tbuf[4+2+1+1];
-			if(sscanf(tbuf,"%04x%*[:]%02x",&addr,&val)!=2)
+			char *neo = &tbuf[4+2+1+1];
+			if(sscanf(tbuf, "%04x%*[:]%02x", &addr, &val) != 2)
 				continue;
 			namebuf=(char *)malloc(strlen(neo)+1);
-			strcpy(namebuf,neo);
+			strcpy(namebuf, neo);
 		}
 
-		for(x=0;x<(int)strlen(namebuf);x++)
+		for(x = 0; x < (int)strlen(namebuf); x++)
 		{
-			if(namebuf[x]==10 || namebuf[x]==13)
+			if(namebuf[x] == 10 || namebuf[x] == 13)
 			{
-				namebuf[x]=0;
+				namebuf[x] = 0;
 				break;
 			}
-			else if(namebuf[x]<0x20) namebuf[x]=' ';
+			else if(namebuf[x] > 0x00 && namebuf[x] < 0x20)
+				namebuf[x] = 0x20;
 		}
 
 		AddCheatEntry(namebuf,addr,val,doc?compare:-1,status,type);

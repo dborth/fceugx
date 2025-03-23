@@ -33,16 +33,24 @@ extern int disableAutoLSCheats;
 int FCEU_DisableAllCheats(void);
 int FCEU_DeleteAllCheats(void);
 
-typedef struct {
+void FCEU_SetCheatChangeEventCallback( void (*func)(void*) = nullptr, void* userData = nullptr );
+
+struct CHEATF_SUBFAST
+{
 	uint16 addr;
 	uint8 val;
 	int compare;
 	readfunc PrevRead;
-} CHEATF_SUBFAST;
+
+	CHEATF_SUBFAST(void)
+	{
+		addr = 0; val = 0; compare = 0; PrevRead = nullptr;
+	}
+};
 
 struct CHEATF {
 	struct CHEATF *next;
-	char *name;
+	std::string name;
 	uint16 addr;
 	uint8 val;
 	int compare;	/* -1 for no compare. */

@@ -16,6 +16,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * The Moero!! Pro Yakyuu series have an ADPCM chip with internal ROM,
+ * used for voice samples (not dumped, so emulation isn't possible)
  */
 
 #include "mapinc.h"
@@ -24,7 +27,7 @@ static uint8 preg[4], creg[8];
 static uint8 IRQa, mirr;
 static int32 IRQCount, IRQLatch;
 static uint8 *WRAM = NULL;
-static uint32 WRAMSIZE;
+static uint32 WRAMSIZE=0;
 
 static SFORMAT StateRegs[] =
 {
@@ -125,8 +128,7 @@ void Mapper18_Init(CartInfo *info) {
 	SetupCartPRGMapping(0x10, WRAM, WRAMSIZE, 1);
 	AddExState(WRAM, WRAMSIZE, 0, "WRAM");
 	if (info->battery) {
-		info->SaveGame[0] = WRAM;
-		info->SaveGameLen[0] = WRAMSIZE;
+		info->addSaveGameBuf( WRAM, WRAMSIZE );
 	}
 
 	AddExState(&StateRegs, ~0, 0, 0);

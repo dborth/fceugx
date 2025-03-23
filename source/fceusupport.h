@@ -37,7 +37,7 @@ extern unsigned char * nesrom;
 int GetFCEUTiming();
 void UpdateDendy();
 void RebuildSubCheats(void);
-int AddCheatEntry(const char *name, uint32 addr, uint8 val, int compare, int status, int type);
+void AddCheatEntry(const char *name, uint32 addr, uint8 val, int compare, int status, int type);
 
 extern int FDSLoad(const char *name, FCEUFILE *fp);
 extern int iNESLoad(const char *name, FCEUFILE *fp, int o);

@@ -37,7 +37,7 @@ void SexyFilter2(int32 *in, int32 count)
  while(count--)
  {
   int64 dropcurrent;
-  dropcurrent=((*in<<16)-acc)>>3;
+  dropcurrent=( int32(uint32(*in)<<16)-acc)>>3;
 
   acc+=dropcurrent;
   *in=acc>>16;
@@ -167,10 +167,10 @@ int32 NeoFilterSound(int32 *in, int32 *out, uint32 inlen, int32 *leftover)
 
 void MakeFilters(int32 rate)
 {
- const int32 *tabs[6]={C44100NTSC,C44100PAL,C48000NTSC,C48000PAL,C96000NTSC,
-        C96000PAL};
- const int32 *sq2tabs[6]={SQ2C44100NTSC,SQ2C44100PAL,SQ2C48000NTSC,SQ2C48000PAL,
-	SQ2C96000NTSC,SQ2C96000PAL};
+ const int32 *tabs[8]={C44100NTSC,C44100PAL,C48000NTSC,C48000PAL,C96000NTSC,
+        C96000PAL, nullptr, nullptr};
+ const int32 *sq2tabs[8]={SQ2C44100NTSC,SQ2C44100PAL,SQ2C48000NTSC,SQ2C48000PAL,
+	SQ2C96000NTSC,SQ2C96000PAL, nullptr, nullptr};
 
  const int32 *tmp;
  int32 x;

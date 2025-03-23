@@ -22,6 +22,9 @@
 #ifndef __FCEU_TYPES
 #define __FCEU_TYPES
 
+#include <stdlib.h>
+#include <new>
+
 //enables a hack designed for debugging dragon warrior 3 which treats BRK as a 3-byte opcode
 //#define BRK_3BYTE_HACK
 
@@ -62,6 +65,8 @@ typedef signed int int32;
 #define alloca __builtin_alloca
 #endif
 
+//#include <typeinfo>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -91,9 +96,6 @@ typedef uint32_t uint32;
  #define GINLINE			/* Can't declare a function INLINE
 					   and global in MSVC.  Bummer.
 					*/
- #define PSS_STYLE 2			/* Does MSVC compile for anything
-					   other than Windows/DOS targets?
-					*/
 
  #if _MSC_VER >= 1300
   #pragma warning(disable:4244) //warning C4244: '=' : conversion from 'uint32' to 'uint8', possible loss of data
@@ -103,6 +105,17 @@ typedef uint32_t uint32;
  #if _MSC_VER < 1400
   #define vsnprintf _vsnprintf
  #endif
+#endif
+
+#if defined(__linux__) || defined(__APPLE__) || defined(__unix__)
+
+ #define PSS_STYLE 1
+
+#elif defined(MSVC)
+
+ #define PSS_STYLE 2			/* Does MSVC compile for anything
+					   other than Windows/DOS targets?
+					*/
 #endif
 
 #if PSS_STYLE==2
@@ -131,7 +144,7 @@ typedef uint32_t uint32;
 
 #endif
 
-#if defined(WIN32) && !defined(__QT_DRIVER__)
+#if defined(WIN32) && !defined(__QT_DRIVER__) && !defined(__WIN_DRIVER__)
 #define  __WIN_DRIVER__
 #endif
 
@@ -142,6 +155,114 @@ typedef uint8 (*readfunc)(uint32 A);
 #ifndef CTASSERT
 #define CTASSERT(x)  typedef char __assert ## y[(x) ? 1 : -1];
 #endif
+
+#define __FCEU_STRINGIZE2(x) #x
+#define __FCEU_STRINGIZE(x) __FCEU_STRINGIZE2(x)
+
+#define  FCEU_CPP_HAS_STD(x)  ( defined(__cplusplus) && (__cplusplus >= x) )
+
+#ifdef   __has_cpp_attribute
+#define  FCEU_HAS_CPP_ATTRIBUTE(x)  __has_cpp_attribute(x)
+#else
+#define  FCEU_HAS_CPP_ATTRIBUTE(x)  0
+#endif
+
+#define  FCEU_UNUSED(x)   (void)(x)
+#define  FCEU_CRASH()     int *_dumbPointer = nullptr; *_dumbPointer = 0xdeadbeef
+
+#if FCEU_CPP_HAS_STD(201603L) || FCEU_HAS_CPP_ATTRIBUTE(maybe_unused)
+#define  FCEU_MAYBE_UNUSED  [[maybe_unused]]
+#else
+#define  FCEU_MAYBE_UNUSED
+#endif
+
+#if defined(_MSC_VER)
+	// Microsoft compiler won't catch format issues, but VS IDE can catch on analysis mode
+	#define  __FCEU_PRINTF_FORMAT  _In_z_ _Printf_format_string_
+	#define  __FCEU_PRINTF_ATTRIBUTE( fmt, va )
+
+#elif defined(__GNUC__) || defined(__clang__) || FCEU_HAS_CPP_ATTRIBUTE(format)
+	// GCC and Clang compilers will perform printf format type checks, useful for catching format errors.
+	#define  __FCEU_PRINTF_FORMAT
+	#define  __FCEU_PRINTF_ATTRIBUTE( fmt, va )  __attribute__((__format__(__printf__, fmt, va)))
+
+#else
+	#define  __FCEU_PRINTF_FORMAT
+	#define  __FCEU_PRINTF_ATTRIBUTE( fmt, va )
+#endif
+
+#if defined(__cplusplus)
+// Scoped pointer ensures that memory pointed to by this object gets cleaned up
+// and deallocated when this object goes out of scope. Helps prevent memory leaks
+// on temporary memory allocations in functions with early outs.
+enum fceuAllocType
+{
+	FCEU_ALLOC_TYPE_NEW = 0,
+	FCEU_ALLOC_TYPE_NEW_ARRAY,
+	FCEU_ALLOC_TYPE_MALLOC
+};
+
+template <typename T> 
+class fceuScopedPtr
+{
+	public:
+		fceuScopedPtr( T *ptrIn = nullptr, enum  fceuAllocType allocType = FCEU_ALLOC_TYPE_NEW )
+		{
+			//printf("Scoped Pointer Constructor <%s>: %p\n", typeid(T).name(), ptrIn );
+			ptr = ptrIn;
+			_allocType = allocType;
+		}
+
+		~fceuScopedPtr(void)
+		{
+			//printf("Scoped Pointer Destructor <%s>: %p\n", typeid(T).name(), ptr );
+			Delete();
+		}
+
+		T* operator= (T *ptrIn)
+		{
+			ptr = ptrIn;
+			return ptr;
+		}
+
+		T* get(void)
+		{
+			return ptr;
+		}
+
+		void Delete(void)
+		{
+			if (ptr)
+			{
+				switch (_allocType)
+				{
+					case FCEU_ALLOC_TYPE_MALLOC:
+					{
+						::free(ptr);
+					}
+					break;
+					case FCEU_ALLOC_TYPE_NEW_ARRAY:
+					{
+						delete [] ptr;
+					}
+					break;
+					default:
+					case FCEU_ALLOC_TYPE_NEW:
+					{
+						delete ptr;
+					}
+					break;
+				}
+				ptr = nullptr;
+			}
+		}
+
+	private:
+		T *ptr;
+		enum fceuAllocType  _allocType;
+
+};
+#endif // __cplusplus
 
 #include "utils/endian.h"
 

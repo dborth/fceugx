@@ -108,7 +108,7 @@ static void ResetUNIF(void) {
 	vramo = 0;
 	boardname = 0;
 	mirrortodo = 0;
-	memset(&UNIFCart, 0, sizeof(UNIFCart));
+	UNIFCart.clear();
 	UNIFchrrama = 0;
 }
 
@@ -144,7 +144,7 @@ static int DoMirroring(FCEUFILE *fp) {
 				return(0);
 			FCEU_printf(" %02x", t);
 		}
-		FCEU_printf("\n Default Name/Attribute Table Mirroring: Horizontal\n", uchead.info);
+		FCEU_printf("\n Default Name/Attribute Table Mirroring: Horizontal\n");
 		mirrortodo = 0;
 	}
 	return(1);
@@ -165,9 +165,9 @@ static int NAME(FCEUFILE *fp) {
 	namebuf[index] = 0;
 	FCEU_printf("%s\n", namebuf);
 
-	if (!GameInfo->name) {
-		GameInfo->name = (uint8*)malloc(strlen(namebuf) + 1); //mbg merge 7/17/06 added cast
-		strcpy((char*)GameInfo->name, namebuf); //mbg merge 7/17/06 added cast
+	if (GameInfo->name == nullptr)
+	{
+		GameInfo->name = (uint8*)strdup(namebuf);
 	}
 	return(1);
 }
@@ -479,6 +479,8 @@ static BMAPPING bmap[] = {
 	{ "FNS", FNS_Init, BMCFLAG_16KCHRR },
 	{ "BS-400R", BS400R_Init, 0 },
 	{ "BS-4040R", BS4040R_Init, 0 },
+	{ "COOLGIRL", COOLGIRL_Init, BMCFLAG_256KCHRR },
+	{ "JC-016-2", Mapper205_Init, 0 },
 
 	{ 0, 0, 0 }
 };

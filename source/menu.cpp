@@ -2344,7 +2344,7 @@ static int MenuGameCheats()
 	int ret;
 	u16 i = 0;
 	OptionList options;
-	char *name; // cheat name
+	std::string name; // cheat name
 	int status; // cheat status (on/off)
 
 	for(i=0; i < numcheats; i++)
@@ -2352,7 +2352,7 @@ static int MenuGameCheats()
 		if(!FCEUI_GetCheat(i,&name,NULL,NULL,NULL,&status,NULL))
 			break;
 
-		snprintf (options.name[i], 100, "%s", name);
+		snprintf (options.name[i], 100, "%s", name.c_str());
 		sprintf (options.value[i], status ? "On" : "Off");
 	}
 

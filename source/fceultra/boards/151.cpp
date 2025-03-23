@@ -1,7 +1,7 @@
-/* FCE Ultra - NES/Famicom Emulator
+/* FCEUmm - NES/Famicom Emulator
  *
  * Copyright notice for this file:
- *  Copyright (C) 2012 CaH4e3
+ *  Copyright (C) 2024 negativeExponent
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,42 +18,48 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+/* NES 2.0 Mapper 471 denotes the Impact Soft IM1 circuit board, used for
+ * Haratyler (without HG or MP) and Haraforce. It is basically INES Mapper 201
+ * with the addition of a scanline IRQ.*/
+
 #include "mapinc.h"
 
-static uint8 regs[8];
+static uint32 latch;
 
-static SFORMAT StateRegs[] =
-{
-	{ regs, 8, "REGS" },
-	{ 0 }
-};
-
-static void Sync(void) {
-	setprg8(0x8000, regs[0]);
-	setprg8(0xA000, regs[2]);
-	setprg8(0xC000, regs[4]);
-	setprg8(0xE000, ~0);
-	setchr4(0x0000, regs[6]);
-	setchr4(0x1000, regs[7]);
+static void Sync() {
+	setprg32(0x8000, latch);
+	setchr8(latch);
 }
 
-static DECLFW(M151Write) {
-	regs[(A >> 12) & 7] = V;
+static DECLFW(Write) {
+	X6502_IRQEnd(FCEU_IQEXT);
+	latch = A;
 	Sync();
 }
 
-static void M151Power(void) {
+static void Reset() {
+	latch = 0;
 	Sync();
+}
+
+static void Power() {
 	SetReadHandler(0x8000, 0xFFFF, CartBR);
-	SetWriteHandler(0x8000, 0xFFFF, M151Write);
+	SetWriteHandler(0x8000, 0xFFFF, Write);
+	Reset();
 }
 
 static void StateRestore(int version) {
 	Sync();
 }
 
-void Mapper151_Init(CartInfo *info) {
-	info->Power = M151Power;
+static void HBHook() {
+	X6502_IRQBegin(FCEU_IQEXT);
+}
+
+void Mapper471_Init(CartInfo *info) {
+	info->Power = Power;
+	info->Reset = Reset;
+	GameHBIRQHook = HBHook;
 	GameStateRestore = StateRestore;
-	AddExState(&StateRegs, ~0, 0, 0);
+	AddExState(&latch, sizeof(latch), 0, "LATC");
 }
