@@ -321,7 +321,14 @@ bool MountDVD(bool silent)
 	{
 		ShowAction("Loading DVD...");
 
+#ifdef HW_DOL
+		DVD_Mount();
+		s32 dvdstatus = DVD_GetDriveStatus();
+
+		if (dvdstatus == DVD_STATE_NO_DISK)
+#else
 		if(!dvd->isInserted(dvd))
+#endif
 		{
 			if(silent)
 				break;
