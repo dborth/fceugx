@@ -91,11 +91,13 @@ jobs:
     - name: Re-zip artifacts
       run: |
         cd dist
-        rm -r FCEUltraGX/fceugx/cheats/*
-        rm -r FCEUltraGX/fceugx/roms/*
-        rm -r FCEUltraGX/fceugx/saves/*
-        zip -r FCEUltraGX.zip FCEUltraGX
-        zip -r FCEUltraGX-GameCube.zip FCEUltraGX-GameCube
+        cd FCEUltraGX
+        rm -r fceugx/cheats/*
+        rm -r fceugx/roms/*
+        rm -r fceugx/saves/*
+        zip -r ../FCEUltraGX.zip *
+        cd ../FCEUltraGX-GameCube
+        zip -r ../FCEUltraGX-GameCube.zip *
 
     - name: Update Git Tag
       run: |
