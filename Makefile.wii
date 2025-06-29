@@ -10,6 +10,8 @@ endif
 include $(DEVKITPPC)/wii_rules
 export	LIBOGC_INC	:=	$(DEVKITPRO)/libogc2/include
 export	LIBOGC_LIB	:=	$(DEVKITPRO)/libogc2/lib/wii
+export	FREETYPE_CFLAGS 	:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --cflags freetype2`
+export	FREETYPE_LIBS	:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --libs freetype2`
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -30,7 +32,7 @@ INCLUDES	:=	source
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) `freetype-config --cflags` \
+SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 				-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DNOUNCRYPT \
 				-fomit-frame-pointer \
@@ -46,7 +48,7 @@ LDFLAGS		+=	-L../buildtools
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-ldi -liso9660 -lpng -lmxml `freetype-config --libs` \
+LIBS	:=	-ldi -liso9660 -lpng -lmxml $(FREETYPE_LIBS) \
 			-lfat -lwiiuse -lz -lbte -lasnd -logc -lvorbisidec -logg -ltinysmb
 
 #---------------------------------------------------------------------------------
