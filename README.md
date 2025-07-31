@@ -55,6 +55,11 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[3.5.6 - July 30, 2025]
+
+* Added GC Loader support (mrysav)
+* Compiled with latest devkitPPC/libogc2
+
 [3.5.5 - May 18, 2025]
 
 * Updated to the latest FCEUX 2.6.6+ (git 2b8f6e7)
