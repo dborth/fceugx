@@ -126,7 +126,7 @@ static GXRModeObj PAL_240p =
 	240,             // efbHeight
 	240,             // xfbHeight
 	(VI_MAX_WIDTH_PAL - 644)/2,         // viXOrigin
-	(VI_MAX_HEIGHT_PAL - 480)/2,        // viYOrigin
+	(VI_MAX_HEIGHT_PAL/2 - 480/2)/2,        // viYOrigin
 	644,             // viWidth
 	480,             // viHeight
 	VI_XFBMODE_SF,   // xFBmode
@@ -163,7 +163,7 @@ static GXRModeObj NTSC_240p =
 	240,             // efbHeight
 	240,             // xfbHeight
 	(VI_MAX_WIDTH_NTSC - 644)/2,	// viXOrigin
-	(VI_MAX_HEIGHT_NTSC - 480)/2,	// viYOrigin
+	(VI_MAX_HEIGHT_NTSC/2 - 480/2)/2,	// viYOrigin
 	644,             // viWidth
 	480,             // viHeight
 	VI_XFBMODE_SF,   // xFBmode
@@ -486,7 +486,7 @@ static GXRModeObj * FindVideoMode()
 			// Original Video modes (forced to PAL 50Hz)
 			// set video signal mode
 			NTSC_240p.viTVMode = VI_TVMODE_PAL_DS;
-			NTSC_240p.viYOrigin = (VI_MAX_HEIGHT_PAL - 480)/2;
+			NTSC_240p.viYOrigin = (VI_MAX_HEIGHT_PAL/2 - 480/2)/2;
 			break;
 
 		case VI_NTSC:
@@ -496,7 +496,7 @@ static GXRModeObj * FindVideoMode()
 			// Original Video modes (forced to NTSC 60Hz)
 			// set video signal mode
 			PAL_240p.viTVMode = VI_TVMODE_NTSC_DS;
-			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
+			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC/2 - 480/2)/2;
 			NTSC_240p.viTVMode = VI_TVMODE_NTSC_DS;
 			break;
 
@@ -507,7 +507,7 @@ static GXRModeObj * FindVideoMode()
 			// Original Video modes (forced to PAL 60Hz)
 			// set video signal mode
 			PAL_240p.viTVMode = VI_TVMODE(mode->viTVMode >> 2, VI_NON_INTERLACE);
-			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC - 480)/2;
+			PAL_240p.viYOrigin = (VI_MAX_HEIGHT_NTSC/2 - 480/2)/2;
 			NTSC_240p.viTVMode = VI_TVMODE(mode->viTVMode >> 2, VI_NON_INTERLACE);
 			break;
 	}
