@@ -73,6 +73,45 @@ static lwp_t devicethread = LWP_THREAD_NULL;
 static bool deviceHalt = true;
 
 /****************************************************************************
+ * Device Mapping Structure
+ * Maps device IDs to their names and disc interfaces
+ ***************************************************************************/
+struct DeviceMapping {
+	int device;
+	const char* name;
+	const char* name2;
+	DISC_INTERFACE** disc;
+};
+
+#ifdef HW_RVL
+static DeviceMapping deviceMappings[] = {
+	{DEVICE_SD, "sd", "sd:", &sd},
+	{DEVICE_USB, "usb", "usb:", &usb}
+};
+#else
+static DeviceMapping deviceMappings[] = {
+	{DEVICE_SD_SLOTA, "carda", "carda:", &carda},
+	{DEVICE_SD_SLOTB, "cardb", "cardb:", &cardb},
+	{DEVICE_SD_PORT2, "port2", "port2:", &port2},
+	{DEVICE_SD_GCLOADER, "gcloader", "gcloader:", &gcloader}
+};
+#endif
+
+/****************************************************************************
+ * GetDeviceMapping
+ * Returns the device mapping for the specified device ID
+ ***************************************************************************/
+static const DeviceMapping* GetDeviceMapping(int device)
+{
+	const int numDevices = sizeof(deviceMappings) / sizeof(deviceMappings[0]);
+	for (int i = 0; i < numDevices; i++) {
+		if (deviceMappings[i].device == device)
+			return &deviceMappings[i];
+	}
+	return NULL;
+}
+
+/****************************************************************************
  * ResumeDeviceThread
  *
  * Signals the device thread to start, and resumes the thread.
@@ -226,61 +265,24 @@ static bool MountFAT(int device, int silent)
 {
 	bool mounted = false;
 	int retry = 1;
-	char name[10], name2[10];
-	DISC_INTERFACE* disc = NULL;
-
-	switch(device)
-	{
-#ifdef HW_RVL
-		case DEVICE_SD:
-			sprintf(name, "sd");
-			sprintf(name2, "sd:");
-			disc = sd;
-			break;
-		case DEVICE_USB:
-			sprintf(name, "usb");
-			sprintf(name2, "usb:");
-			disc = usb;
-			break;
-#else
-		case DEVICE_SD_SLOTA:
-			sprintf(name, "carda");
-			sprintf(name2, "carda:");
-			disc = carda;
-			break;
-
-		case DEVICE_SD_SLOTB:
-			sprintf(name, "cardb");
-			sprintf(name2, "cardb:");
-			disc = cardb;
-			break;
-
-		case DEVICE_SD_PORT2:
-			sprintf(name, "port2");
-			sprintf(name2, "port2:");
-			disc = port2;
-			break;
-		case DEVICE_SD_GCLOADER:
-			sprintf(name, "gcloader");
-			sprintf(name2, "gcloader:");
-			disc = gcloader;
-			break;
-#endif
-		default:
-			return false; // unknown device
-	}
+	
+	const DeviceMapping* mapping = GetDeviceMapping(device);
+	if (!mapping)
+		return false; // unknown device
+	
+	DISC_INTERFACE* disc = *mapping->disc;
 
 	if(unmountRequired[device])
 	{
 		unmountRequired[device] = false;
-		fatUnmount(name2);
+		fatUnmount(mapping->name2);
 		disc->shutdown(disc);
 		isMounted[device] = false;
 	}
 
 	while(retry)
 	{
-		if(disc->startup(disc) && fatMountSimple(name, disc))
+		if(disc->startup(disc) && fatMountSimple(mapping->name, disc))
 			mounted = true;
 
 		if(mounted || silent)
