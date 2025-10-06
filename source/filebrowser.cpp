@@ -74,6 +74,36 @@ static const int saveDevicePriority[] = {
 };
 
 /****************************************************************************
+ * Valid ROM Extensions
+ * Defines the file extensions that are recognized as valid ROM files
+ ***************************************************************************/
+static const char* validRomExtensions[] = {
+	".nes",
+	".fds",
+	".nsf",
+	".unf",
+	".nez",
+	".unif",
+	".gba"
+};
+
+/****************************************************************************
+ * IsValidExtension
+ * Checks if the given extension is in the valid ROM extensions list
+ ***************************************************************************/
+static bool IsValidExtension(const char* ext)
+{
+	if (!ext) return false;
+	
+	const int numExtensions = sizeof(validRomExtensions) / sizeof(validRomExtensions[0]);
+	for (int i = 0; i < numExtensions; i++) {
+		if (strcasecmp(ext, validRomExtensions[i]) == 0)
+			return true;
+	}
+	return false;
+}
+
+/****************************************************************************
 * autoLoadMethod()
 * Auto-determines and sets the load device
 * Returns device set
@@ -372,12 +402,6 @@ static bool IsValidROM()
 
 		if (p != NULL)
 		{
-			if(strcasecmp(p, ".gba") == 0)
-			{
-				// File will be checked for GBA ROMs later.
-				return true;
-			}
-			
 			char * zippedFilename = NULL;
 
 			if(strcasecmp(p, ".zip") == 0 && !inSz)
@@ -391,20 +415,10 @@ static bool IsValidROM()
 					p = NULL;
 			}
 
-			if(p != NULL)
+			if(p != NULL && IsValidExtension(p))
 			{
-				if (
-					strcasecmp(p, ".nes") == 0 ||
-					strcasecmp(p, ".fds") == 0 ||
-					strcasecmp(p, ".nsf") == 0 ||
-					strcasecmp(p, ".unf") == 0 ||
-					strcasecmp(p, ".nez") == 0 ||
-					strcasecmp(p, ".unif") == 0
-				)
-				{
-					if(zippedFilename) free(zippedFilename);
-					return true;
-				}
+				if(zippedFilename) free(zippedFilename);
+				return true;
 			}
 			if(zippedFilename) free(zippedFilename);
 		}
