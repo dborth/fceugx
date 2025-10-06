@@ -53,6 +53,82 @@ static const char * FtoStr(float i)
 	return temp;
 }
 
+/****************************************************************************
+ * Settings Configuration Table
+ * Single source of truth for all preference settings
+ ***************************************************************************/
+enum SettingType {
+	TYPE_INT,
+	TYPE_FLOAT,
+	TYPE_STRING
+};
+
+struct SettingInfo {
+	const char* name;
+	const char* description;
+	SettingType type;
+	void* ptr;
+	int maxSize;
+	const char* section;
+	const char* sectionDesc;
+	bool platformSpecific;
+};
+
+static const SettingInfo settingsConfig[] = {
+	// File Settings
+	{"AutoLoad", "Auto Load", TYPE_INT, &GCSettings.AutoLoad, 0, "File", "File Settings", false},
+	{"AutoSave", "Auto Save", TYPE_INT, &GCSettings.AutoSave, 0, "File", "File Settings", false},
+	{"LoadMethod", "Load Method", TYPE_INT, &GCSettings.LoadMethod, 0, "File", "File Settings", false},
+	{"SaveMethod", "Save Method", TYPE_INT, &GCSettings.SaveMethod, 0, "File", "File Settings", false},
+	{"LoadFolder", "Load Folder", TYPE_STRING, GCSettings.LoadFolder, sizeof(GCSettings.LoadFolder), "File", "File Settings", false},
+	{"LastFileLoaded", "Last File Loaded", TYPE_STRING, GCSettings.LastFileLoaded, sizeof(GCSettings.LastFileLoaded), "File", "File Settings", false},
+	{"SaveFolder", "Save Folder", TYPE_STRING, GCSettings.SaveFolder, sizeof(GCSettings.SaveFolder), "File", "File Settings", false},
+	{"AppendAuto", "Append Auto to .SAV Files", TYPE_INT, &GCSettings.AppendAuto, 0, "File", "File Settings", false},
+	{"CheatFolder", "Cheats Folder", TYPE_STRING, GCSettings.CheatFolder, sizeof(GCSettings.CheatFolder), "File", "File Settings", false},
+	{"gamegenie", "Game Genie", TYPE_INT, &GCSettings.gamegenie, 0, "File", "File Settings", false},
+	{"ScreenshotsFolder", "Screenshots Folder", TYPE_STRING, GCSettings.ScreenshotsFolder, sizeof(GCSettings.ScreenshotsFolder), "File", "File Settings", false},
+	{"CoverFolder", "Covers Folder", TYPE_STRING, GCSettings.CoverFolder, sizeof(GCSettings.CoverFolder), "File", "File Settings", false},
+	{"ArtworkFolder", "Artwork Folder", TYPE_STRING, GCSettings.ArtworkFolder, sizeof(GCSettings.ArtworkFolder), "File", "File Settings", false},
+	
+	// Network Settings
+	{"smbip", "Share Computer IP", TYPE_STRING, GCSettings.smbip, sizeof(GCSettings.smbip), "Network", "Network Settings", false},
+	{"smbshare", "Share Name", TYPE_STRING, GCSettings.smbshare, sizeof(GCSettings.smbshare), "Network", "Network Settings", false},
+	{"smbuser", "Share Username", TYPE_STRING, GCSettings.smbuser, sizeof(GCSettings.smbuser), "Network", "Network Settings", false},
+	{"smbpwd", "Share Password", TYPE_STRING, GCSettings.smbpwd, sizeof(GCSettings.smbpwd), "Network", "Network Settings", false},
+	
+	// Video Settings
+	{"videomode", "Video Mode", TYPE_INT, &GCSettings.videomode, 0, "Video", "Video Settings", false},
+	{"currpal", "Palette", TYPE_INT, &GCSettings.currpal, 0, "Video", "Video Settings", false},
+	{"timing", "Timing", TYPE_INT, &GCSettings.timing, 0, "Video", "Video Settings", false},
+	{"spritelimit", "Sprite Limit", TYPE_INT, &GCSettings.spritelimit, 0, "Video", "Video Settings", false},
+	{"zoomHor", "Horizontal Zoom Level", TYPE_FLOAT, &GCSettings.zoomHor, 0, "Video", "Video Settings", false},
+	{"zoomVert", "Vertical Zoom Level", TYPE_FLOAT, &GCSettings.zoomVert, 0, "Video", "Video Settings", false},
+	{"render", "Video Filtering", TYPE_INT, &GCSettings.render, 0, "Video", "Video Settings", false},
+	{"widescreen", "Aspect Ratio Correction", TYPE_INT, &GCSettings.widescreen, 0, "Video", "Video Settings", false},
+	{"hideoverscan", "Video Cropping", TYPE_INT, &GCSettings.hideoverscan, 0, "Video", "Video Settings", false},
+	{"xshift", "Horizontal Video Shift", TYPE_INT, &GCSettings.xshift, 0, "Video", "Video Settings", false},
+	{"yshift", "Vertical Video Shift", TYPE_INT, &GCSettings.yshift, 0, "Video", "Video Settings", false},
+	{"TurboModeEnabled", "Turbo Mode Enabled", TYPE_INT, &GCSettings.TurboModeEnabled, 0, "Video", "Video Settings", false},
+	{"TurboModeButton", "Turbo Mode Button", TYPE_INT, &GCSettings.TurboModeButton, 0, "Video", "Video Settings", false},
+	{"GamepadMenuToggle", "Gamepad Menu Toggle", TYPE_INT, &GCSettings.GamepadMenuToggle, 0, "Video", "Video Settings", false},
+	
+	// Menu Settings
+#ifdef HW_RVL
+	{"WiimoteOrientation", "Wiimote Orientation", TYPE_INT, &GCSettings.WiimoteOrientation, 0, "Menu", "Menu Settings", true},
+#endif
+	{"ExitAction", "Exit Action", TYPE_INT, &GCSettings.ExitAction, 0, "Menu", "Menu Settings", false},
+	{"MusicVolume", "Music Volume", TYPE_INT, &GCSettings.MusicVolume, 0, "Menu", "Menu Settings", false},
+	{"SFXVolume", "Sound Effects Volume", TYPE_INT, &GCSettings.SFXVolume, 0, "Menu", "Menu Settings", false},
+	{"Rumble", "Rumble", TYPE_INT, &GCSettings.Rumble, 0, "Menu", "Menu Settings", false},
+	{"language", "Language", TYPE_INT, &GCSettings.language, 0, "Menu", "Menu Settings", false},
+	{"PreviewImage", "Preview Image", TYPE_INT, &GCSettings.PreviewImage, 0, "Menu", "Menu Settings", false},
+	{"HideRAMSaving", "Hide RAM Saving", TYPE_INT, &GCSettings.HideRAMSaving, 0, "Menu", "Menu Settings", false},
+	
+	// Controller Settings
+	{"Controller", "Controller", TYPE_INT, &GCSettings.Controller, 0, "Controller", "Controller Settings", false},
+	{"crosshair", "Zapper Crosshair", TYPE_INT, &GCSettings.crosshair, 0, "Controller", "Controller Settings", false}
+};
+
 static void createXMLSection(const char * name, const char * description)
 {
 	section = mxmlNewElement(data, "section");
@@ -120,63 +196,31 @@ preparePrefsData ()
 	mxmlElementSetAttr(data, "app", APPNAME);
 	mxmlElementSetAttr(data, "version", APPVERSION);
 
-	createXMLSection("File", "File Settings");
-
-	createXMLSetting("AutoLoad", "Auto Load", toStr(GCSettings.AutoLoad));
-	createXMLSetting("AutoSave", "Auto Save", toStr(GCSettings.AutoSave));
-	createXMLSetting("LoadMethod", "Load Method", toStr(GCSettings.LoadMethod));
-	createXMLSetting("SaveMethod", "Save Method", toStr(GCSettings.SaveMethod));
-	createXMLSetting("LoadFolder", "Load Folder", GCSettings.LoadFolder);
-	createXMLSetting("LastFileLoaded", "Last File Loaded", GCSettings.LastFileLoaded);
-	createXMLSetting("SaveFolder", "Save Folder", GCSettings.SaveFolder);
-	createXMLSetting("AppendAuto", "Append Auto to .SAV Files", toStr(GCSettings.AppendAuto));
-	createXMLSetting("CheatFolder", "Cheats Folder", GCSettings.CheatFolder);
-	createXMLSetting("gamegenie", "Game Genie", toStr(GCSettings.gamegenie));
-	createXMLSetting("ScreenshotsFolder", "Screenshots Folder", GCSettings.ScreenshotsFolder);
-	createXMLSetting("CoverFolder", "Covers Folder", GCSettings.CoverFolder);
-	createXMLSetting("ArtworkFolder", "Artwork Folder", GCSettings.ArtworkFolder);
-
-	createXMLSection("Network", "Network Settings");
-
-	createXMLSetting("smbip", "Share Computer IP", GCSettings.smbip);
-	createXMLSetting("smbshare", "Share Name", GCSettings.smbshare);
-	createXMLSetting("smbuser", "Share Username", GCSettings.smbuser);
-	createXMLSetting("smbpwd", "Share Password", GCSettings.smbpwd);
-
-	createXMLSection("Video", "Video Settings");
-
-	createXMLSetting("videomode", "Video Mode", toStr(GCSettings.videomode));
-	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
-	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
-	createXMLSetting("spritelimit", "Sprite Limit", toStr(GCSettings.spritelimit));
-	createXMLSetting("zoomHor", "Horizontal Zoom Level", FtoStr(GCSettings.zoomHor));
-	createXMLSetting("zoomVert", "Vertical Zoom Level", FtoStr(GCSettings.zoomVert));
-	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
-	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
-	createXMLSetting("hideoverscan", "Video Cropping", toStr(GCSettings.hideoverscan));
-	createXMLSetting("xshift", "Horizontal Video Shift", toStr(GCSettings.xshift));
-	createXMLSetting("yshift", "Vertical Video Shift", toStr(GCSettings.yshift));
-	createXMLSetting("TurboModeEnabled", "Turbo Mode Enabled", toStr(GCSettings.TurboModeEnabled));
-	createXMLSetting("TurboModeButton", "Turbo Mode Button", toStr(GCSettings.TurboModeButton));
-	createXMLSetting("GamepadMenuToggle", "Gamepad Menu Toggle", toStr(GCSettings.GamepadMenuToggle));
-
-	createXMLSection("Menu", "Menu Settings");
-
-#ifdef HW_RVL
-	createXMLSetting("WiimoteOrientation", "Wiimote Orientation", toStr(GCSettings.WiimoteOrientation));
-#endif
-	createXMLSetting("ExitAction", "Exit Action", toStr(GCSettings.ExitAction));
-	createXMLSetting("MusicVolume", "Music Volume", toStr(GCSettings.MusicVolume));
-	createXMLSetting("SFXVolume", "Sound Effects Volume", toStr(GCSettings.SFXVolume));
-	createXMLSetting("Rumble", "Rumble", toStr(GCSettings.Rumble));
-	createXMLSetting("language", "Language", toStr(GCSettings.language));
-	createXMLSetting("PreviewImage", "Preview Image", toStr(GCSettings.PreviewImage));
-	createXMLSetting("HideRAMSaving", "Hide RAM Saving", toStr(GCSettings.HideRAMSaving));
-
-	createXMLSection("Controller", "Controller Settings");
-
-	createXMLSetting("Controller", "Controller", toStr(GCSettings.Controller));
-	createXMLSetting("crosshair", "Zapper Crosshair", toStr(GCSettings.crosshair));
+	const char* currentSection = NULL;
+	const int numSettings = sizeof(settingsConfig) / sizeof(settingsConfig[0]);
+	
+	for (int i = 0; i < numSettings; i++) {
+		const SettingInfo& setting = settingsConfig[i];
+		
+		// Create new section if needed
+		if (!currentSection || strcmp(currentSection, setting.section) != 0) {
+			createXMLSection(setting.section, setting.sectionDesc);
+			currentSection = setting.section;
+		}
+		
+		// Create setting based on type
+		switch(setting.type) {
+			case TYPE_INT:
+				createXMLSetting(setting.name, setting.description, toStr(*(int*)setting.ptr));
+				break;
+			case TYPE_FLOAT:
+				createXMLSetting(setting.name, setting.description, FtoStr(*(float*)setting.ptr));
+				break;
+			case TYPE_STRING:
+				createXMLSetting(setting.name, setting.description, (char*)setting.ptr);
+				break;
+		}
+	}
 
 	createXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad", "NES Pad - GameCube Controller");
 	createXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote", "NES Pad - Wiimote");
@@ -298,64 +342,23 @@ decodePrefsData ()
 
 		if(result)
 		{
-			// File Settings
-
-			loadXMLSetting(&GCSettings.AutoLoad, "AutoLoad");
-			loadXMLSetting(&GCSettings.AutoSave, "AutoSave");
-			loadXMLSetting(&GCSettings.LoadMethod, "LoadMethod");
-			loadXMLSetting(&GCSettings.SaveMethod, "SaveMethod");
-			loadXMLSetting(GCSettings.LoadFolder, "LoadFolder", sizeof(GCSettings.LoadFolder));
-			loadXMLSetting(GCSettings.LastFileLoaded, "LastFileLoaded", sizeof(GCSettings.LastFileLoaded));
-			loadXMLSetting(GCSettings.SaveFolder, "SaveFolder", sizeof(GCSettings.SaveFolder));
-			loadXMLSetting(&GCSettings.AppendAuto, "AppendAuto");
-			loadXMLSetting(GCSettings.CheatFolder, "CheatFolder", sizeof(GCSettings.CheatFolder));
-			loadXMLSetting(&GCSettings.gamegenie, "gamegenie");
-			loadXMLSetting(GCSettings.ScreenshotsFolder, "ScreenshotsFolder", sizeof(GCSettings.ScreenshotsFolder));
-			loadXMLSetting(GCSettings.CoverFolder, "CoverFolder", sizeof(GCSettings.CoverFolder));
-			loadXMLSetting(GCSettings.ArtworkFolder, "ArtworkFolder", sizeof(GCSettings.ArtworkFolder));
-
-			// Network Settings
-
-			loadXMLSetting(GCSettings.smbip, "smbip", sizeof(GCSettings.smbip));
-			loadXMLSetting(GCSettings.smbshare, "smbshare", sizeof(GCSettings.smbshare));
-			loadXMLSetting(GCSettings.smbuser, "smbuser", sizeof(GCSettings.smbuser));
-			loadXMLSetting(GCSettings.smbpwd, "smbpwd", sizeof(GCSettings.smbpwd));
-
-			// Video Settings
-
-			loadXMLSetting(&GCSettings.videomode, "videomode");
-			loadXMLSetting(&GCSettings.currpal, "currpal");
-			loadXMLSetting(&GCSettings.timing, "timing");
-			loadXMLSetting(&GCSettings.spritelimit, "spritelimit");
-			loadXMLSetting(&GCSettings.zoomHor, "zoomHor");
-			loadXMLSetting(&GCSettings.zoomVert, "zoomVert");
-			loadXMLSetting(&GCSettings.render, "render");
-			loadXMLSetting(&GCSettings.widescreen, "widescreen");
-			loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
-			loadXMLSetting(&GCSettings.xshift, "xshift");
-			loadXMLSetting(&GCSettings.yshift, "yshift");
-
-			// Other Mappings
-
-			loadXMLSetting(&GCSettings.TurboModeEnabled, "TurboModeEnabled");
-			loadXMLSetting(&GCSettings.TurboModeButton, "TurboModeButton");
-			loadXMLSetting(&GCSettings.GamepadMenuToggle, "GamepadMenuToggle");
-
-			// Menu Settings
-
-			loadXMLSetting(&GCSettings.WiimoteOrientation, "WiimoteOrientation");
-			loadXMLSetting(&GCSettings.ExitAction, "ExitAction");
-			loadXMLSetting(&GCSettings.MusicVolume, "MusicVolume");
-			loadXMLSetting(&GCSettings.SFXVolume, "SFXVolume");
-			loadXMLSetting(&GCSettings.Rumble, "Rumble");
-			loadXMLSetting(&GCSettings.language, "language");
-			loadXMLSetting(&GCSettings.PreviewImage, "PreviewImage");
-			loadXMLSetting(&GCSettings.HideRAMSaving, "HideRAMSaving");
+			const int numSettings = sizeof(settingsConfig) / sizeof(settingsConfig[0]);
 			
-			// Controller Settings
-
-			loadXMLSetting(&GCSettings.Controller, "Controller");
-			loadXMLSetting(&GCSettings.crosshair, "crosshair");
+			for (int i = 0; i < numSettings; i++) {
+				const SettingInfo& setting = settingsConfig[i];
+				
+				switch(setting.type) {
+					case TYPE_INT:
+						loadXMLSetting((int*)setting.ptr, setting.name);
+						break;
+					case TYPE_FLOAT:
+						loadXMLSetting((float*)setting.ptr, setting.name);
+						break;
+					case TYPE_STRING:
+						loadXMLSetting((char*)setting.ptr, setting.name, setting.maxSize);
+						break;
+				}
+			}
 
 			loadXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad");
 			loadXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote");
