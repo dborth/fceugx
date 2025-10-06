@@ -49,6 +49,31 @@ char romFilename[256];
 bool loadingFile = false;
 
 /****************************************************************************
+ * Device Priority Arrays
+ * Defines the order in which devices are checked for auto-detection
+ ***************************************************************************/
+static const int loadDevicePriority[] = {
+	DEVICE_SD,
+	DEVICE_USB,
+	DEVICE_SD_SLOTA,
+	DEVICE_SD_SLOTB,
+	DEVICE_SD_PORT2,
+	DEVICE_SD_GCLOADER,
+	DEVICE_DVD,
+	DEVICE_SMB
+};
+
+static const int saveDevicePriority[] = {
+	DEVICE_SD,
+	DEVICE_USB,
+	DEVICE_SD_SLOTA,
+	DEVICE_SD_SLOTB,
+	DEVICE_SD_PORT2,
+	DEVICE_SD_GCLOADER,
+	DEVICE_SMB
+};
+
+/****************************************************************************
 * autoLoadMethod()
 * Auto-determines and sets the load device
 * Returns device set
@@ -58,23 +83,14 @@ int autoLoadMethod()
 	ShowAction ("Attempting to determine load device...");
 
 	int device = DEVICE_AUTO;
+	const int numDevices = sizeof(loadDevicePriority) / sizeof(loadDevicePriority[0]);
 
-	if(ChangeInterface(DEVICE_SD, SILENT))
-		device = DEVICE_SD;
-	else if(ChangeInterface(DEVICE_USB, SILENT))
-		device = DEVICE_USB;
-	else if(ChangeInterface(DEVICE_SD_SLOTA, SILENT))
-		device = DEVICE_SD_SLOTA;
-	else if(ChangeInterface(DEVICE_SD_SLOTB, SILENT))
-		device = DEVICE_SD_SLOTB;
-	else if(ChangeInterface(DEVICE_SD_PORT2, SILENT))
-		device = DEVICE_SD_PORT2;
-	else if(ChangeInterface(DEVICE_SD_GCLOADER, SILENT))
-		device = DEVICE_SD_GCLOADER;
-	else if(ChangeInterface(DEVICE_DVD, SILENT))
-		device = DEVICE_DVD;
-	else if(ChangeInterface(DEVICE_SMB, SILENT))
-		device = DEVICE_SMB;
+	for (int i = 0; i < numDevices; i++) {
+		if (ChangeInterface(loadDevicePriority[i], SILENT)) {
+			device = loadDevicePriority[i];
+			break;
+		}
+	}
 
 	if(GCSettings.LoadMethod == DEVICE_AUTO)
 		GCSettings.LoadMethod = device; // save device found for later use
@@ -93,22 +109,16 @@ int autoSaveMethod(bool silent)
 		ShowAction ("Attempting to determine save device...");
 
 	int device = DEVICE_AUTO;
+	const int numDevices = sizeof(saveDevicePriority) / sizeof(saveDevicePriority[0]);
 
-	if(ChangeInterface(DEVICE_SD, SILENT))
-		device = DEVICE_SD;
-	else if(ChangeInterface(DEVICE_USB, SILENT))
-		device = DEVICE_USB;
-	else if(ChangeInterface(DEVICE_SD_SLOTA, SILENT))
-		device = DEVICE_SD_SLOTA;
-	else if(ChangeInterface(DEVICE_SD_SLOTB, SILENT))
-		device = DEVICE_SD_SLOTB;
-	else if(ChangeInterface(DEVICE_SD_PORT2, SILENT))
-		device = DEVICE_SD_PORT2;
-	else if(ChangeInterface(DEVICE_SD_GCLOADER, SILENT))
-		device = DEVICE_SD_GCLOADER;
-	else if(ChangeInterface(DEVICE_SMB, SILENT))
-		device = DEVICE_SMB;
-	else if(!silent)
+	for (int i = 0; i < numDevices; i++) {
+		if (ChangeInterface(saveDevicePriority[i], SILENT)) {
+			device = saveDevicePriority[i];
+			break;
+		}
+	}
+
+	if(device == DEVICE_AUTO && !silent)
 		ErrorPrompt("Unable to locate a save device!");
 
 	if(GCSettings.SaveMethod == DEVICE_AUTO)
