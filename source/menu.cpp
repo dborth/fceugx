@@ -92,6 +92,59 @@ static int progressDone = 0;
 static int progressTotal = 0;
 static bool buttonMappingCancelled = false;
 
+/****************************************************************************
+ * Menu Option Lookup Tables
+ * Centralized string lookups for menu option display
+ ***************************************************************************/
+static const char* turboButtonNames[] = {
+	"Default (Right Stick)", "A", "B", "X", "Y",
+	"L", "R", "ZL", "ZR", "Z", "C", "1", "2",
+	"Plus", "Minus"
+};
+
+static const char* gamepadMenuToggleNames[] = {
+	"Default (All Enabled)",
+	"Home / Right Stick",
+	"L+R+Start / 1+2+Plus"
+};
+
+static const char* hideoverscanNames[] = {
+	"Off", "Vertical", "Horizontal", "Both"
+};
+
+static const char* timingNames[] = {
+	"NTSC", "PAL", "Automatic", "Dendy"
+};
+
+static const char* videomodeNames[] = {
+	"Automatic (Recommended)",
+	"NTSC (480i)",
+	"Progressive (480p)",
+	"PAL (50Hz)",
+	"PAL (60Hz)"
+};
+
+static const char* renderNames[] = {
+	"Original (240p)",
+	"Filtered",
+	"Unfiltered",
+	"Filtered (Soft)",
+	"Filtered (Sharp)"
+};
+
+/****************************************************************************
+ * GetLookupString
+ * Generic helper function for array-based string lookups
+ ***************************************************************************/
+static inline const char* GetLookupString(
+	const char** table, 
+	int index, 
+	int maxIndex, 
+	const char* defaultStr = "Unknown"
+) {
+	return (index >= 0 && index < maxIndex) ? table[index] : defaultStr;
+}
+
 u8 * bg_music;
 u32 bg_music_size;
 
@@ -3512,49 +3565,9 @@ static int MenuSettingsOtherMappings()
 			firstRun = false;
 			sprintf (options.value[0], "%s", GCSettings.TurboModeEnabled == 1 ? "On" : "Off");
 
-			switch(GCSettings.TurboModeButton)
-			{
-				case 0:
-					sprintf (options.value[1], "Default (Right Stick)"); break;
-				case 1:
-					sprintf (options.value[1], "A"); break;
-				case 2:
-					sprintf (options.value[1], "B"); break;
-				case 3:
-					sprintf (options.value[1], "X"); break;
-				case 4:
-					sprintf (options.value[1], "Y"); break;
-				case 5:
-					sprintf (options.value[1], "L"); break;
-				case 6:
-					sprintf (options.value[1], "R"); break;
-				case 7:
-					sprintf (options.value[1], "ZL"); break;
-				case 8:
-					sprintf (options.value[1], "ZR"); break;
-				case 9:
-					sprintf (options.value[1], "Z"); break;
-				case 10:
-					sprintf (options.value[1], "C"); break;
-				case 11:
-					sprintf (options.value[1], "1"); break;
-				case 12:
-					sprintf (options.value[1], "2"); break;
-				case 13:
-					sprintf (options.value[1], "Plus"); break;
-				case 14:
-					sprintf (options.value[1], "Minus"); break;
-			}
+			sprintf(options.value[1], "%s", GetLookupString(turboButtonNames, GCSettings.TurboModeButton, 15));
 
-			switch(GCSettings.GamepadMenuToggle)
-			{
-				case 0:
-					sprintf (options.value[2], "Default (All Enabled)"); break;
-				case 1:
-					sprintf (options.value[2], "Home / Right Stick"); break;
-				case 2:
-					sprintf (options.value[2], "L+R+Start / 1+2+Plus"); break;
-			}
+			sprintf(options.value[2], "%s", GetLookupString(gamepadMenuToggleNames, GCSettings.GamepadMenuToggle, 3));
 
 			optionBrowser.TriggerUpdate();
 		}
@@ -3701,59 +3714,26 @@ static int MenuSettingsVideo()
 		{
 			firstRun = false;
 
-			if (GCSettings.render == 0)
-				sprintf (options.value[0], "Original (240p)");
-			else if (GCSettings.render == 1)
-				sprintf (options.value[0], "Filtered");
-			else if (GCSettings.render == 2)
-				sprintf (options.value[0], "Unfiltered");
-			else if (GCSettings.render == 3)
-				sprintf (options.value[0], "Filtered (Soft)");
-			else if (GCSettings.render == 4)
-				sprintf (options.value[0], "Filtered (Sharp)");
+			sprintf(options.value[0], "%s", GetLookupString(renderNames, GCSettings.render, 5));
 
 			if(GCSettings.widescreen)
 				sprintf (options.value[1], "16:9 Correction");
 			else
 				sprintf (options.value[1], "Default");
 
-			switch(GCSettings.hideoverscan)
-			{
-				case 0: sprintf (options.value[2], "Off"); break;
-				case 1: sprintf (options.value[2], "Vertical"); break;
-				case 2: sprintf (options.value[2], "Horizontal"); break;
-				case 3: sprintf (options.value[2], "Both"); break;
-			}
+			sprintf(options.value[2], "%s", GetLookupString(hideoverscanNames, GCSettings.hideoverscan, 4));
 
 			sprintf (options.value[3], "%s",
 				GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default");
  
-			switch(GCSettings.timing)
-			{
-				case 0: sprintf (options.value[4], "NTSC"); break;
-				case 1: sprintf (options.value[4], "PAL"); break;
-				case 2: sprintf (options.value[4], "Automatic"); break;
-				case 3: sprintf (options.value[4], "Dendy"); break;
-			}
+			sprintf(options.value[4], "%s", GetLookupString(timingNames, GCSettings.timing, 4));
 
 			sprintf (options.value[5], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
 			sprintf (options.value[6], "%d, %d", GCSettings.xshift, GCSettings.yshift);
 			sprintf (options.value[7], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
 			sprintf (options.value[8], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
 
-			switch(GCSettings.videomode)
-			{
-				case 0:
-					sprintf (options.value[9], "Automatic (Recommended)"); break;
-				case 1:
-					sprintf (options.value[9], "NTSC (480i)"); break;
-				case 2:
-					sprintf (options.value[9], "Progressive (480p)"); break;
-				case 3:
-					sprintf (options.value[9], "PAL (50Hz)"); break;
-				case 4:
-					sprintf (options.value[9], "PAL (60Hz)"); break;
-			}
+			sprintf(options.value[9], "%s", GetLookupString(videomodeNames, GCSettings.videomode, 5));
 			optionBrowser.TriggerUpdate();
 		}
 
