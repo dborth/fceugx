@@ -456,7 +456,7 @@ DefaultSettings ()
 	if(GCSettings.language == LANG_TRAD_CHINESE)
 		GCSettings.language = LANG_SIMP_CHINESE;
 #else
-	GCSettings.language = LANG_ENGLISH;
+	GCSettings.language = SYS_GetLanguage() + LANG_ENGLISH;
 #endif
 
 	GCSettings.LoadMethod = DEVICE_AUTO; // Auto, SD, DVD, USB, Network (SMB)

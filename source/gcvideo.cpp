@@ -245,9 +245,7 @@ void SyncSpeed()
 /****************************************************************************
  * VideoThreading
  ***************************************************************************/
-#define TSTACK 16384
 static lwp_t vbthread = LWP_THREAD_NULL;
-static unsigned char vbstack[TSTACK];
 
 /****************************************************************************
  * vbgetback
@@ -388,7 +386,7 @@ void StopGX()
 	GX_AbortFrame();
 	GX_Flush();
 
-	VIDEO_SetBlack(TRUE);
+	VIDEO_SetBlack(true);
 	VIDEO_Flush();
 }
 
@@ -454,25 +452,13 @@ static GXRModeObj * FindVideoMode()
 			mode = &TVNtsc480Prog;
 			break;
 		case 3: // PAL (50Hz)
-			mode = &TVPal528IntDf;
+			mode = &TVPal576IntDfScale;
 			break;
 		case 4: // PAL (60Hz)
 			mode = &TVEurgb60Hz480IntDf;
 			break;
 		default:
 			mode = VIDEO_GetPreferredMode(NULL);
-			
-			if(mode == &TVPal576IntDfScale)
-				mode = &TVPal528IntDf;
-
-			#ifdef HW_DOL
-			/* we have component cables, but the preferred mode is interlaced
-			 * why don't we switch into progressive?
-			 * on the Wii, the user can do this themselves on their Wii Settings */
-			if(VIDEO_HaveComponentCable())
-				mode = &TVNtsc480Prog;
-			#endif
-
 			break;
 	}
 
@@ -513,7 +499,7 @@ static GXRModeObj * FindVideoMode()
 	}
 
 	// check for progressive scan
-	if (mode->viTVMode == VI_TVMODE_NTSC_PROG)
+	if ((mode->viTVMode & 3) == VI_PROGRESSIVE)
 		progressive = true;
 	else
 		progressive = false;
@@ -559,15 +545,9 @@ static void SetupVideoMode(GXRModeObj * mode)
 	VIDEO_ClearFrameBuffer (mode, xfb[1], COLOR_BLACK);
 	VIDEO_SetNextFramebuffer (xfb[0]);
 
-	VIDEO_SetBlack (FALSE);
+	VIDEO_SetBlack (false);
 	VIDEO_Flush ();
-	VIDEO_WaitVSync ();
-		
-	if (mode->viTVMode & VI_NON_INTERLACE)
-		VIDEO_WaitVSync();
-	else
-		while (VIDEO_GetNextField())
-			VIDEO_WaitVSync();
+	VIDEO_WaitForFlush ();
 	
 	VIDEO_SetPostRetraceCallback ((VIRetraceCallback)copy_to_xfb);
 	vmode = mode;
@@ -602,13 +582,13 @@ InitGCVideo ()
 	#endif
 
 	SetupVideoMode(rmode);
-	LWP_CreateThread (&vbthread, vbgetback, NULL, vbstack, TSTACK, 68);
+	LWP_CreateThread (&vbthread, vbgetback, NULL, NULL, 0, 68);
 
 	// Initialize GX
 	GXColor background = { 0, 0, 0, 0xff };
 	memset (&gp_fifo, 0, DEFAULT_FIFO_SIZE);
 	GX_Init (&gp_fifo, DEFAULT_FIFO_SIZE);
-	GX_SetCopyClear (background, 0x00ffffff);
+	GX_SetCopyClear (background, GX_MAX_Z24);
 	GX_SetDispCopyGamma (GX_GM_1_0);
 	GX_SetCullMode (GX_CULL_NONE);
 }
@@ -669,7 +649,7 @@ ResetVideo_Emu ()
 	SetupVideoMode(rmode); // reconfigure VI
 
 	GXColor background = {0, 0, 0, 255};
-	GX_SetCopyClear (background, 0x00ffffff);
+	GX_SetCopyClear (background, GX_MAX_Z24);
 
 	// reconfigure GX
 	GX_SetViewport (0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1);
@@ -707,7 +687,7 @@ ResetVideo_Emu ()
 	GX_InvalidateTexAll ();
 	GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
 	if (!(GCSettings.render&1))
-		GX_InitTexObjLOD(&texobj,GX_NEAR,GX_NEAR_MIP_NEAR,2.5,9.0,0.0,GX_FALSE,GX_FALSE,GX_ANISO_1); // original/unfiltered video mode: force texture filtering OFF
+		GX_InitTexObjFilterMode(&texobj,GX_NEAR,GX_NEAR); // original/unfiltered video mode: force texture filtering OFF
 	GX_LoadTexObj (&texobj, GX_TEXMAP0);
 	memset(texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2); // clear texture memory
 }
@@ -1000,7 +980,7 @@ ResetVideo_Menu ()
 
 	// clears the bg to color and clears the z buffer
 	GXColor background = {0, 0, 0, 255};
-	GX_SetCopyClear (background, 0x00ffffff);
+	GX_SetCopyClear (background, GX_MAX_Z24);
 
 	yscale = GX_GetYScaleFactor(vmode->efbHeight,vmode->xfbHeight);
 	xfbHeight = GX_SetDispCopyYScale(yscale);
@@ -1062,7 +1042,7 @@ void Menu_Render()
 	GX_DrawDone();
 	VIDEO_SetNextFramebuffer(xfb[whichfb]);
 	VIDEO_Flush();
-	VIDEO_WaitVSync();
+	VIDEO_WaitForFlush();
 }
 
 /****************************************************************************
