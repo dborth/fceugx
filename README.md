@@ -55,6 +55,11 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[3.5.7]
+
+* Fixed 240p video in PAL over composite
+* Compiled with latest devkitPPC/libogc2
+
 [3.5.6 - July 30, 2025]
 
 * Added GC Loader support (mrysav)
