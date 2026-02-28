@@ -49,9 +49,8 @@ Wii/GameCube.
 * Artwork (artwork, cover or screenshot) support
 * Famicom 3D System support
 * IPS/UPS automatic patching support
-* NES Compatibility Based on FCEUX 2.6.6+ (git 2b8f6e7)
+* NES Compatibility Based on FCEUX 2.6.6+ (git d339f1f)
 * Open Source!
-
 
 ## UPDATE HISTORY
 
