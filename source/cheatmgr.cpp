@@ -129,12 +129,7 @@ SetupCheats()
 	char filepath[1024];
 	size_t offset = 0;
 
-	int device = GCSettings.SaveMethod;
-
-	if(device == DEVICE_AUTO)
-		device = autoSaveMethod(SILENT);
-
-	if(device == DEVICE_AUTO)
+	if(GCSettings.SaveMethod == DEVICE_AUTO)
 		return;
 
 	if(!MakeFilePath(filepath, FILE_CHEAT))

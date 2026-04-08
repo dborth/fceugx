@@ -1823,9 +1823,6 @@ static int MenuGameSaves(int action)
 	struct tm * timeinfo;
 	int method = GCSettings.SaveMethod;
 
-	if(method == DEVICE_AUTO)
-		autoSaveMethod(NOTSILENT);
-
 	if(!ChangeInterface(method, NOTSILENT))
 		return MENU_GAME;
 
@@ -2299,7 +2296,7 @@ static int MenuGameSettings()
 		{
 			if (WindowPrompt("Preview Screenshot", "Save a new Preview Screenshot? Current Screenshot image will be overwritten.", "OK", "Cancel"))
 			{
-				snprintf(filepath, 1024, "%s%s/%s", pathPrefix[GCSettings.SaveMethod], GCSettings.ScreenshotsFolder, romFilename);
+				snprintf(filepath, 1024, "%s%s/%s", pathPrefix[GCSettings.LoadMethod], GCSettings.ScreenshotsFolder, romFilename);
 				SavePreviewImg(filepath, NOTSILENT); 
 			}
 		}
