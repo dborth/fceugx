@@ -54,9 +54,10 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
-[3.5.7]
+[3.5.7 - April 13, 2026]
 
 * Fixed 240p video in PAL over composite
+* Updated to the latest FCEUX 2.6.6+ (git d339f1f)
 * Compiled with latest devkitPPC/libogc2
 
 [3.5.6 - July 30, 2025]
