@@ -117,6 +117,7 @@ void ExitApp()
 
 	ExitCleanup();
 
+#ifdef HW_RVL
 	if(ShutdownRequested) {
 		SYS_ResetSystem(SYS_POWEROFF_STANDBY, 0, FALSE);
 	}
@@ -133,7 +134,6 @@ void ExitApp()
 		}
 	}
 	else {
-		#ifdef HW_RVL
 		if(GCSettings.ExitAction == 0) // Auto
 		{
 			char * sig = (char *)0x80001804;
@@ -150,7 +150,6 @@ void ExitApp()
 			else
 				GCSettings.ExitAction = 1; // HBC not found
 		}
-		#endif
 
 		if(GCSettings.ExitAction == 1) // Exit to Menu
 		{
@@ -162,14 +161,22 @@ void ExitApp()
 		}
 		else // Exit to Loader
 		{
-			#ifdef HW_RVL
-				exit(0);
-			#else
-				if (psoid[0] == PSOSDLOADID)
-					PSOReload();
-			#endif
+			exit(0);
 		}
 	}
+#else
+	if(GCSettings.ExitAction == 1) // Reboot
+	{
+		SYS_ResetSystem(SYS_RETURNTOMENU, 0, FALSE);
+	}
+	else // Exit to Loader
+	{
+		if (psoid[0] == PSOSDLOADID)
+			PSOReload();
+		else
+			exit(0);
+	}
+#endif
 }
 
 #ifdef HW_RVL
@@ -433,14 +440,15 @@ int main(int argc, char *argv[])
 
 	bool autoboot = false;
 
+#ifdef HW_RVL
 	if(argc > 2 && argv[1] != NULL && argv[2] != NULL) {
 		LoadPrefs();
-		if(strcasestr(argv[1], "sd:/") != NULL)
+		if(strncmp(argv[1], "sd", 2) == 0)
 		{
 			GCSettings.SaveMethod = DEVICE_SD;
 			GCSettings.LoadMethod = DEVICE_SD;
 		}
-		else
+		else if(strncmp(argv[1], "usb", 3) == 0)
 		{
 			GCSettings.SaveMethod = DEVICE_USB;
 			GCSettings.LoadMethod = DEVICE_USB;
@@ -450,6 +458,7 @@ int main(int argc, char *argv[])
 		GCSettings.AutoloadGame = AutoloadGame(argv[1], argv[2]);
 		autoboot = GCSettings.AutoloadGame;
 	}
+#endif
 
 	while (1) // main loop
 	{
