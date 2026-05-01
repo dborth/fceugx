@@ -152,9 +152,6 @@ bool FindGameGenie()
 		return true;
 
 	if(GCSettings.LoadMethod == DEVICE_AUTO)
-		GCSettings.LoadMethod = autoLoadMethod();
-
-	if(GCSettings.LoadMethod == DEVICE_AUTO)
 		return false;
 
 	AllocSaveBuffer();

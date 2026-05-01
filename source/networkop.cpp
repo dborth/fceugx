@@ -207,9 +207,6 @@ void CloseShare()
 bool
 ConnectShare (bool silent)
 {
-	if(!InitializeNetwork(silent))
-		return false;
-
 	if(networkShareInit)
 		return true;
 
@@ -236,6 +233,9 @@ ConnectShare (bool silent)
 		}
 		return false;
 	}
+	
+	if(!InitializeNetwork(silent))
+		return false;
 
 	while(retry)
 	{
