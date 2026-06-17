@@ -238,8 +238,9 @@ int UpdateDirName()
 	char * test;
 	char temp[1024];
 
-	if(browser.numEntries == 0)
+	if(browser.numEntries == 0 || browser.selIndex < 0 || browser.selIndex >= browser.numEntries) {
 		return 1;
+	}
 
 	/* current directory doesn't change */
 	if (strcmp(browserList[browser.selIndex].filename,".") == 0)
@@ -609,6 +610,13 @@ done:
 	return romLoaded;
 }
 
+void CloseSzIfOpen() {
+	if(inSz) {
+		inSz = false;
+		SzClose();
+	}
+}
+
 /****************************************************************************
  * BrowserChangeFolder
  *
@@ -618,12 +626,13 @@ int BrowserChangeFolder()
 {
 	if(inSz && browser.selIndex == 0) // inside a 7z, requesting to leave
 	{
-		inSz = false;
-		SzClose();
+		CloseSzIfOpen();
 	}
 
-	if(!UpdateDirName()) 
+	if(!UpdateDirName()) {
+		CloseSzIfOpen();
 		return -1;
+	}
 
 	HaltParseThread();
 	CleanupPath(browser.dir);
@@ -631,15 +640,22 @@ int BrowserChangeFolder()
 
 	if(browser.dir[0] != 0)
 	{
-		if(strstr(browser.dir, ".7z"))
-		{
-			BrowserLoadSz();
+		// skip if device is no longer mounted
+		if(!ChangeInterface(browser.dir, NOTSILENT)) {
+			CloseSzIfOpen();
+			browser.numEntries = 0;
 		}
-		else 
-		{
-			ParseDirectory(true, true);
+		else {
+			if(strstr(browser.dir, ".7z"))
+			{
+				BrowserLoadSz();
+			}
+			else
+			{
+				ParseDirectory(true, true);
+			}
+			FindAndSelectLastLoadedFile();
 		}
-		FindAndSelectLastLoadedFile();
 	}
 
 	if(browser.numEntries == 0)
@@ -740,7 +756,7 @@ OpenGameList ()
 {
 	int device = GCSettings.LoadMethod;
 
-	if(device > 0 && ChangeInterface(device, SILENT)) {
+	if(device > 0 && ChangeInterface(device, NOTSILENT)) {
 		// change current dir to roms directory
 		sprintf(browser.dir, "%s%s/", pathPrefix[device], GCSettings.LoadFolder);
 
