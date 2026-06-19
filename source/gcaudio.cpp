@@ -17,13 +17,26 @@
 
 extern int ScreenshotRequested;
 extern int ConfigRequested;
-static u8 soundbuffer[2][3840] ATTRIBUTE_ALIGN(32);
-static u8 mixbuffer[16000];
-static int mixhead = 0;
-static int mixtail = 0;
+
+// Each DMA buffer holds one frame's worth of 16-bit stereo samples.
+#define DMA_BUFFER_BYTES 3840
+
+// Ring buffer of stereo samples (one u32 == one L/R sample pair).
+#define MIX_SAMPLES 4000
+
+// AUDIO_InitDMA requires 32-byte aligned lengths.
+#define DMA_ALIGN 32
+
+static u8 soundbuffer[2][DMA_BUFFER_BYTES] ATTRIBUTE_ALIGN(32);
+static u32 mixbuffer[MIX_SAMPLES] ATTRIBUTE_ALIGN(32);
+
+// Shared between the emulator thread (producer) and the DMA interrupt
+// callback (consumer); must not be cached in registers.
+static volatile int mixhead = 0;
+static volatile int mixtail = 0;
+static volatile int IsPlaying = 0;
 static int whichab = 0;
-static int IsPlaying = 0;
-static int samplerate;
+static int samplerate = 0;
 
 /****************************************************************************
  * MixerCollect
@@ -34,28 +47,57 @@ static int samplerate;
 static int MixerCollect( u8 *outbuffer, int len )
 {
 	u32 *dst = (u32 *)outbuffer;
-	u32 *src = (u32 *)mixbuffer;
-	int done = 0;
+	const int maxsamples = len >> 2; // u32 samples that fit in outbuffer
+	const int head = mixhead;        // snapshot the producer index once
+	int tail = mixtail;
 
-	// Always clear output buffer
-	memset(outbuffer, 0, len);
+	// Number of buffered samples available to copy this pass
+	int avail = head - tail;
+	if (avail < 0)
+		avail += MIX_SAMPLES;
+	if (avail > maxsamples)
+		avail = maxsamples;
 
-	while ( ( mixtail != mixhead ) && ( done < len ) )
+	int done = avail;
+
+	// Copy the (up to) two contiguous ring segments in bulk
+	if (done > 0)
 	{
-		*dst++ = src[mixtail++];
-		if (mixtail == 4000) mixtail = 0;
-		done += 4;
+		int first = MIX_SAMPLES - tail;
+		if (first > done)
+			first = done;
+		memcpy(dst, &mixbuffer[tail], first * sizeof(u32));
+		if (done > first)
+			memcpy(dst + first, &mixbuffer[0], (done - first) * sizeof(u32));
+
+		tail += done;
+		if (tail >= MIX_SAMPLES)
+			tail -= MIX_SAMPLES;
 	}
 
-	// Realign to 32 bytes for DMA
-	mixtail -= ((done&0x1f) >> 2);
-	if (mixtail < 0)
-		mixtail += 4000;
-	done &= ~0x1f;
-	if (!done)
+	int bytes = done << 2;
+
+	// Realign down to a 32-byte boundary for DMA, returning the truncated
+	// samples to the ring so they are played next pass.
+	int extra = (bytes & (DMA_ALIGN - 1)) >> 2;
+	if (extra)
+	{
+		tail -= extra;
+		if (tail < 0)
+			tail += MIX_SAMPLES;
+		bytes &= ~(DMA_ALIGN - 1);
+	}
+
+	mixtail = tail;
+
+	// Zero only the unfilled tail of the output buffer (underrun gap).
+	if (bytes < len)
+		memset(outbuffer + bytes, 0, len - bytes);
+
+	if (!bytes)
 		return len >> 1;
 
-	return done;
+	return bytes;
 }
 
 /****************************************************************************
@@ -67,7 +109,7 @@ static void AudioSwitchBuffers()
 {
 	if ( !ScreenshotRequested && !ConfigRequested ) {
 		IsPlaying = 1;
-		int len = MixerCollect( soundbuffer[whichab], 3840 );
+		int len = MixerCollect( soundbuffer[whichab], DMA_BUFFER_BYTES );
 		DCFlushRange(soundbuffer[whichab], len);
 		AUDIO_InitDMA((u32)soundbuffer[whichab], len);
 		whichab ^= 1;
@@ -85,14 +127,14 @@ static void AudioSwitchBuffers()
 void InitialiseAudio()
 {
 	#ifdef NO_SOUND
-	AUDIO_Init (NULL);
+	AUDIO_Init(NULL);
 	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
 	AUDIO_RegisterDMACallback(AudioSwitchBuffers);
 	#else
 	ASND_Init();
 	#endif
-	memset(soundbuffer, 0, 3840*2);
-	memset(mixbuffer, 0, 16000);
+	memset(soundbuffer, 0, sizeof(soundbuffer));
+	memset(mixbuffer, 0, sizeof(mixbuffer));
 }
 
 /****************************************************************************
@@ -102,8 +144,8 @@ void InitialiseAudio()
  ***************************************************************************/
 void ResetAudio()
 {
-	memset(soundbuffer, 0, 3840*2);
-	memset(mixbuffer, 0, 16000);
+	memset(soundbuffer, 0, sizeof(soundbuffer));
+	memset(mixbuffer, 0, sizeof(mixbuffer));
 	mixhead = mixtail = 0;
 }
 
@@ -158,17 +200,17 @@ void ShutdownAudio()
  ****************************************************************************/
 void PlaySound( int32 *Buffer, int count )
 {
-	int i;
-	u16 sample;
-	u32 *dst = (u32 *)mixbuffer;
+	int head = mixhead;
 
-	for( i = 0; i < count; i++ ) {
-		sample = Buffer[i] & 0xffff;
-		dst[mixhead++] = sample | ( sample << 16);
-		if (mixhead == 4000) {
-			mixhead = 0;
-		}
+	for( int i = 0; i < count; i++ ) {
+		// Duplicate the 16-bit mono sample into both stereo channels.
+		u32 sample = (u32)(Buffer[i] & 0xffff);
+		mixbuffer[head++] = sample | (sample << 16);
+		if (head == MIX_SAMPLES)
+			head = 0;
 	}
+
+	mixhead = head;
 
 	// Restart Sound Processing if stopped
 	if (IsPlaying == 0) {
