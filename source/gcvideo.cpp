@@ -47,7 +47,7 @@ static int oldRenderMode = -1; // set to GCSettings.render when changing (tempor
 #define TEX_HEIGHT 240
 #define DEFAULT_FIFO_SIZE ( 256 * 1024 )
 static u8 gp_fifo[DEFAULT_FIFO_SIZE] ATTRIBUTE_ALIGN(32);
-static u32 copynow = GX_FALSE;
+static volatile u32 copynow = GX_FALSE;
 static GXTexObj texobj;
 static Mtx view;
 static Mtx GXmodelView2D;
@@ -725,92 +725,97 @@ void RenderFrame(unsigned char *XBuf)
 	if(GCSettings.hideoverscan >= 2)
 		borderwidth = 8;
 
-	u16 *texture = (unsigned short *)texturemem + (borderheight << 8) + (borderwidth << 2);
-	u8 *src1 = XBuf + (borderheight << 8) + borderwidth;
-	u8 *src2 = XBuf + (borderheight << 8) + borderwidth + 256;
-	u8 *src3 = XBuf + (borderheight << 8) + borderwidth + 512;
-	u8 *src4 = XBuf + (borderheight << 8) + borderwidth + 768;
+    // Pack two RGB565 texels into one 32-bit store (big-endian: first texel
+    // occupies the high halfword). Halves the number of texture writes per
+    // pixel on this 32-bit CPU while producing identical bytes in memory.
+    u32 *texture = (u32 *)((u16 *)texturemem + (borderheight << 8) + (borderwidth << 2));
+    u8 *src1 = XBuf + (borderheight << 8) + borderwidth;
+    u8 *src2 = XBuf + (borderheight << 8) + borderwidth + 256;
+    u8 *src3 = XBuf + (borderheight << 8) + borderwidth + 512;
+    u8 *src4 = XBuf + (borderheight << 8) + borderwidth + 768;
 
-	// fill the texture
-	for (height = 0; height < 240 - (borderheight << 1); height += 4)
-	{
-		for (width = 0; width < 256 - (borderwidth << 1); width += 4)
-		{
-			// Row one
-			*texture++ = rgb565[*src1++];
-			*texture++ = rgb565[*src1++];
-			*texture++ = rgb565[*src1++];
-			*texture++ = rgb565[*src1++];
+    // Hoist loop-invariant bounds and per-row advances out of the loops.
+    const int heightLimit = 240 - (borderheight << 1);
+    const int widthLimit = 256 - (borderwidth << 1);
+    const int srcadvance = 768 + (borderwidth << 1);
+    const int texadvance = borderwidth << 2; // in u32 units (== borderwidth<<3 u16)
 
-			// Row two
-			*texture++ = rgb565[*src2++];
-			*texture++ = rgb565[*src2++];
-			*texture++ = rgb565[*src2++];
-			*texture++ = rgb565[*src2++];
+    // fill the texture
+    for (height = 0; height < heightLimit; height += 4)
+    {
+        for (width = 0; width < widthLimit; width += 4)
+        {
+            // Row one
+            *texture++ = ((u32)rgb565[src1[0]] << 16) | rgb565[src1[1]];
+            *texture++ = ((u32)rgb565[src1[2]] << 16) | rgb565[src1[3]];
+            src1 += 4;
 
-			// Row three
-			*texture++ = rgb565[*src3++];
-			*texture++ = rgb565[*src3++];
-			*texture++ = rgb565[*src3++];
-			*texture++ = rgb565[*src3++];
+            // Row two
+            *texture++ = ((u32)rgb565[src2[0]] << 16) | rgb565[src2[1]];
+            *texture++ = ((u32)rgb565[src2[2]] << 16) | rgb565[src2[3]];
+            src2 += 4;
 
-			// Row four
-			*texture++ = rgb565[*src4++];
-			*texture++ = rgb565[*src4++];
-			*texture++ = rgb565[*src4++];
-			*texture++ = rgb565[*src4++];
-		}
-		src1 += 768 + (borderwidth << 1); // line 4*N
-		src2 += 768 + (borderwidth << 1); // line 4*(N+1)
-		src3 += 768 + (borderwidth << 1); // line 4*(N+2)
-		src4 += 768 + (borderwidth << 1); // line 4*(N+3)
+            // Row three
+            *texture++ = ((u32)rgb565[src3[0]] << 16) | rgb565[src3[1]];
+            *texture++ = ((u32)rgb565[src3[2]] << 16) | rgb565[src3[3]];
+            src3 += 4;
 
-		texture += (borderwidth << 3);
-	}
+            // Row four
+            *texture++ = ((u32)rgb565[src4[0]] << 16) | rgb565[src4[1]];
+            *texture++ = ((u32)rgb565[src4[2]] << 16) | rgb565[src4[3]];
+            src4 += 4;
+        }
+        src1 += srcadvance; // line 4*N
+        src2 += srcadvance; // line 4*(N+1)
+        src3 += srcadvance; // line 4*(N+2)
+        src4 += srcadvance; // line 4*(N+3)
 
-	// load texture into GX
-	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
+        texture += texadvance;
+    }
 
-	// clear texture objects
-	GX_InvalidateTexAll();
+    // load texture into GX
+    DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
 
-	// render textured quad
-	draw_square(view);
-	GX_DrawDone();
+    // clear texture objects
+    GX_InvalidateTexAll();
 
-	if(ScreenshotRequested)
-	{
-		if(GCSettings.render == 0) // we can't take a screenshot in Original mode
-		{
-			oldRenderMode = 0;
-			GCSettings.render = 2; // switch to unfiltered mode
-			UpdateVideo = 1; // request the switch
-		}
-		else
-		{
-			ScreenshotRequested = 0;
-			TakeScreenshot();
-			if(oldRenderMode != -1)
-			{
-				GCSettings.render = oldRenderMode;
-				oldRenderMode = -1;
-			}
-			ConfigRequested = 1;
-		}
-	}
+    // render textured quad
+    draw_square(view);
+    GX_DrawDone();
 
-	// EFB is ready to be copied into XFB
-	VIDEO_SetNextFramebuffer(xfb[whichfb]);
-	VIDEO_Flush();
+    if(ScreenshotRequested)
+    {
+        if(GCSettings.render == 0) // we can't take a screenshot in Original mode
+        {
+            oldRenderMode = 0;
+            GCSettings.render = 2; // switch to unfiltered mode
+            UpdateVideo = 1; // request the switch
+        }
+        else
+        {
+            ScreenshotRequested = 0;
+            TakeScreenshot();
+            if(oldRenderMode != -1)
+            {
+                GCSettings.render = oldRenderMode;
+                oldRenderMode = -1;
+            }
+            ConfigRequested = 1;
+        }
+    }
 
-	copynow = GX_TRUE;
+    // EFB is ready to be copied into XFB
+    VIDEO_SetNextFramebuffer(xfb[whichfb]);
+    VIDEO_Flush();
 
-	// Return to caller, don't waste time waiting for vb
-	LWP_ResumeThread (vbthread);
+    copynow = GX_TRUE;
+
+    // Return to caller, don't waste time waiting for vb
+    LWP_ResumeThread (vbthread);
 }
 
 /****************************************************************************
- * RenderFrame
+ * RenderStereoFrames
  *
  * Render a single frame
  ****************************************************************************/
@@ -846,7 +851,9 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	if(GCSettings.hideoverscan >= 2)
 		borderwidth = 8;
 
-	u16 *texture = (unsigned short *)texturemem + (borderheight << 8) + (borderwidth << 2);
+	// Pack two anaglyph RGB565 texels into one 32-bit store (big-endian:
+	// first texel in the high halfword). Identical bytes, half the writes.
+	u32 *texture = (u32 *)((u16 *)texturemem + (borderheight << 8) + (borderwidth << 2));
 	u8 *Lsrc1 = XBufLeft + (borderheight << 8) + borderwidth;
 	u8 *Lsrc2 = XBufLeft + (borderheight << 8) + borderwidth + 256;
 	u8 *Lsrc3 = XBufLeft + (borderheight << 8) + borderwidth + 512;
@@ -856,42 +863,38 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	u8 *Rsrc3 = XBufRight + (borderheight << 8) + borderwidth + 512;
 	u8 *Rsrc4 = XBufRight + (borderheight << 8) + borderwidth + 768;
 
+	// Hoist loop-invariant bounds and per-row advances out of the loops.
+	const int heightLimit = 240 - (borderheight << 1);
+	const int widthLimit = 256 - (borderwidth << 1);
+	const int srcadvance = 768 + (borderwidth << 1);
+	const int texadvance = borderwidth << 2; // in u32 units (== borderwidth<<3 u16)
+
 	// fill the texture with red/cyan anaglyph
-	for (height = 0; height < 240 - (borderheight << 1); height += 4)
+	for (height = 0; height < heightLimit; height += 4)
 	{
-		for (width = 0; width < 256 - (borderwidth << 1); width += 4)
+		for (width = 0; width < widthLimit; width += 4)
 		{
 			// Row one
-			*texture++ = anaglyph565[(*Lsrc1++) & 63][(*Rsrc1++) & 63];
-			*texture++ = anaglyph565[(*Lsrc1++) & 63][(*Rsrc1++) & 63];
-			*texture++ = anaglyph565[(*Lsrc1++) & 63][(*Rsrc1++) & 63];
-			*texture++ = anaglyph565[(*Lsrc1++) & 63][(*Rsrc1++) & 63];
+			*texture++ = ((u32)anaglyph565[Lsrc1[0] & 63][Rsrc1[0] & 63] << 16) | anaglyph565[Lsrc1[1] & 63][Rsrc1[1] & 63];
+			*texture++ = ((u32)anaglyph565[Lsrc1[2] & 63][Rsrc1[2] & 63] << 16) | anaglyph565[Lsrc1[3] & 63][Rsrc1[3] & 63];
+			Lsrc1 += 4; Rsrc1 += 4;
 			// Row two
-			*texture++ = anaglyph565[(*Lsrc2++) & 63][(*Rsrc2++) & 63];
-			*texture++ = anaglyph565[(*Lsrc2++) & 63][(*Rsrc2++) & 63];
-			*texture++ = anaglyph565[(*Lsrc2++) & 63][(*Rsrc2++) & 63];
-			*texture++ = anaglyph565[(*Lsrc2++) & 63][(*Rsrc2++) & 63];
+			*texture++ = ((u32)anaglyph565[Lsrc2[0] & 63][Rsrc2[0] & 63] << 16) | anaglyph565[Lsrc2[1] & 63][Rsrc2[1] & 63];
+			*texture++ = ((u32)anaglyph565[Lsrc2[2] & 63][Rsrc2[2] & 63] << 16) | anaglyph565[Lsrc2[3] & 63][Rsrc2[3] & 63];
+			Lsrc2 += 4; Rsrc2 += 4;
 			// Row three
-			*texture++ = anaglyph565[(*Lsrc3++) & 63][(*Rsrc3++) & 63];
-			*texture++ = anaglyph565[(*Lsrc3++) & 63][(*Rsrc3++) & 63];
-			*texture++ = anaglyph565[(*Lsrc3++) & 63][(*Rsrc3++) & 63];
-			*texture++ = anaglyph565[(*Lsrc3++) & 63][(*Rsrc3++) & 63];
+			*texture++ = ((u32)anaglyph565[Lsrc3[0] & 63][Rsrc3[0] & 63] << 16) | anaglyph565[Lsrc3[1] & 63][Rsrc3[1] & 63];
+			*texture++ = ((u32)anaglyph565[Lsrc3[2] & 63][Rsrc3[2] & 63] << 16) | anaglyph565[Lsrc3[3] & 63][Rsrc3[3] & 63];
+			Lsrc3 += 4; Rsrc3 += 4;
 			// Row four
-			*texture++ = anaglyph565[(*Lsrc4++) & 63][(*Rsrc4++) & 63];
-			*texture++ = anaglyph565[(*Lsrc4++) & 63][(*Rsrc4++) & 63];
-			*texture++ = anaglyph565[(*Lsrc4++) & 63][(*Rsrc4++) & 63];
-			*texture++ = anaglyph565[(*Lsrc4++) & 63][(*Rsrc4++) & 63];
+			*texture++ = ((u32)anaglyph565[Lsrc4[0] & 63][Rsrc4[0] & 63] << 16) | anaglyph565[Lsrc4[1] & 63][Rsrc4[1] & 63];
+			*texture++ = ((u32)anaglyph565[Lsrc4[2] & 63][Rsrc4[2] & 63] << 16) | anaglyph565[Lsrc4[3] & 63][Rsrc4[3] & 63];
+			Lsrc4 += 4; Rsrc4 += 4;
 		}
-		Lsrc1 += 768 + (borderwidth << 1); // line 4*N
-		Lsrc2 += 768 + (borderwidth << 1); // line 4*(N+1)
-		Lsrc3 += 768 + (borderwidth << 1); // line 4*(N+2)
-		Lsrc4 += 768 + (borderwidth << 1); // line 4*(N+3)
-		Rsrc1 += 768 + (borderwidth << 1); // line 4*N
-		Rsrc2 += 768 + (borderwidth << 1); // line 4*(N+1)
-		Rsrc3 += 768 + (borderwidth << 1); // line 4*(N+2)
-		Rsrc4 += 768 + (borderwidth << 1); // line 4*(N+3)
+		Lsrc1 += srcadvance; Lsrc2 += srcadvance; Lsrc3 += srcadvance; Lsrc4 += srcadvance;
+		Rsrc1 += srcadvance; Rsrc2 += srcadvance; Rsrc3 += srcadvance; Rsrc4 += srcadvance;
 
-		texture += (borderwidth << 3);
+		texture += texadvance;
 	}
 
 	// load texture into GX
@@ -948,7 +951,17 @@ void TakeScreenshot()
 	{
 		gameScreenPngSize = PNGU_EncodeFromEFB(pngContext, vmode->fbWidth, vmode->efbHeight);
 		PNGU_ReleaseImageContext(pngContext);
-		gameScreenPng = (u8 *)malloc(gameScreenPngSize);
+
+		if (gameScreenPngSize <= 0) {
+			gameScreenPngSize = 0;
+			return;
+		}
+
+		gameScreenPng = (u8 *) malloc(gameScreenPngSize);
+		if (gameScreenPng == NULL) {
+			gameScreenPngSize = 0;
+			return;
+		}
 		memcpy(gameScreenPng, savebuffer, gameScreenPngSize);
 	}
 }
@@ -1213,10 +1226,14 @@ static void GenerateAnaglyphPalette()
 {
 	for (int left = 0; left < 64; left++)
 	{
+		// Left-eye colour is invariant across the inner loop; read it once.
+		const u8 lr = pcpalette[left].r;
+		const u8 lg = pcpalette[left].g;
+		const u8 lb = pcpalette[left].b;
 		for (int right = 0; right < 64; right++)
 		{
 			u8 ar, ag, ab;
-			OptimisedAnaglyph(&ar, &ag, &ab, pcpalette[left].r, pcpalette[left].g, pcpalette[left].b, pcpalette[right].r, pcpalette[right].g, pcpalette[right].b);
+			OptimisedAnaglyph(&ar, &ag, &ab, lr, lg, lb, pcpalette[right].r, pcpalette[right].g, pcpalette[right].b);
 			anaglyph565[left][right] = ((ar & 0xf8) << 8) | ((ag & 0xfc) << 3) | ((ab & 0xf8) >> 3);
 		}
 	}
