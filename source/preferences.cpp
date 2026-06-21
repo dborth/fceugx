@@ -429,7 +429,7 @@ DefaultSettings ()
 	GCSettings.render = 3; // Filtered (sharp)
 	GCSettings.hideoverscan = 3; // hide both
 
-	GCSettings.widescreen = 0;
+	GCSettings.widescreen = 1;
 
 #ifdef HW_RVL
 	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
@@ -447,7 +447,7 @@ DefaultSettings ()
 	GCSettings.MusicVolume = 20;
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1; // Enabled
-	GCSettings.PreviewImage = 0;
+	GCSettings.PreviewImage = PREVIEWIMAGE_COVER;
 	GCSettings.HideRAMSaving = 0;
 	
 #ifdef HW_RVL
