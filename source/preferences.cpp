@@ -379,9 +379,9 @@ decodePrefsData ()
  ***************************************************************************/
 void FixInvalidSettings()
 {
-	if(GCSettings.LoadMethod > 8)
+	if(GCSettings.LoadMethod >= DEVICE_LENGTH)
 		GCSettings.LoadMethod = DEVICE_AUTO;
-	if(GCSettings.SaveMethod > 8)
+	if(GCSettings.SaveMethod >= DEVICE_LENGTH)
 		GCSettings.SaveMethod = DEVICE_AUTO;
 	if(!(GCSettings.zoomHor > 0.5 && GCSettings.zoomHor < 1.5))
 		GCSettings.zoomHor = 1.0;
@@ -447,7 +447,11 @@ DefaultSettings ()
 
 	GCSettings.WiimoteOrientation = WIIMOTEORIENTATION_VERTICAL;
 	GCSettings.AutoloadGame = 0;
-	GCSettings.ExitAction = 0; // Auto
+#ifdef HW_RVL
+	GCSettings.ExitAction = EXITACTION_WII_AUTO;
+#else
+	GCSettings.ExitAction = EXITACTION_GC_RETURN_TO_LOADER;
+#endif
 	GCSettings.MusicVolume = 20;
 	GCSettings.SFXVolume = 40;
 	GCSettings.Rumble = 1; // Enabled
