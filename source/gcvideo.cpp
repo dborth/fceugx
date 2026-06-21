@@ -19,6 +19,7 @@
 #include <ogc/texconv.h>
 #include <ogc/lwp_watchdog.h>
 #include <ogc/machine/processor.h>
+#include <ogc/cond.h>
 
 #include "fceugx.h"
 #include "fceusupport.h"
@@ -246,22 +247,25 @@ void SyncSpeed()
  * VideoThreading
  ***************************************************************************/
 static lwp_t vbthread = LWP_THREAD_NULL;
+static lwpq_t render_queue;          // Queue for the main thread to sleep on
+static lwpq_t vb_queue;              // Queue for the VSync thread to sleep on
+static volatile bool vb_done = true; // Tracks if the VSync thread has completed its wait
 
 /****************************************************************************
  * vbgetback
  *
  * This callback enables the emulator to keep running while waiting for a
- * vertical blank.
- *
- * Putting LWP to good use :)
+ * vertical blank
  ***************************************************************************/
 static void *
 vbgetback (void *arg)
 {
 	while (1)
 	{
-		VIDEO_WaitVSync ();
-		LWP_SuspendThread (vbthread);
+		LWP_ThreadSleep(vb_queue);     // Sleep until kicked off by copy_to_xfb
+		VIDEO_WaitVSync ();	         /**< Wait for video vertical blank */
+		vb_done = true;
+		LWP_ThreadSignal(render_queue); // Instantly alert the main thread if it is waiting
 	}
 
 	return NULL;
@@ -281,6 +285,7 @@ copy_to_xfb (u32 arg)
 		GX_CopyDisp (xfb[whichfb], GX_TRUE);
 		GX_Flush ();
 		copynow = GX_FALSE;
+		LWP_ThreadSignal(render_queue); // Wake up the main thread if it is waiting for the copy
 	}
 
 	FrameTimer++;
@@ -582,6 +587,11 @@ InitGCVideo ()
 	#endif
 
 	SetupVideoMode(rmode);
+
+	// Setup synchronization queues
+	LWP_InitQueue(&render_queue);
+	LWP_InitQueue(&vb_queue);
+	vb_done = true;
 	LWP_CreateThread (&vbthread, vbgetback, NULL, NULL, 0, 68);
 
 	// Initialize GX
@@ -700,9 +710,11 @@ ResetVideo_Emu ()
 
 void RenderFrame(unsigned char *XBuf)
 {
-	// Ensure previous vb has complete
-	while ((LWP_ThreadIsSuspended (vbthread) == 0) || (copynow == GX_TRUE))
-		usleep (50);
+	// Ensure previous frame copy and background VSync block have finished cleanly
+	while (!vb_done || (copynow == GX_TRUE))
+	{
+		LWP_ThreadSleep(render_queue); // Halts main thread with 0 CPU load until signals occur
+	}
 
 	// swap framebuffers
 	whichfb ^= 1;
@@ -809,8 +821,9 @@ void RenderFrame(unsigned char *XBuf)
 
     copynow = GX_TRUE;
 
-    // Return to caller, don't waste time waiting for vb
-    LWP_ResumeThread (vbthread);
+    // Reset state and signal background VSync thread to begin waiting for next blanking interval
+	vb_done = false;
+	LWP_ThreadSignal(vb_queue);
 }
 
 /****************************************************************************
@@ -821,9 +834,11 @@ void RenderFrame(unsigned char *XBuf)
 
 void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 {
-	// Ensure previous vb has complete
-	while ((LWP_ThreadIsSuspended (vbthread) == 0) || (copynow == GX_TRUE))
-		usleep (50);
+	// Ensure previous frame copy and background VSync block have finished cleanly
+	while (!vb_done || (copynow == GX_TRUE))
+	{
+		LWP_ThreadSleep(render_queue); // Halts main thread with 0 CPU load until signals occur
+	}
 
 	// swap framebuffers
 	whichfb ^= 1;
@@ -932,8 +947,9 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 
 	copynow = GX_TRUE;
 
-	// Return to caller, don't waste time waiting for vb
-	LWP_ResumeThread (vbthread);
+	// Reset state and signal background VSync thread to begin waiting for next blanking interval
+	vb_done = false;
+	LWP_ThreadSignal(vb_queue);
 }
 
 /****************************************************************************
