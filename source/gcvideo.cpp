@@ -204,7 +204,7 @@ static u32 normaldiff;
 
 void setFrameTimer()
 {
-	if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1 || GCSettings.timing == 3) // PAL
+	if (FCEUI_GetCurrentVidSystem(NULL, NULL) == TIMING_PAL || GCSettings.timing == TIMING_DENDY) // PAL
 		normaldiff = 20000; // 50hz
 	else
 		normaldiff = 16667; // 60hz
@@ -401,7 +401,7 @@ UpdateScaling()
 	int xscale, yscale;
 
 	// update scaling
-	if (GCSettings.render == 0)	// original render mode
+	if (GCSettings.render == RENDER_ORIGINAL)
 	{
 		xscale = 512 / 2; // use GX scaler instead VI
 		yscale = TEX_HEIGHT / 2;
@@ -414,7 +414,7 @@ UpdateScaling()
 
 	if (GCSettings.widescreen)
 	{
-		if(GCSettings.render == 0)
+		if(GCSettings.render == RENDER_ORIGINAL)
 			xscale = (3*xscale)/4;
 		else
 			xscale = 256; // match the original console's width for "widescreen" to prevent flickering
@@ -445,16 +445,16 @@ static GXRModeObj * FindVideoMode()
 	// choose the desired video mode
 	switch(GCSettings.videomode)
 	{
-		case 1: // NTSC (480i)
+		case VIDEOMODE_NTSC: // NTSC (480i)
 			mode = &TVNtsc480IntDf;
 			break;
-		case 2: // Progressive (480p)
+		case VIDEOMODE_PROGRESSIVE: // Progressive (480p)
 			mode = &TVNtsc480Prog;
 			break;
-		case 3: // PAL (50Hz)
+		case VIDEOMODE_PAL: // PAL (50Hz)
 			mode = &TVPal576IntDfScale;
 			break;
-		case 4: // PAL (60Hz)
+		case VIDEOMODE_PAL60: // PAL (60Hz)
 			mode = &TVEurgb60Hz480IntDf;
 			break;
 		default:
@@ -621,12 +621,12 @@ ResetVideo_Emu ()
 
 	// set VI mode and audio sample rate depending on if original mode is used
 
-	if (GCSettings.render == 0)
+	if (GCSettings.render == RENDER_ORIGINAL)
 	{
-		int timing = GCSettings.timing == 3 ? 1 : FCEUI_GetCurrentVidSystem(NULL, NULL);
+		int timing = GCSettings.timing == TIMING_DENDY ? TIMING_PAL : FCEUI_GetCurrentVidSystem(NULL, NULL);
 		rmode = tvmodes[timing];
 
-		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1 || GCSettings.timing == 3) // PAL
+		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == TIMING_PAL || GCSettings.timing == TIMING_DENDY) // PAL
 			UpdateSampleRate(48070);
 		else
 			UpdateSampleRate(48220);
@@ -640,7 +640,7 @@ ResetVideo_Emu ()
 		else
 			ResetFbWidth(512, rmode);
 		
-		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == 1 || GCSettings.timing == 3) // PAL
+		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == TIMING_PAL || GCSettings.timing == TIMING_DENDY) // PAL
 			UpdateSampleRate(48080);
 		else
 			UpdateSampleRate(48130);
@@ -661,8 +661,8 @@ ResetVideo_Emu ()
 	u8 sharp[7] = {0,0,21,22,21,0,0};
 	u8 soft[7] = {8,8,10,12,10,8,8};
 	u8* vfilter =
-		GCSettings.render == 3 ? sharp
-		: GCSettings.render == 4 ? soft
+		GCSettings.render == RENDER_FILTERED_SHARP ? sharp
+		: GCSettings.render == RENDER_FILTERED_SOFT ? soft
 		: rmode->vfilter;
 	GX_SetCopyFilter(rmode->aa, rmode->sample_pattern, (rmode->xfbMode == VI_XFBMODE_SF) ? GX_FALSE : GX_TRUE, vfilter);
 
@@ -686,7 +686,7 @@ ResetVideo_Emu ()
 	// reinitialize texture
 	GX_InvalidateTexAll ();
 	GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
-	if (!(GCSettings.render&1))
+	if (GCSettings.render == RENDER_ORIGINAL || GCSettings.render == RENDER_UNFILTERED)
 		GX_InitTexObjFilterMode(&texobj,GX_NEAR,GX_NEAR); // original/unfiltered video mode: force texture filtering OFF
 	GX_LoadTexObj (&texobj, GX_TEXMAP0);
 	memset(texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2); // clear texture memory
@@ -719,10 +719,9 @@ void RenderFrame(unsigned char *XBuf)
 	u8 borderheight = 0;
 	u8 borderwidth = 0;
 
-	// 0 = off, 1 = vertical, 2 = horizontal, 3 = both
-	if(GCSettings.hideoverscan == 1 || GCSettings.hideoverscan == 3)
+	if(GCSettings.hideoverscan == HIDEOVERSCAN_VERTICAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
 		borderheight = 8;
-	if(GCSettings.hideoverscan >= 2)
+	if(GCSettings.hideoverscan == HIDEOVERSCAN_HORIZONTAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
 		borderwidth = 8;
 
     // Pack two RGB565 texels into one 32-bit store (big-endian: first texel
@@ -785,10 +784,10 @@ void RenderFrame(unsigned char *XBuf)
 
     if(ScreenshotRequested)
     {
-        if(GCSettings.render == 0) // we can't take a screenshot in Original mode
+        if(GCSettings.render == RENDER_ORIGINAL) // we can't take a screenshot in Original mode
         {
-            oldRenderMode = 0;
-            GCSettings.render = 2; // switch to unfiltered mode
+            oldRenderMode = RENDER_ORIGINAL;
+            GCSettings.render = RENDER_UNFILTERED; // switch to unfiltered mode
             UpdateVideo = 1; // request the switch
         }
         else
@@ -845,10 +844,9 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	u8 borderheight = 0;
 	u8 borderwidth = 0;
 
-	// 0 = off, 1 = vertical, 2 = horizontal, 3 = both
-	if(GCSettings.hideoverscan == 1 || GCSettings.hideoverscan == 3)
+	if(GCSettings.hideoverscan == HIDEOVERSCAN_VERTICAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
 		borderheight = 8;
-	if(GCSettings.hideoverscan >= 2)
+	if(GCSettings.hideoverscan == HIDEOVERSCAN_HORIZONTAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
 		borderwidth = 8;
 
 	// Pack two anaglyph RGB565 texels into one 32-bit store (big-endian:
@@ -909,10 +907,10 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 
 	if(ScreenshotRequested)
 	{
-		if(GCSettings.render == 0) // we can't take a screenshot in Original mode
+		if(GCSettings.render == RENDER_ORIGINAL) // we can't take a screenshot in Original mode
 		{
-			oldRenderMode = 0;
-			GCSettings.render = 2; // switch to unfiltered mode
+			oldRenderMode = RENDER_ORIGINAL;
+			GCSettings.render = RENDER_UNFILTERED; // switch to unfiltered mode
 			UpdateVideo = 1; // request the switch
 		}
 		else

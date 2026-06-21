@@ -3685,8 +3685,8 @@ static int MenuSettingsVideo()
 		{
 			case 0:
 				GCSettings.render++;
-				if (GCSettings.render > 4)
-					GCSettings.render = 0;
+				if (GCSettings.render >= RENDER_LENGTH)
+					GCSettings.render = RENDER_ORIGINAL;
 				break;
 
 			case 1:
@@ -3695,8 +3695,8 @@ static int MenuSettingsVideo()
 
 			case 2:
 				GCSettings.hideoverscan++;
-				if (GCSettings.hideoverscan > 3)
-					GCSettings.hideoverscan = 0;
+				if (GCSettings.hideoverscan >= HIDEOVERSCAN_LENGTH)
+					GCSettings.hideoverscan = HIDEOVERSCAN_OFF;
 				break;
 
 			case 3: // palette
@@ -3706,8 +3706,8 @@ static int MenuSettingsVideo()
 
 			case 4: // timing
 				GCSettings.timing++;
-				if(GCSettings.timing > 3)
-					GCSettings.timing = 0;
+				if(GCSettings.timing >= TIMING_LENGTH)
+					GCSettings.timing = TIMING_NTSC;
 				break;
 
 			case 5:
@@ -3728,8 +3728,8 @@ static int MenuSettingsVideo()
 
 			case 9:
 				GCSettings.videomode++;
-				if(GCSettings.videomode > 4)
-					GCSettings.videomode = 0;
+				if(GCSettings.videomode >= VIDEOMODE_LENGTH)
+					GCSettings.videomode = VIDEOMODE_AUTOMATIC;
 				break;
 		}
 
@@ -3737,15 +3737,15 @@ static int MenuSettingsVideo()
 		{
 			firstRun = false;
 
-			if (GCSettings.render == 0)
+			if (GCSettings.render == RENDER_ORIGINAL)
 				sprintf (options.value[0], "Original (240p)");
-			else if (GCSettings.render == 1)
+			else if (GCSettings.render == RENDER_FILTERED)
 				sprintf (options.value[0], "Filtered");
-			else if (GCSettings.render == 2)
+			else if (GCSettings.render == RENDER_UNFILTERED)
 				sprintf (options.value[0], "Unfiltered");
-			else if (GCSettings.render == 3)
+			else if (GCSettings.render == RENDER_FILTERED_SOFT)
 				sprintf (options.value[0], "Filtered (Soft)");
-			else if (GCSettings.render == 4)
+			else if (GCSettings.render == RENDER_FILTERED_SHARP)
 				sprintf (options.value[0], "Filtered (Sharp)");
 
 			if(GCSettings.widescreen)
@@ -3755,10 +3755,10 @@ static int MenuSettingsVideo()
 
 			switch(GCSettings.hideoverscan)
 			{
-				case 0: sprintf (options.value[2], "Off"); break;
-				case 1: sprintf (options.value[2], "Vertical"); break;
-				case 2: sprintf (options.value[2], "Horizontal"); break;
-				case 3: sprintf (options.value[2], "Both"); break;
+				case HIDEOVERSCAN_OFF: sprintf (options.value[2], "Off"); break;
+				case HIDEOVERSCAN_VERTICAL: sprintf (options.value[2], "Vertical"); break;
+				case HIDEOVERSCAN_HORIZONTAL: sprintf (options.value[2], "Horizontal"); break;
+				case HIDEOVERSCAN_BOTH: sprintf (options.value[2], "Both"); break;
 			}
 
 			sprintf (options.value[3], "%s",
@@ -3766,10 +3766,10 @@ static int MenuSettingsVideo()
  
 			switch(GCSettings.timing)
 			{
-				case 0: sprintf (options.value[4], "NTSC"); break;
-				case 1: sprintf (options.value[4], "PAL"); break;
-				case 2: sprintf (options.value[4], "Automatic"); break;
-				case 3: sprintf (options.value[4], "Dendy"); break;
+				case TIMING_NTSC: sprintf (options.value[4], "NTSC"); break;
+				case TIMING_PAL: sprintf (options.value[4], "PAL"); break;
+				case TIMING_AUTOMATIC: sprintf (options.value[4], "Automatic"); break;
+				case TIMING_DENDY: sprintf (options.value[4], "Dendy"); break;
 			}
 
 			sprintf (options.value[5], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
@@ -3779,15 +3779,15 @@ static int MenuSettingsVideo()
 
 			switch(GCSettings.videomode)
 			{
-				case 0:
+				case VIDEOMODE_AUTOMATIC:
 					sprintf (options.value[9], "Automatic (Recommended)"); break;
-				case 1:
+				case VIDEOMODE_NTSC:
 					sprintf (options.value[9], "NTSC (480i)"); break;
-				case 2:
+				case VIDEOMODE_PROGRESSIVE:
 					sprintf (options.value[9], "Progressive (480p)"); break;
-				case 3:
+				case VIDEOMODE_PAL:
 					sprintf (options.value[9], "PAL (50Hz)"); break;
-				case 4:
+				case VIDEOMODE_PAL60:
 					sprintf (options.value[9], "PAL (60Hz)"); break;
 			}
 			optionBrowser.TriggerUpdate();
@@ -4425,9 +4425,9 @@ static int MenuSettingsMenu()
 			options.name[4][0] = 0; // Rumble
 			#endif
 
-			if (GCSettings.WiimoteOrientation == 0)
+			if (GCSettings.WiimoteOrientation == WIIMOTEORIENTATION_VERTICAL)
 				sprintf (options.value[1], "Vertical");
-			else if (GCSettings.WiimoteOrientation == 1)
+			else if (GCSettings.WiimoteOrientation == WIIMOTEORIENTATION_HORIZONTAL)
 				sprintf (options.value[1], "Horizontal");
 
 			if(GCSettings.MusicVolume > 0)

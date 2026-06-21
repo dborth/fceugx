@@ -25,12 +25,16 @@ int KillFCEUXonFrame = 0;
 
 int GetFCEUTiming()
 {
-	return GCSettings.timing == 3 ? 2 : GCSettings.timing;
+	if (GCSettings.timing == TIMING_DENDY) {
+		return TIMING_AUTOMATIC;
+	}
+
+	return GCSettings.timing;
 }
 
 void UpdateDendy()
 {
-	if(GCSettings.timing == 3) {
+	if(GCSettings.timing == TIMING_DENDY) {
 		dendy = 1;
 	}
 	else {

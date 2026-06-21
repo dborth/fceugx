@@ -399,12 +399,16 @@ void FixInvalidSettings()
 		GCSettings.language = LANG_ENGLISH;
 	if(GCSettings.Controller > CTRL_PAD4 || GCSettings.Controller < CTRL_ZAPPER)
 		GCSettings.Controller = CTRL_PAD2;
-	if(!(GCSettings.render >= 0 && GCSettings.render < 5))
-		GCSettings.render = 4;
-	if(GCSettings.timing < 0 || GCSettings.timing > 3)
-		GCSettings.timing = 2;
-	if(!(GCSettings.videomode >= 0 && GCSettings.videomode < 5))
-		GCSettings.videomode = 0;
+	if(!(GCSettings.render >= RENDER_ORIGINAL && GCSettings.render < RENDER_LENGTH))
+		GCSettings.render = RENDER_FILTERED_SHARP;
+	if(GCSettings.timing < TIMING_NTSC || GCSettings.timing >= TIMING_LENGTH)
+		GCSettings.timing = TIMING_AUTOMATIC;
+	if(!(GCSettings.videomode >= VIDEOMODE_AUTOMATIC && GCSettings.videomode < VIDEOMODE_LENGTH))
+		GCSettings.videomode = VIDEOMODE_AUTOMATIC;
+	if(!(GCSettings.hideoverscan >= HIDEOVERSCAN_OFF && GCSettings.hideoverscan < HIDEOVERSCAN_LENGTH))
+		GCSettings.hideoverscan = HIDEOVERSCAN_BOTH;
+	if(!(GCSettings.WiimoteOrientation >= WIIMOTEORIENTATION_VERTICAL && GCSettings.WiimoteOrientation < WIIMOTEORIENTATION_LENGTH))
+		GCSettings.WiimoteOrientation = WIIMOTEORIENTATION_VERTICAL;
 }
 
 /****************************************************************************
@@ -419,15 +423,15 @@ DefaultSettings ()
 	ResetControls(); // controller button mappings
 
 	GCSettings.currpal = 1; // color palette
-	GCSettings.timing = 2; // 0 - NTSC, 1 - PAL, 2 - Automatic
-	GCSettings.videomode = 0; // automatic video mode detection
+	GCSettings.timing = TIMING_AUTOMATIC;
+	GCSettings.videomode = VIDEOMODE_AUTOMATIC; // automatic video mode detection
 	GCSettings.Controller = CTRL_PAD2; // NES pad, Four Score, Zapper
 	GCSettings.crosshair = 1; // show zapper crosshair
 	GCSettings.spritelimit = 1; // enforce 8 sprite limit
 	GCSettings.gamegenie = 0; // Off
 
-	GCSettings.render = 3; // Filtered (sharp)
-	GCSettings.hideoverscan = 3; // hide both
+	GCSettings.render = RENDER_FILTERED_SHARP;
+	GCSettings.hideoverscan = HIDEOVERSCAN_BOTH;
 
 	GCSettings.widescreen = 1;
 
@@ -441,7 +445,7 @@ DefaultSettings ()
 	GCSettings.xshift = 0; // horizontal video shift
 	GCSettings.yshift = 0; // vertical video shift
 
-	GCSettings.WiimoteOrientation = 0;
+	GCSettings.WiimoteOrientation = WIIMOTEORIENTATION_VERTICAL;
 	GCSettings.AutoloadGame = 0;
 	GCSettings.ExitAction = 0; // Auto
 	GCSettings.MusicVolume = 20;
@@ -621,7 +625,7 @@ bool LoadPrefs()
 
 	FixInvalidSettings();
 
-	if(GCSettings.videomode > 0) {
+	if(GCSettings.videomode > VIDEOMODE_AUTOMATIC) {
 		ResetVideo_Menu();
 	}
 
