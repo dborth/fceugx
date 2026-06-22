@@ -700,114 +700,346 @@ ResetVideo_Emu ()
 }
 
 /****************************************************************************
- * Texture Generation Helpers
+ * Texture Generation Helpers (Gekko/Broadway ASM Optimized)
  ****************************************************************************/
 
 void MakeTexture(const void *src, void *dst, s32 width, s32 height)
 {
-	const u8 *srcBuf = (const u8 *)src;
-	u16 *dstBuf = (u16 *)dst;
-
-	// Reverse-calculate overscan borders to center the image (assuming 256x240 base resolution)
+	// Calculate base offsets
 	const s32 borderwidth = (256 - width) / 2;
 	const s32 borderheight = (240 - height) / 2;
 
-	// Pack two RGB565 texels into one 32-bit store
-	u32 *texture = (u32 *)(dstBuf + (borderheight << 8) + (borderwidth << 2));
-	const u8 *src1 = srcBuf + (borderheight << 8) + borderwidth;
-	const u8 *src2 = src1 + 256;
-	const u8 *src3 = src2 + 256;
-	const u8 *src4 = src3 + 256;
+	// Initial pointers point directly to the top-left of the rendering area
+	const u8 *srcBuf = (const u8 *)src + (borderheight << 8) + borderwidth;
+	u8 *dstBuf = (u8 *)dst + (borderheight * 512) + (borderwidth * 8);
 
-	const s32 srcadvance = 768 + (borderwidth << 1);
-	const s32 texadvance = borderwidth << 2; // in u32 units
+	u32 r_src_row=0, r_dst_row=0;
+	u32 t0=0, t1=0, t2=0, t3=0, w0=0, w1=0;
 
-	// fill the texture
-	for (s32 y = 0; y < height; y += 4)
-	{
-		for (s32 x = 0; x < width; x += 4)
-		{
-			// Row one
-			*texture++ = ((u32)rgb565[src1[0]] << 16) | rgb565[src1[1]];
-			*texture++ = ((u32)rgb565[src1[2]] << 16) | rgb565[src1[3]];
-			src1 += 4;
+	__asm__ __volatile__ (
+		"srwi   %[width], %[width], 2\n"       // width_tiles = width / 4
+		"srwi   %[height], %[height], 2\n"     // height_tiles = height / 4
 
-			// Row two
-			*texture++ = ((u32)rgb565[src2[0]] << 16) | rgb565[src2[1]];
-			*texture++ = ((u32)rgb565[src2[2]] << 16) | rgb565[src2[3]];
-			src2 += 4;
+	"2: mtctr   %[width]\n"                    // Inner loop X
+		"mr     %[r_src_row], %[src]\n"        // Save row start anchors
+		"mr     %[r_dst_row], %[dst]\n"
 
-			// Row three
-			*texture++ = ((u32)rgb565[src3[0]] << 16) | rgb565[src3[1]];
-			*texture++ = ((u32)rgb565[src3[2]] << 16) | rgb565[src3[3]];
-			src3 += 4;
+	"1: dcbz    0, %[dst]\n"                   // ZERO L1 CACHE (32 bytes)
 
-			// Row four
-			*texture++ = ((u32)rgb565[src4[0]] << 16) | rgb565[src4[1]];
-			*texture++ = ((u32)rgb565[src4[2]] << 16) | rgb565[src4[3]];
-			src4 += 4;
-		}
-		src1 += srcadvance;
-		src2 += srcadvance;
-		src3 += srcadvance;
-		src4 += srcadvance;
+		// ----------------------------------------------------
+		// BLOCK 1: Row 0 & 1, Left Half
+		// ----------------------------------------------------
+		"lbz    %[t0], 0(%[src])\n"
+		"lbz    %[t1], 1(%[src])\n"
+		"lbz    %[t2], 256(%[src])\n"
+		"lbz    %[t3], 257(%[src])\n"
 
-		texture += texadvance;
-	}
+		// Calculate offsets (index * 2 bytes)
+		"slwi   %[t0], %[t0], 1\n"
+		"slwi   %[t1], %[t1], 1\n"
+		"slwi   %[t2], %[t2], 1\n"
+		"slwi   %[t3], %[t3], 1\n"
+
+		// Asynchronous Palette Lookups (lhzx)
+		"lhzx   %[t0], %[pal], %[t0]\n"
+		"lhzx   %[t1], %[pal], %[t1]\n"
+		"lhzx   %[t2], %[pal], %[t2]\n"
+		"lhzx   %[t3], %[pal], %[t3]\n"
+
+		// Pack into 32-bit registers (w0, w1)
+		"slwi   %[w0], %[t0], 16\n"
+		"slwi   %[w1], %[t2], 16\n"
+		"or     %[w0], %[w0], %[t1]\n"
+		"or     %[w1], %[w1], %[t3]\n"
+
+		"stw    %[w0], 0(%[dst])\n"
+		"stw    %[w1], 8(%[dst])\n"
+
+		// ----------------------------------------------------
+		// BLOCK 2: Row 0 & 1, Right Half
+		// ----------------------------------------------------
+		"lbz    %[t0], 2(%[src])\n"
+		"lbz    %[t1], 3(%[src])\n"
+		"lbz    %[t2], 258(%[src])\n"
+		"lbz    %[t3], 259(%[src])\n"
+
+		"slwi   %[t0], %[t0], 1\n"
+		"slwi   %[t1], %[t1], 1\n"
+		"slwi   %[t2], %[t2], 1\n"
+		"slwi   %[t3], %[t3], 1\n"
+
+		"lhzx   %[t0], %[pal], %[t0]\n"
+		"lhzx   %[t1], %[pal], %[t1]\n"
+		"lhzx   %[t2], %[pal], %[t2]\n"
+		"lhzx   %[t3], %[pal], %[t3]\n"
+
+		"slwi   %[w0], %[t0], 16\n"
+		"slwi   %[w1], %[t2], 16\n"
+		"or     %[w0], %[w0], %[t1]\n"
+		"or     %[w1], %[w1], %[t3]\n"
+
+		"stw    %[w0], 4(%[dst])\n"
+		"stw    %[w1], 12(%[dst])\n"
+
+		// ----------------------------------------------------
+		// BLOCK 3: Row 2 & 3, Left Half
+		// ----------------------------------------------------
+		"lbz    %[t0], 512(%[src])\n"
+		"lbz    %[t1], 513(%[src])\n"
+		"lbz    %[t2], 768(%[src])\n"
+		"lbz    %[t3], 769(%[src])\n"
+
+		"slwi   %[t0], %[t0], 1\n"
+		"slwi   %[t1], %[t1], 1\n"
+		"slwi   %[t2], %[t2], 1\n"
+		"slwi   %[t3], %[t3], 1\n"
+
+		"lhzx   %[t0], %[pal], %[t0]\n"
+		"lhzx   %[t1], %[pal], %[t1]\n"
+		"lhzx   %[t2], %[pal], %[t2]\n"
+		"lhzx   %[t3], %[pal], %[t3]\n"
+
+		"slwi   %[w0], %[t0], 16\n"
+		"slwi   %[w1], %[t2], 16\n"
+		"or     %[w0], %[w0], %[t1]\n"
+		"or     %[w1], %[w1], %[t3]\n"
+
+		"stw    %[w0], 16(%[dst])\n"
+		"stw    %[w1], 24(%[dst])\n"
+
+		// ----------------------------------------------------
+		// BLOCK 4: Row 2 & 3, Right Half
+		// ----------------------------------------------------
+		"lbz    %[t0], 514(%[src])\n"
+		"lbz    %[t1], 515(%[src])\n"
+		"lbz    %[t2], 770(%[src])\n"
+		"lbz    %[t3], 771(%[src])\n"
+
+		"slwi   %[t0], %[t0], 1\n"
+		"slwi   %[t1], %[t1], 1\n"
+		"slwi   %[t2], %[t2], 1\n"
+		"slwi   %[t3], %[t3], 1\n"
+
+		"lhzx   %[t0], %[pal], %[t0]\n"
+		"lhzx   %[t1], %[pal], %[t1]\n"
+		"lhzx   %[t2], %[pal], %[t2]\n"
+		"lhzx   %[t3], %[pal], %[t3]\n"
+
+		"slwi   %[w0], %[t0], 16\n"
+		"slwi   %[w1], %[t2], 16\n"
+		"or     %[w0], %[w0], %[t1]\n"
+		"or     %[w1], %[w1], %[t3]\n"
+
+		"stw    %[w0], 20(%[dst])\n"
+		"stw    %[w1], 28(%[dst])\n"
+
+		// -- Advance Pointers --
+		"addi   %[src], %[src], 4\n"           // Advance X by 1 tile (4 pixels)
+		"addi   %[dst], %[dst], 32\n"          // Advance Dst by 1 full tile
+		"bdnz   1b\n"                          // Decrement CTR, loop X
+
+		// -- Next Tile Row --
+		"addi   %[src], %[r_src_row], 1024\n"  // Jump SRC down 4 pixel rows (4 * 256)
+		"addi   %[dst], %[r_dst_row], 2048\n"  // Jump DST down 1 tile row (64 tiles * 32 bytes)
+		"subic. %[height], %[height], 1\n"     // Decrement height counter
+		"bne    2b"                            // Loop Y
+
+		: [r_src_row] "=&b" (r_src_row), [r_dst_row] "=&b" (r_dst_row),
+		  [t0] "=&r" (t0), [t1] "=&r" (t1), [t2] "=&r" (t2), [t3] "=&r" (t3),
+		  [w0] "=&r" (w0), [w1] "=&r" (w1),
+		  [dst] "+b" (dstBuf), [src] "+b" (srcBuf),
+		  [width] "+r" (width), [height] "+r" (height)
+		: [pal] "b" (rgb565)
+		: "memory", "cc"
+	);
 }
 
 void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32 width, s32 height)
 {
-	const u8 *XBufLeft = (const u8 *)srcLeft;
-	const u8 *XBufRight = (const u8 *)srcRight;
-	u16 *dstBuf = (u16 *)dst;
-
-	// Reverse-calculate overscan borders to center the image (assuming 256x240 base resolution)
 	const s32 borderwidth = (256 - width) / 2;
 	const s32 borderheight = (240 - height) / 2;
 
-	u32 *texture = (u32 *)(dstBuf + (borderheight << 8) + (borderwidth << 2));
+	const u8 *srcBufL = (const u8 *)srcLeft + (borderheight << 8) + borderwidth;
+	const u8 *srcBufR = (const u8 *)srcRight + (borderheight << 8) + borderwidth;
+	u8 *dstBuf = (u8 *)dst + (borderheight * 512) + (borderwidth * 8);
 
-	const u8 *Lsrc1 = XBufLeft + (borderheight << 8) + borderwidth;
-	const u8 *Lsrc2 = Lsrc1 + 256;
-	const u8 *Lsrc3 = Lsrc2 + 256;
-	const u8 *Lsrc4 = Lsrc3 + 256;
+	u32 r_src_row_L=0, r_src_row_R=0, r_dst_row=0;
+	u32 tL0=0, tR0=0, tL1=0, tR1=0, w0=0;
 
-	const u8 *Rsrc1 = XBufRight + (borderheight << 8) + borderwidth;
-	const u8 *Rsrc2 = Rsrc1 + 256;
-	const u8 *Rsrc3 = Rsrc2 + 256;
-	const u8 *Rsrc4 = Rsrc3 + 256;
+	__asm__ __volatile__ (
+		"srwi   %[width], %[width], 2\n"
+		"srwi   %[height], %[height], 2\n"
 
-	const s32 srcadvance = 768 + (borderwidth << 1);
-	const s32 texadvance = borderwidth << 2; // in u32 units
+	"2: mtctr   %[width]\n"
+		"mr     %[r_src_row_L], %[srcL]\n"
+		"mr     %[r_src_row_R], %[srcR]\n"
+		"mr     %[r_dst_row], %[dst]\n"
 
-	// fill the texture with red/cyan anaglyph
-	for (s32 y = 0; y < height; y += 4)
-	{
-		for (s32 x = 0; x < width; x += 4)
-		{
-			// Row one
-			*texture++ = ((u32)anaglyph565[Lsrc1[0] & 63][Rsrc1[0] & 63] << 16) | anaglyph565[Lsrc1[1] & 63][Rsrc1[1] & 63];
-			*texture++ = ((u32)anaglyph565[Lsrc1[2] & 63][Rsrc1[2] & 63] << 16) | anaglyph565[Lsrc1[3] & 63][Rsrc1[3] & 63];
-			Lsrc1 += 4; Rsrc1 += 4;
-			// Row two
-			*texture++ = ((u32)anaglyph565[Lsrc2[0] & 63][Rsrc2[0] & 63] << 16) | anaglyph565[Lsrc2[1] & 63][Rsrc2[1] & 63];
-			*texture++ = ((u32)anaglyph565[Lsrc2[2] & 63][Rsrc2[2] & 63] << 16) | anaglyph565[Lsrc2[3] & 63][Rsrc2[3] & 63];
-			Lsrc2 += 4; Rsrc2 += 4;
-			// Row three
-			*texture++ = ((u32)anaglyph565[Lsrc3[0] & 63][Rsrc3[0] & 63] << 16) | anaglyph565[Lsrc3[1] & 63][Rsrc3[1] & 63];
-			*texture++ = ((u32)anaglyph565[Lsrc3[2] & 63][Rsrc3[2] & 63] << 16) | anaglyph565[Lsrc3[3] & 63][Rsrc3[3] & 63];
-			Lsrc3 += 4; Rsrc3 += 4;
-			// Row four
-			*texture++ = ((u32)anaglyph565[Lsrc4[0] & 63][Rsrc4[0] & 63] << 16) | anaglyph565[Lsrc4[1] & 63][Rsrc4[1] & 63];
-			*texture++ = ((u32)anaglyph565[Lsrc4[2] & 63][Rsrc4[2] & 63] << 16) | anaglyph565[Lsrc4[3] & 63][Rsrc4[3] & 63];
-			Lsrc4 += 4; Rsrc4 += 4;
-		}
-		Lsrc1 += srcadvance; Lsrc2 += srcadvance; Lsrc3 += srcadvance; Lsrc4 += srcadvance;
-		Rsrc1 += srcadvance; Rsrc2 += srcadvance; Rsrc3 += srcadvance; Rsrc4 += srcadvance;
+	"1: dcbz    0, %[dst]\n"
 
-		texture += texadvance;
-	}
+		// ----------------------------------------------------
+		// 8 sub-blocks to process 16 pixels. Example: Row 0 Left Half
+		// Math trick: offset = ((L & 63) << 7) | ((R & 63) << 1)
+		// ----------------------------------------------------
+
+		// Row 0, Left Half
+		"lbz    %[tL0], 0(%[srcL])\n"
+		"lbz    %[tR0], 0(%[srcR])\n"
+		"lbz    %[tL1], 1(%[srcL])\n"
+		"lbz    %[tR1], 1(%[srcR])\n"
+		"rlwinm %[tL0], %[tL0], 7, 19, 24\n"
+		"rlwinm %[tR0], %[tR0], 1, 25, 30\n"
+		"rlwinm %[tL1], %[tL1], 7, 19, 24\n"
+		"rlwinm %[tR1], %[tR1], 1, 25, 30\n"
+		"or     %[tL0], %[tL0], %[tR0]\n"
+		"or     %[tL1], %[tL1], %[tR1]\n"
+		"lhzx   %[tL0], %[pal], %[tL0]\n"
+		"lhzx   %[tL1], %[pal], %[tL1]\n"
+		"slwi   %[w0], %[tL0], 16\n"
+		"or     %[w0], %[w0], %[tL1]\n"
+		"stw    %[w0], 0(%[dst])\n"
+
+		// Row 0, Right Half
+		"lbz    %[tL0], 2(%[srcL])\n"
+		"lbz    %[tR0], 2(%[srcR])\n"
+		"lbz    %[tL1], 3(%[srcL])\n"
+		"lbz    %[tR1], 3(%[srcR])\n"
+		"rlwinm %[tL0], %[tL0], 7, 19, 24\n"
+		"rlwinm %[tR0], %[tR0], 1, 25, 30\n"
+		"rlwinm %[tL1], %[tL1], 7, 19, 24\n"
+		"rlwinm %[tR1], %[tR1], 1, 25, 30\n"
+		"or     %[tL0], %[tL0], %[tR0]\n"
+		"or     %[tL1], %[tL1], %[tR1]\n"
+		"lhzx   %[tL0], %[pal], %[tL0]\n"
+		"lhzx   %[tL1], %[pal], %[tL1]\n"
+		"slwi   %[w0], %[tL0], 16\n"
+		"or     %[w0], %[w0], %[tL1]\n"
+		"stw    %[w0], 4(%[dst])\n"
+
+		// Row 1, Left Half
+		"lbz    %[tL0], 256(%[srcL])\n"
+		"lbz    %[tR0], 256(%[srcR])\n"
+		"lbz    %[tL1], 257(%[srcL])\n"
+		"lbz    %[tR1], 257(%[srcR])\n"
+		"rlwinm %[tL0], %[tL0], 7, 19, 24\n"
+		"rlwinm %[tR0], %[tR0], 1, 25, 30\n"
+		"rlwinm %[tL1], %[tL1], 7, 19, 24\n"
+		"rlwinm %[tR1], %[tR1], 1, 25, 30\n"
+		"or     %[tL0], %[tL0], %[tR0]\n"
+		"or     %[tL1], %[tL1], %[tR1]\n"
+		"lhzx   %[tL0], %[pal], %[tL0]\n"
+		"lhzx   %[tL1], %[pal], %[tL1]\n"
+		"slwi   %[w0], %[tL0], 16\n"
+		"or     %[w0], %[w0], %[tL1]\n"
+		"stw    %[w0], 8(%[dst])\n"
+
+		// Row 1, Right Half
+		"lbz    %[tL0], 258(%[srcL])\n"
+		"lbz    %[tR0], 258(%[srcR])\n"
+		"lbz    %[tL1], 259(%[srcL])\n"
+		"lbz    %[tR1], 259(%[srcR])\n"
+		"rlwinm %[tL0], %[tL0], 7, 19, 24\n"
+		"rlwinm %[tR0], %[tR0], 1, 25, 30\n"
+		"rlwinm %[tL1], %[tL1], 7, 19, 24\n"
+		"rlwinm %[tR1], %[tR1], 1, 25, 30\n"
+		"or     %[tL0], %[tL0], %[tR0]\n"
+		"or     %[tL1], %[tL1], %[tR1]\n"
+		"lhzx   %[tL0], %[pal], %[tL0]\n"
+		"lhzx   %[tL1], %[pal], %[tL1]\n"
+		"slwi   %[w0], %[tL0], 16\n"
+		"or     %[w0], %[w0], %[tL1]\n"
+		"stw    %[w0], 12(%[dst])\n"
+
+		// Row 2, Left Half
+		"lbz    %[tL0], 512(%[srcL])\n"
+		"lbz    %[tR0], 512(%[srcR])\n"
+		"lbz    %[tL1], 513(%[srcL])\n"
+		"lbz    %[tR1], 513(%[srcR])\n"
+		"rlwinm %[tL0], %[tL0], 7, 19, 24\n"
+		"rlwinm %[tR0], %[tR0], 1, 25, 30\n"
+		"rlwinm %[tL1], %[tL1], 7, 19, 24\n"
+		"rlwinm %[tR1], %[tR1], 1, 25, 30\n"
+		"or     %[tL0], %[tL0], %[tR0]\n"
+		"or     %[tL1], %[tL1], %[tR1]\n"
+		"lhzx   %[tL0], %[pal], %[tL0]\n"
+		"lhzx   %[tL1], %[pal], %[tL1]\n"
+		"slwi   %[w0], %[tL0], 16\n"
+		"or     %[w0], %[w0], %[tL1]\n"
+		"stw    %[w0], 16(%[dst])\n"
+
+		// Row 2, Right Half
+		"lbz    %[tL0], 514(%[srcL])\n"
+		"lbz    %[tR0], 514(%[srcR])\n"
+		"lbz    %[tL1], 515(%[srcL])\n"
+		"lbz    %[tR1], 515(%[srcR])\n"
+		"rlwinm %[tL0], %[tL0], 7, 19, 24\n"
+		"rlwinm %[tR0], %[tR0], 1, 25, 30\n"
+		"rlwinm %[tL1], %[tL1], 7, 19, 24\n"
+		"rlwinm %[tR1], %[tR1], 1, 25, 30\n"
+		"or     %[tL0], %[tL0], %[tR0]\n"
+		"or     %[tL1], %[tL1], %[tR1]\n"
+		"lhzx   %[tL0], %[pal], %[tL0]\n"
+		"lhzx   %[tL1], %[pal], %[tL1]\n"
+		"slwi   %[w0], %[tL0], 16\n"
+		"or     %[w0], %[w0], %[tL1]\n"
+		"stw    %[w0], 20(%[dst])\n"
+
+		// Row 3, Left Half
+		"lbz    %[tL0], 768(%[srcL])\n"
+		"lbz    %[tR0], 768(%[srcR])\n"
+		"lbz    %[tL1], 769(%[srcL])\n"
+		"lbz    %[tR1], 769(%[srcR])\n"
+		"rlwinm %[tL0], %[tL0], 7, 19, 24\n"
+		"rlwinm %[tR0], %[tR0], 1, 25, 30\n"
+		"rlwinm %[tL1], %[tL1], 7, 19, 24\n"
+		"rlwinm %[tR1], %[tR1], 1, 25, 30\n"
+		"or     %[tL0], %[tL0], %[tR0]\n"
+		"or     %[tL1], %[tL1], %[tR1]\n"
+		"lhzx   %[tL0], %[pal], %[tL0]\n"
+		"lhzx   %[tL1], %[pal], %[tL1]\n"
+		"slwi   %[w0], %[tL0], 16\n"
+		"or     %[w0], %[w0], %[tL1]\n"
+		"stw    %[w0], 24(%[dst])\n"
+
+		// Row 3, Right Half
+		"lbz    %[tL0], 770(%[srcL])\n"
+		"lbz    %[tR0], 770(%[srcR])\n"
+		"lbz    %[tL1], 771(%[srcL])\n"
+		"lbz    %[tR1], 771(%[srcR])\n"
+		"rlwinm %[tL0], %[tL0], 7, 19, 24\n"
+		"rlwinm %[tR0], %[tR0], 1, 25, 30\n"
+		"rlwinm %[tL1], %[tL1], 7, 19, 24\n"
+		"rlwinm %[tR1], %[tR1], 1, 25, 30\n"
+		"or     %[tL0], %[tL0], %[tR0]\n"
+		"or     %[tL1], %[tL1], %[tR1]\n"
+		"lhzx   %[tL0], %[pal], %[tL0]\n"
+		"lhzx   %[tL1], %[pal], %[tL1]\n"
+		"slwi   %[w0], %[tL0], 16\n"
+		"or     %[w0], %[w0], %[tL1]\n"
+		"stw    %[w0], 28(%[dst])\n"
+
+		"addi   %[srcL], %[srcL], 4\n"
+		"addi   %[srcR], %[srcR], 4\n"
+		"addi   %[dst], %[dst], 32\n"
+		"bdnz   1b\n"
+
+		"addi   %[srcL], %[r_src_row_L], 1024\n"
+		"addi   %[srcR], %[r_src_row_R], 1024\n"
+		"addi   %[dst], %[r_dst_row], 2048\n"
+		"subic. %[height], %[height], 1\n"
+		"bne    2b"
+
+		: [r_src_row_L] "=&b" (r_src_row_L),
+		  [r_src_row_R] "=&b" (r_src_row_R),
+		  [r_dst_row] "=&b" (r_dst_row),
+		  [tL0] "=&r" (tL0), [tR0] "=&r" (tR0),
+		  [tL1] "=&r" (tL1), [tR1] "=&r" (tR1),
+		  [w0] "=&r" (w0),
+		  [dst] "+b" (dstBuf), [srcL] "+b" (srcBufL), [srcR] "+b" (srcBufR),
+		  [width] "+r" (width), [height] "+r" (height)
+		: [pal] "b" (anaglyph565)
+		: "memory", "cc"
+	);
 }
 
 /****************************************************************************
