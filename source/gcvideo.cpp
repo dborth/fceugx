@@ -1081,7 +1081,7 @@ void RenderFrame(unsigned char *XBuf)
 	MakeTexture(XBuf, texturemem, widthLimit, heightLimit);
 
 	// load texture into GX
-	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
+	DCStoreRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
 
 	// clear texture objects
 	GX_InvalidateTexAll();
