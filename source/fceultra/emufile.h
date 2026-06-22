@@ -73,6 +73,8 @@ public:
 	//virtuals
 public:
 
+	virtual bool is_EMUFILE_MEMORY() const { return false; }
+
 	virtual FILE *get_fp() = 0;
 
 	virtual int fprintf(const char *format, ...) = 0;
@@ -134,6 +136,8 @@ protected:
 	}
 
 public:
+
+	virtual bool is_EMUFILE_MEMORY() const { return true; }
 
 	EMUFILE_MEMORY(std::vector<u8> *underlying) : vec(underlying), ownvec(false), pos(0), len((s32)underlying->size()) { }
 	EMUFILE_MEMORY(u32 preallocate) : vec(new std::vector<u8>()), ownvec(true), pos(0), len(0) {
