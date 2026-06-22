@@ -34,7 +34,7 @@ SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 				-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DNOUNCRYPT -DNO_SOUND -DUSE_VM \
 				-flto=auto \
-				-fomit-frame-pointer -fno-strict-aliasing -fno-threadsafe-statics -ffast-math \
+				-fomit-frame-pointer -fno-strict-aliasing -ffast-math \
 				-Wno-format -Wno-format-overflow \
 				-Wno-stringop-overflow -Wno-format-truncation \
 				-Wno-unused-parameter -Wno-write-strings -Wno-stringop-truncation -Wno-sign-compare \
@@ -42,7 +42,7 @@ SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 				-Wno-narrowing -Wno-misleading-indentation -Wno-restrict -Wno-maybe-uninitialized -Wno-infinite-recursion
 
 CFLAGS		=	$(SHAREDFLAGS) -Wno-incompatible-pointer-types
-CXXFLAGS	=	$(SHAREDFLAGS) -Wno-catch-value -Wno-class-memaccess -fno-exceptions -fno-rtti
+CXXFLAGS	=	$(SHAREDFLAGS) -Wno-catch-value -Wno-class-memaccess -fno-exceptions -fno-rtti -fno-threadsafe-statics
 ASFLAGS		=	$(MACHDEP) $(INCLUDE)
 LDFLAGS		=	-g -O3 -flto=auto $(MACHDEP) -Wl,-Map,$(notdir $@).map
 LDFLAGS		+=	-L../buildtools
