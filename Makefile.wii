@@ -34,14 +34,16 @@ SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 				-DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DNOUNCRYPT \
 				-flto=auto \
-				-fomit-frame-pointer \
-				-Wno-format -Wno-format-overflow -Wno-stringop-overflow -Wno-format-truncation \
-				-Wno-unused-parameter -Wno-strict-aliasing -Wno-write-strings -Wno-stringop-truncation -Wno-sign-compare \
+				-fomit-frame-pointer -fno-strict-aliasing -fno-threadsafe-statics -ffast-math \
+				-Wno-format -Wno-format-overflow \
+				-Wno-stringop-overflow -Wno-format-truncation \
+				-Wno-unused-parameter -Wno-write-strings -Wno-stringop-truncation -Wno-sign-compare \
 				-Wno-unused-variable -Wno-parentheses -Wno-unused-function -Wno-switch -Wno-unused-but-set-variable \
 				-Wno-narrowing -Wno-misleading-indentation -Wno-restrict -Wno-maybe-uninitialized -Wno-infinite-recursion
+
 CFLAGS		=	$(SHAREDFLAGS) -Wno-incompatible-pointer-types
-CXXFLAGS	=	$(SHAREDFLAGS) -Wno-catch-value -Wno-class-memaccess
-LDFLAGS		=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
+CXXFLAGS	=	$(SHAREDFLAGS) -Wno-catch-value -Wno-class-memaccess -fno-exceptions -fno-rtti
+LDFLAGS		=	-g -O3 -flto=auto $(MACHDEP) -Wl,-Map,$(notdir $@).map
 LDFLAGS		+=	-L../buildtools
 
 #---------------------------------------------------------------------------------
@@ -91,8 +93,10 @@ else
 endif
 
 export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
-export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
-export OFILES := $(OFILES_BIN) $(OFILES_SOURCES)
+
+# Filter out x6502.o so we can build it with custom I-Cache optimized flags
+export OFILES_SOURCES := $(filter-out x6502.o, $(CPPFILES:.cpp=.o)) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
+export OFILES := $(OFILES_BIN) $(OFILES_SOURCES) $(BUILD)/x6502.o
 
 export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
@@ -116,7 +120,7 @@ export OUTPUT	:=	$(CURDIR)/$(TARGETDIR)/$(TARGET)
 $(BUILD):
 	@[ -d $@ ] || mkdir -p $@
 	@[ -d $(TARGETDIR) ] || mkdir -p $(TARGETDIR)
-	@make --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.wii
+	@$(MAKE) --no-print-directory -C $(BUILD) -f $(CURDIR)/Makefile.wii
 
 #---------------------------------------------------------------------------------
 clean:
@@ -130,7 +134,6 @@ run:
 #---------------------------------------------------------------------------------
 reload:
 	wiiload -r $(OUTPUT).dol
-
 
 #---------------------------------------------------------------------------------
 else
@@ -169,6 +172,15 @@ $(OFILES_SOURCES) : $(HFILES)
 	$(bin2o)
 
 -include $(DEPENDS)
+
+#---------------------------------------------------------------------------------
+# Optimized rule for x6502.cpp to prevent I-Cache thrashing on the 750CL
+# The % pattern allows make to find x6502.cpp inside the VPATH directories
+#---------------------------------------------------------------------------------
+$(BUILD)/x6502.o: x6502.cpp
+	@mkdir -p $(dir $@)
+	@echo "Compiling x6502.o to $(BUILD) with I-Cache tuned flags..."
+	$(CXX) -c -O2 -fno-unroll-loops $(CXXFLAGS) $< -o $@
 
 #---------------------------------------------------------------------------------
 endif
