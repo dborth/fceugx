@@ -36,6 +36,7 @@
 #include "networkop.h"
 #include "gcaudio.h"
 #include "gcvideo.h"
+#include "videofilters.h"
 #include "pad.h"
 #include "filelist.h"
 #include "gui/gui.h"
@@ -483,6 +484,7 @@ int main(int argc, char *argv[])
 		}
 
 		currentTiming = GCSettings.timing;
+		SelectFilterMethod(GCSettings.FilterMethod); // Initialize / Re-evaluate active filter
 		autoboot = false;
 		ConfigRequested = 0;
 		ScreenshotRequested = 0;

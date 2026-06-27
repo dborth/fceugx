@@ -24,6 +24,7 @@
 #include "menu.h"
 #include "fileop.h"
 #include "gcvideo.h"
+#include "videofilters.h"
 #include "pad.h"
 
 struct SGCSettings GCSettings;
@@ -152,6 +153,7 @@ preparePrefsData ()
 	createXMLSetting("zoomHor", "Horizontal Zoom Level", FtoStr(GCSettings.zoomHor));
 	createXMLSetting("zoomVert", "Vertical Zoom Level", FtoStr(GCSettings.zoomVert));
 	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
+	createXMLSetting("FilterMethod", "Filter Method", toStr(GCSettings.FilterMethod));
 	createXMLSetting("widescreen", "Aspect Ratio Correction", toStr(GCSettings.widescreen));
 	createXMLSetting("hideoverscan", "Video Cropping", toStr(GCSettings.hideoverscan));
 	createXMLSetting("xshift", "Horizontal Video Shift", toStr(GCSettings.xshift));
@@ -330,6 +332,7 @@ decodePrefsData ()
 			loadXMLSetting(&GCSettings.zoomHor, "zoomHor");
 			loadXMLSetting(&GCSettings.zoomVert, "zoomVert");
 			loadXMLSetting(&GCSettings.render, "render");
+			loadXMLSetting(&GCSettings.FilterMethod, "FilterMethod");
 			loadXMLSetting(&GCSettings.widescreen, "widescreen");
 			loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
 			loadXMLSetting(&GCSettings.xshift, "xshift");
@@ -401,6 +404,8 @@ void FixInvalidSettings()
 		GCSettings.Controller = CTRL_PAD2;
 	if(!(GCSettings.render >= RENDER_ORIGINAL && GCSettings.render < RENDER_LENGTH))
 		GCSettings.render = RENDER_FILTERED_SHARP;
+	if(!(GCSettings.render >= FILTER_NONE && GCSettings.render <= NUM_FILTERS))
+		GCSettings.FilterMethod = FILTER_NONE;
 	if(GCSettings.timing < TIMING_NTSC || GCSettings.timing >= TIMING_LENGTH)
 		GCSettings.timing = TIMING_AUTOMATIC;
 	if(!(GCSettings.videomode >= VIDEOMODE_AUTOMATIC && GCSettings.videomode < VIDEOMODE_LENGTH))
@@ -431,6 +436,7 @@ DefaultSettings ()
 	GCSettings.gamegenie = 0; // Off
 
 	GCSettings.render = RENDER_FILTERED_SHARP;
+	GCSettings.FilterMethod = FILTER_NONE;
 	GCSettings.hideoverscan = HIDEOVERSCAN_BOTH;
 
 	GCSettings.widescreen = 1;

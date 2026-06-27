@@ -28,10 +28,14 @@
 #include "menu.h"
 #include "pad.h"
 #include "gui/gui.h"
+#include "videofilters.h"
 
 int FDSTimer = 0;
 u32 FrameTimer = 0;
 int FDSSwitchRequested;
+
+unsigned char * filtermem = NULL;
+unsigned char * linearmem = NULL;
 
 /*** External 2D Video ***/
 /*** 2D Video Globals ***/
@@ -44,17 +48,21 @@ bool progressive = false;
 static int oldRenderMode = -1; // set to GCSettings.render when changing (temporarily) to another mode
 
 /*** 3D GX ***/
-#define TEX_WIDTH 256
-#define TEX_HEIGHT 240
+#define TEX_WIDTH 512
+#define TEX_HEIGHT 512
+#define TEXTUREMEM_SIZE (TEX_WIDTH * TEX_HEIGHT * 2)
 #define DEFAULT_FIFO_SIZE ( 256 * 1024 )
+
 static u8 gp_fifo[DEFAULT_FIFO_SIZE] ATTRIBUTE_ALIGN(32);
 static volatile u32 copynow = GX_FALSE;
 static GXTexObj texobj;
+static GXTexObj scanlineTexObj;
 static Mtx view;
 static Mtx GXmodelView2D;
 
 /*** Texture memory ***/
-static unsigned char texturemem[TEX_WIDTH * TEX_HEIGHT * 4] ATTRIBUTE_ALIGN (32);
+static unsigned char texturemem[TEXTUREMEM_SIZE] ATTRIBUTE_ALIGN (32);
+static unsigned char scanline_tex_data[32] ATTRIBUTE_ALIGN (32);
 
 static int UpdateVideo = 1;
 static bool vmode_60hz = true;
@@ -62,8 +70,8 @@ static bool vmode_60hz = true;
 u8 * gameScreenPng = NULL;
 int gameScreenPngSize = 0;
 
-#define HASPECT 256
-#define VASPECT 240
+#define NES_WIDTH 256
+#define NES_HEIGHT 240
 
 // Need something to hold the PC palette
 struct pcpal {
@@ -101,10 +109,10 @@ static s16 square[] ATTRIBUTE_ALIGN (32) =
    * X,   Y,  Z
    * Values set are for roughly 4:3 aspect
    */
-   -HASPECT,  VASPECT, 0,	// 0
-    HASPECT,  VASPECT, 0,	// 1
-    HASPECT, -VASPECT, 0,	// 2
-   -HASPECT, -VASPECT, 0	// 3
+   -NES_WIDTH,  NES_HEIGHT, 0,	// 0
+    NES_WIDTH,  NES_HEIGHT, 0,	// 1
+    NES_WIDTH, -NES_HEIGHT, 0,	// 2
+   -NES_WIDTH, -NES_HEIGHT, 0	// 3
 };
 
 
@@ -322,6 +330,62 @@ copy_to_xfb (u32 arg)
 	}
 }
 
+
+/****************************************************************************
+ * Scanline Support Functions
+ ***************************************************************************/
+
+static void InitScanlineTexture() {
+	// GX_TF_I8 represents one byte per pixel.
+	// We create an 8x4 tile: Rows 0 and 2 are white (0xFF), Rows 1 and 3 are dark (0xA0).
+	for (int y = 0; y < 4; y++) {
+		u8 intensity = (y % 2 == 0) ? 0xFF : 0xA0; // 0xA0 controls the scanline darkness
+		for (int x = 0; x < 8; x++) {
+			scanline_tex_data[y * 8 + x] = intensity;
+		}
+	}
+
+	// CRITICAL: Flush the CPU data cache. GX reads directly from main memory.
+	DCStoreRange(scanline_tex_data, 32);
+
+	// Initialize the texture object. Wrap modes MUST be GX_REPEAT to tile across the screen.
+	GX_InitTexObj(&scanlineTexObj, scanline_tex_data, 8, 4, GX_TF_I8, GX_REPEAT, GX_REPEAT, GX_FALSE);
+
+	// CRITICAL: Filter mode MUST be GX_NEAR. GX_LINEAR will blur the lines into a muddy gray.
+	GX_InitTexObjFilterMode(&scanlineTexObj, GX_NEAR, GX_NEAR);
+
+	// Load the scanline texture into MAP1
+	GX_LoadTexObj(&scanlineTexObj, GX_TEXMAP1);
+}
+
+static void SetupScanlineFilterTEV() {
+	GX_SetVtxAttrFmt (GX_VTXFMT0, GX_VA_TEX1, GX_TEX_ST, GX_F32, 0);
+
+	// Allow a second texture coordinate to be passed to the vertex stream
+	GX_SetVtxDesc(GX_VA_TEX1, GX_DIRECT);
+
+	// Enable two textures and two TEV stages
+	GX_SetNumTexGens(2);
+	GX_SetNumTevStages(2);
+	GX_SetNumChans(0);
+
+	// Configure Texture Coordinate Generation for the second texture (Scanlines)
+	GX_SetTexCoordGen(GX_TEXCOORD1, GX_TG_MTX2x4, GX_TG_TEX1, GX_IDENTITY);
+
+	// --- STAGE 0: Sample the Game Screen ---
+	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	GX_SetTevColorIn(GX_TEVSTAGE0, GX_CC_ZERO, GX_CC_ZERO, GX_CC_ZERO, GX_CC_TEXC);
+	GX_SetTevColorOp(GX_TEVSTAGE0, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+
+	// --- STAGE 1: Multiply by Scanlines ---
+	GX_SetTevOrder(GX_TEVSTAGE1, GX_TEXCOORD1, GX_TEXMAP1, GX_COLORNULL);
+	// Formula: d + ((1.0 - c) * a + c * b)
+	// By setting: a=ZERO, b=CPREV, c=TEXC, d=ZERO -> (TEXC * CPREV)
+	GX_SetTevColorIn(GX_TEVSTAGE1, GX_CC_ZERO, GX_CC_CPREV, GX_CC_TEXC, GX_CC_ZERO);
+	GX_SetTevColorOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
+}
+
+
 /****************************************************************************
  * Scaler Support Functions
  ***************************************************************************/
@@ -335,15 +399,23 @@ draw_init ()
 	GX_SetVtxAttrFmt (GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S16, 0);
 	GX_SetVtxAttrFmt (GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 
+	bool scanlines = (GCSettings.FilterMethod == FILTER_SCANLINES && !shutter_3d_mode && !anaglyph_3d_mode);
+
+	if(scanlines) {
+		SetupScanlineFilterTEV();
+	}
+	else {
+		GX_SetNumTexGens (1);
+		GX_SetNumTevStages (1);
+		GX_SetNumChans (0);
+
+		GX_SetTexCoordGen (GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+
+		GX_SetTevOp (GX_TEVSTAGE0, GX_REPLACE);
+		GX_SetTevOrder (GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLORNULL);
+	}
+
 	GX_SetArray (GX_VA_POS, square, 3 * sizeof (s16));
-
-	GX_SetNumTexGens (1);
-	GX_SetNumChans (0);
-
-	GX_SetTexCoordGen (GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
-
-	GX_SetTevOp (GX_TEVSTAGE0, GX_REPLACE);
-	GX_SetTevOrder (GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLORNULL);
 
 	memset (&view, 0, sizeof (Mtx));
 	guLookAt(view, &cam.pos, &cam.up, &cam.view);
@@ -371,11 +443,45 @@ draw_square (Mtx v)
 
 	GX_LoadPosMtxImm (mv, GX_PNMTX0);
 	GX_Begin (GX_QUADS, GX_VTXFMT0, 4);
-	draw_vert (0, 0.0, 0.0);
-	draw_vert (1, 1.0, 0.0);
-	draw_vert (2, 1.0, 1.0);
-	draw_vert (3, 0.0, 1.0);
+
+	bool scanlines = (GCSettings.FilterMethod == FILTER_SCANLINES && !shutter_3d_mode && !anaglyph_3d_mode);
+
+	if(scanlines) {
+		f32 quad_width = (f32)(square[3] - square[0]);
+		f32 quad_height = (f32)(square[1] - square[7]);
+
+		f32 u_repeat = quad_width / 8.0f;
+		f32 v_repeat = quad_height / 4.0f;
+
+		f32 u_off = 0.0625f;
+		f32 v_off = 0.125f;
+
+		draw_vert (0, 0.0f, 0.0f); // TEX0
+		GX_TexCoord2f32 (u_off, v_off); // TEX1
+
+		draw_vert (1, 1.0f, 0.0f); // TEX0
+		GX_TexCoord2f32 (u_repeat + u_off, v_off); // TEX1
+
+		draw_vert (2, 1.0f, 1.0f); // TEX0
+		GX_TexCoord2f32 (u_repeat + u_off, v_repeat + v_off); // TEX1
+
+		draw_vert (3, 0.0f, 1.0f); // TEX0
+		GX_TexCoord2f32 (u_off, v_repeat + v_off); // TEX1
+	}
+	else {
+		draw_vert (0, 0.0, 0.0);
+		draw_vert (1, 1.0, 0.0);
+		draw_vert (2, 1.0, 1.0);
+		draw_vert (3, 0.0, 1.0);
+	}
 	GX_End ();
+
+	if(scanlines) {
+		// force identity matrix to ensure texture mapping is pristine and devoid of stray scaling
+		Mtx texMtx;
+		guMtxIdentity(texMtx);
+		GX_LoadTexMtxImm(texMtx, GX_TEXMTX1, GX_MTX2x4);
+	}
 }
 
 /****************************************************************************
@@ -406,11 +512,11 @@ UpdateScaling()
 	if (GCSettings.render == RENDER_ORIGINAL)
 	{
 		xscale = 512 / 2; // use GX scaler instead VI
-		yscale = TEX_HEIGHT / 2;
+		yscale = NES_HEIGHT / 2;
 	}
 	else // unfiltered and filtered mode
 	{
-		xscale = 256;
+		xscale = NES_WIDTH;
 		yscale = vmode->efbHeight / 2;
 	}
 
@@ -419,7 +525,7 @@ UpdateScaling()
 		if(GCSettings.render == RENDER_ORIGINAL)
 			xscale = (3*xscale)/4;
 		else
-			xscale = 256; // match the original console's width for "widescreen" to prevent flickering
+			xscale = NES_WIDTH; // match the original console's width for "widescreen" to prevent flickering
 	}
 
 	xscale *= GCSettings.zoomHor;
@@ -574,6 +680,12 @@ InitGCVideo ()
 	xfb[0] = (u32 *) MEM_K0_TO_K1 (xfb[0]);
 	xfb[1] = (u32 *) MEM_K0_TO_K1 (xfb[1]);
 
+	filtermem = (unsigned char *)memalign(32, 512 * 512 * 4);
+	memset(filtermem, 0, 512 * 512 * 4);
+
+	linearmem = (unsigned char *)memalign(32, NES_WIDTH * NES_HEIGHT * 2);
+	memset(linearmem, 0, NES_WIDTH * NES_HEIGHT * 2);
+
 	GXRModeObj *rmode = FindVideoMode();
 
 	#ifdef HW_RVL
@@ -682,6 +794,7 @@ ResetVideo_Emu ()
 
 	GX_SetZMode (GX_TRUE, GX_LEQUAL, GX_TRUE);
 	GX_SetColorUpdate (GX_TRUE);
+	GX_SetBlendMode (GX_BM_NONE, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
 
 	guOrtho(p, rmode->efbHeight/2, -(rmode->efbHeight/2), -(rmode->fbWidth/2), rmode->fbWidth/2, 100, 1000); // matrix, t, b, l, r, n, f
 	GX_LoadProjectionMtx (p, GX_ORTHOGRAPHIC);
@@ -690,18 +803,113 @@ ResetVideo_Emu ()
 	draw_init ();
 	UpdateScaling();
 
+	int fscale = 1;
+	if (GCSettings.FilterMethod != FILTER_NONE &&
+		GCSettings.FilterMethod != FILTER_SCANLINES &&
+		!shutter_3d_mode && !anaglyph_3d_mode)
+	{
+		fscale = GetFilterScale();
+	}
+
 	// reinitialize texture
 	GX_InvalidateTexAll ();
-	GX_InitTexObj (&texobj, texturemem, TEX_WIDTH, TEX_HEIGHT, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);	// initialize the texture obj we are going to use
+	GX_InitTexObj (&texobj, texturemem, NES_WIDTH*fscale, NES_HEIGHT*fscale, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+
 	if (GCSettings.render == RENDER_ORIGINAL || GCSettings.render == RENDER_UNFILTERED)
-		GX_InitTexObjFilterMode(&texobj,GX_NEAR,GX_NEAR); // original/unfiltered video mode: force texture filtering OFF
+		GX_InitTexObjFilterMode(&texobj, GX_NEAR, GX_NEAR); // original/unfiltered video mode: force texture filtering OFF
+
 	GX_LoadTexObj (&texobj, GX_TEXMAP0);
-	memset(texturemem, 0, TEX_WIDTH * TEX_HEIGHT * 2); // clear texture memory
+
+	bool scanlines = (GCSettings.FilterMethod == FILTER_SCANLINES && !shutter_3d_mode && !anaglyph_3d_mode);
+	if(scanlines)
+		InitScanlineTexture();
+
+	// clear texture memory
+	memset(texturemem, 0, NES_WIDTH * fscale * NES_HEIGHT * fscale * 2);
 }
 
 /****************************************************************************
  * Texture Generation Helpers (Gekko/Broadway ASM Optimized)
  ****************************************************************************/
+
+static void MakeLinearRGB565(const void *src, void *dst, s32 widthLimit, s32 heightLimit) {
+	const s32 borderwidth = (256 - widthLimit) / 2;
+	const s32 borderheight = (NES_HEIGHT - heightLimit) / 2;
+	const u8 *srcBuf = (const u8 *)src;
+	u16 *dstBuf = (u16 *)dst;
+
+	// Clear full 256x240 frame to solid black in one pass to pad masked overscan boundaries safely.
+	memset(dst, 0, NES_WIDTH * NES_HEIGHT * 2);
+
+	for (int y = 0; y < heightLimit; y++) {
+		int row = y + borderheight;
+		for (int x = 0; x < widthLimit; x++) {
+			int col = x + borderwidth;
+			// Pass NES palette mapped colors linearly
+			dstBuf[row * NES_WIDTH + col] = rgb565[srcBuf[row * NES_WIDTH + col]];
+		}
+	}
+}
+
+void MakeTexturePitch1024(const void *src, void *dst, s32 width, s32 height)
+{
+    u32 r_src_row=0, tmpA=0, tmpB=0, tmpC=0, tmpD=0;
+
+    __asm__ __volatile__ (
+        "srwi   %[width], %[width], 2\n"
+        "srwi   %[height], %[height], 2\n"
+
+    "2: mtctr   %[width]\n"
+        "mr     %[r_src_row], %[src]\n"
+
+    "1: dcbz    0, %[dst]\n"                   // ZERO L1 CACHE: Dest is perfectly aligned
+
+        // -- Load Tile Half 1 --
+        "lwz    %[tmpA], 0(%[src])\n"
+        "lwz    %[tmpB], 4(%[src])\n"
+        "lwz    %[tmpC], 1024(%[src])\n"
+        "lwz    %[tmpD], 1028(%[src])\n"
+
+        // -- Interleaved Load/Store --
+        "stw    %[tmpA], 0(%[dst])\n"
+        "lwz    %[tmpA], 2048(%[src])\n"
+
+        "stw    %[tmpB], 4(%[dst])\n"
+        "lwz    %[tmpB], 2052(%[src])\n"
+
+        "stw    %[tmpC], 8(%[dst])\n"
+        "lwz    %[tmpC], 3072(%[src])\n"
+
+        "stw    %[tmpD], 12(%[dst])\n"
+        "lwz    %[tmpD], 3076(%[src])\n"
+
+        // -- Store Half 2 --
+        "stw    %[tmpA], 16(%[dst])\n"
+        "stw    %[tmpB], 20(%[dst])\n"
+        "stw    %[tmpC], 24(%[dst])\n"
+        "stw    %[tmpD], 28(%[dst])\n"
+
+        "addi   %[src], %[src], 8\n"
+        "addi   %[dst], %[dst], 32\n"
+        "bdnz   1b\n"
+
+        "addi   %[src], %[r_src_row], 4096\n"  // Jump 4 rows down (1024 * 4)
+        "subic. %[height], %[height], 1\n"
+        "bne    2b"
+
+        : [r_src_row] "=&b" (r_src_row),
+          [tmpA] "=&r" (tmpA),
+          [tmpB] "=&r" (tmpB),
+          [tmpC] "=&r" (tmpC),
+          [tmpD] "=&r" (tmpD),
+          [dst] "+b" (dst),
+          [src] "+b" (src),
+          [width] "+r" (width),
+          [height] "+r" (height)
+        :
+        : "memory"
+    );
+}
 
 void MakeTexture(const void *src, void *dst, s32 width, s32 height)
 {
@@ -1074,14 +1282,41 @@ void RenderFrame(unsigned char *XBuf)
 	if(GCSettings.hideoverscan == HIDEOVERSCAN_HORIZONTAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
 		borderwidth = 8;
 
-	const s32 widthLimit = 256 - (borderwidth << 1);
-	const s32 heightLimit = 240 - (borderheight << 1);
+	const s32 widthLimit = NES_WIDTH - (borderwidth << 1);
+	const s32 heightLimit = NES_HEIGHT - (borderheight << 1);
 
-	// populate the texture
-	MakeTexture(XBuf, texturemem, widthLimit, heightLimit);
+	int fscale = 1;
+	if (GCSettings.FilterMethod != FILTER_NONE &&
+		GCSettings.FilterMethod != FILTER_SCANLINES &&
+		!shutter_3d_mode && !anaglyph_3d_mode)
+	{
+		fscale = GetFilterScale();
+	}
 
-	// load texture into GX
-	DCStoreRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
+	if (fscale > 1) {
+		// 1. Software Filtering enabled: Make Linear RGB565 array
+		MakeLinearRGB565(XBuf, linearmem, widthLimit, heightLimit);
+
+		// 2. Feed it into software filters
+		FilterMethod((uint8*)linearmem, NES_WIDTH * 2, (uint8*)filtermem, NES_WIDTH * fscale * 2, NES_WIDTH, NES_HEIGHT);
+
+		// 3. Reswizzle to 4x4 Tiles using optimized assembly
+		MakeTexturePitch1024((char *)filtermem, (char *)texturemem, NES_WIDTH * fscale, NES_HEIGHT * fscale);
+
+		// Pad flush size correctly to align gracefully
+		u32 padded_width = (256 * fscale + 3) & ~3;
+		u32 padded_height = (240 * fscale + 3) & ~3;
+		u32 flush_size = padded_width * padded_height * 2;
+
+		DCStoreRange(texturemem, flush_size);
+	}
+	else {
+		// Native 1x: Populate using original 8-bit lookup swizzler
+		MakeTexture(XBuf, texturemem, widthLimit, heightLimit);
+
+		// Flush linear size 256x240 @ RGB565 -> 122880 bytes
+		DCStoreRange(texturemem, NES_WIDTH * NES_HEIGHT * 2);
+	}
 
 	// clear texture objects
 	GX_InvalidateTexAll();
@@ -1158,14 +1393,14 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	if(GCSettings.hideoverscan == HIDEOVERSCAN_HORIZONTAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
 		borderwidth = 8;
 
-	const s32 widthLimit = 256 - (borderwidth << 1);
-	const s32 heightLimit = 240 - (borderheight << 1);
+	const s32 widthLimit = NES_WIDTH - (borderwidth << 1);
+	const s32 heightLimit = NES_HEIGHT - (borderheight << 1);
 
 	// populate the texture with red/cyan anaglyph
 	MakeStereoTexture(XBufLeft, XBufRight, texturemem, widthLimit, heightLimit);
 
 	// load texture into GX
-	DCFlushRange(texturemem, TEX_WIDTH * TEX_HEIGHT * 4);
+	DCFlushRange(texturemem, NES_WIDTH * NES_HEIGHT * 2);
 
 	// clear texture objects
 	GX_InvalidateTexAll();
@@ -1293,6 +1528,7 @@ ResetVideo_Menu ()
 
 	GX_SetNumChans(1);
 	GX_SetNumTexGens(1);
+	GX_SetNumTevStages(1);
 	GX_SetTevOp (GX_TEVSTAGE0, GX_PASSCLR);
 	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
 	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);

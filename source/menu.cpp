@@ -23,6 +23,7 @@
 #include "fceusupport.h"
 #include "pad.h"
 #include "gcvideo.h"
+#include "videofilters.h"
 #include "filebrowser.h"
 #include "gcunzip.h"
 #include "networkop.h"
@@ -3618,6 +3619,7 @@ static int MenuSettingsVideo()
 
 	sprintf(options.name[i++], "Rendering");
 	sprintf(options.name[i++], "Scaling");
+	sprintf(options.name[i++], "Filtering");
 	sprintf(options.name[i++], "Cropping");
 	sprintf(options.name[i++], "Palette");
 	sprintf(options.name[i++], "Game Timing");
@@ -3694,39 +3696,45 @@ static int MenuSettingsVideo()
 				break;
 
 			case 2:
+				GCSettings.FilterMethod++;
+				if (GCSettings.FilterMethod >= NUM_FILTERS)
+					GCSettings.FilterMethod = FILTER_NONE;
+				break;
+
+			case 3:
 				GCSettings.hideoverscan++;
 				if (GCSettings.hideoverscan >= HIDEOVERSCAN_LENGTH)
 					GCSettings.hideoverscan = HIDEOVERSCAN_OFF;
 				break;
 
-			case 3: // palette
+			case 4: // palette
 				if ( ++GCSettings.currpal > MAXPAL )
 					GCSettings.currpal = 0;
 				break;
 
-			case 4: // timing
+			case 5: // timing
 				GCSettings.timing++;
 				if(GCSettings.timing >= TIMING_LENGTH)
 					GCSettings.timing = TIMING_NTSC;
 				break;
 
-			case 5:
+			case 6:
 				ScreenZoomWindow();
 				break;
 
-			case 6:
+			case 7:
 				ScreenPositionWindow();
 				break;
 
-			case 7:
+			case 8:
 				GCSettings.crosshair ^= 1;
 				break;
 
-			case 8:
+			case 9:
 				GCSettings.spritelimit ^= 1;
 				break;
 
-			case 9:
+			case 10:
 				GCSettings.videomode++;
 				if(GCSettings.videomode >= VIDEOMODE_LENGTH)
 					GCSettings.videomode = VIDEOMODE_AUTOMATIC;
@@ -3753,42 +3761,44 @@ static int MenuSettingsVideo()
 			else
 				sprintf (options.value[1], "Default");
 
+			sprintf (options.value[2], "%s", GetFilterName(GCSettings.FilterMethod));
+
 			switch(GCSettings.hideoverscan)
 			{
-				case HIDEOVERSCAN_OFF: sprintf (options.value[2], "Off"); break;
-				case HIDEOVERSCAN_VERTICAL: sprintf (options.value[2], "Vertical"); break;
-				case HIDEOVERSCAN_HORIZONTAL: sprintf (options.value[2], "Horizontal"); break;
-				case HIDEOVERSCAN_BOTH: sprintf (options.value[2], "Both"); break;
+				case HIDEOVERSCAN_OFF: sprintf (options.value[3], "Off"); break;
+				case HIDEOVERSCAN_VERTICAL: sprintf (options.value[3], "Vertical"); break;
+				case HIDEOVERSCAN_HORIZONTAL: sprintf (options.value[3], "Horizontal"); break;
+				case HIDEOVERSCAN_BOTH: sprintf (options.value[3], "Both"); break;
 			}
 
-			sprintf (options.value[3], "%s",
+			sprintf (options.value[4], "%s",
 				GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default");
  
 			switch(GCSettings.timing)
 			{
-				case TIMING_NTSC: sprintf (options.value[4], "NTSC"); break;
-				case TIMING_PAL: sprintf (options.value[4], "PAL"); break;
-				case TIMING_AUTOMATIC: sprintf (options.value[4], "Automatic"); break;
-				case TIMING_DENDY: sprintf (options.value[4], "Dendy"); break;
+				case TIMING_NTSC: sprintf (options.value[5], "NTSC"); break;
+				case TIMING_PAL: sprintf (options.value[5], "PAL"); break;
+				case TIMING_AUTOMATIC: sprintf (options.value[5], "Automatic"); break;
+				case TIMING_DENDY: sprintf (options.value[5], "Dendy"); break;
 			}
 
-			sprintf (options.value[5], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
-			sprintf (options.value[6], "%d, %d", GCSettings.xshift, GCSettings.yshift);
-			sprintf (options.value[7], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
-			sprintf (options.value[8], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
+			sprintf (options.value[6], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
+			sprintf (options.value[7], "%d, %d", GCSettings.xshift, GCSettings.yshift);
+			sprintf (options.value[8], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
+			sprintf (options.value[9], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
 
 			switch(GCSettings.videomode)
 			{
 				case VIDEOMODE_AUTOMATIC:
-					sprintf (options.value[9], "Automatic (Recommended)"); break;
+					sprintf (options.value[10], "Automatic (Recommended)"); break;
 				case VIDEOMODE_NTSC:
-					sprintf (options.value[9], "NTSC (480i)"); break;
+					sprintf (options.value[10], "NTSC (480i)"); break;
 				case VIDEOMODE_PROGRESSIVE:
-					sprintf (options.value[9], "Progressive (480p)"); break;
+					sprintf (options.value[10], "Progressive (480p)"); break;
 				case VIDEOMODE_PAL:
-					sprintf (options.value[9], "PAL (50Hz)"); break;
+					sprintf (options.value[10], "PAL (50Hz)"); break;
 				case VIDEOMODE_PAL60:
-					sprintf (options.value[9], "PAL (60Hz)"); break;
+					sprintf (options.value[10], "PAL (60Hz)"); break;
 			}
 			optionBrowser.TriggerUpdate();
 		}
