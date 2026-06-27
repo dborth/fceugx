@@ -34,7 +34,6 @@ int FDSTimer = 0;
 u32 FrameTimer = 0;
 int FDSSwitchRequested;
 
-unsigned char * filtermem = NULL;
 unsigned char * linearmem = NULL;
 
 /*** External 2D Video ***/
@@ -680,9 +679,6 @@ InitGCVideo ()
 	xfb[0] = (u32 *) MEM_K0_TO_K1 (xfb[0]);
 	xfb[1] = (u32 *) MEM_K0_TO_K1 (xfb[1]);
 
-	filtermem = (unsigned char *)memalign(32, 512 * 512 * 4);
-	memset(filtermem, 0, 512 * 512 * 4);
-
 	linearmem = (unsigned char *)memalign(32, NES_WIDTH * NES_HEIGHT * 2);
 	memset(linearmem, 0, NES_WIDTH * NES_HEIGHT * 2);
 
@@ -849,66 +845,6 @@ static void MakeLinearRGB565(const void *src, void *dst, s32 widthLimit, s32 hei
 			dstBuf[row * NES_WIDTH + col] = rgb565[srcBuf[row * NES_WIDTH + col]];
 		}
 	}
-}
-
-void MakeTexturePitch1024(const void *src, void *dst, s32 width, s32 height)
-{
-    u32 r_src_row=0, tmpA=0, tmpB=0, tmpC=0, tmpD=0;
-
-    __asm__ __volatile__ (
-        "srwi   %[width], %[width], 2\n"
-        "srwi   %[height], %[height], 2\n"
-
-    "2: mtctr   %[width]\n"
-        "mr     %[r_src_row], %[src]\n"
-
-    "1: dcbz    0, %[dst]\n"                   // ZERO L1 CACHE: Dest is perfectly aligned
-
-        // -- Load Tile Half 1 --
-        "lwz    %[tmpA], 0(%[src])\n"
-        "lwz    %[tmpB], 4(%[src])\n"
-        "lwz    %[tmpC], 1024(%[src])\n"
-        "lwz    %[tmpD], 1028(%[src])\n"
-
-        // -- Interleaved Load/Store --
-        "stw    %[tmpA], 0(%[dst])\n"
-        "lwz    %[tmpA], 2048(%[src])\n"
-
-        "stw    %[tmpB], 4(%[dst])\n"
-        "lwz    %[tmpB], 2052(%[src])\n"
-
-        "stw    %[tmpC], 8(%[dst])\n"
-        "lwz    %[tmpC], 3072(%[src])\n"
-
-        "stw    %[tmpD], 12(%[dst])\n"
-        "lwz    %[tmpD], 3076(%[src])\n"
-
-        // -- Store Half 2 --
-        "stw    %[tmpA], 16(%[dst])\n"
-        "stw    %[tmpB], 20(%[dst])\n"
-        "stw    %[tmpC], 24(%[dst])\n"
-        "stw    %[tmpD], 28(%[dst])\n"
-
-        "addi   %[src], %[src], 8\n"
-        "addi   %[dst], %[dst], 32\n"
-        "bdnz   1b\n"
-
-        "addi   %[src], %[r_src_row], 4096\n"  // Jump 4 rows down (1024 * 4)
-        "subic. %[height], %[height], 1\n"
-        "bne    2b"
-
-        : [r_src_row] "=&b" (r_src_row),
-          [tmpA] "=&r" (tmpA),
-          [tmpB] "=&r" (tmpB),
-          [tmpC] "=&r" (tmpC),
-          [tmpD] "=&r" (tmpD),
-          [dst] "+b" (dst),
-          [src] "+b" (src),
-          [width] "+r" (width),
-          [height] "+r" (height)
-        :
-        : "memory"
-    );
 }
 
 void MakeTexture(const void *src, void *dst, s32 width, s32 height)
@@ -1298,10 +1234,7 @@ void RenderFrame(unsigned char *XBuf)
 		MakeLinearRGB565(XBuf, linearmem, widthLimit, heightLimit);
 
 		// 2. Feed it into software filters
-		FilterMethod((uint8*)linearmem, NES_WIDTH * 2, (uint8*)filtermem, NES_WIDTH * fscale * 2, NES_WIDTH, NES_HEIGHT);
-
-		// 3. Reswizzle to 4x4 Tiles using optimized assembly
-		MakeTexturePitch1024((char *)filtermem, (char *)texturemem, NES_WIDTH * fscale, NES_HEIGHT * fscale);
+		FilterMethod((uint8*)linearmem, NES_WIDTH * 2, (uint8*)texturemem, NES_WIDTH * fscale * 2, NES_WIDTH, NES_HEIGHT);
 
 		// Pad flush size correctly to align gracefully
 		u32 padded_width = (256 * fscale + 3) & ~3;
