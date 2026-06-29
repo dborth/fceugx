@@ -20,6 +20,7 @@
 #endif
 
 #include "fceugx.h"
+#include "system.h"
 #include "fceusupport.h"
 #include "pad.h"
 #include "gcvideo.h"

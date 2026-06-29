@@ -18,6 +18,7 @@
 #include <mxml.h>
 
 #include "fceugx.h"
+#include "system.h"
 #include "filelist.h"
 #include "button_mapping.h"
 #include "filebrowser.h"

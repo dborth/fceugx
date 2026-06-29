@@ -661,13 +661,13 @@ static void SetupVideoMode(GXRModeObj * mode)
 }
 
 /****************************************************************************
- * InitGCVideo
+ * InitVideo
  *
  * This function MUST be called at startup.
  * - also sets up menu video mode
  ***************************************************************************/
 void
-InitGCVideo ()
+InitVideo ()
 {
 	VIDEO_Init();
 

@@ -20,7 +20,7 @@ struct st_palettes {
     unsigned int data[64];
 };
 
-void InitGCVideo ();
+void InitVideo ();
 void StopGX();
 void ResetVideo_Emu ();
 void RenderFrame(unsigned char *XBuf);
