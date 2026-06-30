@@ -34,8 +34,6 @@ int FDSTimer = 0;
 u32 FrameTimer = 0;
 int FDSSwitchRequested;
 
-unsigned char * linearmem = NULL;
-
 /*** External 2D Video ***/
 /*** 2D Video Globals ***/
 GXRModeObj *vmode  = NULL; // Graphics Mode Object
@@ -80,7 +78,7 @@ struct pcpal {
 } pcpalette[256];
 
 static unsigned int gcpalette[256];	// Much simpler GC palette
-static unsigned short rgb565[256];	// Texture map palette
+unsigned short rgb565[256];	// Texture map palette
 bool shutter_3d_mode, anaglyph_3d_mode, eye_3d;
 bool AnaglyphPaletteValid = false; //CAK: Has the anaglyph palette below been generated yet?
 static unsigned short anaglyph565[64][64]; //CAK: Texture map left right combination anaglyph palette
@@ -329,6 +327,56 @@ copy_to_xfb (u32 arg)
 	}
 }
 
+/****************************************************************************
+ * ApplyOverscanScissor
+ *
+ * Dynamically calculates a GX Scissor box to crop out the overscan borders
+ * at the hardware level. This perfectly hides overscan without modifying
+ * the CPU-bound filters, preventing memory stalls or stretching.
+ ***************************************************************************/
+static inline void ApplyOverscanScissor(u8 borderwidth, u8 borderheight)
+{
+	if (borderwidth == 0 && borderheight == 0)
+	{
+		// Reset to full EFB screen
+		GX_SetScissor(0, 0, vmode->fbWidth, vmode->efbHeight);
+		return;
+	}
+
+	// The quad vertex coordinates in 'square' represent the physical dimensions of the
+	// 256x240 NES space, scaled and shifted by user settings.
+	// square[0] = Left, square[3] = Right, square[1] = Top, square[7] = Bottom.
+	// Note: World Y is up (positive), EFB Y is down (positive).
+	f32 q_left = (vmode->fbWidth / 2.0f) + square[0];
+	f32 q_right = (vmode->fbWidth / 2.0f) + square[3];
+	f32 q_top = (vmode->efbHeight / 2.0f) - square[1];
+	f32 q_bottom = (vmode->efbHeight / 2.0f) - square[7];
+
+	// Calculate how many EFB screen pixels correspond to the NES border count
+	f32 crop_w = (q_right - q_left) * ((f32)borderwidth / (f32)NES_WIDTH);
+	f32 crop_h = (q_bottom - q_top) * ((f32)borderheight / (f32)NES_HEIGHT);
+
+	// Apply crop to the quad bounds to form the Scissor box
+	s32 sc_x = (s32)(q_left + crop_w);
+	s32 sc_y = (s32)(q_top + crop_h);
+	s32 sc_w = (s32)((q_right - crop_w) - sc_x);
+	s32 sc_h = (s32)((q_bottom - crop_h) - sc_y);
+
+	// Safety clamp to EFB boundaries to prevent hardware crashes
+	if (sc_x < 0) { sc_w += sc_x; sc_x = 0; }
+	if (sc_y < 0) { sc_h += sc_y; sc_y = 0; }
+	if (sc_x + sc_w > (s32)vmode->fbWidth) sc_w = vmode->fbWidth - sc_x;
+	if (sc_y + sc_h > (s32)vmode->efbHeight) sc_h = vmode->efbHeight - sc_y;
+
+	if (sc_w > 0 && sc_h > 0)
+	{
+		GX_SetScissor((u32)sc_x, (u32)sc_y, (u32)sc_w, (u32)sc_h);
+	}
+	else
+	{
+		GX_SetScissor(0, 0, 0, 0); // Hide completely if cropped out of bounds
+	}
+}
 
 /****************************************************************************
  * Scanline Support Functions
@@ -679,9 +727,6 @@ InitVideo ()
 	xfb[0] = (u32 *) MEM_K0_TO_K1 (xfb[0]);
 	xfb[1] = (u32 *) MEM_K0_TO_K1 (xfb[1]);
 
-	linearmem = (unsigned char *)memalign(32, NES_WIDTH * NES_HEIGHT * 2);
-	memset(linearmem, 0, NES_WIDTH * NES_HEIGHT * 2);
-
 	GXRModeObj *rmode = FindVideoMode();
 
 	#ifdef HW_RVL
@@ -825,27 +870,8 @@ ResetVideo_Emu ()
 }
 
 /****************************************************************************
- * Texture Generation Helpers (Gekko/Broadway ASM Optimized)
+ * Texture Generation Helper (Gekko/Broadway ASM Optimized)
  ****************************************************************************/
-
-static void MakeLinearRGB565(const void *src, void *dst, s32 widthLimit, s32 heightLimit) {
-	const s32 borderwidth = (256 - widthLimit) / 2;
-	const s32 borderheight = (NES_HEIGHT - heightLimit) / 2;
-	const u8 *srcBuf = (const u8 *)src;
-	u16 *dstBuf = (u16 *)dst;
-
-	// Clear full 256x240 frame to solid black in one pass to pad masked overscan boundaries safely.
-	memset(dst, 0, NES_WIDTH * NES_HEIGHT * 2);
-
-	for (int y = 0; y < heightLimit; y++) {
-		int row = y + borderheight;
-		for (int x = 0; x < widthLimit; x++) {
-			int col = x + borderwidth;
-			// Pass NES palette mapped colors linearly
-			dstBuf[row * NES_WIDTH + col] = rgb565[srcBuf[row * NES_WIDTH + col]];
-		}
-	}
-}
 
 void MakeTexture(const void *src, void *dst, s32 width, s32 height)
 {
@@ -1228,20 +1254,9 @@ void RenderFrame(unsigned char *XBuf)
 	{
 		fscale = GetFilterScale();
 	}
-
 	if (fscale > 1) {
-		// 1. Software Filtering enabled: Make Linear RGB565 array
-		MakeLinearRGB565(XBuf, linearmem, widthLimit, heightLimit);
-
-		// 2. Feed it into software filters
-		FilterMethod((uint8*)linearmem, NES_WIDTH * 2, (uint8*)texturemem, NES_WIDTH * fscale * 2, NES_WIDTH, NES_HEIGHT);
-
-		// Pad flush size correctly to align gracefully
-		u32 padded_width = (256 * fscale + 3) & ~3;
-		u32 padded_height = (240 * fscale + 3) & ~3;
-		u32 flush_size = padded_width * padded_height * 2;
-
-		DCStoreRange(texturemem, flush_size);
+		FilterMethod((u8 *)XBuf, NES_WIDTH, texturemem, NES_WIDTH * fscale * 2, NES_WIDTH, NES_HEIGHT);
+		DCStoreRange(texturemem, NES_WIDTH * NES_HEIGHT * 2);
 	}
 	else {
 		// Native 1x: Populate using original 8-bit lookup swizzler
@@ -1253,6 +1268,9 @@ void RenderFrame(unsigned char *XBuf)
 
 	// clear texture objects
 	GX_InvalidateTexAll();
+
+	// Apply dynamic scissor box to crop out overscan borders cleanly using GX
+	ApplyOverscanScissor(borderwidth, borderheight);
 
 	// render textured quad
 	draw_square(view);
