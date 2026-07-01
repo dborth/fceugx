@@ -405,7 +405,7 @@ void FixInvalidSettings()
 		GCSettings.Controller = CTRL_PAD2;
 	if(!(GCSettings.render >= RENDER_ORIGINAL && GCSettings.render < RENDER_LENGTH))
 		GCSettings.render = RENDER_FILTERED_SHARP;
-	if(!(GCSettings.render >= FILTER_NONE && GCSettings.render <= NUM_FILTERS))
+	if(!(GCSettings.FilterMethod >= FILTER_NONE && GCSettings.FilterMethod <= NUM_FILTERS))
 		GCSettings.FilterMethod = FILTER_NONE;
 	if(GCSettings.timing < TIMING_NTSC || GCSettings.timing >= TIMING_LENGTH)
 		GCSettings.timing = TIMING_AUTOMATIC;
