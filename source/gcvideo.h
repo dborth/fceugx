@@ -36,12 +36,23 @@ void Menu_DrawImg(f32 xpos, f32 ypos, u16 width, u16 height, u8 data[], f32 degr
 void Menu_DrawRectangle(f32 x, f32 y, f32 width, f32 height, GXColor color, u8 filled);
 void Check3D();
 
+typedef struct
+{
+	u8 * buffer;
+	int size;
+	int width;
+	int height;
+	float scaleX;
+	float scaleY;
+	int xoffset;
+	int yoffset;
+} GameScreenPng;
+
+extern GameScreenPng gameScreenPng;
+
 extern GXRModeObj *vmode;
 extern int screenheight;
 extern int screenwidth;
-extern u8 * gameScreenTex;
-extern u8 * gameScreenPng;
-extern int gameScreenPngSize;
 extern struct st_palettes palettes[];
 extern int FDSSwitchRequested;
 extern bool progressive;

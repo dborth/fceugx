@@ -42,7 +42,6 @@ static int whichfb = 0; // Frame buffer toggle
 int screenheight = 480;
 int screenwidth = 640;
 bool progressive = false;
-static int oldRenderMode = -1; // set to GCSettings.render when changing (temporarily) to another mode
 
 /*** 3D GX ***/
 #define TEX_WIDTH 512
@@ -64,8 +63,7 @@ static unsigned char scanline_tex_data[32] ATTRIBUTE_ALIGN (32);
 static int UpdateVideo = 1;
 static bool vmode_60hz = true;
 
-u8 * gameScreenPng = NULL;
-int gameScreenPngSize = 0;
+GameScreenPng gameScreenPng;
 
 #define NES_WIDTH 256
 #define NES_HEIGHT 240
@@ -559,6 +557,20 @@ void StopGX()
  *
  * This function updates the quad aspect ratio.
  ***************************************************************************/
+static int fscale;
+
+static void UpdateFilterScale() {
+	if (GCSettings.FilterMethod != FILTER_NONE &&
+		GCSettings.FilterMethod != FILTER_SCANLINES &&
+		!shutter_3d_mode && !anaglyph_3d_mode)
+	{
+		fscale = GetFilterScale();
+	}
+	else {
+		fscale = 1;
+	}
+}
+
 static inline void
 UpdateScaling()
 {
@@ -593,6 +605,18 @@ UpdateScaling()
 	square[1] = square[4] = (yscale) - GCSettings.yshift;
 	square[7] = square[10] = (-yscale) - GCSettings.yshift;
 	DCFlushRange (square, 32); // update memory BEFORE the GPU accesses it!
+
+	UpdateFilterScale();
+
+	float targetWidth = screenwidth * (2.0f * xscale) / (float)vmode->fbWidth;
+	float targetHeight = screenheight * (2.0f * yscale) / (float)vmode->efbHeight;
+	gameScreenPng.width = NES_WIDTH * fscale;
+	gameScreenPng.height = NES_HEIGHT * fscale;
+	gameScreenPng.scaleX = targetWidth / (float)gameScreenPng.width;
+	gameScreenPng.scaleY = targetHeight / (float)gameScreenPng.height;
+	gameScreenPng.xoffset = (GCSettings.xshift * screenwidth) / vmode->fbWidth;
+	gameScreenPng.yoffset = (GCSettings.yshift * screenheight) / vmode->efbHeight;
+
 	draw_init ();
 }
 
@@ -762,7 +786,7 @@ InitVideo ()
 	GX_SetCullMode (GX_CULL_NONE);
 }
 
-void ResetFbWidth(int width, GXRModeObj *rmode)
+static void ResetFbWidth(int width, GXRModeObj *rmode)
 {
 	if(rmode->fbWidth == width)
 		return;
@@ -852,14 +876,6 @@ ResetVideo_Emu ()
 	// set aspect ratio
 	draw_init ();
 	UpdateScaling();
-
-	int fscale = 1;
-	if (GCSettings.FilterMethod != FILTER_NONE &&
-		GCSettings.FilterMethod != FILTER_SCANLINES &&
-		!shutter_3d_mode && !anaglyph_3d_mode)
-	{
-		fscale = GetFilterScale();
-	}
 
 	// reinitialize texture
 	GX_InvalidateTexAll ();
@@ -1256,13 +1272,8 @@ void RenderFrame(unsigned char *XBuf)
 	const s32 widthLimit = NES_WIDTH - (borderwidth << 1);
 	const s32 heightLimit = NES_HEIGHT - (borderheight << 1);
 
-	int fscale = 1;
-	if (GCSettings.FilterMethod != FILTER_NONE &&
-		GCSettings.FilterMethod != FILTER_SCANLINES &&
-		!shutter_3d_mode && !anaglyph_3d_mode)
-	{
-		fscale = GetFilterScale();
-	}
+	UpdateFilterScale();
+
 	if (fscale > 1) {
 		FilterMethod((u8 *)XBuf, NES_WIDTH, texturemem, NES_WIDTH * fscale * 2, NES_WIDTH, NES_HEIGHT);
 		DCStoreRange(texturemem, NES_WIDTH * NES_HEIGHT * 2);
@@ -1287,23 +1298,9 @@ void RenderFrame(unsigned char *XBuf)
 
 	if(ScreenshotRequested)
 	{
-		if(GCSettings.render == RENDER_ORIGINAL) // we can't take a screenshot in Original mode
-		{
-			oldRenderMode = RENDER_ORIGINAL;
-			GCSettings.render = RENDER_UNFILTERED; // switch to unfiltered mode
-			UpdateVideo = 1; // request the switch
-		}
-		else
-		{
-			ScreenshotRequested = 0;
-			TakeScreenshot();
-			if(oldRenderMode != -1)
-			{
-				GCSettings.render = oldRenderMode;
-				oldRenderMode = -1;
-			}
-			ConfigRequested = 1;
-		}
+		ScreenshotRequested = 0;
+		TakeScreenshot();
+		ConfigRequested = 1;
 	}
 
 	// EFB is ready to be copied into XFB
@@ -1371,23 +1368,9 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 
 	if(ScreenshotRequested)
 	{
-		if(GCSettings.render == RENDER_ORIGINAL) // we can't take a screenshot in Original mode
-		{
-			oldRenderMode = RENDER_ORIGINAL;
-			GCSettings.render = RENDER_UNFILTERED; // switch to unfiltered mode
-			UpdateVideo = 1; // request the switch
-		}
-		else
-		{
-			ScreenshotRequested = 0;
-			TakeScreenshot();
-			if(oldRenderMode != -1)
-			{
-				GCSettings.render = oldRenderMode;
-				oldRenderMode = -1;
-			}
-			ConfigRequested = 1;
-		}
+		ScreenshotRequested = 0;
+		TakeScreenshot();
+		ConfigRequested = 1;
 	}
 
 	// EFB is ready to be copied into XFB
@@ -1401,42 +1384,43 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	LWP_ThreadSignal(vb_queue);
 }
 
+void ClearScreenshot()
+{
+	if(gameScreenPng.buffer) {
+		free(gameScreenPng.buffer);
+		gameScreenPng.buffer = NULL;
+	}
+
+	gameScreenPng.size = 0;
+}
+
 /****************************************************************************
  * TakeScreenshot
  *
- * Copies the current screen into a GX texture
+ * Copies the current texturemem screen into a PNG buffer
  ***************************************************************************/
 void TakeScreenshot()
 {
 	IMGCTX pngContext = PNGU_SelectImageFromBuffer(savebuffer);
 
-	if (pngContext != NULL)
-	{
-		gameScreenPngSize = PNGU_EncodeFromEFB(pngContext, vmode->fbWidth, vmode->efbHeight);
-		PNGU_ReleaseImageContext(pngContext);
-
-		if (gameScreenPngSize <= 0) {
-			gameScreenPngSize = 0;
-			return;
-		}
-
-		gameScreenPng = (u8 *) malloc(gameScreenPngSize);
-		if (gameScreenPng == NULL) {
-			gameScreenPngSize = 0;
-			return;
-		}
-		memcpy(gameScreenPng, savebuffer, gameScreenPngSize);
+	if (pngContext == NULL) {
+		return;
 	}
-}
 
-void ClearScreenshot()
-{
-	if(gameScreenPng)
-	{
-		gameScreenPngSize = 0;
-		free(gameScreenPng);
-		gameScreenPng = NULL;
+	gameScreenPng.size = PNGU_EncodeFromGXTexture(pngContext, gameScreenPng.width, gameScreenPng.height, texturemem, gameScreenPng.width * 3);
+	PNGU_ReleaseImageContext(pngContext);
+
+	if (gameScreenPng.size <= 0) {
+		ClearScreenshot();
+		return;
 	}
+
+	gameScreenPng.buffer = (u8 *) malloc(gameScreenPng.size);
+	if (gameScreenPng.buffer == NULL) {
+		ClearScreenshot();
+		return;
+	}
+	memcpy(gameScreenPng.buffer, savebuffer, gameScreenPng.size);
 }
 
 /****************************************************************************

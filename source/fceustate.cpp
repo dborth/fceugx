@@ -37,13 +37,13 @@ bool SaveState (char * filepath, bool silent)
 	if(!FindDevice(filepath, &device))
 		return 0;
 
-	if(gameScreenPngSize > 0)
+	if(gameScreenPng.size > 0)
 	{
 		char screenpath[1024];
 		strncpy(screenpath, filepath, 1024);
 		screenpath[strlen(screenpath)-4] = 0;
 		strcat(screenpath, ".png");
-		SaveFile((char *)gameScreenPng, screenpath, gameScreenPngSize, silent);
+		SaveFile((char *)gameScreenPng.buffer, screenpath, gameScreenPng.size, silent);
 	}
 
 	EMUFILE_MEMFILE save(SAVEBUFFERSIZE);
@@ -120,13 +120,13 @@ bool SavePreviewImg (char * filepath, bool silent)
 	if(!FindDevice(filepath, &device))
 		return 0;
 
-	if(gameScreenPngSize > 0)
+	if(gameScreenPng.size > 0)
 	{
 		char screenpath[1024];
 		strncpy(screenpath, filepath, 1024);
 		screenpath[strlen(screenpath)] = 0;
 		strcat(screenpath, ".png");
-		SaveFile((char *)gameScreenPng, screenpath, gameScreenPngSize, silent);
+		SaveFile((char *)gameScreenPng.buffer, screenpath, gameScreenPng.size, silent);
 	}
 	
 	return 1;
