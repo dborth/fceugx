@@ -1276,7 +1276,7 @@ void RenderFrame(unsigned char *XBuf)
 
 	if (fscale > 1) {
 		FilterMethod((u8 *)XBuf, NES_WIDTH, texturemem, NES_WIDTH * fscale * 2, NES_WIDTH, NES_HEIGHT);
-		DCStoreRange(texturemem, NES_WIDTH * NES_HEIGHT * 2);
+		DCStoreRange(texturemem, NES_WIDTH * fscale * NES_HEIGHT * fscale * 2);
 	}
 	else {
 		// Native 1x: Populate using original 8-bit lookup swizzler
