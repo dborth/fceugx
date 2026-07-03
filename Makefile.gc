@@ -35,7 +35,7 @@ SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DNOUNCRYPT -DNO_SOUND -DUSE_VM \
 				-flto=auto \
 				-fomit-frame-pointer -fno-strict-aliasing \
-				-Wregister -Wno-format -Wno-format-overflow \
+				-Wno-register -Wno-format -Wno-format-overflow \
 				-Wno-stringop-overflow -Wno-format-truncation \
 				-Wno-unused-parameter -Wno-write-strings -Wno-stringop-truncation -Wno-sign-compare \
 				-Wno-unused-variable -Wno-parentheses -Wno-unused-function -Wno-switch -Wno-unused-but-set-variable \
