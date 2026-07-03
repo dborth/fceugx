@@ -566,86 +566,6 @@ void StopGX()
 }
 
 /****************************************************************************
- * UpdateScaling
- *
- * This function updates the quad aspect ratio.
- ***************************************************************************/
-static int fscale;
-
-static void UpdateFilterScale() {
-	if (GCSettings.FilterMethod != FILTER_NONE &&
-		GCSettings.FilterMethod != FILTER_SCANLINES &&
-		!shutter_3d_mode && !anaglyph_3d_mode)
-	{
-		fscale = GetFilterScale();
-	}
-	else {
-		fscale = 1;
-	}
-}
-
-static inline void
-UpdateScaling()
-{
-	int xscale, yscale;
-
-	// update scaling
-	if (GCSettings.render == RENDER_ORIGINAL)
-	{
-		xscale = 512 / 2; // use GX scaler instead VI
-		yscale = NES_HEIGHT / 2;
-	}
-	else // unfiltered and filtered mode
-	{
-		xscale = NES_WIDTH;
-		yscale = vmode->efbHeight / 2;
-	}
-
-	if (GCSettings.widescreen)
-	{
-		if(GCSettings.render == RENDER_ORIGINAL)
-			xscale = (3*xscale)/4;
-		else
-			xscale = NES_WIDTH; // match the original console's width for "widescreen" to prevent flickering
-	}
-
-	xscale *= GCSettings.zoomHor;
-	yscale *= GCSettings.zoomVert;
-
-	// update vertex position matrix
-	square[0] = square[9] = (-xscale) + GCSettings.xshift;
-	square[3] = square[6] = (xscale) + GCSettings.xshift;
-	square[1] = square[4] = (yscale) - GCSettings.yshift;
-	square[7] = square[10] = (-yscale) - GCSettings.yshift;
-	DCFlushRange (square, 32); // update memory BEFORE the GPU accesses it!
-
-	UpdateFilterScale();
-
-	// 1. Map the active EFB bounds directly to the 640x480 logical menu space.
-	// The hardware VI inherently stretches the EFB to fill the screen, so we replicate
-	// that CRT stretching mathematically against the Menu's fixed 640x480 bounds.
-	float efb_to_menu_x = (float)screenwidth / (float)vmode->fbWidth;
-	float efb_to_menu_y = (float)screenheight / (float)vmode->efbHeight;
-
-	// 2. The rendered game quad footprint is exactly (2 * xscale) by (2 * yscale) EFB pixels.
-	// We multiply by our menu mapping ratio to get the final logical UI dimensions.
-	float targetWidth  = (2.0f * xscale) * efb_to_menu_x;
-	float targetHeight = (2.0f * yscale) * efb_to_menu_y;
-
-	gameScreenPng.width  = NES_WIDTH * fscale;
-	gameScreenPng.height = NES_HEIGHT * fscale;
-
-	gameScreenPng.scaleX = targetWidth / (float)gameScreenPng.width;
-	gameScreenPng.scaleY = targetHeight / (float)gameScreenPng.height;
-
-	// 3. Any deviation from center is purely dictated by user shift settings
-	gameScreenPng.xoffset = GCSettings.xshift * efb_to_menu_x;
-	gameScreenPng.yoffset = GCSettings.yshift * efb_to_menu_y;
-
-	draw_init ();
-}
-
-/****************************************************************************
  * FindVideoMode
  *
  * Finds the optimal video mode, or uses the user-specified one
@@ -736,6 +656,93 @@ static GXRModeObj * FindVideoMode()
 	#endif
 
 	return mode;
+}
+
+/****************************************************************************
+ * UpdateScaling
+ *
+ * This function updates the quad aspect ratio.
+ ***************************************************************************/
+static int fscale;
+
+static void UpdateFilterScale() {
+	if (GCSettings.FilterMethod != FILTER_NONE &&
+		GCSettings.FilterMethod != FILTER_SCANLINES &&
+		!shutter_3d_mode && !anaglyph_3d_mode)
+	{
+		fscale = GetFilterScale();
+	}
+	else {
+		fscale = 1;
+	}
+}
+
+static inline void
+UpdateScaling()
+{
+	int xscale, yscale;
+
+	// update scaling
+	if (GCSettings.render == RENDER_ORIGINAL)
+	{
+		xscale = 512 / 2; // use GX scaler instead VI
+		yscale = NES_HEIGHT / 2;
+	}
+	else // unfiltered and filtered mode
+	{
+		xscale = NES_WIDTH;
+		yscale = vmode->efbHeight / 2;
+	}
+
+	if (GCSettings.widescreen)
+	{
+		if(GCSettings.render == RENDER_ORIGINAL)
+			xscale = (3*xscale)/4;
+		else
+			xscale = NES_WIDTH; // match the original console's width for "widescreen" to prevent flickering
+	}
+
+	xscale *= GCSettings.zoomHor;
+	yscale *= GCSettings.zoomVert;
+
+	// update vertex position matrix
+	square[0] = square[9] = (-xscale) + GCSettings.xshift;
+	square[3] = square[6] = (xscale) + GCSettings.xshift;
+	square[1] = square[4] = (yscale) - GCSettings.yshift;
+	square[7] = square[10] = (-yscale) - GCSettings.yshift;
+	DCFlushRange (square, 32); // update memory BEFORE the GPU accesses it!
+
+	UpdateFilterScale();
+
+	GXRModeObj *menu_vmode = FindVideoMode();
+
+	// 1. Compensate for progressive/interlaced physical line density
+	float viHeightAdjusted = (vmode->viHeight < 300) ? (vmode->viHeight * 2.0f) : (float)vmode->viHeight;
+	float menuViHeightAdjusted = (menu_vmode->viHeight < 300) ? (menu_vmode->viHeight * 2.0f) : (float)menu_vmode->viHeight;
+
+	// 2. Calculate physical fraction of the TV screen the hardware is utilizing
+	float physical_width_ratio = (float)vmode->viWidth / (float)menu_vmode->viWidth;
+	float physical_height_ratio = viHeightAdjusted / menuViHeightAdjusted;
+
+	// 3. Calculate fraction of the EFB utilized by the game quad
+	float width_frac  = (2.0f * xscale) / (float)vmode->fbWidth;
+	float height_frac = (2.0f * yscale) / (float)vmode->efbHeight;
+
+	// 4. Map completely into the Menu's 640x480 logical canvas
+	float targetWidth  = screenwidth * width_frac * physical_width_ratio;
+	float targetHeight = screenheight * height_frac * physical_height_ratio;
+
+	gameScreenPng.width  = NES_WIDTH * fscale;
+	gameScreenPng.height = NES_HEIGHT * fscale;
+
+	gameScreenPng.scaleX = targetWidth / (float)gameScreenPng.width;
+	gameScreenPng.scaleY = targetHeight / (float)gameScreenPng.height;
+
+	// 5. Shift calculations must map EFB distances physically through to the Menu canvas
+	gameScreenPng.xoffset = GCSettings.xshift * (screenwidth / (float)menu_vmode->viWidth) * ((float)vmode->viWidth / (float)vmode->fbWidth);
+	gameScreenPng.yoffset = GCSettings.yshift * (screenheight / menuViHeightAdjusted) * (viHeightAdjusted / (float)vmode->efbHeight);
+
+	draw_init ();
 }
 
 /****************************************************************************
