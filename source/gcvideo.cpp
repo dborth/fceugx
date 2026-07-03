@@ -611,14 +611,16 @@ UpdateScaling()
 
 	UpdateFilterScale();
 
-	float targetWidth = screenwidth * (2.0f * xscale) / (float)vmode->fbWidth;
-	float targetHeight = screenheight * (2.0f * yscale) / (float)vmode->efbHeight;
+	float targetWidth = screenwidth * (2.0f * xscale / (float)vmode->fbWidth);
+	float targetHeight = screenheight * (2.0f * yscale / (float)vmode->efbHeight);
+	float menuCenterX = (screenwidth / 2.0f) + (GCSettings.xshift * screenwidth / (float)vmode->fbWidth);
+	float menuCenterY = (screenheight / 2.0f) + (GCSettings.yshift * screenheight / (float)vmode->efbHeight);
 	gameScreenPng.width = NES_WIDTH * fscale;
 	gameScreenPng.height = NES_HEIGHT * fscale;
 	gameScreenPng.scaleX = targetWidth / (float)gameScreenPng.width;
 	gameScreenPng.scaleY = targetHeight / (float)gameScreenPng.height;
-	gameScreenPng.xoffset = (GCSettings.xshift * screenwidth) / vmode->fbWidth;
-	gameScreenPng.yoffset = (GCSettings.yshift * screenheight) / vmode->efbHeight;
+	gameScreenPng.xoffset = menuCenterX - (screenwidth / 2.0f);
+	gameScreenPng.yoffset = menuCenterY - (screenheight / 2.0f);
 
 	draw_init ();
 }
