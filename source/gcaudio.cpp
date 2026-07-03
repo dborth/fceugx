@@ -146,7 +146,8 @@ void ResetAudio()
 {
 	memset(soundbuffer, 0, sizeof(soundbuffer));
 	memset(mixbuffer, 0, sizeof(mixbuffer));
-	mixhead = mixtail = 0;
+	mixhead = 0;
+	mixtail = 0;
 }
 
 /****************************************************************************
