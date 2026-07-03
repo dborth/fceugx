@@ -52,11 +52,6 @@
 
 #include "fceultra/types.h"
 
-void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count);
-void FCEUD_UpdatePulfrich(uint8 *XBuf, int32 *Buffer, int32 Count);
-void FCEUD_UpdateLeft(uint8 *XBuf, int32 *Buffer, int32 Count);
-void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int32 Count);
-
 int fskipc = 0;
 int fskip = 0;
 static uint8 *gfx=0;
@@ -211,7 +206,6 @@ int main(int argc, char *argv[])
 				}
 			}
 
-			//CAK: Currently this is designed to be used before the frame is emulated
 			Check3D();
 
 			FCEUI_Emulate(&gfx, &sound, &ssize, fskip);

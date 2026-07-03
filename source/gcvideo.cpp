@@ -81,9 +81,9 @@ struct pcpal {
 static unsigned int gcpalette[256];	// Much simpler GC palette
 unsigned short rgb565[256];	// Texture map palette
 bool shutter_3d_mode, anaglyph_3d_mode, eye_3d;
-bool AnaglyphPaletteValid = false; //CAK: Has the anaglyph palette below been generated yet?
-static unsigned short anaglyph565[64][64]; //CAK: Texture map left right combination anaglyph palette
-static void GenerateAnaglyphPalette(); //CAK: function prototype for generating the anaglyph palette
+bool AnaglyphPaletteValid = false; // Has the anaglyph palette below been generated yet?
+static unsigned short anaglyph565[64][64]; // Texture map left right combination anaglyph palette
+static void GenerateAnaglyphPalette(); // function prototype for generating the anaglyph palette
 
 static long long prev;
 static long long now;
@@ -222,9 +222,9 @@ void SyncSpeed()
 {
 	// same timing as game - no adjustment necessary 
 	if((vmode_60hz && normaldiff == 16667) || (!vmode_60hz && normaldiff == 20000)) 
-		if (!shutter_3d_mode && !anaglyph_3d_mode) return; //CAK: But don't exit if in a 30/25Hz 3D mode.
+		if (!shutter_3d_mode && !anaglyph_3d_mode) return; // But don't exit if in a 30/25Hz 3D mode.
 
-	//CAK: Note that the 3D modes (except Pulfrich) still call this function at 60/50Hz, but half the 
+	// Note that the 3D modes (except Pulfrich) still call this function at 60/50Hz, but half the 
 	//     time there is no video rendering to go with it, so we need some delays.
 
 	now = gettime();
@@ -236,7 +236,7 @@ void SyncSpeed()
 	}
 	else if (diff > normaldiff)
 	{
-		frameskip++; //CAK: In 3D this will be ignored, then reset to 0 when leaving 3D
+		frameskip++; // In 3D this will be ignored, then reset to 0 when leaving 3D
 	}
 	else // ahead, so hold up
 	{	
@@ -1388,7 +1388,7 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 		ResetVideo_Emu(); // reset video to emulator rendering settings
 	}
 	
-	//CAK: May need to regenerate the anaglyph 3D palette that is used below
+	// May need to regenerate the anaglyph 3D palette that is used below
 	if (!AnaglyphPaletteValid)
 		GenerateAnaglyphPalette();
 
@@ -1660,7 +1660,7 @@ static void OptimisedAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u
 	*b = rb;
 }
 #if 0
-//CAK: This 3D palette is for high contrast white on black games like Falsion
+// This 3D palette is for high contrast white on black games like Falsion
 static void RedBlueMonoAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u8 rg, u8 rb)
 {
 	// The left eye needs to see a bit of every colour mixed into the red channel
@@ -1677,7 +1677,7 @@ static void RedBlueMonoAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr,
 	*b = ab;
 }
 
-//CAK: This 3D palette is for high contrast white on black games like Falsion
+// This 3D palette is for high contrast white on black games like Falsion
 static void RedGreenMonoAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u8 rg, u8 rb)
 {
 	// The left eye needs to see a bit of every colour mixed into the red channel
@@ -1694,7 +1694,7 @@ static void RedGreenMonoAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr
 	*b = 0;
 }
 
-//CAK: This 3D palette is for high contrast white on black games like Falsion
+// This 3D palette is for high contrast white on black games like Falsion
 static void RedCyanMonoAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u8 rg, u8 rb)
 {
 	// The left eye needs to see a bit of every colour mixed into the red channel
@@ -1711,7 +1711,7 @@ static void RedCyanMonoAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr,
 	*b = ab;
 }
 
-//CAK: This 3D palette is good for games which were already in anaglyph
+// This 3D palette is good for games which were already in anaglyph
 static void FullColourAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, u8 rg, u8 rb)
 {
 	// The left eye needs to see a bit of every colour mixed into the red channel
@@ -1722,7 +1722,7 @@ static void FullColourAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, 
 	*b = rb;
 }
 #endif
-//CAK: Create an RGB 565 colour (used in textures) for this stereoscopic 3D combination of 2 NES colours.
+// Create an RGB 565 colour (used in textures) for this stereoscopic 3D combination of 2 NES colours.
 static void GenerateAnaglyphPalette()
 {
 	for (int left = 0; left < 64; left++)
@@ -2044,9 +2044,9 @@ struct st_palettes palettes[] = {
 	}
 };
 
-//CAK: We need to know the OUT1 pin of the expansion port for Famicom 3D System glasses
+// We need to know the OUT1 pin of the expansion port for Famicom 3D System glasses
 extern uint8 shutter_3d;
-//CAK: We need to know the palette in RAM for red/cyan anaglyph 3D games (3D World Runner and Rad Racer)
+// We need to know the palette in RAM for red/cyan anaglyph 3D games (3D World Runner and Rad Racer)
 extern uint8 PALRAM[0x20];
 bool old_shutter_3d_mode = 0, old_anaglyph_3d_mode = 0;
 uint8 prev_shutter_3d = 0, prev_prev_shutter_3d = 0;
@@ -2054,17 +2054,17 @@ uint8 pal_3d = 0, prev_pal_3d = 0, prev_prev_pal_3d = 0;
 
 bool CheckForAnaglyphPalette()
 {
-	//CAK: It can also have none of these when all blacks
+	// It can also have none of these when all blacks
 	bool hasRed = false, hasCyan = false, hasOther = false;
 	pal_3d = 0;
 
-	//CAK: first 12 background colours are used for anaglyph (last 4 are for status bar)
+	// first 12 background colours are used for anaglyph (last 4 are for status bar)
 	for (int i = 0; i < 12; i++)
 	{
 		switch (PALRAM[i] & 63)
 		{
 			case 0x00:
-			case 0x0F: //CAK: blacks
+			case 0x0F: // blacks
 				break;
 			case 0x01:
 			case 0x11:
@@ -2072,13 +2072,13 @@ bool CheckForAnaglyphPalette()
 			case 0x1A:
 			case 0x0C:
 			case 0x1C:
-			case 0x2C: //CAK: cyan
+			case 0x2C: // cyan
 				hasCyan = true;
 				break;
 			case 0x05:
 			case 0x15:
 			case 0x06:
-			case 0x16: //CAK: reds
+			case 0x16: // reds
 				hasRed = true;
 				break;
 			default:
@@ -2089,13 +2089,13 @@ bool CheckForAnaglyphPalette()
 	if (hasOther || (hasRed && hasCyan))
 		return false;
 
-	//CAK: last 8 sprite colours are used for anaglyph (first 8 are for screen-level sprites)
+	// last 8 sprite colours are used for anaglyph (first 8 are for screen-level sprites)
 	for (int i = 24; i < 32; i++)
 	{
 		switch (PALRAM[i] & 63)
 		{
 			case 0x00:
-			case 0x0F: //CAK: blacks
+			case 0x0F: // blacks
 				break;
 			case 0x01:
 			case 0x11:
@@ -2103,13 +2103,13 @@ bool CheckForAnaglyphPalette()
 			case 0x1A:
 			case 0x0C:
 			case 0x1C:
-			case 0x2c: //CAK: cyan
+			case 0x2c: // cyan
 				hasCyan = true;
 				break;
 			case 0x05:
 			case 0x15:
 			case 0x06:
-			case 0x16: //CAK: reds
+			case 0x16: // reds
 				hasRed = true;
 				break;
 			default:
@@ -2130,10 +2130,10 @@ bool CheckForAnaglyphPalette()
 	return true;
 }
 
-//CAK: Handles automatically entering and exiting stereoscopic 3D mode, and detecting which eye to draw
+// Handles automatically entering and exiting stereoscopic 3D mode, and detecting which eye to draw
 void Check3D()
 {
-	//CAK: Stereoscopic 3D game mode detection
+	// Stereoscopic 3D game mode detection
 	shutter_3d_mode = (shutter_3d != prev_shutter_3d && shutter_3d == prev_prev_shutter_3d);
 	prev_prev_shutter_3d = prev_shutter_3d;
 	prev_shutter_3d = shutter_3d;
@@ -2144,17 +2144,17 @@ void Check3D()
 	}
 	else if (old_shutter_3d_mode)
 	{
-		//CAK: exited stereoscopic 3d mode, reset frameskip to 0
+		// Exited stereoscopic 3d mode, reset frameskip to 0
 		fskip = 0;
 		fskipc = 0;
 		frameskip = 0;
 	}
 	else
 	{
-		//CAK: Only check anaglyph when it's not a Famicom 3D System game
-		//Games are detected as anaglyph, only when they alternate between a very limited red palette
-		//and a very limited blue/green palette. It's very unlikely other games will do that, but
-		//not impossible.
+		// Only check anaglyph when it's not a Famicom 3D System game
+		// Games are detected as anaglyph, only when they alternate between a very limited red palette
+		// and a very limited blue/green palette. It's very unlikely other games will do that, but
+		// not impossible.
 		anaglyph_3d_mode = CheckForAnaglyphPalette() && pal_3d != prev_pal_3d && pal_3d == prev_prev_pal_3d && prev_pal_3d != 0;
 		prev_prev_pal_3d = prev_pal_3d;
 		prev_pal_3d = pal_3d;
@@ -2164,15 +2164,15 @@ void Check3D()
 		}
 		else if (old_anaglyph_3d_mode)
 		{
-			//CAK: exited stereoscopic 3d mode, reset frameskip to 0
+			// Exited stereoscopic 3d mode, reset frameskip to 0
 			fskip = 0;
 			fskipc = 0;
 			frameskip = 0;
 		}
-		//CAK: TODO: make a backup of palette whenever not in anaglyph mode,
-		//and use it to override anaglyph's horible palette for full colour 3D
-		//note the difficulty will be that palette entries get rearranged to
-		//animate the road and will still need to be rearranged in our backup palette
+		// TODO: make a backup of palette whenever not in anaglyph mode,
+		// and use it to override anaglyph's horible palette for full colour 3D
+		// note the difficulty will be that palette entries get rearranged to
+		// animate the road and will still need to be rearranged in our backup palette
 	}
 	old_shutter_3d_mode = shutter_3d_mode;
 	old_anaglyph_3d_mode = anaglyph_3d_mode;

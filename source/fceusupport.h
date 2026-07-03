@@ -34,6 +34,10 @@
 
 extern unsigned char * nesrom;
 
+void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count);
+void FCEUD_UpdatePulfrich(uint8 *XBuf, int32 *Buffer, int32 Count);
+void FCEUD_UpdateLeft(uint8 *XBuf, int32 *Buffer, int32 Count);
+void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int32 Count);
 int GetFCEUTiming();
 void UpdateDendy();
 void RebuildSubCheats(void);
