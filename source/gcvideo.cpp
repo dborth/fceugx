@@ -632,8 +632,8 @@ UpdateScaling()
 	float targetWidth  = (2.0f * xscale) * efb_to_menu_x;
 	float targetHeight = (2.0f * yscale) * efb_to_menu_y;
 
-	gameScreenPng.width  = vwidth * fscale;
-	gameScreenPng.height = vheight * fscale;
+	gameScreenPng.width  = NES_WIDTH * fscale;
+	gameScreenPng.height = NES_HEIGHT * fscale;
 
 	gameScreenPng.scaleX = targetWidth / (float)gameScreenPng.width;
 	gameScreenPng.scaleY = targetHeight / (float)gameScreenPng.height;
