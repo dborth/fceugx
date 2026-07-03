@@ -452,6 +452,9 @@ static void SetupScanlineFilterTEV() {
 	GX_SetTevAlphaOp(GX_TEVSTAGE1, GX_TEV_ADD, GX_TB_ZERO, GX_CS_SCALE_1, GX_TRUE, GX_TEVPREV);
 }
 
+static bool should_apply_scanlines() {
+	return GCSettings.FilterMethod == FILTER_SCANLINES && !shutter_3d_mode && !anaglyph_3d_mode && vmode->efbHeight > 300;
+}
 
 /****************************************************************************
  * Scaler Support Functions
@@ -466,9 +469,7 @@ draw_init ()
 	GX_SetVtxAttrFmt (GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_S16, 0);
 	GX_SetVtxAttrFmt (GX_VTXFMT0, GX_VA_TEX0, GX_TEX_ST, GX_F32, 0);
 
-	bool scanlines = (GCSettings.FilterMethod == FILTER_SCANLINES && !shutter_3d_mode && !anaglyph_3d_mode);
-
-	if(scanlines) {
+	if(should_apply_scanlines()) {
 		SetupScanlineFilterTEV();
 	}
 	else {
@@ -511,7 +512,7 @@ draw_square (Mtx v)
 	GX_LoadPosMtxImm (mv, GX_PNMTX0);
 	GX_Begin (GX_QUADS, GX_VTXFMT0, 4);
 
-	bool scanlines = (GCSettings.FilterMethod == FILTER_SCANLINES && !shutter_3d_mode && !anaglyph_3d_mode);
+	bool scanlines = should_apply_scanlines();
 
 	if(scanlines) {
 		f32 quad_width = (f32)(square[3] - square[0]);
@@ -932,8 +933,7 @@ ResetVideo_Emu ()
 
 	GX_LoadTexObj (&texobj, GX_TEXMAP0);
 
-	bool scanlines = (GCSettings.FilterMethod == FILTER_SCANLINES && !shutter_3d_mode && !anaglyph_3d_mode);
-	if(scanlines)
+	if(should_apply_scanlines())
 		InitScanlineTexture();
 
 	// clear texture memory
