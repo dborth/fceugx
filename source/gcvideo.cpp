@@ -256,6 +256,7 @@ static lwp_t vbthread = LWP_THREAD_NULL;
 static lwpq_t render_queue;          // Queue for the main thread to sleep on
 static lwpq_t vb_queue;              // Queue for the VSync thread to sleep on
 static volatile bool vb_done = true; // Tracks if the VSync thread has completed its wait
+static volatile bool vb_wait = false; // Tracks if the VSync thread should begin waiting
 
 /****************************************************************************
  * vbgetback
@@ -263,17 +264,26 @@ static volatile bool vb_done = true; // Tracks if the VSync thread has completed
  * This callback enables the emulator to keep running while waiting for a
  * vertical blank
  ***************************************************************************/
-static void *
-vbgetback (void *arg)
+static void * vbgetback (void *arg)
 {
 	while (1)
 	{
-		LWP_ThreadSleep(vb_queue);     // Sleep until kicked off by copy_to_xfb
-		VIDEO_WaitVSync ();	         /**< Wait for video vertical blank */
-		vb_done = true;
-		LWP_ThreadSignal(render_queue); // Instantly alert the main thread if it is waiting
-	}
+		u32 level;
+		_CPU_ISR_Disable(level);
+		while (!vb_wait)
+		{
+			LWP_ThreadSleep(vb_queue);     // Sleep safely until RenderFrame kicks us off
+		}
+		vb_wait = false;
+		_CPU_ISR_Restore(level);
 
+		VIDEO_WaitVSync();                 // Wait for video vertical blank
+
+		_CPU_ISR_Disable(level);
+		vb_done = true;
+		LWP_ThreadSignal(render_queue);    // Instantly alert the main thread
+		_CPU_ISR_Restore(level);
+	}
 	return NULL;
 }
 
@@ -1260,10 +1270,14 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 void RenderFrame(unsigned char *XBuf)
 {
 	// Ensure previous frame copy and background VSync block have finished cleanly
+	u32 level;
+
+	_CPU_ISR_Disable(level);
 	while (!vb_done || (copynow == GX_TRUE))
 	{
 		LWP_ThreadSleep(render_queue); // Halts main thread with 0 CPU load until signals occur
 	}
+	_CPU_ISR_Restore(level);
 
 	// swap framebuffers
 	whichfb ^= 1;
@@ -1324,8 +1338,11 @@ void RenderFrame(unsigned char *XBuf)
 	copynow = GX_TRUE;
 
 	// Reset state and signal background VSync thread to begin waiting for next blanking interval
+	_CPU_ISR_Disable(level);
 	vb_done = false;
+	vb_wait = true;
 	LWP_ThreadSignal(vb_queue);
+	_CPU_ISR_Restore(level);
 }
 
 /****************************************************************************
@@ -1337,10 +1354,14 @@ void RenderFrame(unsigned char *XBuf)
 void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 {
 	// Ensure previous frame copy and background VSync block have finished cleanly
+	u32 level;
+
+	_CPU_ISR_Disable(level);
 	while (!vb_done || (copynow == GX_TRUE))
 	{
 		LWP_ThreadSleep(render_queue); // Halts main thread with 0 CPU load until signals occur
 	}
+	_CPU_ISR_Restore(level);
 
 	// swap framebuffers
 	whichfb ^= 1;
@@ -1394,8 +1415,11 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	copynow = GX_TRUE;
 
 	// Reset state and signal background VSync thread to begin waiting for next blanking interval
+	_CPU_ISR_Disable(level);
 	vb_done = false;
+	vb_wait = true;
 	LWP_ThreadSignal(vb_queue);
+	_CPU_ISR_Restore(level);
 }
 
 void ClearScreenshot()
