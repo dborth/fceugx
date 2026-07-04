@@ -746,6 +746,106 @@ UpdateScaling()
 	draw_init ();
 }
 
+void ClearScreenshot()
+{
+	if(gameScreenPng.buffer) {
+		free(gameScreenPng.buffer);
+		gameScreenPng.buffer = NULL;
+	}
+
+	gameScreenPng.size = 0;
+}
+
+/****************************************************************************
+ * TakeScreenshot
+ *
+ * Copies the current texturemem screen into a PNG buffer
+ ***************************************************************************/
+static void TakeScreenshot(u8 borderwidth, u8 borderheight)
+{
+	IMGCTX pngContext = PNGU_SelectImageFromBuffer(savebuffer);
+
+	if (pngContext == NULL) {
+		return;
+	}
+
+	int res;
+
+	if(GCSettings.hideoverscan != HIDEOVERSCAN_OFF) {
+		u32 crop_x = borderwidth * fscale;
+		u32 crop_y = borderheight * fscale;
+		u32 crop_w = gameScreenPng.width - (crop_x * 2);
+		u32 crop_h = gameScreenPng.height - (crop_y * 2);
+
+		u32 stride = crop_w * 3;
+		if (stride % 4) {
+			stride = ((stride >> 2) + 1) << 2;
+		}
+
+		u8 *cropbuffer = (u8 *)malloc(stride * crop_h);
+
+		if(!cropbuffer) {
+			if(cropbuffer)
+				free(cropbuffer);
+			PNGU_ReleaseImageContext(pngContext);
+			return;
+		}
+
+		int padded_width = (gameScreenPng.width + 3) & ~3;
+		u16 *tex16 = (u16 *)texturemem;
+
+		for (u32 y = 0; y < crop_h; y++) {
+			u32 tex_y = y + crop_y;
+			int tile_y = tex_y / 4;
+			int in_tile_y = tex_y % 4;
+			u8 *dst_row = cropbuffer + (y * stride);
+
+			for (u32 x = 0; x < crop_w; x++) {
+				u32 tex_x = x + crop_x;
+				int tile_x = tex_x / 4;
+				int in_tile_x = tex_x % 4;
+
+				int tex_pixel_idx = (tile_y * (padded_width / 4) + tile_x) * 16 + (in_tile_y * 4 + in_tile_x);
+				u16 color = tex16[tex_pixel_idx];
+
+				u8 r = (color >> 11) & 0x1F;
+				u8 g = (color >> 5) & 0x3F;
+				u8 b = color & 0x1F;
+
+				u32 out_idx = x * 3;
+				dst_row[out_idx]     = (r << 3) | (r >> 2);
+				dst_row[out_idx + 1] = (g << 2) | (g >> 4);
+				dst_row[out_idx + 2] = (b << 3) | (b >> 2);
+			}
+		}
+
+		res = PNGU_EncodeFromRGB(pngContext, crop_w, crop_h, cropbuffer, stride);
+		free(cropbuffer);
+	} else {
+		res = PNGU_EncodeFromGXTexture(pngContext, gameScreenPng.width, gameScreenPng.height, texturemem, gameScreenPng.width * 3);
+	}
+
+	if(res == PNGU_OK) {
+		gameScreenPng.size = pngContext->cursor;
+	} else {
+		gameScreenPng.size = 0;
+	}
+
+	PNGU_ReleaseImageContext(pngContext);
+
+	if (gameScreenPng.size <= 0) {
+		ClearScreenshot();
+		return;
+	}
+
+	gameScreenPng.buffer = (u8 *) malloc(gameScreenPng.size);
+	if (gameScreenPng.buffer == NULL) {
+		ClearScreenshot();
+		return;
+	}
+	memcpy(gameScreenPng.buffer, savebuffer, gameScreenPng.size);
+}
+
 /****************************************************************************
  * SetupVideoMode
  *
@@ -1349,7 +1449,7 @@ void RenderFrame(unsigned char *XBuf)
 	if(ScreenshotRequested)
 	{
 		ScreenshotRequested = 0;
-		TakeScreenshot();
+		TakeScreenshot(borderwidth, borderheight);
 		ConfigRequested = 1;
 	}
 
@@ -1426,7 +1526,7 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	if(ScreenshotRequested)
 	{
 		ScreenshotRequested = 0;
-		TakeScreenshot();
+		TakeScreenshot(borderwidth, borderheight);
 		ConfigRequested = 1;
 	}
 
@@ -1442,45 +1542,6 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	vb_wait = true;
 	LWP_ThreadSignal(vb_queue);
 	_CPU_ISR_Restore(level);
-}
-
-void ClearScreenshot()
-{
-	if(gameScreenPng.buffer) {
-		free(gameScreenPng.buffer);
-		gameScreenPng.buffer = NULL;
-	}
-
-	gameScreenPng.size = 0;
-}
-
-/****************************************************************************
- * TakeScreenshot
- *
- * Copies the current texturemem screen into a PNG buffer
- ***************************************************************************/
-void TakeScreenshot()
-{
-	IMGCTX pngContext = PNGU_SelectImageFromBuffer(savebuffer);
-
-	if (pngContext == NULL) {
-		return;
-	}
-
-	gameScreenPng.size = PNGU_EncodeFromGXTexture(pngContext, gameScreenPng.width, gameScreenPng.height, texturemem, gameScreenPng.width * 3);
-	PNGU_ReleaseImageContext(pngContext);
-
-	if (gameScreenPng.size <= 0) {
-		ClearScreenshot();
-		return;
-	}
-
-	gameScreenPng.buffer = (u8 *) malloc(gameScreenPng.size);
-	if (gameScreenPng.buffer == NULL) {
-		ClearScreenshot();
-		return;
-	}
-	memcpy(gameScreenPng.buffer, savebuffer, gameScreenPng.size);
 }
 
 /****************************************************************************
