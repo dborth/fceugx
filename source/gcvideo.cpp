@@ -785,8 +785,7 @@ static void TakeScreenshot(u8 borderwidth, u8 borderheight)
 		u8 *cropbuffer = (u8 *)malloc(stride * crop_h);
 
 		if(!cropbuffer) {
-			if(cropbuffer)
-				free(cropbuffer);
+			free(cropbuffer);
 			PNGU_ReleaseImageContext(pngContext);
 			return;
 		}
@@ -819,6 +818,8 @@ static void TakeScreenshot(u8 borderwidth, u8 borderheight)
 			}
 		}
 
+		gameScreenPng.width = crop_w;
+		gameScreenPng.height = crop_h;
 		res = PNGU_EncodeFromRGB(pngContext, crop_w, crop_h, cropbuffer, stride);
 		free(cropbuffer);
 	} else {
@@ -833,14 +834,13 @@ static void TakeScreenshot(u8 borderwidth, u8 borderheight)
 
 	PNGU_ReleaseImageContext(pngContext);
 
-	if (gameScreenPng.size <= 0) {
-		ClearScreenshot();
+	if (gameScreenPng.size == 0) {
 		return;
 	}
 
 	gameScreenPng.buffer = (u8 *) malloc(gameScreenPng.size);
 	if (gameScreenPng.buffer == NULL) {
-		ClearScreenshot();
+		gameScreenPng.size = 0;
 		return;
 	}
 	memcpy(gameScreenPng.buffer, savebuffer, gameScreenPng.size);
