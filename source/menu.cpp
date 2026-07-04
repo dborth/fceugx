@@ -4625,196 +4625,196 @@ static u8 * CreateBlurredGameTexture() {
 		return NULL;
 	}
 
-    int blurAmount = 4; // blur amount
-    GXColor blurOverlayColor = (GXColor){50, 50, 50, 160};
+	int blurAmount = 4; // blur amount
+	GXColor blurOverlayColor = (GXColor){50, 50, 50, 160};
 
-    u8 * dst = (u8 *)memalign(32, screenwidth * screenheight * 4);
-    if(!dst) {
-        return NULL;
-    }
+	u8 * dst = (u8 *)memalign(32, screenwidth * screenheight * 4);
+	if(!dst) {
+		return NULL;
+	}
 
-    // 5) Inline gameScreenPng variables and calculate scaled dimensions
-    int scaledWidth = (int)(gameScreenPng.width * gameScreenPng.scaleX);
-    int scaledHeight = (int)(gameScreenPng.height * gameScreenPng.scaleY);
+	int scaledWidth = (int)(gameScreenPng.width * gameScreenPng.scaleX);
+	int scaledHeight = (int)(gameScreenPng.height * gameScreenPng.scaleY);
 
-    // Failsafe for invalid scale metrics
-    if (scaledWidth <= 0 || scaledHeight <= 0) {
-        memset(dst, 0, screenwidth * screenheight * 4);
-        return dst;
-    }
+	// Failsafe for invalid scale metrics
+	if (scaledWidth <= 0 || scaledHeight <= 0) {
+		memset(dst, 0, screenwidth * screenheight * 4);
+		return dst;
+	}
 
-    // Calculate the absolute top-left starting pixel of the scaled image.
-    int targetCenterX = (screenwidth / 2) + gameScreenPng.xoffset;
-    int targetCenterY = (screenheight / 2) + gameScreenPng.yoffset;
+	// Calculate the absolute top-left starting pixel of the scaled image.
+	int targetCenterX = (screenwidth / 2) + gameScreenPng.xoffset;
+	int targetCenterY = (screenheight / 2) + gameScreenPng.yoffset;
 
-    int trueOffsetX = targetCenterX - (scaledWidth / 2);
-    int trueOffsetY = targetCenterY - (scaledHeight / 2);
+	int trueOffsetX = targetCenterX - (scaledWidth / 2);
+	int trueOffsetY = targetCenterY - (scaledHeight / 2);
 
-    // --- VIEWABLE AREA CLAMPING LOGIC ---
-    // Determine where to start drawing on the screen bounds
-    int drawX = trueOffsetX < 0 ? 0 : trueOffsetX;
-    int drawY = trueOffsetY < 0 ? 0 : trueOffsetY;
+	// --- VIEWABLE AREA CLAMPING LOGIC ---
+	// Determine where to start drawing on the screen bounds
+	int drawX = trueOffsetX < 0 ? 0 : trueOffsetX;
+	int drawY = trueOffsetY < 0 ? 0 : trueOffsetY;
 
-    // Determine the max visible boundaries clipped to screen dimensions
-    int endX = (trueOffsetX + scaledWidth > screenwidth) ? screenwidth : (trueOffsetX + scaledWidth);
-    int endY = (trueOffsetY + scaledHeight > screenheight) ? screenheight : (trueOffsetY + scaledHeight);
+	// Determine the max visible boundaries clipped to screen dimensions
+	int endX = (trueOffsetX + scaledWidth > screenwidth) ? screenwidth : (trueOffsetX + scaledWidth);
+	int endY = (trueOffsetY + scaledHeight > screenheight) ? screenheight : (trueOffsetY + scaledHeight);
 
-    // Calculate the dimensions of the viewable (cropped) area
-    int cropWidth = endX - drawX;
-    int cropHeight = endY - drawY;
+	// Calculate the dimensions of the viewable (cropped) area
+	int cropWidth = endX - drawX;
+	int cropHeight = endY - drawY;
 
-    // Failsafe if the image is pushed entirely off-screen
-    if (cropWidth <= 0 || cropHeight <= 0) {
-        memset(dst, 0, screenwidth * screenheight * 4);
-        return dst;
-    }
+	// Failsafe if the image is pushed entirely off-screen
+	if (cropWidth <= 0 || cropHeight <= 0) {
+		memset(dst, 0, screenwidth * screenheight * 4);
+		return dst;
+	}
 
-    // Determine the starting offset within the theoretical scaled image
-    int cropStartX = trueOffsetX < 0 ? -trueOffsetX : 0;
-    int cropStartY = trueOffsetY < 0 ? -trueOffsetY : 0;
+	// Determine the starting offset within the theoretical scaled image
+	int cropStartX = trueOffsetX < 0 ? -trueOffsetX : 0;
+	int cropStartY = trueOffsetY < 0 ? -trueOffsetY : 0;
 
-    // 4) Allocate scratch space ONLY for the viewable cropped portion
-    u8 *scaledImg = (u8 *)malloc(cropWidth * cropHeight * 4);
-    u8 *rowBuf    = (u8 *)malloc(cropWidth * 4);
+	// Allocate scratch space ONLY for the viewable cropped portion
+	u8 *scaledImg = (u8 *)malloc(cropWidth * cropHeight * 4);
+	u8 *rowBuf    = (u8 *)malloc(cropWidth * 4);
 
-    if (!scaledImg || !rowBuf) {
-        if (scaledImg) free(scaledImg);
-        if (rowBuf) free(rowBuf);
-        free(dst);
-        return NULL;
-    }
+	if (!scaledImg || !rowBuf) {
+		if (scaledImg) free(scaledImg);
+		if (rowBuf) free(rowBuf);
+		free(dst);
+		return NULL;
+	}
 
-    // 1. Scale the raw input PNG directly into our viewable cropped buffer
-    for (int dy = 0; dy < cropHeight; ++dy) {
-        int scaledImgY = cropStartY + dy;
-        int sy = (scaledImgY * gameScreenPng.height) / scaledHeight;
-        if (sy < 0) sy = 0;
-        if (sy >= gameScreenPng.height) sy = gameScreenPng.height - 1;
+	// Scale the raw input PNG directly into our viewable cropped buffer
+	for (int dy = 0; dy < cropHeight; ++dy) {
+		int scaledImgY = cropStartY + dy;
+		int sy = (scaledImgY * gameScreenPng.height) / scaledHeight;
+		if (sy < 0) sy = 0;
+		if (sy >= gameScreenPng.height) sy = gameScreenPng.height - 1;
 
-        for (int dx = 0; dx < cropWidth; ++dx) {
-            int scaledImgX = cropStartX + dx;
-            int sx = (scaledImgX * gameScreenPng.width) / scaledWidth;
-            if (sx < 0) sx = 0;
-            if (sx >= gameScreenPng.width) sx = gameScreenPng.width - 1;
+		for (int dx = 0; dx < cropWidth; ++dx) {
+			int scaledImgX = cropStartX + dx;
+			int sx = (scaledImgX * gameScreenPng.width) / scaledWidth;
+			if (sx < 0) sx = 0;
+			if (sx >= gameScreenPng.width) sx = gameScreenPng.width - 1;
 
-            int srcIdx = (sy * gameScreenPng.width + sx) * 4;
-            int dstIdx = (dy * cropWidth + dx) * 4;
+			int srcIdx = (sy * gameScreenPng.width + sx) * 4;
+			int dstIdx = (dy * cropWidth + dx) * 4;
 
-            scaledImg[dstIdx + 0] = src[srcIdx + 0];
-            scaledImg[dstIdx + 1] = src[srcIdx + 1];
-            scaledImg[dstIdx + 2] = src[srcIdx + 2];
-            scaledImg[dstIdx + 3] = src[srcIdx + 3];
-        }
-    }
+			scaledImg[dstIdx + 0] = src[srcIdx + 0];
+			scaledImg[dstIdx + 1] = src[srcIdx + 1];
+			scaledImg[dstIdx + 2] = src[srcIdx + 2];
+			scaledImg[dstIdx + 3] = src[srcIdx + 3];
+		}
+	}
 
-    int div = 2 * blurAmount + 1;
+	int div = 2 * blurAmount + 1;
 
-    // 2. Horizontal Box Blur Pass (in-place using the small rowBuf)
-    for (int y = 0; y < cropHeight; ++y) {
-        memcpy(rowBuf, &scaledImg[y * cropWidth * 4], cropWidth * 4);
+	// Horizontal Box Blur Pass (in-place using the small rowBuf)
+	for (int y = 0; y < cropHeight; ++y) {
+		memcpy(rowBuf, &scaledImg[y * cropWidth * 4], cropWidth * 4);
 
-        for (int x = 0; x < cropWidth; ++x) {
-            int sumR = 0, sumG = 0, sumB = 0;
+		for (int x = 0; x < cropWidth; ++x) {
+			int sumR = 0, sumG = 0, sumB = 0;
 
-            for (int k = -blurAmount; k <= blurAmount; ++k) {
-                int nx = x + k;
-                if (nx < 0) nx = 0;
-                if (nx >= cropWidth) nx = cropWidth - 1;
+			for (int k = -blurAmount; k <= blurAmount; ++k) {
+				int nx = x + k;
+				if (nx < 0) nx = 0;
+				if (nx >= cropWidth) nx = cropWidth - 1;
 
-                int idx = nx * 4;
-                sumR += rowBuf[idx + 0];
-                sumG += rowBuf[idx + 1];
-                sumB += rowBuf[idx + 2];
-            }
+				int idx = nx * 4;
+				sumR += rowBuf[idx + 0];
+				sumG += rowBuf[idx + 1];
+				sumB += rowBuf[idx + 2];
+			}
 
-            int dstIdx = (y * cropWidth + x) * 4;
-            scaledImg[dstIdx + 0] = sumR / div;
-            scaledImg[dstIdx + 1] = sumG / div;
-            scaledImg[dstIdx + 2] = sumB / div;
-        }
-    }
+			int dstIdx = (y * cropWidth + x) * 4;
+			scaledImg[dstIdx + 0] = sumR / div;
+			scaledImg[dstIdx + 1] = sumG / div;
+			scaledImg[dstIdx + 2] = sumB / div;
+		}
+	}
 
-    // 3. Precalculate flat background color (Solid Black + Overlay)
-    int alphaIn = blurOverlayColor.a;
-    int invAlpha = 255 - alphaIn;
+	// Precalculate flat background color (Solid Black + Overlay)
+	int alphaIn = blurOverlayColor.a;
+	int invAlpha = 255 - alphaIn;
 
-    u8 bgR = (u8)((0 * invAlpha + blurOverlayColor.r * alphaIn) / 255);
-    u8 bgG = (u8)((0 * invAlpha + blurOverlayColor.g * alphaIn) / 255);
-    u8 bgB = (u8)((0 * invAlpha + blurOverlayColor.b * alphaIn) / 255);
-    u8 bgA = 255;
+	u8 bgR = (u8)((0 * invAlpha + blurOverlayColor.r * alphaIn) / 255);
+	u8 bgG = (u8)((0 * invAlpha + blurOverlayColor.g * alphaIn) / 255);
+	u8 bgB = (u8)((0 * invAlpha + blurOverlayColor.b * alphaIn) / 255);
+	u8 bgA = 255;
 
-    // 4. Vertical Blur, Overlay, & Swizzle directly to the GX Destination Layout
-    int tilesX = (screenwidth + 3) / 4;
-    int tilesY = (screenheight + 3) / 4;
+	// Vertical Blur, Overlay, & Swizzle directly to the GX Destination Layout
+	int tilesX = (screenwidth + 3) / 4;
+	int tilesY = (screenheight + 3) / 4;
 
-    for (int ty = 0; ty < tilesY; ++ty) {
-        for (int tx = 0; tx < tilesX; ++tx) {
-            int tileIdx = ty * tilesX + tx;
-            u8* destTilePtr = dst + (tileIdx * 64);
+	for (int ty = 0; ty < tilesY; ++ty) {
+		for (int tx = 0; tx < tilesX; ++tx) {
+			int tileIdx = ty * tilesX + tx;
+			u8* destTilePtr = dst + (tileIdx * 64);
 
-            for (int py = 0; py < 4; ++py) {
-                for (int px = 0; px < 4; ++px) {
-                    int currX = tx * 4 + px;
-                    int currY = ty * 4 + py;
-                    int pixelIdx = (py * 4) + px;
+			for (int py = 0; py < 4; ++py) {
+				for (int px = 0; px < 4; ++px) {
+					int currX = tx * 4 + px;
+					int currY = ty * 4 + py;
+					int pixelIdx = (py * 4) + px;
 
-                    if (currX >= screenwidth || currY >= screenheight) {
-                        destTilePtr[pixelIdx * 2 + 0] = bgA;
-                        destTilePtr[pixelIdx * 2 + 1] = bgR;
-                        destTilePtr[32 + (pixelIdx * 2 + 0)] = bgG;
-                        destTilePtr[32 + (pixelIdx * 2 + 1)] = bgB;
-                        continue;
-                    }
+					if (currX >= screenwidth || currY >= screenheight) {
+						destTilePtr[pixelIdx * 2 + 0] = bgA;
+						destTilePtr[pixelIdx * 2 + 1] = bgR;
+						destTilePtr[32 + (pixelIdx * 2 + 0)] = bgG;
+						destTilePtr[32 + (pixelIdx * 2 + 1)] = bgB;
+						continue;
+					}
 
-                    // Check bounds against our true absolute coordinates
-                    if (currX >= drawX && currX < drawX + cropWidth &&
-                        currY >= drawY && currY < drawY + cropHeight) {
+					// Check bounds against our true absolute coordinates
+					if (currX >= drawX && currX < drawX + cropWidth &&
+						currY >= drawY && currY < drawY + cropHeight) {
 
-                        int cx = currX - drawX;
-                        int cy = currY - drawY;
+						int cx = currX - drawX;
+						int cy = currY - drawY;
 
-                        int sumR = 0, sumG = 0, sumB = 0;
+						int sumR = 0, sumG = 0, sumB = 0;
 
-                        for (int k = -blurAmount; k <= blurAmount; ++k) {
-                            int ny = cy + k;
-                            if (ny < 0) ny = 0;
-                            if (ny >= cropHeight) ny = cropHeight - 1;
+						for (int k = -blurAmount; k <= blurAmount; ++k) {
+							int ny = cy + k;
+							if (ny < 0) ny = 0;
+							if (ny >= cropHeight) ny = cropHeight - 1;
 
-                            int idx = (ny * cropWidth + cx) * 4;
-                            sumR += scaledImg[idx + 0];
-                            sumG += scaledImg[idx + 1];
-                            sumB += scaledImg[idx + 2];
-                        }
+							int idx = (ny * cropWidth + cx) * 4;
+							sumR += scaledImg[idx + 0];
+							sumG += scaledImg[idx + 1];
+							sumB += scaledImg[idx + 2];
+						}
 
-                        u8 blurredR = sumR / div;
-                        u8 blurredG = sumG / div;
-                        u8 blurredB = sumB / div;
+						u8 blurredR = sumR / div;
+						u8 blurredG = sumG / div;
+						u8 blurredB = sumB / div;
 
-                        u8 finalR = (u8)((blurredR * invAlpha + blurOverlayColor.r * alphaIn) / 255);
-                        u8 finalG = (u8)((blurredG * invAlpha + blurOverlayColor.g * alphaIn) / 255);
-                        u8 finalB = (u8)((blurredB * invAlpha + blurOverlayColor.b * alphaIn) / 255);
+						u8 finalR = (u8)((blurredR * invAlpha + blurOverlayColor.r * alphaIn) / 255);
+						u8 finalG = (u8)((blurredG * invAlpha + blurOverlayColor.g * alphaIn) / 255);
+						u8 finalB = (u8)((blurredB * invAlpha + blurOverlayColor.b * alphaIn) / 255);
 
-                        destTilePtr[pixelIdx * 2 + 0] = 255;
-                        destTilePtr[pixelIdx * 2 + 1] = finalR;
-                        destTilePtr[32 + (pixelIdx * 2 + 0)] = finalG;
-                        destTilePtr[32 + (pixelIdx * 2 + 1)] = finalB;
+						destTilePtr[pixelIdx * 2 + 0] = 255;
+						destTilePtr[pixelIdx * 2 + 1] = finalR;
+						destTilePtr[32 + (pixelIdx * 2 + 0)] = finalG;
+						destTilePtr[32 + (pixelIdx * 2 + 1)] = finalB;
 
-                    } else {
-                        destTilePtr[pixelIdx * 2 + 0] = bgA;
-                        destTilePtr[pixelIdx * 2 + 1] = bgR;
-                        destTilePtr[32 + (pixelIdx * 2 + 0)] = bgG;
-                        destTilePtr[32 + (pixelIdx * 2 + 1)] = bgB;
-                    }
-                }
-            }
-        }
-    }
+					} else {
+						destTilePtr[pixelIdx * 2 + 0] = bgA;
+						destTilePtr[pixelIdx * 2 + 1] = bgR;
+						destTilePtr[32 + (pixelIdx * 2 + 0)] = bgG;
+						destTilePtr[32 + (pixelIdx * 2 + 1)] = bgB;
+					}
+				}
+			}
+		}
+	}
 
-    DCFlushRange(dst, screenwidth * screenheight * 4);
-    free(scaledImg);
-    free(rowBuf);
-    free(src);
-    return dst;
+	DCFlushRange(dst, screenwidth * screenheight * 4);
+
+	free(scaledImg);
+	free(rowBuf);
+	free(src);
+	return dst;
 }
 
 /****************************************************************************
