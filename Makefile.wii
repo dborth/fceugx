@@ -180,7 +180,7 @@ $(OFILES_SOURCES) : $(HFILES)
 x6502.o: x6502.cpp
 	@mkdir -p $(dir $@)
 	@echo "Compiling x6502.o to $(BUILD) with I-Cache tuned flags..."
-	$(CXX) -c -O2 -fno-unroll-loops $(CXXFLAGS) $< -o $@
+	$(CXX) -c $(CXXFLAGS) -O2 -fno-unroll-loops $< -o $@
 
 #---------------------------------------------------------------------------------
 endif
