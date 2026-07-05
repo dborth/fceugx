@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 		{
 			GameInfo->vidsys=(EGIV)GetFCEUTiming();
 			UpdateDendy();
-			FCEU_ResetVidSys(); // causes a small 'pop' in the audio
+			FCEU_ResetVidSys();
 		}
 
 		currentTiming = GCSettings.timing;

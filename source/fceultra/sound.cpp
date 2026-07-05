@@ -1268,6 +1268,12 @@ void SetSoundVariables(void)
   memset(sqacc,0,sizeof(sqacc));
   memset(ChannelBC,0,sizeof(ChannelBC));
 
+  // Reset the read pointer and wipe stale audio arrays to prevent garbage reads on the first frame
+  soundtsoffs = 0;
+  memset(Wave, 0, sizeof(Wave));
+  memset(WaveHi, 0, sizeof(WaveHi));
+  memset(WaveFinal, 0, sizeof(WaveFinal));
+
   LoadDMCPeriod(DMCFormat&0xF);  // For changing from PAL to NTSC
 
   soundtsinc=(uint32)((uint64)(PAL?(long double)PAL_CPU*65536:(long double)NTSC_CPU*65536)/(FSettings.SndRate * 16));
