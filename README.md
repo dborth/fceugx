@@ -21,13 +21,13 @@ Wii/GameCube.
 
 | Name                    | Status                            | File                                     |
 |-------------------------|-----------------------------------|------------------------------------------|
-| FCE Ultra GX Wii/Wii U  | [![Build Status][Build]][Actions] | [![Emulator][Download]][fceugx-wiiu]     |
+| FCE Ultra GX Wii/Wii U  | [![Build Status][Build]][Actions] | [![Emulator][Download]][fceugx-wii]      |
 | FCE Ultra GX GameCube   | [![Build Status][Build]][Actions] | [![Emulator][Download]][fceugx-gamecube] |
 
 [Actions]: https://github.com/dborth/fceugx/actions/workflows/build.yml
 [Build]: https://github.com/dborth/fceugx/actions/workflows/build.yml/badge.svg
 [Download]: https://img.shields.io/badge/Download-blue
-[fceugx-wiiu]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX.zip
+[fceugx-wii]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX.zip
 [fceugx-gamecube]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX-GameCube.zip
 
 
@@ -44,6 +44,7 @@ Wii/GameCube.
 * Custom controller configurations
 * 16:9 widescreen support
 * Original/filtered/unfiltered video modes
+* Video filters - hq2x, Scale2x, Scanlines, 2xBR, DDT
 * Turbo Mode - up to 2x the normal speed
 * Cheat support (.CHT files and Game Genie)
 * Artwork (artwork, cover or screenshot) support
@@ -53,6 +54,23 @@ Wii/GameCube.
 * Open Source!
 
 ## UPDATE HISTORY
+
+[4.0.0 - July 6, 2026]
+
+* Added video filters - hq2x, Scale2x, Scanlines, 2xBR, DDT
+* Fixed audio pop when changing video modes (FCEUX bug)
+* Optimized video rendering
+* Improved audio code
+* Refactored/improved synchronization and frameskip handling
+* Replaced C texture generation with optimized PPC ASM
+* New blur effect when pausing a game
+* Reworked save/load device and preferences logic
+* Fixed crash when removing devices (eg: SD/USB)
+* Fixed flashes/artifacts/colors when switching video modes
+* Streamlined/enhanced build
+* General performance enhancements
+* Other general enhancements
+* Compiled with latest devkitPPC/libogc2
 
 [3.5.7 - April 13, 2026]
 
