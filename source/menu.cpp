@@ -663,16 +663,16 @@ void InfoPrompt(const char *msg)
  ***************************************************************************/
 void AutoSave()
 {
-	if (GCSettings.AutoSave == 1)
+	if (GCSettings.AutoSave == AUTOSAVE_RAM)
 	{
 		SaveRAMAuto(SILENT);
 	}
-	else if (GCSettings.AutoSave == 2)
+	else if (GCSettings.AutoSave == AUTOSAVE_STATE)
 	{
 		if (WindowPrompt("Save", "Save State?", "Save", "Don't Save") )
 			SaveStateAuto(NOTSILENT);
 	}
-	else if (GCSettings.AutoSave == 3)
+	else if (GCSettings.AutoSave == AUTOSAVE_BOTH)
 	{
 		if (WindowPrompt("Save", "Save RAM and State?", "Save", "Don't Save") )
 		{
@@ -3520,7 +3520,7 @@ static int MenuSettingsOtherMappings()
 		switch (ret)
 		{
 			case 0:
-				GCSettings.TurboModeEnabled ^= 1;
+				GCSettings.TurboModeEnabled = !GCSettings.TurboModeEnabled;
 				break;
 
 			case 1:
@@ -3531,15 +3531,15 @@ static int MenuSettingsOtherMappings()
 
 			case 2:
 				GCSettings.GamepadMenuToggle++;
-				if (GCSettings.GamepadMenuToggle > 2)
-					GCSettings.GamepadMenuToggle = 0;
+				if (GCSettings.GamepadMenuToggle >= GAMEPAD_MENU_TOGGLE_LENGTH)
+					GCSettings.GamepadMenuToggle = GAMEPAD_MENU_TOGGLE_DEFAULT;
 				break;
 		}
 
 		if(ret >= 0 || firstRun)
 		{
 			firstRun = false;
-			sprintf (options.value[0], "%s", GCSettings.TurboModeEnabled == 1 ? "On" : "Off");
+			sprintf (options.value[0], "%s", GCSettings.TurboModeEnabled ? "On" : "Off");
 
 			switch(GCSettings.TurboModeButton)
 			{
@@ -3684,7 +3684,7 @@ static int MenuSettingsVideo()
 				break;
 
 			case 1:
-				GCSettings.widescreen ^= 1;
+				GCSettings.widescreen = !GCSettings.widescreen;
 				break;
 
 			case 2:
@@ -3719,11 +3719,11 @@ static int MenuSettingsVideo()
 				break;
 
 			case 8:
-				GCSettings.crosshair ^= 1;
+				GCSettings.crosshair = !GCSettings.crosshair;
 				break;
 
 			case 9:
-				GCSettings.spritelimit ^= 1;
+				GCSettings.spritelimit = !GCSettings.spritelimit;
 				break;
 
 			case 10:
@@ -3776,8 +3776,8 @@ static int MenuSettingsVideo()
 
 			sprintf (options.value[6], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
 			sprintf (options.value[7], "%d, %d", GCSettings.xshift, GCSettings.yshift);
-			sprintf (options.value[8], "%s", GCSettings.crosshair == 1 ? "On" : "Off");
-			sprintf (options.value[9], "%s", GCSettings.spritelimit == 1 ? "On" : "Off");
+			sprintf (options.value[8], "%s", GCSettings.crosshair ? "On" : "Off");
+			sprintf (options.value[9], "%s", GCSettings.spritelimit ? "On" : "Off");
 
 			switch(GCSettings.videomode)
 			{
@@ -4015,7 +4015,7 @@ static int MenuSettings()
 			}
 			else
 			{
-				GCSettings.gamegenie ^= 1;
+				GCSettings.gamegenie = !GCSettings.gamegenie;
 				if (GCSettings.gamegenie) sprintf(gameGenieTxt, "ON");
 				else sprintf(gameGenieTxt, "OFF");
 				cheatsBtnTxt2.SetText(gameGenieTxt);
@@ -4161,20 +4161,18 @@ static int MenuSettingsFile()
 
 			case 8:
 				GCSettings.AutoLoad++;
-				if (GCSettings.AutoLoad > 2)
-					GCSettings.AutoLoad = 0;
+				if (GCSettings.AutoLoad > AUTOLOAD_STATE)
+					GCSettings.AutoLoad = AUTOLOAD_OFF;
 				break;
 
 			case 9:
 				GCSettings.AutoSave++;
-				if (GCSettings.AutoSave > 3)
-					GCSettings.AutoSave = 0;
+				if (GCSettings.AutoSave > AUTOSAVE_BOTH)
+					GCSettings.AutoSave = AUTOSAVE_OFF;
 				break;
 
 			case 10:
-				GCSettings.AppendAuto++;
-				if (GCSettings.AppendAuto > 1)
-					GCSettings.AppendAuto = 0;
+				GCSettings.AppendAuto = !GCSettings.AppendAuto;
 				break;
 		}
 
@@ -4253,17 +4251,17 @@ static int MenuSettingsFile()
 			snprintf (options.value[6], 35, "%s", GCSettings.CoverFolder);
 			snprintf (options.value[7], 35, "%s", GCSettings.ArtworkFolder);
 
-			if (GCSettings.AutoLoad == 0) sprintf (options.value[8],"Off");
-			else if (GCSettings.AutoLoad == 1) sprintf (options.value[8],"RAM");
-			else if (GCSettings.AutoLoad == 2) sprintf (options.value[8],"State");
+			if (GCSettings.AutoLoad == AUTOLOAD_OFF) sprintf (options.value[8],"Off");
+			else if (GCSettings.AutoLoad == AUTOLOAD_RAM) sprintf (options.value[8],"RAM");
+			else if (GCSettings.AutoLoad == AUTOLOAD_STATE) sprintf (options.value[8],"State");
 
-			if (GCSettings.AutoSave == 0) sprintf (options.value[9],"Off");
-			else if (GCSettings.AutoSave == 1) sprintf (options.value[9],"RAM");
-			else if (GCSettings.AutoSave == 2) sprintf (options.value[9],"State");
-			else if (GCSettings.AutoSave == 3) sprintf (options.value[9],"Both");
+			if (GCSettings.AutoSave == AUTOSAVE_OFF) sprintf (options.value[9],"Off");
+			else if (GCSettings.AutoSave == AUTOSAVE_RAM) sprintf (options.value[9],"RAM");
+			else if (GCSettings.AutoSave == AUTOSAVE_STATE) sprintf (options.value[9],"State");
+			else if (GCSettings.AutoSave == AUTOSAVE_BOTH) sprintf (options.value[9],"Both");
 
-			if (GCSettings.AppendAuto == 0) sprintf (options.value[10], "Off");
-			else if (GCSettings.AppendAuto == 1) sprintf (options.value[10], "On");
+			if (!GCSettings.AppendAuto) sprintf (options.value[10], "Off");
+			else sprintf (options.value[10], "On");
 
 			optionBrowser.TriggerUpdate();
 		}
@@ -4385,7 +4383,7 @@ static int MenuSettingsMenu()
 					GCSettings.SFXVolume = 0;
 				break;
 			case 4:
-				GCSettings.Rumble ^= 1;
+				GCSettings.Rumble = !GCSettings.Rumble;
 				break;
 			case 5:
 				GCSettings.language++;
@@ -4401,7 +4399,7 @@ static int MenuSettingsMenu()
 					GCSettings.PreviewImage = PREVIEWIMAGE_SCREENSHOT;
 				break;
 			case 7:
-				GCSettings.HideRAMSaving ^= 1;
+				GCSettings.HideRAMSaving = !GCSettings.HideRAMSaving;
 				break;
 		}
 
@@ -4445,12 +4443,12 @@ static int MenuSettingsMenu()
 			else
 				sprintf(options.value[3], "Mute");
 
-			if (GCSettings.Rumble == 1)
+			if (GCSettings.Rumble)
 				sprintf (options.value[4], "Enabled");
 			else
 				sprintf (options.value[4], "Disabled");
 
-			if (GCSettings.HideRAMSaving == 1)
+			if (GCSettings.HideRAMSaving)
 				sprintf (options.value[7], "On");
 			else
 				sprintf (options.value[7], "Off");

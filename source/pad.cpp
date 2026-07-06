@@ -596,7 +596,7 @@ bool MenuRequested()
 {
 	for(int i=0; i<4; i++)
 	{
-		if (GCSettings.GamepadMenuToggle == 1) // Home (WiiPad) or Right Stick (GC/3rd party gamepad) only
+		if (GCSettings.GamepadMenuToggle == GAMEPAD_MENU_TOGGLE_HOME_RIGHTSTICK) // Home (WiiPad) or Right Stick (GC/3rd party gamepad) only
 		{
 			if (
 				(userInput[i].pad.substickX < -70)
@@ -610,7 +610,7 @@ bool MenuRequested()
 				return true;
 			}
 		}
-		else if (GCSettings.GamepadMenuToggle == 2) // L+R+Start / 1+2+Plus (Wiimote) combo only
+		else if (GCSettings.GamepadMenuToggle == GAMEPAD_MENU_TOGGLE_LRSTART_12PLUS) // L+R+Start / 1+2+Plus (Wiimote) combo only
 		{
 			if (
 				(userInput[i].pad.btns_h & PAD_TRIGGER_L &&

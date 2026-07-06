@@ -82,6 +82,19 @@ enum
 };
 
 enum {
+	AUTOLOAD_OFF = 0,
+	AUTOLOAD_RAM,
+	AUTOLOAD_STATE
+};
+
+enum {
+	AUTOSAVE_OFF = 0,
+	AUTOSAVE_RAM,
+	AUTOSAVE_STATE,
+	AUTOSAVE_BOTH
+};
+
+enum {
 	PREVIEWIMAGE_SCREENSHOT = 0,
 	PREVIEWIMAGE_COVER,
 	PREVIEWIMAGE_ARTWORK,
@@ -112,6 +125,13 @@ enum {
 	HIDEOVERSCAN_HORIZONTAL,
 	HIDEOVERSCAN_BOTH,
 	HIDEOVERSCAN_LENGTH
+};
+
+enum {
+	GAMEPAD_MENU_TOGGLE_DEFAULT = 0,
+	GAMEPAD_MENU_TOGGLE_HOME_RIGHTSTICK,
+	GAMEPAD_MENU_TOGGLE_LRSTART_12PLUS,
+	GAMEPAD_MENU_TOGGLE_LENGTH
 };
 
 enum {
@@ -184,7 +204,7 @@ struct SGCSettings
     int		AutoSave;
     int		LoadMethod; // For ROMS: Auto, SD, DVD, USB, Network (SMB)
 	int		SaveMethod; // For SRAM, Freeze, Prefs: Auto, SD, USB, SMB
-	int		AppendAuto; // 0 - no, 1 - yes
+	bool	AppendAuto;
 	char	LoadFolder[MAXPATHLEN]; // Path to game files
 	char	LastFileLoaded[MAXPATHLEN]; //Last file loaded filename
 	char	SaveFolder[MAXPATHLEN]; // Path to save files
@@ -192,7 +212,7 @@ struct SGCSettings
 	char	ScreenshotsFolder[MAXPATHLEN]; // Path to screenshot files
 	char	CoverFolder[MAXPATHLEN]; 	// Path to cover files
 	char	ArtworkFolder[MAXPATHLEN]; 	// Path to artwork files
-	int		AutoloadGame;
+	bool	AutoloadGame;
 	
 	char	smbip[80];
 	char	smbuser[20];
@@ -204,25 +224,25 @@ struct SGCSettings
 	int		render;		// 0 - original, 1 - filtered, 2 - unfiltered
 	int		FilterMethod; // convert to RenderFilter
 	int		videomode; // 0 - automatic, 1 - NTSC (480i), 2 - Progressive (480p), 3 - PAL (50Hz), 4 - PAL (60Hz)
-	int		widescreen;
+	bool	widescreen;
 	int		hideoverscan; // 0 = off, 1 = vertical, 2 = horizontal, 3 = both
-	int		gamegenie;
+	bool	gamegenie;
 	int		currpal;
 	int		timing;
 	int		Controller;
-	int		crosshair;
-	int		spritelimit;
+	bool	crosshair;
+	bool	spritelimit;
 	int		xshift;		// video output shift
 	int		yshift;
 	int		WiimoteOrientation;
 	int		ExitAction;
 	int		MusicVolume;
 	int		SFXVolume;
-	int		Rumble;
+	bool	Rumble;
 	int 	language;
 	int		PreviewImage;
-	int		HideRAMSaving;
-	int		TurboModeEnabled; // 0 - disabled, 1 - enabled
+	bool	HideRAMSaving;
+	bool	TurboModeEnabled;
 	int		TurboModeButton;
 	int		GamepadMenuToggle;
 };

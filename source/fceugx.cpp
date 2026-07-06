@@ -243,7 +243,7 @@ void ExitApp()
 {
 	SavePrefs(SILENT);
 
-	if (romLoaded && !ConfigRequested && GCSettings.AutoSave == 1)
+	if (romLoaded && !ConfigRequested && GCSettings.AutoSave == AUTOSAVE_RAM)
 		SaveRAMAuto(SILENT);
 
 	SystemExit(GCSettings.ExitAction, autoboot);
