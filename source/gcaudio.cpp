@@ -12,7 +12,9 @@
 
 #include <gccore.h>
 #include <string.h>
+#ifndef NO_SOUND
 #include <asndlib.h>
+#endif
 #include "fceusupport.h"
 
 extern int ScreenshotRequested;
