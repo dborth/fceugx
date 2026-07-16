@@ -48,6 +48,58 @@ bool inSz = false;
 char romFilename[256];
 bool loadingFile = false;
 
+#ifdef HW_RVL
+	static const int numLoadDevices = 5;
+	static const int numSaveDevices = 4;
+	static const int loadDevices[5] = { DEVICE_AUTO, DEVICE_SD, DEVICE_USB, DEVICE_DVD, DEVICE_SMB };
+	static const int saveDevices[4] = { DEVICE_AUTO, DEVICE_SD, DEVICE_USB, DEVICE_SMB };
+#else
+	static const int numLoadDevices = 7;
+	static const int numSaveDevices = 6;
+	static const int loadDevices[7] = { DEVICE_AUTO, DEVICE_SD_SLOTA, DEVICE_SD_SLOTB, DEVICE_SD_PORT2, DEVICE_SD_GCLOADER, DEVICE_DVD, DEVICE_SMB };
+	static const int saveDevices[6] = { DEVICE_AUTO, DEVICE_SD_SLOTA, DEVICE_SD_SLOTB, DEVICE_SD_PORT2, DEVICE_SD_GCLOADER, DEVICE_SMB };
+#endif
+
+bool isValidLoadDevice(int device)
+{
+	for (int i = 0; i < numLoadDevices; i++) {
+		if (loadDevices[i] == device) {
+			return true;
+		}
+	}
+	return false;
+}
+
+bool isValidSaveDevice(int device)
+{
+	for (int i = 0; i < numSaveDevices; i++) {
+		if (saveDevices[i] == device) {
+			return true;
+		}
+	}
+	return false;
+}
+
+int getNextLoadDevice(int device)
+{
+	for (int i = 0; i < numLoadDevices; i++) {
+		if (loadDevices[i] == device) {
+			return loadDevices[(i + 1) % numLoadDevices];
+		}
+	}
+	return DEVICE_AUTO;
+}
+
+int getNextSaveDevice(int device)
+{
+	for (int i = 0; i < numSaveDevices; i++) {
+		if (saveDevices[i] == device) {
+			return saveDevices[(i + 1) % numSaveDevices];
+		}
+	}
+	return DEVICE_AUTO;
+}
+
 /****************************************************************************
 * autoLoadMethod()
 * Auto-determines and sets the load device
@@ -55,7 +107,7 @@ bool loadingFile = false;
 ****************************************************************************/
 int autoLoadMethod(bool silent)
 {
-	if(GCSettings.LoadMethod > DEVICE_AUTO) {
+	if(GCSettings.LoadMethod > DEVICE_AUTO && isValidLoadDevice(GCSettings.LoadMethod)) {
 		return GCSettings.LoadMethod;
 	}
 
@@ -68,21 +120,13 @@ int autoLoadMethod(bool silent)
 	if(!silent)
 		ShowAction ("Attempting to determine load device...");
 
-#ifdef HW_RVL
-	int deviceCount = 4;
-	int devices[deviceCount] = { DEVICE_SD, DEVICE_USB, DEVICE_DVD, DEVICE_SMB };
-#else
-	int deviceCount = 6;
-	int devices[deviceCount] = { DEVICE_SD_SLOTA, DEVICE_SD_SLOTB, DEVICE_SD_PORT2, DEVICE_SD_GCLOADER, DEVICE_DVD, DEVICE_SMB };
-#endif
-
 	// look for default roms folder first
-	for (int i = 0; i < deviceCount; i++) {
-	    if (ChangeInterface(devices[i], SILENT)) {
-	        MakeFilePathForFolderPath(fullPath, devices[i], defaultFolderPath);
+	for (int i = 1; i < numLoadDevices; i++) {
+	    if (ChangeInterface(loadDevices[i], SILENT)) {
+	        MakeFilePathForFolderPath(fullPath, loadDevices[i], defaultFolderPath);
 
 	        if(DirExists(fullPath)) {
-	        	device = devices[i];
+	        	device = loadDevices[i];
 	        	break;
 	        }
 	    }
@@ -90,9 +134,9 @@ int autoLoadMethod(bool silent)
 
 	// set to first connected device instead
 	if(device == DEVICE_AUTO) {
-		for (int i = 0; i < deviceCount; i++) {
-			if (ChangeInterface(devices[i], SILENT)) {
-				device = devices[i];
+		for (int i = 1; i < numLoadDevices; i++) {
+			if (ChangeInterface(loadDevices[i], SILENT)) {
+				device = loadDevices[i];
 				break;
 			}
 		}
@@ -110,7 +154,7 @@ int autoLoadMethod(bool silent)
 ****************************************************************************/
 int autoSaveMethod(bool silent)
 {
-	if(GCSettings.SaveMethod > DEVICE_AUTO) {
+	if(GCSettings.SaveMethod > DEVICE_AUTO && isValidSaveDevice(GCSettings.SaveMethod)) {
 		return GCSettings.SaveMethod;
 	}
 
@@ -123,21 +167,13 @@ int autoSaveMethod(bool silent)
 	if(!silent)
 		ShowAction ("Attempting to determine save device...");
 
-#ifdef HW_RVL
-	int deviceCount = 3;
-	int devices[deviceCount] = { DEVICE_SD, DEVICE_USB, DEVICE_SMB };
-#else
-	int deviceCount = 5;
-	int devices[deviceCount] = { DEVICE_SD_SLOTA, DEVICE_SD_SLOTB, DEVICE_SD_PORT2, DEVICE_SD_GCLOADER, DEVICE_SMB };
-#endif
-
 	// look for default saves folder first
-	for (int i = 0; i < deviceCount; i++) {
-	    if (ChangeInterface(devices[i], SILENT)) {
-	        MakeFilePathForFolderPath(fullPath, devices[i], defaultFolderPath);
+	for (int i = 1; i < numSaveDevices; i++) {
+	    if (ChangeInterface(saveDevices[i], SILENT)) {
+	        MakeFilePathForFolderPath(fullPath, saveDevices[i], defaultFolderPath);
 
 	        if(DirExists(fullPath)) {
-	        	device = devices[i];
+	        	device = saveDevices[i];
 	        	break;
 	        }
 	    }
@@ -145,16 +181,16 @@ int autoSaveMethod(bool silent)
 
 	// set to first connected device instead
 	if(device == DEVICE_AUTO) {
-		for (int i = 0; i < deviceCount; i++) {
-			if (ChangeInterface(devices[i], SILENT)) {
-				device = devices[i];
+		for (int i = 1; i < numSaveDevices; i++) {
+			if (ChangeInterface(saveDevices[i], SILENT)) {
+				device = saveDevices[i];
 				break;
 			}
 		}
 	}
 
 	GCSettings.SaveMethod = device; // save device found for later use
-	
+
 	if(device == DEVICE_AUTO && !silent)
 		ErrorPrompt("Unable to locate a save device!");
 
