@@ -95,7 +95,7 @@ endif
 export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
 
 # Filter out x6502.o so we can build it with custom I-Cache optimized flags
-export OFILES_SOURCES := $(filter-out x6502.o, $(CPPFILES:.cpp=.o)) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
+export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
 export OFILES := $(OFILES_BIN) $(OFILES_SOURCES) x6502.o
 
 export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES)))
@@ -169,15 +169,6 @@ $(OFILES_SOURCES) : $(HFILES)
 	$(bin2o)
 
 -include $(DEPENDS)
-
-#---------------------------------------------------------------------------------
-# Optimized rule for x6502.cpp to prevent I-Cache thrashing on the 750CL
-# The % pattern allows make to find x6502.cpp inside the VPATH directories
-#---------------------------------------------------------------------------------
-x6502.o: x6502.cpp
-	@mkdir -p $(dir $@)
-	@echo "Compiling x6502.o to $(BUILD) with I-Cache tuned flags..."
-	$(CXX) -c $(CXXFLAGS) -O2 -fno-unroll-loops $< -o $@
 
 #---------------------------------------------------------------------------------
 endif
