@@ -14,7 +14,6 @@ Wii/GameCube.
  - [Credits](#credits)
  - [Links](#links)
 
-
 ## NIGHTLY BUILDS
 
 ### Download the latest builds from continuous integration:
