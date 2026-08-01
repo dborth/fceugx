@@ -3834,6 +3834,7 @@ static int MenuSettings()
 	GuiImageData iconMenu(icon_settings_menu_png);
 	GuiImageData iconNetwork(icon_settings_network_png);
 	GuiImageData iconCheats(icon_game_cheats_png);
+	GuiImageData iconCredits(icon_credits_png);
 
 	GuiTrigger trigB;
 	GuiTrigger trig1;
@@ -3924,12 +3925,14 @@ static int MenuSettings()
 	creditsBtnTxt.SetWrap(true, btnLargeOutline.GetWidth()-20);
 	GuiImage creditsBtnImg(&btnLargeOutline);
 	GuiImage creditsBtnImgOver(&btnLargeOutlineOver);
+	GuiImage creditsBtnIcon(&iconCredits);
 	GuiButton creditsBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	creditsBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
 	creditsBtn.SetPosition(200, 250);
 	creditsBtn.SetLabel(&creditsBtnTxt);
 	creditsBtn.SetImage(&creditsBtnImg);
 	creditsBtn.SetImageOver(&creditsBtnImgOver);
+	creditsBtn.SetIcon(&creditsBtnIcon);
 	creditsBtn.SetSoundOver(&btnSoundOver);
 	creditsBtn.SetSoundClick(&btnSoundClick);
 	creditsBtn.SetTrigger(trigA);
