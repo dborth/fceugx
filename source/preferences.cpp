@@ -287,82 +287,82 @@ static void loadXMLController(u32 controller[], const char * name)
 static bool
 decodePrefsData ()
 {
-	bool result = false;
-
 	xml = mxmlLoadString(NULL, (char *)savebuffer, MXML_TEXT_CALLBACK);
 
-	if(xml)
-	{
-		// File Settings
-
-		loadXMLSetting(&GCSettings.AutoLoad, "AutoLoad");
-		loadXMLSetting(&GCSettings.AutoSave, "AutoSave");
-		loadXMLSetting(&GCSettings.LoadMethod, "LoadMethod");
-		loadXMLSetting(&GCSettings.SaveMethod, "SaveMethod");
-		loadXMLSetting(GCSettings.LoadFolder, "LoadFolder", sizeof(GCSettings.LoadFolder));
-		loadXMLSetting(GCSettings.LastFileLoaded, "LastFileLoaded", sizeof(GCSettings.LastFileLoaded));
-		loadXMLSetting(GCSettings.SaveFolder, "SaveFolder", sizeof(GCSettings.SaveFolder));
-		loadXMLSetting(&GCSettings.AppendAuto, "AppendAuto");
-		loadXMLSetting(GCSettings.CheatFolder, "CheatFolder", sizeof(GCSettings.CheatFolder));
-		loadXMLSetting(&GCSettings.gamegenie, "gamegenie");
-		loadXMLSetting(GCSettings.ScreenshotsFolder, "ScreenshotsFolder", sizeof(GCSettings.ScreenshotsFolder));
-		loadXMLSetting(GCSettings.CoverFolder, "CoverFolder", sizeof(GCSettings.CoverFolder));
-		loadXMLSetting(GCSettings.ArtworkFolder, "ArtworkFolder", sizeof(GCSettings.ArtworkFolder));
-
-		// Network Settings
-
-		loadXMLSetting(GCSettings.smbip, "smbip", sizeof(GCSettings.smbip));
-		loadXMLSetting(GCSettings.smbshare, "smbshare", sizeof(GCSettings.smbshare));
-		loadXMLSetting(GCSettings.smbuser, "smbuser", sizeof(GCSettings.smbuser));
-		loadXMLSetting(GCSettings.smbpwd, "smbpwd", sizeof(GCSettings.smbpwd));
-
-		// Video Settings
-
-		loadXMLSetting(&GCSettings.videomode, "videomode");
-		loadXMLSetting(&GCSettings.currpal, "currpal");
-		loadXMLSetting(&GCSettings.timing, "timing");
-		loadXMLSetting(&GCSettings.spritelimit, "spritelimit");
-		loadXMLSetting(&GCSettings.zoomHor, "zoomHor");
-		loadXMLSetting(&GCSettings.zoomVert, "zoomVert");
-		loadXMLSetting(&GCSettings.render, "render");
-		loadXMLSetting(&GCSettings.FilterMethod, "FilterMethod");
-		loadXMLSetting(&GCSettings.widescreen, "widescreen");
-		loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
-		loadXMLSetting(&GCSettings.xshift, "xshift");
-		loadXMLSetting(&GCSettings.yshift, "yshift");
-
-		// Other Mappings
-
-		loadXMLSetting(&GCSettings.TurboModeEnabled, "TurboModeEnabled");
-		loadXMLSetting(&GCSettings.TurboModeButton, "TurboModeButton");
-		loadXMLSetting(&GCSettings.GamepadMenuToggle, "GamepadMenuToggle");
-
-		// Menu Settings
-
-		loadXMLSetting(&GCSettings.WiimoteOrientation, "WiimoteOrientation");
-		loadXMLSetting(&GCSettings.ExitAction, "ExitAction");
-		loadXMLSetting(&GCSettings.MusicVolume, "MusicVolume");
-		loadXMLSetting(&GCSettings.SFXVolume, "SFXVolume");
-		loadXMLSetting(&GCSettings.Rumble, "Rumble");
-		loadXMLSetting(&GCSettings.language, "language");
-		loadXMLSetting(&GCSettings.PreviewImage, "PreviewImage");
-		loadXMLSetting(&GCSettings.HideRAMSaving, "HideRAMSaving");
-
-		// Controller Settings
-
-		loadXMLSetting(&GCSettings.Controller, "Controller");
-		loadXMLSetting(&GCSettings.crosshair, "crosshair");
-
-		loadXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad");
-		loadXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote");
-		loadXMLController(btnmap[CTRL_PAD][CTRLR_CLASSIC], "btnmap_pad_classic");
-		loadXMLController(btnmap[CTRL_PAD][CTRLR_WUPC], "btnmap_pad_wupc");
-		loadXMLController(btnmap[CTRL_PAD][CTRLR_WIIDRC], "btnmap_pad_wiidrc");
-		loadXMLController(btnmap[CTRL_PAD][CTRLR_NUNCHUK], "btnmap_pad_nunchuk");
-		loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_GCPAD], "btnmap_zapper_gcpad");
-		loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE], "btnmap_zapper_wiimote");
+	if(!xml) {
+		return false;
 	}
-	return result;
+
+	// File Settings
+
+	loadXMLSetting(&GCSettings.AutoLoad, "AutoLoad");
+	loadXMLSetting(&GCSettings.AutoSave, "AutoSave");
+	loadXMLSetting(&GCSettings.LoadMethod, "LoadMethod");
+	loadXMLSetting(&GCSettings.SaveMethod, "SaveMethod");
+	loadXMLSetting(GCSettings.LoadFolder, "LoadFolder", sizeof(GCSettings.LoadFolder));
+	loadXMLSetting(GCSettings.LastFileLoaded, "LastFileLoaded", sizeof(GCSettings.LastFileLoaded));
+	loadXMLSetting(GCSettings.SaveFolder, "SaveFolder", sizeof(GCSettings.SaveFolder));
+	loadXMLSetting(&GCSettings.AppendAuto, "AppendAuto");
+	loadXMLSetting(GCSettings.CheatFolder, "CheatFolder", sizeof(GCSettings.CheatFolder));
+	loadXMLSetting(&GCSettings.gamegenie, "gamegenie");
+	loadXMLSetting(GCSettings.ScreenshotsFolder, "ScreenshotsFolder", sizeof(GCSettings.ScreenshotsFolder));
+	loadXMLSetting(GCSettings.CoverFolder, "CoverFolder", sizeof(GCSettings.CoverFolder));
+	loadXMLSetting(GCSettings.ArtworkFolder, "ArtworkFolder", sizeof(GCSettings.ArtworkFolder));
+
+	// Network Settings
+
+	loadXMLSetting(GCSettings.smbip, "smbip", sizeof(GCSettings.smbip));
+	loadXMLSetting(GCSettings.smbshare, "smbshare", sizeof(GCSettings.smbshare));
+	loadXMLSetting(GCSettings.smbuser, "smbuser", sizeof(GCSettings.smbuser));
+	loadXMLSetting(GCSettings.smbpwd, "smbpwd", sizeof(GCSettings.smbpwd));
+
+	// Video Settings
+
+	loadXMLSetting(&GCSettings.videomode, "videomode");
+	loadXMLSetting(&GCSettings.currpal, "currpal");
+	loadXMLSetting(&GCSettings.timing, "timing");
+	loadXMLSetting(&GCSettings.spritelimit, "spritelimit");
+	loadXMLSetting(&GCSettings.zoomHor, "zoomHor");
+	loadXMLSetting(&GCSettings.zoomVert, "zoomVert");
+	loadXMLSetting(&GCSettings.render, "render");
+	loadXMLSetting(&GCSettings.FilterMethod, "FilterMethod");
+	loadXMLSetting(&GCSettings.widescreen, "widescreen");
+	loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
+	loadXMLSetting(&GCSettings.xshift, "xshift");
+	loadXMLSetting(&GCSettings.yshift, "yshift");
+
+	// Other Mappings
+
+	loadXMLSetting(&GCSettings.TurboModeEnabled, "TurboModeEnabled");
+	loadXMLSetting(&GCSettings.TurboModeButton, "TurboModeButton");
+	loadXMLSetting(&GCSettings.GamepadMenuToggle, "GamepadMenuToggle");
+
+	// Menu Settings
+
+	loadXMLSetting(&GCSettings.WiimoteOrientation, "WiimoteOrientation");
+	loadXMLSetting(&GCSettings.ExitAction, "ExitAction");
+	loadXMLSetting(&GCSettings.MusicVolume, "MusicVolume");
+	loadXMLSetting(&GCSettings.SFXVolume, "SFXVolume");
+	loadXMLSetting(&GCSettings.Rumble, "Rumble");
+	loadXMLSetting(&GCSettings.language, "language");
+	loadXMLSetting(&GCSettings.PreviewImage, "PreviewImage");
+	loadXMLSetting(&GCSettings.HideRAMSaving, "HideRAMSaving");
+
+	// Controller Settings
+
+	loadXMLSetting(&GCSettings.Controller, "Controller");
+	loadXMLSetting(&GCSettings.crosshair, "crosshair");
+
+	loadXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad");
+	loadXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote");
+	loadXMLController(btnmap[CTRL_PAD][CTRLR_CLASSIC], "btnmap_pad_classic");
+	loadXMLController(btnmap[CTRL_PAD][CTRLR_WUPC], "btnmap_pad_wupc");
+	loadXMLController(btnmap[CTRL_PAD][CTRLR_WIIDRC], "btnmap_pad_wiidrc");
+	loadXMLController(btnmap[CTRL_PAD][CTRLR_NUNCHUK], "btnmap_pad_nunchuk");
+	loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_GCPAD], "btnmap_zapper_gcpad");
+	loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE], "btnmap_zapper_wiimote");
+
+	return true;
 }
 
 /****************************************************************************
