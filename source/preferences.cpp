@@ -362,6 +362,7 @@ decodePrefsData ()
 	loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_GCPAD], "btnmap_zapper_gcpad");
 	loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE], "btnmap_zapper_wiimote");
 
+	mxmlDelete(xml);
 	return true;
 }
 
