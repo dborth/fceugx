@@ -746,6 +746,18 @@ UpdateScaling()
 	draw_init ();
 }
 
+static inline int GetBorderWidth() {
+	if(GCSettings.hideoverscan == HIDEOVERSCAN_HORIZONTAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
+		return 8;
+	return 0;
+}
+
+static inline int GetBorderHeight() {
+	if(GCSettings.hideoverscan == HIDEOVERSCAN_VERTICAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
+		return 8;
+	return 0;
+}
+
 void ClearScreenshot()
 {
 	if(gameScreenPng.buffer) {
@@ -761,7 +773,7 @@ void ClearScreenshot()
  *
  * Copies the current texturemem screen into a PNG buffer
  ***************************************************************************/
-static void TakeScreenshot(u8 borderwidth, u8 borderheight)
+void TakeScreenshot()
 {
 	IMGCTX pngContext = PNGU_SelectImageFromBuffer(savebuffer);
 
@@ -772,8 +784,8 @@ static void TakeScreenshot(u8 borderwidth, u8 borderheight)
 	int res;
 
 	if(GCSettings.hideoverscan != HIDEOVERSCAN_OFF) {
-		u32 crop_x = borderwidth * fscale;
-		u32 crop_y = borderheight * fscale;
+		u32 crop_x = GetBorderWidth() * fscale;
+		u32 crop_y = GetBorderHeight() * fscale;
 		u32 crop_w = gameScreenPng.width - (crop_x * 2);
 		u32 crop_h = gameScreenPng.height - (crop_y * 2);
 
@@ -1430,13 +1442,8 @@ void RenderFrame(unsigned char *XBuf)
 		ResetVideo_Emu(); // reset video to emulator rendering settings
 	}
 
-	u8 borderheight = 0;
-	u8 borderwidth = 0;
-
-	if(GCSettings.hideoverscan == HIDEOVERSCAN_VERTICAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
-		borderheight = 8;
-	if(GCSettings.hideoverscan == HIDEOVERSCAN_HORIZONTAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
-		borderwidth = 8;
+	u8 borderwidth = GetBorderWidth();
+	u8 borderheight = GetBorderHeight();
 
 	const s32 widthLimit = NES_WIDTH - (borderwidth << 1);
 	const s32 heightLimit = NES_HEIGHT - (borderheight << 1);
@@ -1464,13 +1471,6 @@ void RenderFrame(unsigned char *XBuf)
 	// render textured quad
 	draw_square(view);
 	GX_DrawDone();
-
-	if(ScreenshotRequested)
-	{
-		ScreenshotRequested = 0;
-		TakeScreenshot(borderwidth, borderheight);
-		ConfigRequested = 1;
-	}
 
 	// EFB is ready to be copied into XFB
 	VIDEO_SetNextFramebuffer(xfb[whichfb]);
@@ -1518,13 +1518,8 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	if (!AnaglyphPaletteValid)
 		GenerateAnaglyphPalette();
 
-	u8 borderheight = 0;
-	u8 borderwidth = 0;
-
-	if(GCSettings.hideoverscan == HIDEOVERSCAN_VERTICAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
-		borderheight = 8;
-	if(GCSettings.hideoverscan == HIDEOVERSCAN_HORIZONTAL || GCSettings.hideoverscan == HIDEOVERSCAN_BOTH)
-		borderwidth = 8;
+	u8 borderwidth = GetBorderWidth();
+	u8 borderheight = GetBorderHeight();
 
 	const s32 widthLimit = NES_WIDTH - (borderwidth << 1);
 	const s32 heightLimit = NES_HEIGHT - (borderheight << 1);
@@ -1541,13 +1536,6 @@ void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight)
 	// render textured quad
 	draw_square(view);
 	GX_DrawDone();
-
-	if(ScreenshotRequested)
-	{
-		ScreenshotRequested = 0;
-		TakeScreenshot(borderwidth, borderheight);
-		ConfigRequested = 1;
-	}
 
 	// EFB is ready to be copied into XFB
 	VIDEO_SetNextFramebuffer(xfb[whichfb]);

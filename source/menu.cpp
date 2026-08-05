@@ -4980,7 +4980,7 @@ MainMenu (int menu)
 	ClearScreenshot();
 
 	// wait for keys to be depressed
-	while(MenuRequested())
+	while(isMenuRequested())
 	{
 		UpdatePads();
 		usleep(THREAD_SLEEP);

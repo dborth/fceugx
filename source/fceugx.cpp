@@ -57,8 +57,7 @@ int fskip = 0;
 static uint8 *gfx=0;
 static int32 *sound=0;
 static int32 ssize=0;
-int ScreenshotRequested = 0;
-int ConfigRequested = 0;
+bool MenuRequested = false;
 char appPath[1024] = { 0 };
 
 int frameskip = 0;
@@ -155,8 +154,7 @@ int main(int argc, char *argv[])
 		currentTiming = GCSettings.timing;
 		SelectFilterMethod(GCSettings.FilterMethod); // Initialize / Re-evaluate active filter
 		autoboot = false;
-		ConfigRequested = 0;
-		ScreenshotRequested = 0;
+		MenuRequested = false;
 		SwitchAudioMode(0);
 
 		// stop checking if devices were removed/inserted
@@ -224,9 +222,10 @@ int main(int argc, char *argv[])
 				PowerNES(); // reset game
 				ResetRequested = 0;
 			}
-			if(ConfigRequested)
+			if(MenuRequested)
 			{
-				ConfigRequested = 0;
+				MenuRequested = false;
+				TakeScreenshot();
 				ResetVideo_Menu();
 				break;
 			}
@@ -243,7 +242,7 @@ void ExitApp()
 {
 	SavePrefs(SILENT);
 
-	if (romLoaded && !ConfigRequested && GCSettings.AutoSave == AUTOSAVE_RAM)
+	if (romLoaded && !MenuRequested && GCSettings.AutoSave == AUTOSAVE_RAM)
 		SaveRAMAuto(SILENT);
 
 	SystemExit(GCSettings.ExitAction, autoboot);

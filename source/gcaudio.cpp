@@ -15,10 +15,8 @@
 #ifndef NO_SOUND
 #include <asndlib.h>
 #endif
+#include "fceugx.h"
 #include "fceusupport.h"
-
-extern int ScreenshotRequested;
-extern int ConfigRequested;
 
 // Each DMA buffer holds one frame's worth of 16-bit stereo samples.
 #define DMA_BUFFER_BYTES 3840
@@ -109,7 +107,7 @@ static int MixerCollect( u8 *outbuffer, int len )
  ***************************************************************************/
 static void AudioSwitchBuffers()
 {
-	if ( !ScreenshotRequested && !ConfigRequested ) {
+	if (!MenuRequested) {
 		IsPlaying = 1;
 		int len = MixerCollect( soundbuffer[whichab], DMA_BUFFER_BYTES );
 		DCFlushRange(soundbuffer[whichab], len);

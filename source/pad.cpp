@@ -592,7 +592,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 	return J;
 }
 
-bool MenuRequested()
+bool isMenuRequested()
 {
 	for(int i=0; i<4; i++)
 	{
@@ -750,8 +750,8 @@ void GetJoy()
 		turbomode = IsTurboModeInputPressed();
 	}
 	// request to go back to menu
-	if(MenuRequested())
-		ScreenshotRequested = 1; // go to the menu
+	if(isMenuRequested())
+		MenuRequested = true; // go to the menu
 
 	for (i = 0; i < 4; i++)
 		pad[playerMapping[i]] = DecodeJoy(i);
