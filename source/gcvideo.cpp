@@ -79,10 +79,10 @@ struct pcpal {
 } pcpalette[256];
 
 static unsigned int gcpalette[256];	// Much simpler GC palette
-unsigned short rgb565[256];	// Texture map palette
+unsigned short rgb555[256];	// Texture map palette
 bool shutter_3d_mode, anaglyph_3d_mode, eye_3d;
 bool AnaglyphPaletteValid = false; // Has the anaglyph palette below been generated yet?
-static unsigned short anaglyph565[64][64]; // Texture map left right combination anaglyph palette
+static unsigned short anaglyph555[64][64]; // Texture map left right combination anaglyph palette
 static void GenerateAnaglyphPalette(); // function prototype for generating the anaglyph palette
 
 static long long prev;
@@ -819,13 +819,14 @@ void TakeScreenshot()
 				int tex_pixel_idx = (tile_y * (padded_width / 4) + tile_x) * 16 + (in_tile_y * 4 + in_tile_x);
 				u16 color = tex16[tex_pixel_idx];
 
-				u8 r = (color >> 11) & 0x1F;
-				u8 g = (color >> 5) & 0x3F;
+				// Extract RGB555 from the RGB5A3 encoded integer
+				u8 r = (color >> 10) & 0x1F;
+				u8 g = (color >> 5) & 0x1F;
 				u8 b = color & 0x1F;
 
 				u32 out_idx = x * 3;
 				dst_row[out_idx]     = (r << 3) | (r >> 2);
-				dst_row[out_idx + 1] = (g << 2) | (g >> 4);
+				dst_row[out_idx + 1] = (g << 3) | (g >> 2);
 				dst_row[out_idx + 2] = (b << 3) | (b >> 2);
 			}
 		}
@@ -1057,7 +1058,7 @@ ResetVideo_Emu ()
 
 	// reinitialize texture
 	GX_InvalidateTexAll ();
-	GX_InitTexObj (&texobj, texturemem, NES_WIDTH*fscale, NES_HEIGHT*fscale, GX_TF_RGB565, GX_CLAMP, GX_CLAMP, GX_FALSE);
+	GX_InitTexObj (&texobj, texturemem, NES_WIDTH*fscale, NES_HEIGHT*fscale, GX_TF_RGB5A3, GX_CLAMP, GX_CLAMP, GX_FALSE);
 
 	if (GCSettings.render == RENDER_ORIGINAL || GCSettings.render == RENDER_UNFILTERED)
 		GX_InitTexObjFilterMode(&texobj, GX_NEAR, GX_NEAR); // original/unfiltered video mode: force texture filtering OFF
@@ -1124,6 +1125,12 @@ void MakeTexture(const void *src, void *dst, s32 width, s32 height)
 		"or     %[w0], %[w0], %[t1]\n"
 		"or     %[w1], %[w1], %[t3]\n"
 
+		// Force MSB (0x8000) for both 16-bit pixels in w0 and w1
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
+		"oris   %[w1], %[w1], 0x8000\n"
+		"ori    %[w1], %[w1], 0x8000\n"
+
 		"stw    %[w0], 0(%[dst])\n"
 		"stw    %[w1], 8(%[dst])\n"
 
@@ -1149,6 +1156,11 @@ void MakeTexture(const void *src, void *dst, s32 width, s32 height)
 		"slwi   %[w1], %[t2], 16\n"
 		"or     %[w0], %[w0], %[t1]\n"
 		"or     %[w1], %[w1], %[t3]\n"
+
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
+		"oris   %[w1], %[w1], 0x8000\n"
+		"ori    %[w1], %[w1], 0x8000\n"
 
 		"stw    %[w0], 4(%[dst])\n"
 		"stw    %[w1], 12(%[dst])\n"
@@ -1176,6 +1188,11 @@ void MakeTexture(const void *src, void *dst, s32 width, s32 height)
 		"or     %[w0], %[w0], %[t1]\n"
 		"or     %[w1], %[w1], %[t3]\n"
 
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
+		"oris   %[w1], %[w1], 0x8000\n"
+		"ori    %[w1], %[w1], 0x8000\n"
+
 		"stw    %[w0], 16(%[dst])\n"
 		"stw    %[w1], 24(%[dst])\n"
 
@@ -1202,6 +1219,11 @@ void MakeTexture(const void *src, void *dst, s32 width, s32 height)
 		"or     %[w0], %[w0], %[t1]\n"
 		"or     %[w1], %[w1], %[t3]\n"
 
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
+		"oris   %[w1], %[w1], 0x8000\n"
+		"ori    %[w1], %[w1], 0x8000\n"
+
 		"stw    %[w0], 20(%[dst])\n"
 		"stw    %[w1], 28(%[dst])\n"
 
@@ -1221,7 +1243,7 @@ void MakeTexture(const void *src, void *dst, s32 width, s32 height)
 		  [w0] "=&r" (w0), [w1] "=&r" (w1),
 		  [dst] "+b" (dstBuf), [src] "+b" (srcBuf),
 		  [width] "+r" (width), [height] "+r" (height)
-		: [pal] "b" (rgb565)
+		: [pal] "b" (rgb555)
 		: "memory", "cc"
 	);
 }
@@ -1269,6 +1291,8 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 		"lhzx   %[tL1], %[pal], %[tL1]\n"
 		"slwi   %[w0], %[tL0], 16\n"
 		"or     %[w0], %[w0], %[tL1]\n"
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
 		"stw    %[w0], 0(%[dst])\n"
 
 		// Row 0, Right Half
@@ -1286,6 +1310,8 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 		"lhzx   %[tL1], %[pal], %[tL1]\n"
 		"slwi   %[w0], %[tL0], 16\n"
 		"or     %[w0], %[w0], %[tL1]\n"
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
 		"stw    %[w0], 4(%[dst])\n"
 
 		// Row 1, Left Half
@@ -1303,6 +1329,8 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 		"lhzx   %[tL1], %[pal], %[tL1]\n"
 		"slwi   %[w0], %[tL0], 16\n"
 		"or     %[w0], %[w0], %[tL1]\n"
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
 		"stw    %[w0], 8(%[dst])\n"
 
 		// Row 1, Right Half
@@ -1320,6 +1348,8 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 		"lhzx   %[tL1], %[pal], %[tL1]\n"
 		"slwi   %[w0], %[tL0], 16\n"
 		"or     %[w0], %[w0], %[tL1]\n"
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
 		"stw    %[w0], 12(%[dst])\n"
 
 		// Row 2, Left Half
@@ -1337,6 +1367,8 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 		"lhzx   %[tL1], %[pal], %[tL1]\n"
 		"slwi   %[w0], %[tL0], 16\n"
 		"or     %[w0], %[w0], %[tL1]\n"
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
 		"stw    %[w0], 16(%[dst])\n"
 
 		// Row 2, Right Half
@@ -1354,6 +1386,8 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 		"lhzx   %[tL1], %[pal], %[tL1]\n"
 		"slwi   %[w0], %[tL0], 16\n"
 		"or     %[w0], %[w0], %[tL1]\n"
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
 		"stw    %[w0], 20(%[dst])\n"
 
 		// Row 3, Left Half
@@ -1371,6 +1405,8 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 		"lhzx   %[tL1], %[pal], %[tL1]\n"
 		"slwi   %[w0], %[tL0], 16\n"
 		"or     %[w0], %[w0], %[tL1]\n"
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
 		"stw    %[w0], 24(%[dst])\n"
 
 		// Row 3, Right Half
@@ -1388,6 +1424,8 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 		"lhzx   %[tL1], %[pal], %[tL1]\n"
 		"slwi   %[w0], %[tL0], 16\n"
 		"or     %[w0], %[w0], %[tL1]\n"
+		"oris   %[w0], %[w0], 0x8000\n"
+		"ori    %[w0], %[w0], 0x8000\n"
 		"stw    %[w0], 28(%[dst])\n"
 
 		"addi   %[srcL], %[srcL], 4\n"
@@ -1409,7 +1447,7 @@ void MakeStereoTexture(const void *srcLeft, const void *srcRight, void *dst, s32
 		  [w0] "=&r" (w0),
 		  [dst] "+b" (dstBuf), [srcL] "+b" (srcBufL), [srcR] "+b" (srcBufR),
 		  [width] "+r" (width), [height] "+r" (height)
-		: [pal] "b" (anaglyph565)
+		: [pal] "b" (anaglyph555)
 		: "memory", "cc"
 	);
 }
@@ -1797,7 +1835,7 @@ static void FullColourAnaglyph(u8 *r, u8 *g, u8 *b, u8 lr, u8 lg, u8 lb, u8 rr, 
 	*b = rb;
 }
 #endif
-// Create an RGB 565 colour (used in textures) for this stereoscopic 3D combination of 2 NES colours.
+// Create an RGB 555 colour (used in textures) for this stereoscopic 3D combination of 2 NES colours.
 static void GenerateAnaglyphPalette()
 {
 	for (int left = 0; left < 64; left++)
@@ -1810,7 +1848,8 @@ static void GenerateAnaglyphPalette()
 		{
 			u8 ar, ag, ab;
 			OptimisedAnaglyph(&ar, &ag, &ab, lr, lg, lb, pcpalette[right].r, pcpalette[right].g, pcpalette[right].b);
-			anaglyph565[left][right] = ((ar & 0xf8) << 8) | ((ag & 0xfc) << 3) | ((ab & 0xf8) >> 3);
+			// Pack into RGB5A3 (5 bits each for R, G, B)
+			anaglyph555[left][right] = ((ar & 0xf8) << 7) | ((ag & 0xf8) << 2) | ((ab & 0xf8) >> 3);
 		}
 	}
 	AnaglyphPaletteValid = true;
@@ -1856,10 +1895,8 @@ void FCEUD_SetPalette(u8 index, u8 r, u8 g, u8 b)
     /*** Generate Gamecube palette ***/
     gcpalette[index] = rgbcolor(r,g,b,r,g,b);
 
-    /*** Generate RGB565 texture palette ***/
-    rgb565[index] = ((r & 0xf8) << 8) |
-        ((g & 0xfc) << 3) |
-        ((b & 0xf8) >> 3);
+    /*** Generate RGB5A3 texture palette ***/
+    rgb555[index] = ((r & 0xf8) << 7) | ((g & 0xf8) << 2) | ((b & 0xf8) >> 3);
 
 	/*** Will need to generate stereoscopic palette later. ***/
 	AnaglyphPaletteValid = false;
