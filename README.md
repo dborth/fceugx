@@ -54,6 +54,13 @@ Wii/GameCube.
 
 ## UPDATE HISTORY
 
+[4.0.1 - August 11, 2026]
+
+* Switched to RGB555
+* Fixed bug during preference loading
+* Fixed crash when loading broken PNGs
+* Compiled with latest devkitPPC/libogc2
+
 [4.0.0 - July 6, 2026]
 
 * Added video filters - hq2x, Scale2x, Scanlines, 2xBR, DDT
