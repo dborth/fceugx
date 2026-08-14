@@ -160,7 +160,6 @@ const char* GetFilterName (int filterID)
 		case FILTER_HQ2XS: return "hq2x Soft";
 		case FILTER_HQ2XBOLD: return "hq2x Bold";
 		case FILTER_SCALE2X: return "Scale2x";
-		case FILTER_SCANLINES: return "TV Mode";
 		case FILTER_2XBR: return "2xBR";
 		case FILTER_2XBRLV1: return "2xBR-lv1";
 		case FILTER_DDT: return "DDT";
@@ -188,7 +187,6 @@ int GetFilterScale()
 	switch(renderFilter)
 	{
 		case FILTER_NONE:
-		case FILTER_SCANLINES:
 		return 1;
 		default:
 		case FILTER_HQ2X:
