@@ -102,20 +102,26 @@ enum {
 };
 
 enum {
-	RENDER_ORIGINAL = 0,
-	RENDER_FILTERED,
-	RENDER_UNFILTERED,
-	RENDER_FILTERED_SOFT,
-	RENDER_FILTERED_SHARP,
-	RENDER_LENGTH
+	VIDEO_ASPECT_RATIO_CORRECTION_NONE = 0,
+	VIDEO_ASPECT_RATIO_CORRECTION_16_9,
+	VIDEO_ASPECT_RATIO_CORRECTION_LENGTH
 };
 
 enum {
-	VIDEOMODE_AUTOMATIC = 0,
+	VIDEO_HW_SOFTEN_OFF = 0,
+	VIDEO_HW_SOFTEN_AUTO,
+	VIDEO_HW_SOFTEN_SHARP,
+	VIDEO_HW_SOFTEN_SOFT,
+	VIDEO_HW_SOFTEN_LENGTH
+};
+
+enum {
+	VIDEOMODE_AUTO = 0,
 	VIDEOMODE_NTSC,
 	VIDEOMODE_PROGRESSIVE,
 	VIDEOMODE_PAL,
 	VIDEOMODE_PAL60,
+	VIDEOMODE_ORIGINAL_240P,
 	VIDEOMODE_LENGTH
 };
 
@@ -219,21 +225,24 @@ struct SGCSettings
 	char	smbpwd[20];
 	char	smbshare[20];
 
-	float	zoomHor; // horizontal zoom amount
-	float	zoomVert; // vertical zoom amount
-	int		render;		// 0 - original, 1 - filtered, 2 - unfiltered
-	int		FilterMethod; // convert to RenderFilter
-	int		videomode; // 0 - automatic, 1 - NTSC (480i), 2 - Progressive (480p), 3 - PAL (50Hz), 4 - PAL (60Hz)
-	bool	widescreen;
-	int		hideoverscan; // 0 = off, 1 = vertical, 2 = horizontal, 3 = both
-	bool	gamegenie;
+	int		videoMode;
+	int		videoAspectRatioCorrection;
+	bool	videoBilinearFilter;
+	int		videoHardwareSoften;
+	bool	videoScanlines;
+	int		videoUpscalingFilter;
+	float	videoZoomHor;
+	float	videoZoomVert;
+	int		videoXshift;
+	int		videoYshift;
 	int		currpal;
-	int		timing;
-	int		Controller;
+	int		hideoverscan; // 0 = off, 1 = vertical, 2 = horizontal, 3 = both
+
 	bool	crosshair;
 	bool	spritelimit;
-	int		xshift;		// video output shift
-	int		yshift;
+	bool	gamegenie;
+	int		timing;
+	int		Controller;
 	int		WiimoteOrientation;
 	int		ExitAction;
 	int		MusicVolume;

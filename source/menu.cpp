@@ -2154,6 +2154,7 @@ static int MenuGameSettings()
 	GuiImageData btnLargeOutlineOver(button_large_over_png);
 	GuiImageData iconMappings(icon_settings_mappings_png);
 	GuiImageData iconVideo(icon_settings_video_png);
+	GuiImageData iconEmulation(icon_settings_emulation_png);
 	GuiImageData iconController(icon_game_controllers_png);
 	GuiImageData iconCheats(icon_game_cheats_png);
 	GuiImageData iconScreenshot(icon_settings_screenshot_png);
@@ -2174,7 +2175,7 @@ static int MenuGameSettings()
 	GuiImage mappingBtnIcon(&iconMappings);
 	GuiButton mappingBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	mappingBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	mappingBtn.SetPosition(-125, 120);
+	mappingBtn.SetPosition(-200, 120);
 	mappingBtn.SetLabel(&mappingBtnTxt);
 	mappingBtn.SetImage(&mappingBtnImg);
 	mappingBtn.SetImageOver(&mappingBtnImgOver);
@@ -2185,14 +2186,32 @@ static int MenuGameSettings()
 	mappingBtn.SetTrigger(trig2);
 	mappingBtn.SetEffectGrow();
 
+	GuiText emulationBtnTxt("Emulation", 22, (GXColor){0, 0, 0, 255});
+	emulationBtnTxt.SetWrap(true, btnLargeOutline.GetWidth()-20);
+	GuiImage emulationBtnImg(&btnLargeOutline);
+	GuiImage emulationBtnImgOver(&btnLargeOutlineOver);
+	GuiImage emulationBtnIcon(&iconEmulation);
+	GuiButton emulationBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
+	emulationBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	emulationBtn.SetPosition(0, 120);
+	emulationBtn.SetLabel(&emulationBtnTxt);
+	emulationBtn.SetImage(&emulationBtnImg);
+	emulationBtn.SetImageOver(&emulationBtnImgOver);
+	emulationBtn.SetIcon(&emulationBtnIcon);
+	emulationBtn.SetSoundOver(&btnSoundOver);
+	emulationBtn.SetSoundClick(&btnSoundClick);
+	emulationBtn.SetTrigger(trigA);
+	emulationBtn.SetTrigger(trig2);
+	emulationBtn.SetEffectGrow();
+
 	GuiText videoBtnTxt("Video", 22, (GXColor){0, 0, 0, 255});
-	videoBtnTxt.SetWrap(true, btnLargeOutline.GetWidth()-30);
+	videoBtnTxt.SetWrap(true, btnLargeOutline.GetWidth()-20);
 	GuiImage videoBtnImg(&btnLargeOutline);
 	GuiImage videoBtnImgOver(&btnLargeOutlineOver);
 	GuiImage videoBtnIcon(&iconVideo);
 	GuiButton videoBtn(btnLargeOutline.GetWidth(), btnLargeOutline.GetHeight());
 	videoBtn.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
-	videoBtn.SetPosition(125, 120);
+	videoBtn.SetPosition(200, 120);
 	videoBtn.SetLabel(&videoBtnTxt);
 	videoBtn.SetImage(&videoBtnImg);
 	videoBtn.SetImageOver(&videoBtnImgOver);
@@ -2292,6 +2311,7 @@ static int MenuGameSettings()
 	w.Append(&titleTxt);
 	w.Append(&mappingBtn);
 	w.Append(&videoBtn);
+	w.Append(&emulationBtn);
 	w.Append(&controllerBtn);
 	w.Append(&screenshotBtn);
 	w.Append(&cheatsBtn);
@@ -2313,6 +2333,10 @@ static int MenuGameSettings()
 		else if(videoBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_VIDEO;
+		}
+		else if(emulationBtn.GetState() == STATE_CLICKED)
+		{
+			menu = MENU_GAMESETTINGS_EMULATION;
 		}
 		else if(controllerBtn.GetState() == STATE_CLICKED)
 		{
@@ -3186,13 +3210,13 @@ static void ScreenZoomWindowUpdate(void * ptr, float h, float v)
 	GuiButton * b = (GuiButton *)ptr;
 	if(b->GetState() == STATE_CLICKED)
 	{
-		GCSettings.zoomHor += h;
-		GCSettings.zoomVert += v;
+		GCSettings.videoZoomHor += h;
+		GCSettings.videoZoomVert += v;
 
 		char zoom[10];
-		sprintf(zoom, "%.2f%%", GCSettings.zoomHor*100);
+		sprintf(zoom, "%.2f%%", GCSettings.videoZoomHor*100);
 		settingText->SetText(zoom);
-		sprintf(zoom, "%.2f%%", GCSettings.zoomVert*100);
+		sprintf(zoom, "%.2f%%", GCSettings.videoZoomVert*100);
 		settingText2->SetText(zoom);
 		b->ResetState();
 	}
@@ -3288,15 +3312,15 @@ static void ScreenZoomWindow()
 	settingText = new GuiText(NULL, 20, (GXColor){0, 0, 0, 255});
 	settingText2 = new GuiText(NULL, 20, (GXColor){0, 0, 0, 255});
 	char zoom[10];
-	sprintf(zoom, "%.2f%%", GCSettings.zoomHor*100);
+	sprintf(zoom, "%.2f%%", GCSettings.videoZoomHor*100);
 	settingText->SetText(zoom);
 	settingText->SetPosition(108, 0);
-	sprintf(zoom, "%.2f%%", GCSettings.zoomVert*100);
+	sprintf(zoom, "%.2f%%", GCSettings.videoZoomVert*100);
 	settingText2->SetText(zoom);
 	settingText2->SetPosition(-76, 0);
 
-	float currentZoomHor = GCSettings.zoomHor;
-	float currentZoomVert = GCSettings.zoomVert;
+	float currentZoomHor = GCSettings.videoZoomHor;
+	float currentZoomVert = GCSettings.videoZoomVert;
 
 	w->Append(&arrowLeftBtn);
 	w->Append(&arrowRightBtn);
@@ -3309,8 +3333,8 @@ static void ScreenZoomWindow()
 	if(!SettingWindow("Screen Zoom",w))
 	{
 		// undo changes
-		GCSettings.zoomHor = currentZoomHor;
-		GCSettings.zoomVert = currentZoomVert;
+		GCSettings.videoZoomHor = currentZoomHor;
+		GCSettings.videoZoomVert = currentZoomVert;
 	}
 
 	delete(w);
@@ -3323,16 +3347,16 @@ static void ScreenPositionWindowUpdate(void * ptr, int x, int y)
 	GuiButton * b = (GuiButton *)ptr;
 	if(b->GetState() == STATE_CLICKED)
 	{
-		GCSettings.xshift += x;
-		GCSettings.yshift += y;
+		GCSettings.videoXshift += x;
+		GCSettings.videoYshift += y;
 
-		if(!(GCSettings.xshift > -50 && GCSettings.xshift < 50))
-			GCSettings.xshift = 0;
-		if(!(GCSettings.yshift > -50 && GCSettings.yshift < 50))
-			GCSettings.yshift = 0;
+		if(!(GCSettings.videoXshift > -50 && GCSettings.videoXshift < 50))
+			GCSettings.videoXshift = 0;
+		if(!(GCSettings.videoYshift > -50 && GCSettings.videoYshift < 50))
+			GCSettings.videoYshift = 0;
 
 		char shift[10];
-		sprintf(shift, "%hd, %hd", GCSettings.xshift, GCSettings.yshift);
+		sprintf(shift, "%hd, %hd", GCSettings.videoXshift, GCSettings.videoYshift);
 		settingText->SetText(shift);
 		b->ResetState();
 	}
@@ -3423,11 +3447,11 @@ static void ScreenPositionWindow()
 
 	settingText = new GuiText(NULL, 20, (GXColor){0, 0, 0, 255});
 	char shift[10];
-	sprintf(shift, "%i, %i", GCSettings.xshift, GCSettings.yshift);
+	sprintf(shift, "%i, %i", GCSettings.videoXshift, GCSettings.videoYshift);
 	settingText->SetText(shift);
 
-	int currentX = GCSettings.xshift;
-	int currentY = GCSettings.yshift;
+	int currentX = GCSettings.videoXshift;
+	int currentY = GCSettings.videoYshift;
 
 	w->Append(&arrowLeftBtn);
 	w->Append(&arrowRightBtn);
@@ -3439,8 +3463,8 @@ static void ScreenPositionWindow()
 	if(!SettingWindow("Screen Position",w))
 	{
 		// undo changes
-		GCSettings.xshift = currentX;
-		GCSettings.yshift = currentY;
+		GCSettings.videoXshift = currentX;
+		GCSettings.videoYshift = currentY;
 	}
 
 	delete(w);
@@ -3603,25 +3627,27 @@ static int MenuSettingsOtherMappings()
 	return menu;
 }
 
+/****************************************************************************
+ * MenuSettingsVideo
+ ***************************************************************************/
 static int MenuSettingsVideo()
 {
 	int menu = MENU_NONE;
 	int ret;
 	int i = 0;
-	OptionList options;
 	bool firstRun = true;
+	OptionList options;
 
-	sprintf(options.name[i++], "Rendering");
-	sprintf(options.name[i++], "Scaling");
-	sprintf(options.name[i++], "Filtering");
+	sprintf(options.name[i++], "Output Mode");
+	sprintf(options.name[i++], "Aspect Ratio Correction");
 	sprintf(options.name[i++], "Cropping");
 	sprintf(options.name[i++], "Palette");
-	sprintf(options.name[i++], "Game Timing");
+	sprintf(options.name[i++], "Bilinear Filtering");
+	sprintf(options.name[i++], "Hardware Softening");
+	sprintf(options.name[i++], "Upscaling");
+	sprintf(options.name[i++], "Scanline Overlay");
 	sprintf(options.name[i++], "Screen Zoom");
 	sprintf(options.name[i++], "Screen Position");
-	sprintf(options.name[i++], "Zapper Crosshair");
-	sprintf(options.name[i++], "Sprite Limit");
-	sprintf(options.name[i++], "Video Mode");
 	options.length = i;
 
 	for(i=0; i < options.length; i++)
@@ -3680,58 +3706,54 @@ static int MenuSettingsVideo()
 		switch (ret)
 		{
 			case 0:
-				GCSettings.render++;
-				if (GCSettings.render >= RENDER_LENGTH)
-					GCSettings.render = RENDER_ORIGINAL;
+				GCSettings.videoMode++;
+				if(GCSettings.videoMode >= VIDEOMODE_LENGTH)
+					GCSettings.videoMode = VIDEOMODE_AUTO;
 				break;
 
 			case 1:
-				GCSettings.widescreen = !GCSettings.widescreen;
+				GCSettings.videoAspectRatioCorrection++;
+				if(GCSettings.videoAspectRatioCorrection >= VIDEO_ASPECT_RATIO_CORRECTION_LENGTH)
+					GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
 				break;
 
 			case 2:
-				GCSettings.FilterMethod++;
-				if (GCSettings.FilterMethod >= NUM_FILTERS)
-					GCSettings.FilterMethod = FILTER_NONE;
-				break;
-
-			case 3:
 				GCSettings.hideoverscan++;
 				if (GCSettings.hideoverscan >= HIDEOVERSCAN_LENGTH)
 					GCSettings.hideoverscan = HIDEOVERSCAN_OFF;
 				break;
 
-			case 4: // palette
+			case 3:
 				if ( ++GCSettings.currpal > MAXPAL )
 					GCSettings.currpal = 0;
 				break;
 
-			case 5: // timing
-				GCSettings.timing++;
-				if(GCSettings.timing >= TIMING_LENGTH)
-					GCSettings.timing = TIMING_NTSC;
+			case 4:
+				GCSettings.videoBilinearFilter = !GCSettings.videoBilinearFilter;
+				break;
+
+			case 5:
+				GCSettings.videoHardwareSoften++;
+				if(GCSettings.videoHardwareSoften >= VIDEO_HW_SOFTEN_LENGTH)
+					GCSettings.videoHardwareSoften = VIDEO_HW_SOFTEN_OFF;
 				break;
 
 			case 6:
-				ScreenZoomWindow();
+				GCSettings.videoUpscalingFilter++;
+				if (GCSettings.videoUpscalingFilter >= NUM_FILTERS)
+					GCSettings.videoUpscalingFilter = FILTER_NONE;
 				break;
 
 			case 7:
-				ScreenPositionWindow();
+				GCSettings.videoScanlines = !GCSettings.videoScanlines;
 				break;
 
 			case 8:
-				GCSettings.crosshair = !GCSettings.crosshair;
+				ScreenZoomWindow();
 				break;
 
 			case 9:
-				GCSettings.spritelimit = !GCSettings.spritelimit;
-				break;
-
-			case 10:
-				GCSettings.videomode++;
-				if(GCSettings.videomode >= VIDEOMODE_LENGTH)
-					GCSettings.videomode = VIDEOMODE_AUTOMATIC;
+				ScreenPositionWindow();
 				break;
 		}
 
@@ -3739,66 +3761,178 @@ static int MenuSettingsVideo()
 		{
 			firstRun = false;
 
-			if (GCSettings.render == RENDER_ORIGINAL)
-				sprintf (options.value[0], "Original (240p)");
-			else if (GCSettings.render == RENDER_FILTERED)
-				sprintf (options.value[0], "Filtered");
-			else if (GCSettings.render == RENDER_UNFILTERED)
-				sprintf (options.value[0], "Unfiltered");
-			else if (GCSettings.render == RENDER_FILTERED_SOFT)
-				sprintf (options.value[0], "Filtered (Soft)");
-			else if (GCSettings.render == RENDER_FILTERED_SHARP)
-				sprintf (options.value[0], "Filtered (Sharp)");
+			switch(GCSettings.videoMode)
+			{
+				case VIDEOMODE_AUTO:
+					sprintf (options.value[0], "Automatic (Recommended)"); break;
+				case VIDEOMODE_NTSC:
+					sprintf (options.value[0], "NTSC (480i)"); break;
+				case VIDEOMODE_PROGRESSIVE:
+					sprintf (options.value[0], "Progressive (480p)"); break;
+				case VIDEOMODE_PAL:
+					sprintf (options.value[0], "PAL (50Hz)"); break;
+				case VIDEOMODE_PAL60:
+					sprintf (options.value[0], "PAL (60Hz)"); break;
+				case VIDEOMODE_ORIGINAL_240P:
+					sprintf (options.value[0], "Original (240p)"); break;
+			}
 
-			if(GCSettings.widescreen)
-				sprintf (options.value[1], "16:9 Correction");
-			else
-				sprintf (options.value[1], "Default");
-
-			sprintf (options.value[2], "%s", GetFilterName(GCSettings.FilterMethod));
+			switch(GCSettings.videoAspectRatioCorrection)
+			{
+				case VIDEO_ASPECT_RATIO_CORRECTION_NONE:
+					sprintf (options.value[1], "None"); break;
+				case VIDEO_ASPECT_RATIO_CORRECTION_16_9:
+					sprintf (options.value[1], "16:9"); break;
+			}
 
 			switch(GCSettings.hideoverscan)
 			{
-				case HIDEOVERSCAN_OFF: sprintf (options.value[3], "Off"); break;
-				case HIDEOVERSCAN_VERTICAL: sprintf (options.value[3], "Vertical"); break;
-				case HIDEOVERSCAN_HORIZONTAL: sprintf (options.value[3], "Horizontal"); break;
-				case HIDEOVERSCAN_BOTH: sprintf (options.value[3], "Both"); break;
+				case HIDEOVERSCAN_OFF: sprintf (options.value[2], "Off"); break;
+				case HIDEOVERSCAN_VERTICAL: sprintf (options.value[2], "Vertical"); break;
+				case HIDEOVERSCAN_HORIZONTAL: sprintf (options.value[2], "Horizontal"); break;
+				case HIDEOVERSCAN_BOTH: sprintf (options.value[2], "Both"); break;
 			}
 
-			sprintf (options.value[4], "%s",
-				GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default");
- 
-			switch(GCSettings.timing)
+			sprintf (options.value[3], "%s", GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default");
+
+			sprintf (options.value[4], "%s", GCSettings.videoBilinearFilter ? "On" : "Off");
+
+			switch(GCSettings.videoHardwareSoften)
 			{
-				case TIMING_NTSC: sprintf (options.value[5], "NTSC"); break;
-				case TIMING_PAL: sprintf (options.value[5], "PAL"); break;
-				case TIMING_AUTOMATIC: sprintf (options.value[5], "Automatic"); break;
-				case TIMING_DENDY: sprintf (options.value[5], "Dendy"); break;
+				case VIDEO_HW_SOFTEN_OFF:
+					sprintf (options.value[5], "Off"); break;
+				case VIDEO_HW_SOFTEN_AUTO:
+					sprintf (options.value[5], "Auto"); break;
+				case VIDEO_HW_SOFTEN_SHARP:
+					sprintf (options.value[5], "Sharp"); break;
+				case VIDEO_HW_SOFTEN_SOFT:
+					sprintf (options.value[5], "Soft"); break;
 			}
 
-			sprintf (options.value[6], "%.2f%%, %.2f%%", GCSettings.zoomHor*100, GCSettings.zoomVert*100);
-			sprintf (options.value[7], "%d, %d", GCSettings.xshift, GCSettings.yshift);
-			sprintf (options.value[8], "%s", GCSettings.crosshair ? "On" : "Off");
-			sprintf (options.value[9], "%s", GCSettings.spritelimit ? "On" : "Off");
+			sprintf (options.value[6], "%s", GetFilterName(GCSettings.videoUpscalingFilter));
+			sprintf (options.value[7], "%s", GCSettings.videoScanlines ? "On" : "Off");
+			sprintf (options.value[8], "%.2f%%, %.2f%%", GCSettings.videoZoomHor*100, GCSettings.videoZoomVert*100);
+			sprintf (options.value[9], "%d, %d", GCSettings.videoXshift, GCSettings.videoYshift);
 
-			switch(GCSettings.videomode)
-			{
-				case VIDEOMODE_AUTOMATIC:
-					sprintf (options.value[10], "Automatic (Recommended)"); break;
-				case VIDEOMODE_NTSC:
-					sprintf (options.value[10], "NTSC (480i)"); break;
-				case VIDEOMODE_PROGRESSIVE:
-					sprintf (options.value[10], "Progressive (480p)"); break;
-				case VIDEOMODE_PAL:
-					sprintf (options.value[10], "PAL (50Hz)"); break;
-				case VIDEOMODE_PAL60:
-					sprintf (options.value[10], "PAL (60Hz)"); break;
-			}
 			optionBrowser.TriggerUpdate();
 		}
 
 		if(backBtn.GetState() == STATE_CLICKED)
-		
+		{
+			menu = MENU_GAMESETTINGS;
+		}
+	}
+	HaltGui();
+	mainWindow->Remove(&optionBrowser);
+	mainWindow->Remove(&w);
+	mainWindow->Remove(&titleTxt);
+	return menu;
+}
+
+/****************************************************************************
+ * MenuSettingsEmulation
+ ***************************************************************************/
+static int MenuSettingsEmulation()
+{
+	int menu = MENU_NONE;
+	int ret;
+	int i = 0;
+	bool firstRun = true;
+	OptionList options;
+
+	sprintf(options.name[i++], "Game Timing");
+	sprintf(options.name[i++], "Sprite Limit");
+	sprintf(options.name[i++], "Zapper Crosshair");
+	options.length = i;
+
+	for(i=0; i < options.length; i++)
+		options.value[i][0] = 0;
+
+	GuiText titleTxt("Game Settings - Emulation", 26, (GXColor){255, 255, 255, 255});
+	titleTxt.SetAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.SetPosition(50,50);
+
+	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
+	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
+	GuiImageData btnOutline(button_png);
+	GuiImageData btnOutlineOver(button_over_png);
+
+	GuiTrigger trigB;
+	GuiTrigger trig1;
+	trigB.SetButtonOnlyTrigger(-1, WPAD_BUTTON_B | WPAD_CLASSIC_BUTTON_B, PAD_BUTTON_B, WIIDRC_BUTTON_B);
+	trig1.SetButtonOnlyTrigger(-1, WPAD_BUTTON_1, 0, 0);
+
+	GuiText backBtnTxt("Go Back", 22, (GXColor){0, 0, 0, 255});
+	GuiImage backBtnImg(&btnOutline);
+	GuiImage backBtnImgOver(&btnOutlineOver);
+	GuiButton backBtn(btnOutline.GetWidth(), btnOutline.GetHeight());
+	backBtn.SetAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.SetPosition(50, -35);
+	backBtn.SetLabel(&backBtnTxt);
+	backBtn.SetImage(&backBtnImg);
+	backBtn.SetImageOver(&backBtnImgOver);
+	backBtn.SetSoundOver(&btnSoundOver);
+	backBtn.SetSoundClick(&btnSoundClick);
+	backBtn.SetTrigger(trigA);
+	backBtn.SetTrigger(trig2);
+	backBtn.SetTrigger(&trigB);
+	backBtn.SetTrigger(&trig1);
+	backBtn.SetEffectGrow();
+
+	GuiOptionBrowser optionBrowser(552, 248, &options);
+	optionBrowser.SetPosition(0, 108);
+	optionBrowser.SetCol2Position(200);
+	optionBrowser.SetAlignment(ALIGN_CENTRE, ALIGN_TOP);
+
+	HaltGui();
+	GuiWindow w(screenwidth, screenheight);
+	w.Append(&backBtn);
+	mainWindow->Append(&optionBrowser);
+	mainWindow->Append(&w);
+	mainWindow->Append(&titleTxt);
+	ResumeGui();
+
+	while(menu == MENU_NONE)
+	{
+		usleep(THREAD_SLEEP);
+		ret = optionBrowser.GetClickedOption();
+
+		switch (ret)
+		{
+			case 0:
+				GCSettings.timing++;
+				if(GCSettings.timing >= TIMING_LENGTH)
+					GCSettings.timing = TIMING_NTSC;
+				break;
+
+			case 1:
+				GCSettings.spritelimit = !GCSettings.spritelimit;
+				break;
+
+			case 2:
+				GCSettings.crosshair = !GCSettings.crosshair;
+				break;
+		}
+
+		if(ret >= 0 || firstRun)
+		{
+			firstRun = false;
+
+			switch(GCSettings.timing)
+			{
+				case TIMING_NTSC: sprintf (options.value[0], "NTSC"); break;
+				case TIMING_PAL: sprintf (options.value[0], "PAL"); break;
+				case TIMING_AUTOMATIC: sprintf (options.value[0], "Automatic"); break;
+				case TIMING_DENDY: sprintf (options.value[0], "Dendy"); break;
+			}
+
+			sprintf (options.value[1], "%s", GCSettings.spritelimit ? "On" : "Off");
+			sprintf (options.value[2], "%s", GCSettings.crosshair ? "On" : "Off");
+
+			optionBrowser.TriggerUpdate();
+		}
+
+		if(backBtn.GetState() == STATE_CLICKED)
 		{
 			menu = MENU_GAMESETTINGS;
 		}
@@ -4921,6 +5055,9 @@ MainMenu (int menu)
 				break;
 			case MENU_GAMESETTINGS_VIDEO:
 				currentMenu = MenuSettingsVideo();
+				break;
+			case MENU_GAMESETTINGS_EMULATION:
+				currentMenu = MenuSettingsEmulation();
 				break;
 			case MENU_GAMESETTINGS_CHEATS:
 				currentMenu = MenuGameCheats();

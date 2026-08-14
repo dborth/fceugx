@@ -151,21 +151,24 @@ preparePrefsData ()
 
 	createXMLSection("Video", "Video Settings");
 
-	createXMLSetting("videomode", "Video Mode", toStr(GCSettings.videomode));
+	createXMLSetting("videoMode", "Output Mode", toStr(GCSettings.videoMode));
+	createXMLSetting("videoAspectRatioCorrection", "Aspect Ratio Correction", toStr(GCSettings.videoAspectRatioCorrection));
+	createXMLSetting("hideoverscan", "Cropping", toStr(GCSettings.hideoverscan));
 	createXMLSetting("currpal", "Palette", toStr(GCSettings.currpal));
+	createXMLSetting("videoBilinearFilter", "Bilinear Filtering", BtoStr(GCSettings.videoBilinearFilter));
+	createXMLSetting("videoHardwareSoften", "Hardware Soften", toStr(GCSettings.videoHardwareSoften));
+	createXMLSetting("videoScanlines", "Scanlines", BtoStr(GCSettings.videoScanlines));
+	createXMLSetting("videoUpscalingFilter", "Upscaling Filter Method", toStr(GCSettings.videoUpscalingFilter));
+	createXMLSetting("videoZoomHor", "Horizontal Zoom Level", FtoStr(GCSettings.videoZoomHor));
+	createXMLSetting("videoZoomVert", "Vertical Zoom Level", FtoStr(GCSettings.videoZoomVert));
+	createXMLSetting("videoXshift", "Horizontal Video Shift", toStr(GCSettings.videoXshift));
+	createXMLSetting("videoYshift", "Vertical Video Shift", toStr(GCSettings.videoYshift));
+
+	createXMLSection("Emulation", "Emulation Settings");
+
 	createXMLSetting("timing", "Timing", toStr(GCSettings.timing));
 	createXMLSetting("spritelimit", "Sprite Limit", BtoStr(GCSettings.spritelimit));
-	createXMLSetting("zoomHor", "Horizontal Zoom Level", FtoStr(GCSettings.zoomHor));
-	createXMLSetting("zoomVert", "Vertical Zoom Level", FtoStr(GCSettings.zoomVert));
-	createXMLSetting("render", "Video Filtering", toStr(GCSettings.render));
-	createXMLSetting("FilterMethod", "Filter Method", toStr(GCSettings.FilterMethod));
-	createXMLSetting("widescreen", "Aspect Ratio Correction", BtoStr(GCSettings.widescreen));
-	createXMLSetting("hideoverscan", "Video Cropping", toStr(GCSettings.hideoverscan));
-	createXMLSetting("xshift", "Horizontal Video Shift", toStr(GCSettings.xshift));
-	createXMLSetting("yshift", "Vertical Video Shift", toStr(GCSettings.yshift));
-	createXMLSetting("TurboModeEnabled", "Turbo Mode Enabled", BtoStr(GCSettings.TurboModeEnabled));
-	createXMLSetting("TurboModeButton", "Turbo Mode Button", toStr(GCSettings.TurboModeButton));
-	createXMLSetting("GamepadMenuToggle", "Gamepad Menu Toggle", toStr(GCSettings.GamepadMenuToggle));
+	createXMLSetting("crosshair", "Zapper Crosshair", BtoStr(GCSettings.crosshair));
 
 	createXMLSection("Menu", "Menu Settings");
 
@@ -183,7 +186,9 @@ preparePrefsData ()
 	createXMLSection("Controller", "Controller Settings");
 
 	createXMLSetting("Controller", "Controller", toStr(GCSettings.Controller));
-	createXMLSetting("crosshair", "Zapper Crosshair", BtoStr(GCSettings.crosshair));
+	createXMLSetting("TurboModeEnabled", "Turbo Mode Enabled", BtoStr(GCSettings.TurboModeEnabled));
+	createXMLSetting("TurboModeButton", "Turbo Mode Button", toStr(GCSettings.TurboModeButton));
+	createXMLSetting("GamepadMenuToggle", "Gamepad Menu Toggle", toStr(GCSettings.GamepadMenuToggle));
 
 	createXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad", "NES Pad - GameCube Controller");
 	createXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote", "NES Pad - Wiimote");
@@ -318,24 +323,23 @@ decodePrefsData ()
 
 	// Video Settings
 
-	loadXMLSetting(&GCSettings.videomode, "videomode");
+	loadXMLSetting(&GCSettings.videoMode, "videoMode");
+	loadXMLSetting(&GCSettings.videoAspectRatioCorrection, "videoAspectRatioCorrection");
+	loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
 	loadXMLSetting(&GCSettings.currpal, "currpal");
+	loadXMLSetting(&GCSettings.videoBilinearFilter, "videoBilinearFilter");
+	loadXMLSetting(&GCSettings.videoHardwareSoften, "videoHardwareSoften");
+	loadXMLSetting(&GCSettings.videoUpscalingFilter, "videoUpscalingFilter");
+	loadXMLSetting(&GCSettings.videoScanlines, "videoScanlines");
+	loadXMLSetting(&GCSettings.videoZoomHor, "videoZoomHor");
+	loadXMLSetting(&GCSettings.videoZoomVert, "videoZoomVert");
+	loadXMLSetting(&GCSettings.videoXshift, "videoXshift");
+	loadXMLSetting(&GCSettings.videoYshift, "videoYshift");
+
+	// Emulation Settings
+
 	loadXMLSetting(&GCSettings.timing, "timing");
 	loadXMLSetting(&GCSettings.spritelimit, "spritelimit");
-	loadXMLSetting(&GCSettings.zoomHor, "zoomHor");
-	loadXMLSetting(&GCSettings.zoomVert, "zoomVert");
-	loadXMLSetting(&GCSettings.render, "render");
-	loadXMLSetting(&GCSettings.FilterMethod, "FilterMethod");
-	loadXMLSetting(&GCSettings.widescreen, "widescreen");
-	loadXMLSetting(&GCSettings.hideoverscan, "hideoverscan");
-	loadXMLSetting(&GCSettings.xshift, "xshift");
-	loadXMLSetting(&GCSettings.yshift, "yshift");
-
-	// Other Mappings
-
-	loadXMLSetting(&GCSettings.TurboModeEnabled, "TurboModeEnabled");
-	loadXMLSetting(&GCSettings.TurboModeButton, "TurboModeButton");
-	loadXMLSetting(&GCSettings.GamepadMenuToggle, "GamepadMenuToggle");
 
 	// Menu Settings
 
@@ -352,6 +356,9 @@ decodePrefsData ()
 
 	loadXMLSetting(&GCSettings.Controller, "Controller");
 	loadXMLSetting(&GCSettings.crosshair, "crosshair");
+	loadXMLSetting(&GCSettings.TurboModeEnabled, "TurboModeEnabled");
+	loadXMLSetting(&GCSettings.TurboModeButton, "TurboModeButton");
+	loadXMLSetting(&GCSettings.GamepadMenuToggle, "GamepadMenuToggle");
 
 	loadXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad");
 	loadXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote");
@@ -388,14 +395,14 @@ void FixInvalidSettings()
 		}
 	}
 
-	if(!(GCSettings.zoomHor > 0.5 && GCSettings.zoomHor < 1.5))
-		GCSettings.zoomHor = 1.0;
-	if(!(GCSettings.zoomVert > 0.5 && GCSettings.zoomVert < 1.5))
-		GCSettings.zoomVert = 1.0;
-	if(!(GCSettings.xshift > -50 && GCSettings.xshift < 50))
-		GCSettings.xshift = 0;
-	if(!(GCSettings.yshift > -50 && GCSettings.yshift < 50))
-		GCSettings.yshift = 0;
+	if(!(GCSettings.videoZoomHor > 0.5 && GCSettings.videoZoomHor < 1.5))
+		GCSettings.videoZoomHor = 1.0;
+	if(!(GCSettings.videoZoomVert > 0.5 && GCSettings.videoZoomVert < 1.5))
+		GCSettings.videoZoomVert = 1.0;
+	if(!(GCSettings.videoXshift > -50 && GCSettings.videoXshift < 50))
+		GCSettings.videoXshift = 0;
+	if(!(GCSettings.videoYshift > -50 && GCSettings.videoYshift < 50))
+		GCSettings.videoYshift = 0;
 	if(!(GCSettings.MusicVolume >= 0 && GCSettings.MusicVolume <= 100))
 		GCSettings.MusicVolume = 20;
 	if(!(GCSettings.SFXVolume >= 0 && GCSettings.SFXVolume <= 100))
@@ -404,14 +411,16 @@ void FixInvalidSettings()
 		GCSettings.language = LANG_ENGLISH;
 	if(GCSettings.Controller > CTRL_PAD4 || GCSettings.Controller < CTRL_ZAPPER)
 		GCSettings.Controller = CTRL_PAD2;
-	if(!(GCSettings.render >= RENDER_ORIGINAL && GCSettings.render < RENDER_LENGTH))
-		GCSettings.render = RENDER_FILTERED_SHARP;
-	if(!(GCSettings.FilterMethod >= FILTER_NONE && GCSettings.FilterMethod <= NUM_FILTERS))
-		GCSettings.FilterMethod = FILTER_NONE;
+	if(!(GCSettings.videoHardwareSoften >= VIDEO_HW_SOFTEN_OFF && GCSettings.videoHardwareSoften < VIDEO_HW_SOFTEN_LENGTH))
+		GCSettings.videoHardwareSoften = VIDEO_HW_SOFTEN_AUTO;
+	if(!(GCSettings.videoAspectRatioCorrection >= VIDEO_ASPECT_RATIO_CORRECTION_NONE && GCSettings.videoAspectRatioCorrection < VIDEO_ASPECT_RATIO_CORRECTION_LENGTH))
+		GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
+	if(!(GCSettings.videoMode >= VIDEOMODE_AUTO && GCSettings.videoMode < VIDEOMODE_LENGTH))
+		GCSettings.videoMode = VIDEOMODE_AUTO;
+	if(!(GCSettings.videoUpscalingFilter >= FILTER_NONE && GCSettings.videoUpscalingFilter <= NUM_FILTERS))
+		GCSettings.videoUpscalingFilter = FILTER_NONE;
 	if(GCSettings.timing < TIMING_NTSC || GCSettings.timing >= TIMING_LENGTH)
 		GCSettings.timing = TIMING_AUTOMATIC;
-	if(!(GCSettings.videomode >= VIDEOMODE_AUTOMATIC && GCSettings.videomode < VIDEOMODE_LENGTH))
-		GCSettings.videomode = VIDEOMODE_AUTOMATIC;
 	if(!(GCSettings.hideoverscan >= HIDEOVERSCAN_OFF && GCSettings.hideoverscan < HIDEOVERSCAN_LENGTH))
 		GCSettings.hideoverscan = HIDEOVERSCAN_BOTH;
 	if(!(GCSettings.WiimoteOrientation >= WIIMOTEORIENTATION_VERTICAL && GCSettings.WiimoteOrientation < WIIMOTEORIENTATION_LENGTH))
@@ -429,31 +438,28 @@ DefaultSettings ()
 	memset (&GCSettings, 0, sizeof (GCSettings));
 	ResetControls(); // controller button mappings
 
-	GCSettings.currpal = 1; // color palette
+	GCSettings.videoMode = VIDEOMODE_AUTO;
+	GCSettings.hideoverscan = HIDEOVERSCAN_BOTH;
+	GCSettings.currpal = 1;
+	GCSettings.videoBilinearFilter = true;
+	GCSettings.videoHardwareSoften = VIDEO_HW_SOFTEN_SHARP;
+	GCSettings.videoScanlines = false;
+	GCSettings.videoUpscalingFilter = FILTER_NONE;
+
+#ifdef HW_RVL
+	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
+		GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_16_9;
+	else
+		GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
+#else
+	GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
+#endif
+
 	GCSettings.timing = TIMING_AUTOMATIC;
-	GCSettings.videomode = VIDEOMODE_AUTOMATIC; // automatic video mode detection
 	GCSettings.Controller = CTRL_PAD2; // NES pad, Four Score, Zapper
 	GCSettings.crosshair = true; // show zapper crosshair
 	GCSettings.spritelimit = true; // enforce 8 sprite limit
 	GCSettings.gamegenie = false;
-
-	GCSettings.render = RENDER_FILTERED_SHARP;
-	GCSettings.FilterMethod = FILTER_NONE;
-	GCSettings.hideoverscan = HIDEOVERSCAN_BOTH;
-
-#ifdef HW_RVL
-	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
-		GCSettings.widescreen = true;
-	else
-		GCSettings.widescreen = false;
-#else
-	GCSettings.widescreen = true;
-#endif
-
-	GCSettings.zoomHor = 1.0; // horizontal zoom level
-	GCSettings.zoomVert = 1.0; // vertical zoom level
-	GCSettings.xshift = 0; // horizontal video shift
-	GCSettings.yshift = 0; // vertical video shift
 
 	GCSettings.WiimoteOrientation = WIIMOTEORIENTATION_VERTICAL;
 	GCSettings.AutoloadGame = false;
@@ -638,7 +644,7 @@ bool LoadPrefs()
 
 	FixInvalidSettings();
 
-	if(GCSettings.videomode > VIDEOMODE_AUTOMATIC) {
+	if(GCSettings.videoMode > VIDEOMODE_AUTO) {
 		ResetVideo_Menu();
 	}
 

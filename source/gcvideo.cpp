@@ -453,7 +453,7 @@ static void SetupScanlineFilterTEV() {
 }
 
 static bool should_apply_scanlines() {
-	return GCSettings.FilterMethod == FILTER_SCANLINES && !shutter_3d_mode && !anaglyph_3d_mode && vmode->efbHeight > 300;
+	return GCSettings.videoScanlines && !shutter_3d_mode && !anaglyph_3d_mode && vmode->efbHeight > 300;
 }
 
 /****************************************************************************
@@ -577,7 +577,7 @@ static GXRModeObj * FindVideoMode()
 	GXRModeObj * mode;
 	
 	// choose the desired video mode
-	switch(GCSettings.videomode)
+	switch(GCSettings.videoMode)
 	{
 		case VIDEOMODE_NTSC: // NTSC (480i)
 			mode = &TVNtsc480IntDf;
@@ -667,9 +667,7 @@ static GXRModeObj * FindVideoMode()
 static int fscale;
 
 static void UpdateFilterScale() {
-	if (GCSettings.FilterMethod != FILTER_NONE &&
-		GCSettings.FilterMethod != FILTER_SCANLINES &&
-		!shutter_3d_mode && !anaglyph_3d_mode)
+	if (GCSettings.videoUpscalingFilter != FILTER_NONE && !shutter_3d_mode && !anaglyph_3d_mode)
 	{
 		fscale = GetFilterScale();
 	}
@@ -684,7 +682,7 @@ UpdateScaling()
 	int xscale, yscale;
 
 	// update scaling
-	if (GCSettings.render == RENDER_ORIGINAL)
+	if (GCSettings.videoMode == VIDEOMODE_ORIGINAL_240P)
 	{
 		xscale = 512 / 2; // use GX scaler instead VI
 		yscale = NES_HEIGHT / 2;
@@ -695,22 +693,22 @@ UpdateScaling()
 		yscale = vmode->efbHeight / 2;
 	}
 
-	if (GCSettings.widescreen)
+	if (GCSettings.videoAspectRatioCorrection == VIDEO_ASPECT_RATIO_CORRECTION_16_9)
 	{
-		if(GCSettings.render == RENDER_ORIGINAL)
+		if(GCSettings.videoMode == VIDEOMODE_ORIGINAL_240P)
 			xscale = (3*xscale)/4;
 		else
 			xscale = NES_WIDTH; // match the original console's width for "widescreen" to prevent flickering
 	}
 
-	xscale *= GCSettings.zoomHor;
-	yscale *= GCSettings.zoomVert;
+	xscale *= GCSettings.videoZoomHor;
+	yscale *= GCSettings.videoZoomVert;
 
 	// update vertex position matrix
-	square[0] = square[9] = (-xscale) + GCSettings.xshift;
-	square[3] = square[6] = (xscale) + GCSettings.xshift;
-	square[1] = square[4] = (yscale) - GCSettings.yshift;
-	square[7] = square[10] = (-yscale) - GCSettings.yshift;
+	square[0] = square[9] = (-xscale) + GCSettings.videoXshift;
+	square[3] = square[6] = (xscale) + GCSettings.videoXshift;
+	square[1] = square[4] = (yscale) - GCSettings.videoYshift;
+	square[7] = square[10] = (-yscale) - GCSettings.videoYshift;
 	DCFlushRange (square, 32); // update memory BEFORE the GPU accesses it!
 
 	UpdateFilterScale();
@@ -740,8 +738,8 @@ UpdateScaling()
 	gameScreenPng.scaleY = targetHeight / (float)gameScreenPng.height;
 
 	// 5. Shift calculations must map EFB distances physically through to the Menu canvas
-	gameScreenPng.xoffset = GCSettings.xshift * (screenwidth / (float)menu_vmode->viWidth) * ((float)vmode->viWidth / (float)vmode->fbWidth);
-	gameScreenPng.yoffset = GCSettings.yshift * (screenheight / menuViHeightAdjusted) * (viHeightAdjusted / (float)vmode->efbHeight);
+	gameScreenPng.xoffset = GCSettings.videoXshift * (screenwidth / (float)menu_vmode->viWidth) * ((float)vmode->viWidth / (float)vmode->fbWidth);
+	gameScreenPng.yoffset = GCSettings.videoYshift * (screenheight / menuViHeightAdjusted) * (viHeightAdjusted / (float)vmode->efbHeight);
 
 	draw_init ();
 }
@@ -993,7 +991,7 @@ ResetVideo_Emu ()
 
 	// set VI mode and audio sample rate depending on if original mode is used
 
-	if (GCSettings.render == RENDER_ORIGINAL)
+	if (GCSettings.videoMode == VIDEOMODE_ORIGINAL_240P)
 	{
 		int timing = GCSettings.timing == TIMING_DENDY ? TIMING_PAL : FCEUI_GetCurrentVidSystem(NULL, NULL);
 		rmode = tvmodes[timing];
@@ -1007,7 +1005,7 @@ ResetVideo_Emu ()
 	{
 		rmode = FindVideoMode();
 		
-		if (GCSettings.widescreen)
+		if (GCSettings.videoAspectRatioCorrection == VIDEO_ASPECT_RATIO_CORRECTION_16_9)
 			ResetFbWidth(640, rmode);
 		else
 			ResetFbWidth(512, rmode);
@@ -1033,10 +1031,12 @@ ResetVideo_Emu ()
 	u8 sharp[7] = {0,0,21,22,21,0,0};
 	u8 soft[7] = {8,8,10,12,10,8,8};
 	u8* vfilter =
-		GCSettings.render == RENDER_FILTERED_SHARP ? sharp
-		: GCSettings.render == RENDER_FILTERED_SOFT ? soft
+		GCSettings.videoHardwareSoften == VIDEO_HW_SOFTEN_SHARP ? sharp
+		: GCSettings.videoHardwareSoften == VIDEO_HW_SOFTEN_SOFT ? soft
 		: rmode->vfilter;
-	GX_SetCopyFilter(rmode->aa, rmode->sample_pattern, (rmode->xfbMode == VI_XFBMODE_SF) ? GX_FALSE : GX_TRUE, vfilter);
+
+	u8 vf_enable = (rmode->xfbMode != VI_XFBMODE_SF || GCSettings.videoHardwareSoften != VIDEO_HW_SOFTEN_OFF) ? GX_TRUE : GX_FALSE;
+	GX_SetCopyFilter(rmode->aa, rmode->sample_pattern, vf_enable, vfilter);
 
 	GX_SetFieldMode (rmode->field_rendering, ((rmode->viHeight == 2 * rmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
 	
@@ -1060,8 +1060,10 @@ ResetVideo_Emu ()
 	GX_InvalidateTexAll ();
 	GX_InitTexObj (&texobj, texturemem, NES_WIDTH*fscale, NES_HEIGHT*fscale, GX_TF_RGB5A3, GX_CLAMP, GX_CLAMP, GX_FALSE);
 
-	if (GCSettings.render == RENDER_ORIGINAL || GCSettings.render == RENDER_UNFILTERED)
-		GX_InitTexObjFilterMode(&texobj, GX_NEAR, GX_NEAR); // original/unfiltered video mode: force texture filtering OFF
+	if (!GCSettings.videoBilinearFilter)
+		GX_InitTexObjFilterMode(&texobj, GX_NEAR, GX_NEAR);
+	else
+		GX_InitTexObjFilterMode(&texobj, GX_LINEAR, GX_LINEAR);
 
 	GX_LoadTexObj (&texobj, GX_TEXMAP0);
 

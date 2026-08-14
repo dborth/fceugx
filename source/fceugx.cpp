@@ -152,7 +152,7 @@ int main(int argc, char *argv[])
 		}
 
 		currentTiming = GCSettings.timing;
-		SelectFilterMethod(GCSettings.FilterMethod); // Initialize / Re-evaluate active filter
+		SelectFilterMethod(GCSettings.videoUpscalingFilter); // Initialize / Re-evaluate active filter
 		autoboot = false;
 		MenuRequested = false;
 		SwitchAudioMode(0);
