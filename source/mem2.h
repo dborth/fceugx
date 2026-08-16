@@ -16,7 +16,7 @@
 
 u32 InitMem2Manager ();
 void* mem2_malloc(u32 size);
-bool mem2_free(void *ptr);
+void mem2_free(void *ptr);
 
 #endif
 
