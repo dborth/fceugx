@@ -29,9 +29,9 @@ void* mem2_malloc(u32 size)
 	return __lwp_heap_allocate(&mem2_heap, size);
 }
 
-bool mem2_free(void *ptr)
+void mem2_free(void *ptr)
 {
-	return __lwp_heap_free(&mem2_heap, ptr);
+	__lwp_heap_free(&mem2_heap, ptr);
 }
 
 #endif
