@@ -34,7 +34,7 @@
 #include "gcunzip.h"
 #include "menu.h"
 #include "filebrowser.h"
-#include "gui/Gui.h"
+#include "libgui/Gui.h"
 
 #ifdef HW_RVL
 	#include "mem2.h"

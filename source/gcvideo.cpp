@@ -25,7 +25,7 @@
 #include "fceusupport.h"
 #include "gcvideo.h"
 #include "gcaudio.h"
-#include "gui/Gui.h"
+#include "libgui/Gui.h"
 #include "menu.h"
 #include "pad.h"
 #include "videofilters.h"
