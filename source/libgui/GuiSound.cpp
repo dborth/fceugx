@@ -13,7 +13,7 @@
 /**
  * Constructor for the GuiSound class.
  */
-GuiSound::GuiSound(const u8 * s, s32 l, int t)
+GuiSound::GuiSound(const u8 * s, s32 l, SOUND t)
 {
 	sound = s;
 	length = l;
