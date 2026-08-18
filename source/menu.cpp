@@ -229,7 +229,7 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	int choice = -1;
 
 	GuiWindow promptWindow(448,288);
-	promptWindow.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	promptWindow.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	promptWindow.setPosition(0, -10);
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
@@ -245,10 +245,10 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	GuiImage dialogBoxImg(&dialogBox);
 
 	GuiText titleTxt(title, 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	titleTxt.setPosition(0,14);
 	GuiText msgTxt(msg, 26, (GXColor){0, 0, 0, 255});
-	msgTxt.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	msgTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	msgTxt.setPosition(0,-20);
 	msgTxt.setWrap(true, 430);
 
@@ -259,12 +259,12 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 
 	if(btn2Label)
 	{
-		btn1.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+		btn1.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 		btn1.setPosition(20, -25);
 	}
 	else
 	{
-		btn1.setAlignment(ALIGN_CENTRE, ALIGN_BOTTOM);
+		btn1.setAlignment(ALIGN_H::CENTRE, ALIGN_V::BOTTOM);
 		btn1.setPosition(0, -25);
 		btn1.setTrigger(&trigB);
 		btn1.setTrigger(&trig1);
@@ -277,14 +277,14 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	btn1.setSoundClick(&btnSoundClick);
 	btn1.setTrigger(trigA);
 	btn1.setTrigger(trig2);
-	btn1.setState(STATE_SELECTED);
+	btn1.setState(STATE::SELECTED);
 	btn1.setEffectGrow();
 
 	GuiText btn2Txt(btn2Label, 22, (GXColor){0, 0, 0, 255});
 	GuiImage btn2Img(&btnOutline);
 	GuiImage btn2ImgOver(&btnOutlineOver);
 	GuiButton btn2(btnOutline.getWidth(), btnOutline.getHeight());
-	btn2.setAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	btn2.setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	btn2.setPosition(-20, -25);
 	btn2.setLabel(&btn2Txt);
 	btn2.setImage(&btn2Img);
@@ -310,13 +310,13 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	promptWindow.setEffect(EFFECT_SLIDE_TOP | EFFECT_SLIDE_IN, 50);
 	CancelAction();
 	HaltGui();
-	mainWindow->setState(STATE_DISABLED);
+	mainWindow->setState(STATE::DISABLED);
 	mainWindow->append(&promptWindow);
 	mainWindow->changeFocus(&promptWindow);
 	if(btn2Label)
 	{
 		btn1.resetState();
-		btn2.setState(STATE_SELECTED);
+		btn2.setState(STATE::SELECTED);
 	}
 	ResumeGui();
 
@@ -324,9 +324,9 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	{
 		usleep(THREAD_SLEEP);
 
-		if(btn1.getState() == STATE_CLICKED)
+		if(btn1.getState() == STATE::CLICKED)
 			choice = 1;
-		else if(btn2.getState() == STATE_CLICKED)
+		else if(btn2.getState() == STATE::CLICKED)
 			choice = 0;
 	}
 
@@ -334,7 +334,7 @@ WindowPrompt(const char *title, const char *msg, const char *btn1Label, const ch
 	while(promptWindow.getEffect() > 0) usleep(THREAD_SLEEP);
 	HaltGui();
 	mainWindow->remove(&promptWindow);
-	mainWindow->setState(STATE_DEFAULT);
+	mainWindow->setState(STATE::DEFAULT);
 	ResumeGui();
 	return choice;
 }
@@ -366,7 +366,7 @@ UpdateGUI (void *arg)
 		UpdatePads();
 		mainWindow->draw();
 
-		if (mainWindow->getState() != STATE_DISABLED)
+		if (mainWindow->getState() != STATE::DISABLED)
 			mainWindow->drawTooltip();
 
 		#ifdef HW_RVL
@@ -414,7 +414,7 @@ static void
 ProgressWindow(char *title, char *msg)
 {
 	GuiWindow promptWindow(448,288);
-	promptWindow.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	promptWindow.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	promptWindow.setPosition(0, -10);
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
@@ -426,30 +426,30 @@ ProgressWindow(char *title, char *msg)
 
 	GuiImageData progressbarOutline(progressbar_outline_png);
 	GuiImage progressbarOutlineImg(&progressbarOutline);
-	progressbarOutlineImg.setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	progressbarOutlineImg.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	progressbarOutlineImg.setPosition(25, 40);
 
 	GuiImageData progressbarEmpty(progressbar_empty_png);
 	GuiImage progressbarEmptyImg(&progressbarEmpty);
-	progressbarEmptyImg.setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	progressbarEmptyImg.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	progressbarEmptyImg.setPosition(25, 40);
 	progressbarEmptyImg.setTile(100);
 
 	GuiImageData progressbar(progressbar_png);
 	GuiImage progressbarImg(&progressbar);
-	progressbarImg.setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	progressbarImg.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	progressbarImg.setPosition(25, 40);
 
 	GuiImageData throbber(throbber_png);
 	GuiImage throbberImg(&throbber);
-	throbberImg.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	throbberImg.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	throbberImg.setPosition(0, 40);
 
 	GuiText titleTxt(title, 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	titleTxt.setPosition(0,14);
 	GuiText msgTxt(msg, 26, (GXColor){0, 0, 0, 255});
-	msgTxt.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	msgTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	msgTxt.setPosition(0,80);
 
 	promptWindow.append(&dialogBoxImg);
@@ -483,7 +483,7 @@ ProgressWindow(char *title, char *msg)
 
 	HaltGui();
 	int oldState = mainWindow->getState();
-	mainWindow->setState(STATE_DISABLED);
+	mainWindow->setState(STATE::DISABLED);
 	mainWindow->append(&promptWindow);
 	mainWindow->changeFocus(&promptWindow);
 	ResumeGui();
@@ -706,7 +706,7 @@ static void OnScreenKeyboard(char * var, u32 maxlen)
 	GuiImage okBtnImgOver(&btnOutlineOver);
 	GuiButton okBtn(btnOutline.getWidth(), btnOutline.getHeight());
 
-	okBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	okBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	okBtn.setPosition(25, -25);
 
 	okBtn.setLabel(&okBtnTxt);
@@ -722,7 +722,7 @@ static void OnScreenKeyboard(char * var, u32 maxlen)
 	GuiImage cancelBtnImg(&btnOutline);
 	GuiImage cancelBtnImgOver(&btnOutlineOver);
 	GuiButton cancelBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	cancelBtn.setAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	cancelBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	cancelBtn.setPosition(-25, -25);
 	cancelBtn.setLabel(&cancelBtnTxt);
 	cancelBtn.setImage(&cancelBtnImg);
@@ -737,7 +737,7 @@ static void OnScreenKeyboard(char * var, u32 maxlen)
 	keyboard.append(&cancelBtn);
 
 	HaltGui();
-	mainWindow->setState(STATE_DISABLED);
+	mainWindow->setState(STATE::DISABLED);
 	mainWindow->append(&keyboard);
 	mainWindow->changeFocus(&keyboard);
 	ResumeGui();
@@ -746,9 +746,9 @@ static void OnScreenKeyboard(char * var, u32 maxlen)
 	{
 		usleep(THREAD_SLEEP);
 
-		if(okBtn.getState() == STATE_CLICKED)
+		if(okBtn.getState() == STATE::CLICKED)
 			save = 1;
-		else if(cancelBtn.getState() == STATE_CLICKED)
+		else if(cancelBtn.getState() == STATE::CLICKED)
 			save = 0;
 	}
 
@@ -759,7 +759,7 @@ static void OnScreenKeyboard(char * var, u32 maxlen)
 
 	HaltGui();
 	mainWindow->remove(&keyboard);
-	mainWindow->setState(STATE_DEFAULT);
+	mainWindow->setState(STATE::DEFAULT);
 	ResumeGui();
 }
 
@@ -775,7 +775,7 @@ SettingWindow(const char * title, GuiWindow * w)
 	int save = -1;
 
 	GuiWindow promptWindow(448,288);
-	promptWindow.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	promptWindow.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
 	GuiImageData btnOutline(button_png);
@@ -785,7 +785,7 @@ SettingWindow(const char * title, GuiWindow * w)
 	GuiImage dialogBoxImg(&dialogBox);
 
 	GuiText titleTxt(title, 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	titleTxt.setPosition(0,14);
 
 	GuiText okBtnTxt("OK", 22, (GXColor){0, 0, 0, 255});
@@ -793,7 +793,7 @@ SettingWindow(const char * title, GuiWindow * w)
 	GuiImage okBtnImgOver(&btnOutlineOver);
 	GuiButton okBtn(btnOutline.getWidth(), btnOutline.getHeight());
 
-	okBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	okBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	okBtn.setPosition(20, -25);
 
 	okBtn.setLabel(&okBtnTxt);
@@ -809,7 +809,7 @@ SettingWindow(const char * title, GuiWindow * w)
 	GuiImage cancelBtnImg(&btnOutline);
 	GuiImage cancelBtnImgOver(&btnOutlineOver);
 	GuiButton cancelBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	cancelBtn.setAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	cancelBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	cancelBtn.setPosition(-20, -25);
 	cancelBtn.setLabel(&cancelBtnTxt);
 	cancelBtn.setImage(&cancelBtnImg);
@@ -826,7 +826,7 @@ SettingWindow(const char * title, GuiWindow * w)
 	promptWindow.append(&cancelBtn);
 
 	HaltGui();
-	mainWindow->setState(STATE_DISABLED);
+	mainWindow->setState(STATE::DISABLED);
 	mainWindow->append(&promptWindow);
 	mainWindow->append(w);
 	mainWindow->changeFocus(w);
@@ -836,15 +836,15 @@ SettingWindow(const char * title, GuiWindow * w)
 	{
 		usleep(THREAD_SLEEP);
 
-		if(okBtn.getState() == STATE_CLICKED)
+		if(okBtn.getState() == STATE::CLICKED)
 			save = 1;
-		else if(cancelBtn.getState() == STATE_CLICKED)
+		else if(cancelBtn.getState() == STATE::CLICKED)
 			save = 0;
 	}
 	HaltGui();
 	mainWindow->remove(&promptWindow);
 	mainWindow->remove(w);
-	mainWindow->setState(STATE_DEFAULT);
+	mainWindow->setState(STATE::DEFAULT);
 	ResumeGui();
 	return save;
 }
@@ -857,7 +857,7 @@ SettingWindow(const char * title, GuiWindow * w)
  ***************************************************************************/
 static void WindowCredits(void * ptr)
 {
-	if(btnLogo->getState() != STATE_CLICKED && !showCredits)
+	if(btnLogo->getState() != STATE::CLICKED && !showCredits)
 		return;
 
 	btnLogo->resetState();
@@ -868,23 +868,23 @@ static void WindowCredits(void * ptr)
 
 	GuiWindow creditsWindow(screenwidth,screenheight);
 	GuiWindow creditsWindowBox(580,448);
-	creditsWindowBox.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	creditsWindowBox.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 
 	GuiImageData creditsBox(credits_box_png);
 	GuiImage creditsBoxImg(&creditsBox);
-	creditsBoxImg.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	creditsBoxImg.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	creditsWindowBox.append(&creditsBoxImg);
 
 	int numEntries = 26;
 	GuiText * txt[numEntries];
 
 	txt[i] = new GuiText("Credits", 30, (GXColor){0, 0, 0, 255});
-	txt[i]->setAlignment(ALIGN_CENTRE, ALIGN_TOP); txt[i]->setPosition(0,y); i++; y+=32;
+	txt[i]->setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP); txt[i]->setPosition(0,y); i++; y+=32;
 
 	txt[i] = new GuiText("Official Site: https://github.com/dborth/fceugx", 20, (GXColor){0, 0, 0, 255});
-	txt[i]->setAlignment(ALIGN_CENTRE, ALIGN_TOP); txt[i]->setPosition(0,y); i++; y+=32;
+	txt[i]->setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP); txt[i]->setPosition(0,y); i++; y+=32;
 
-	GuiText::setPresets(20, (GXColor){0, 0, 0, 255}, 0, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_TOP, ALIGN_LEFT, ALIGN_TOP);
+	GuiText::setPresets(20, (GXColor){0, 0, 0, 255}, 0, FTGX_JUSTIFY_LEFT | FTGX_ALIGN_V::TOP, ALIGN_H::LEFT, ALIGN_V::TOP);
 
 	txt[i] = new GuiText("Coding & menu design");
 	txt[i]->setPosition(40,y); i++;
@@ -936,13 +936,13 @@ static void WindowCredits(void * ptr)
 	sprintf(memoryFreeInfo, getMemoryFreeInfo());
 
 	txt[i] = new GuiText(consoleDetails, 14, (GXColor){0, 0, 0, 255});
-	txt[i]->setAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	txt[i]->setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	txt[i]->setPosition(-20,-66); i++;
 	txt[i] = new GuiText(memoryFreeInfo, 14, (GXColor){0, 0, 0, 255});
-	txt[i]->setAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	txt[i]->setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	txt[i]->setPosition(-20,-52); i++;
 
-	GuiText::setPresets(12, (GXColor){0, 0, 0, 255}, 0, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_TOP, ALIGN_CENTRE, ALIGN_BOTTOM);
+	GuiText::setPresets(12, (GXColor){0, 0, 0, 255}, 0, FTGX_JUSTIFY_CENTER | FTGX_ALIGN_V::TOP, ALIGN_H::CENTRE, ALIGN_V::BOTTOM);
 
 	txt[i] = new GuiText("This software is open source and may be copied, distributed, or modified");
 	txt[i]->setPosition(0, -32); i++;
@@ -1023,7 +1023,7 @@ static int MenuGameSelection()
 	bool res;
 
 	GuiText titleTxt("Choose Game", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -1039,12 +1039,12 @@ static int MenuGameSelection()
 
 	GuiText settingsBtnTxt("Settings", 22, (GXColor){0, 0, 0, 255});
 	GuiImage settingsBtnIcon(&iconSettings);
-	settingsBtnIcon.setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	settingsBtnIcon.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	settingsBtnIcon.setPosition(14,0);
 	GuiImage settingsBtnImg(&btnOutline);
 	GuiImage settingsBtnImgOver(&btnOutlineOver);
 	GuiButton settingsBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	settingsBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	settingsBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	settingsBtn.setPosition(90, -35);
 	settingsBtn.setLabel(&settingsBtnTxt);
 	settingsBtn.setIcon(&settingsBtnIcon);
@@ -1058,12 +1058,12 @@ static int MenuGameSelection()
 
 	GuiText exitBtnTxt("Exit", 22, (GXColor){0, 0, 0, 255});
 	GuiImage exitBtnIcon(&iconHome);
-	exitBtnIcon.setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	exitBtnIcon.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	exitBtnIcon.setPosition(14,0);
 	GuiImage exitBtnImg(&btnOutline);
 	GuiImage exitBtnImgOver(&btnOutlineOver);
 	GuiButton exitBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	exitBtn.setAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	exitBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	exitBtn.setPosition(-90, -35);
 	exitBtn.setLabel(&exitBtnTxt);
 	exitBtn.setIcon(&exitBtnIcon);
@@ -1092,14 +1092,14 @@ static int MenuGameSelection()
 	int previousPreviewImg = GCSettings.PreviewImage;
 	
 	GuiImage preview;
-	preview.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	preview.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	preview.setPosition(175, -8);
 	u8* imgBuffer = MEM_ALLOC(640 * 480 * 4);
 	int  previousBrowserIndex = -1;
 	char imagePath[MAXJOLIET + 1];
 
 	HaltGui();
-	btnLogo->setAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	btnLogo->setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
 	btnLogo->setPosition(-50, 24);
 	mainWindow->append(&titleTxt);
 	mainWindow->append(&gameBrowser);
@@ -1117,7 +1117,7 @@ static int MenuGameSelection()
 	OpenGameList();
 
 	gameBrowser.resetState();
-	gameBrowser.fileList[0]->setState(STATE_SELECTED);
+	gameBrowser.fileList[0]->setState(STATE::SELECTED);
 	gameBrowser.triggerUpdate();
 	titleTxt.setText(inSz ? szname : "Choose Game");
 
@@ -1136,7 +1136,7 @@ static int MenuGameSelection()
 		// set MENU_EXIT if A button pressed on a game
 		for(i=0; i < FILE_PAGESIZE; i++)
 		{
-			if(gameBrowser.fileList[i]->getState() == STATE_CLICKED)
+			if(gameBrowser.fileList[i]->getState() == STATE::CLICKED)
 			{
 				gameBrowser.fileList[i]->resetState();
 				
@@ -1148,7 +1148,7 @@ static int MenuGameSelection()
 					if(res)
 					{
 						gameBrowser.resetState();
-						gameBrowser.fileList[0]->setState(STATE_SELECTED);
+						gameBrowser.fileList[0]->setState(STATE::SELECTED);
 						gameBrowser.triggerUpdate();
 						previousBrowserIndex = -1;			
 					}
@@ -1168,11 +1168,11 @@ static int MenuGameSelection()
 					#ifdef HW_RVL
 					ShutoffRumble();
 					#endif
-					mainWindow->setState(STATE_DISABLED);
+					mainWindow->setState(STATE::DISABLED);
 					if(BrowserLoadFile())
 						menu = MENU_EXIT;
 					else
-						mainWindow->setState(STATE_DEFAULT);
+						mainWindow->setState(STATE::DEFAULT);
 				}
 			}
 		}
@@ -1205,9 +1205,9 @@ static int MenuGameSelection()
 			}
 		}
 
-		if(settingsBtn.getState() == STATE_CLICKED)
+		if(settingsBtn.getState() == STATE::CLICKED)
 			menu = MENU_SETTINGS;
-		else if(exitBtn.getState() == STATE_CLICKED)
+		else if(exitBtn.getState() == STATE::CLICKED)
 			ExitRequested = 1;
 	}
 
@@ -1231,7 +1231,7 @@ static int MenuGameSelection()
 static void ControllerWindowUpdate(void * ptr, int dir)
 {
 	GuiButton * b = (GuiButton *)ptr;
-	if(b->getState() == STATE_CLICKED)
+	if(b->getState() == STATE::CLICKED)
 	{
 		GCSettings.Controller += dir;
 
@@ -1261,7 +1261,7 @@ static void ControllerWindowRightClick(void * ptr) { ControllerWindowUpdate(ptr,
 static void ControllerWindow()
 {
 	GuiWindow * w = new GuiWindow(300,250);
-	w->setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	w->setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 
 	GuiTrigger trigLeft;
 	trigLeft.setButtonOnlyInFocusTrigger(-1, WPAD_BUTTON_LEFT | WPAD_CLASSIC_BUTTON_LEFT, PAD_BUTTON_LEFT, WIIDRC_BUTTON_LEFT);
@@ -1276,7 +1276,7 @@ static void ControllerWindow()
 	GuiButton arrowLeftBtn(arrowLeft.getWidth(), arrowLeft.getHeight());
 	arrowLeftBtn.setImage(&arrowLeftImg);
 	arrowLeftBtn.setImageOver(&arrowLeftOverImg);
-	arrowLeftBtn.setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	arrowLeftBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	arrowLeftBtn.setTrigger(trigA);
 	arrowLeftBtn.setTrigger(trig2);
 	arrowLeftBtn.setTrigger(&trigLeft);
@@ -1290,7 +1290,7 @@ static void ControllerWindow()
 	GuiButton arrowRightBtn(arrowRight.getWidth(), arrowRight.getHeight());
 	arrowRightBtn.setImage(&arrowRightImg);
 	arrowRightBtn.setImageOver(&arrowRightOverImg);
-	arrowRightBtn.setAlignment(ALIGN_RIGHT, ALIGN_MIDDLE);
+	arrowRightBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::MIDDLE);
 	arrowRightBtn.setTrigger(trigA);
 	arrowRightBtn.setTrigger(trig2);
 	arrowRightBtn.setTrigger(&trigRight);
@@ -1318,7 +1318,7 @@ static int playerMappingChan = 0;
 static void PlayerMappingWindowUpdate(void * ptr, int dir)
 {
 	GuiButton * b = (GuiButton *)ptr;
-	if(b->getState() == STATE_CLICKED)
+	if(b->getState() == STATE::CLICKED)
 	{
 		playerMapping[playerMappingChan] += dir;
 
@@ -1343,7 +1343,7 @@ static void PlayerMappingWindow(int chan)
 	playerMappingChan = chan;
 
 	GuiWindow * w = new GuiWindow(300,250);
-	w->setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	w->setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 
 	GuiTrigger trigLeft;
 	trigLeft.setButtonOnlyInFocusTrigger(-1, WPAD_BUTTON_LEFT | WPAD_CLASSIC_BUTTON_LEFT, PAD_BUTTON_LEFT, WIIDRC_BUTTON_LEFT);
@@ -1358,7 +1358,7 @@ static void PlayerMappingWindow(int chan)
 	GuiButton arrowLeftBtn(arrowLeft.getWidth(), arrowLeft.getHeight());
 	arrowLeftBtn.setImage(&arrowLeftImg);
 	arrowLeftBtn.setImageOver(&arrowLeftOverImg);
-	arrowLeftBtn.setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	arrowLeftBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	arrowLeftBtn.setTrigger(trigA);
 	arrowLeftBtn.setTrigger(trig2);
 	arrowLeftBtn.setTrigger(&trigLeft);
@@ -1372,7 +1372,7 @@ static void PlayerMappingWindow(int chan)
 	GuiButton arrowRightBtn(arrowRight.getWidth(), arrowRight.getHeight());
 	arrowRightBtn.setImage(&arrowRightImg);
 	arrowRightBtn.setImageOver(&arrowRightOverImg);
-	arrowRightBtn.setAlignment(ALIGN_RIGHT, ALIGN_MIDDLE);
+	arrowRightBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::MIDDLE);
 	arrowRightBtn.setTrigger(trigA);
 	arrowRightBtn.setTrigger(trig2);
 	arrowRightBtn.setTrigger(&trigRight);
@@ -1411,7 +1411,7 @@ static int MenuGame()
 	int menu = MENU_NONE;
 
 	GuiText titleTxt((char *)romFilename, 22, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,40);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -1444,7 +1444,7 @@ static int MenuGame()
 	GuiImage saveBtnImgOver(&btnLargeOutlineOver);
 	GuiImage saveBtnIcon(&iconSave);
 	GuiButton saveBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	saveBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	saveBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	saveBtn.setPosition(-200, 120);
 	saveBtn.setLabel(&saveBtnTxt);
 	saveBtn.setImage(&saveBtnImg);
@@ -1461,7 +1461,7 @@ static int MenuGame()
 	GuiImage loadBtnImgOver(&btnLargeOutlineOver);
 	GuiImage loadBtnIcon(&iconLoad);
 	GuiButton loadBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	loadBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	loadBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	loadBtn.setPosition(0, 120);
 	loadBtn.setLabel(&loadBtnTxt);
 	loadBtn.setImage(&loadBtnImg);
@@ -1478,7 +1478,7 @@ static int MenuGame()
 	GuiImage deleteBtnImgOver(&btnLargeOutlineOver);
 	GuiImage deleteBtnIcon(&iconDelete);
 	GuiButton deleteBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	deleteBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	deleteBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	deleteBtn.setPosition(200, 120);
 	deleteBtn.setLabel(&deleteBtnTxt);
 	deleteBtn.setImage(&deleteBtnImg);
@@ -1495,7 +1495,7 @@ static int MenuGame()
 	GuiImage resetBtnImgOver(&btnLargeOutlineOver);
 	GuiImage resetBtnIcon(&iconReset);
 	GuiButton resetBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	resetBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	resetBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	resetBtn.setPosition(125, 250);
 	resetBtn.setLabel(&resetBtnTxt);
 	resetBtn.setImage(&resetBtnImg);
@@ -1513,7 +1513,7 @@ static int MenuGame()
 	GuiImage gameSettingsBtnImgOver(&btnLargeOutlineOver);
 	GuiImage gameSettingsBtnIcon(&iconGameSettings);
 	GuiButton gameSettingsBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	gameSettingsBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	gameSettingsBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	gameSettingsBtn.setPosition(-125, 250);
 	gameSettingsBtn.setLabel(&gameSettingsBtnTxt);
 	gameSettingsBtn.setImage(&gameSettingsBtnImg);
@@ -1532,7 +1532,7 @@ static int MenuGame()
 	GuiImage mainmenuBtnImg(&btnOutline);
 	GuiImage mainmenuBtnImgOver(&btnOutlineOver);
 	GuiButton mainmenuBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	mainmenuBtn.setAlignment(ALIGN_CENTRE, ALIGN_BOTTOM);
+	mainmenuBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::BOTTOM);
 	mainmenuBtn.setPosition(0, -35);
 	mainmenuBtn.setLabel(&mainmenuBtnTxt);
 	mainmenuBtn.setImage(&mainmenuBtnImg);
@@ -1547,7 +1547,7 @@ static int MenuGame()
 	GuiImage closeBtnImg(&btnCloseOutline);
 	GuiImage closeBtnImgOver(&btnCloseOutlineOver);
 	GuiButton closeBtn(btnCloseOutline.getWidth(), btnCloseOutline.getHeight());
-	closeBtn.setAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	closeBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
 	closeBtn.setPosition(-50, 35);
 	closeBtn.setLabel(&closeBtnTxt);
 	closeBtn.setImage(&closeBtnImg);
@@ -1577,25 +1577,25 @@ static int MenuGame()
 		sprintf(txt, "P%d", i+1);
 
 		batteryTxt[i] = new GuiText(txt, 20, (GXColor){255, 255, 255, 255});
-		batteryTxt[i]->setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+		batteryTxt[i]->setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 		batteryImg[i] = new GuiImage(&battery);
-		batteryImg[i]->setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+		batteryImg[i]->setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 		batteryImg[i]->setPosition(30, 0);
 		batteryBarImg[i] = new GuiImage(&batteryBar);
 		batteryBarImg[i]->setTile(0);
-		batteryBarImg[i]->setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+		batteryBarImg[i]->setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 		batteryBarImg[i]->setPosition(34, 0);
 
 		batteryBtn[i] = new GuiButton(70, 20);
 		batteryBtn[i]->setLabel(batteryTxt[i]);
 		batteryBtn[i]->setImage(batteryImg[i]);
 		batteryBtn[i]->setIcon(batteryBarImg[i]);
-		batteryBtn[i]->setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+		batteryBtn[i]->setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 		batteryBtn[i]->setTrigger(trigA);
 		batteryBtn[i]->setSoundOver(&btnSoundOver);
 		batteryBtn[i]->setSoundClick(&btnSoundClick);
 		batteryBtn[i]->setSelectable(false);
-		batteryBtn[i]->setState(STATE_DISABLED);
+		batteryBtn[i]->setState(STATE::DISABLED);
 		batteryBtn[i]->setAlpha(150);
 	}
 
@@ -1624,7 +1624,7 @@ static int MenuGame()
 	w.append(&mainmenuBtn);
 	w.append(&closeBtn);
 
-	btnLogo->setAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	btnLogo->setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	btnLogo->setPosition(-50, -40);
 	mainWindow->append(&w);
 
@@ -1676,7 +1676,7 @@ static int MenuGame()
 				if(newStatus == true) // controller connected
 				{
 					batteryBtn[i]->setAlpha(255);
-					batteryBtn[i]->setState(STATE_DEFAULT);
+					batteryBtn[i]->setState(STATE::DEFAULT);
 					batteryBarImg[i]->setTile(newLevel);
 
 					if(newLevel == 0)
@@ -1687,7 +1687,7 @@ static int MenuGame()
 				else // controller not connected
 				{
 					batteryBtn[i]->setAlpha(150);
-					batteryBtn[i]->setState(STATE_DISABLED);
+					batteryBtn[i]->setState(STATE::DISABLED);
 					batteryBarImg[i]->setTile(0);
 					batteryImg[i]->setImage(&battery);
 				}
@@ -1697,19 +1697,19 @@ static int MenuGame()
 		}
 		#endif
 
-		if(saveBtn.getState() == STATE_CLICKED)
+		if(saveBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAME_SAVE;
 		}
-		else if(loadBtn.getState() == STATE_CLICKED)
+		else if(loadBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAME_LOAD;
 		}
-		else if(deleteBtn.getState() == STATE_CLICKED)
+		else if(deleteBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAME_DELETE;
 		}
-		else if(resetBtn.getState() == STATE_CLICKED)
+		else if(resetBtn.getState() == STATE::CLICKED)
 		{
 			if (WindowPrompt("Reset Game", "Are you sure that you want to reset this game? Any unsaved progress will be lost.", "OK", "Cancel"))
 			{
@@ -1717,29 +1717,29 @@ static int MenuGame()
 				menu = MENU_EXIT;
 			}
 		}
-		else if(gameSettingsBtn.getState() == STATE_CLICKED)
+		else if(gameSettingsBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS;
 		}
 #ifdef HW_RVL
-		else if(batteryBtn[0]->getState() == STATE_CLICKED)
+		else if(batteryBtn[0]->getState() == STATE::CLICKED)
 		{
 			PlayerMappingWindow(0);
 		}
-		else if(batteryBtn[1]->getState() == STATE_CLICKED)
+		else if(batteryBtn[1]->getState() == STATE::CLICKED)
 		{
 			PlayerMappingWindow(1);
 		}
-		else if(batteryBtn[2]->getState() == STATE_CLICKED)
+		else if(batteryBtn[2]->getState() == STATE::CLICKED)
 		{
 			PlayerMappingWindow(2);
 		}
-		else if(batteryBtn[3]->getState() == STATE_CLICKED)
+		else if(batteryBtn[3]->getState() == STATE::CLICKED)
 		{
 			PlayerMappingWindow(3);
 		}
 #endif
-		else if(mainmenuBtn.getState() == STATE_CLICKED)
+		else if(mainmenuBtn.getState() == STATE::CLICKED)
 		{
 			if (WindowPrompt("Quit Game", "Quit this game? Any unsaved progress will be lost.", "OK", "Cancel"))
 			{
@@ -1766,7 +1766,7 @@ static int MenuGame()
 				}
 			}
 		}
-		else if(closeBtn.getState() == STATE_CLICKED)
+		else if(closeBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_EXIT;
 
@@ -1861,7 +1861,7 @@ static int MenuGameSaves(int action)
 		return MENU_GAME;
 
 	GuiText titleTxt(NULL, 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	if(action == 0)
@@ -1889,7 +1889,7 @@ static int MenuGameSaves(int action)
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -1906,7 +1906,7 @@ static int MenuGameSaves(int action)
 	GuiImage closeBtnImg(&btnCloseOutline);
 	GuiImage closeBtnImgOver(&btnCloseOutlineOver);
 	GuiButton closeBtn(btnCloseOutline.getWidth(), btnCloseOutline.getHeight());
-	closeBtn.setAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	closeBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
 	closeBtn.setPosition(-50, 35);
 	closeBtn.setLabel(&closeBtnTxt);
 	closeBtn.setImage(&closeBtnImg);
@@ -1995,7 +1995,7 @@ static int MenuGameSaves(int action)
 	}
 	GuiSaveBrowser saveBrowser(552, 248, &saves, action);
 	saveBrowser.setPosition(0, 108);
-	saveBrowser.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	saveBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 
 	HaltGui();
 	mainWindow->append(&saveBrowser);
@@ -2099,11 +2099,11 @@ static int MenuGameSaves(int action)
 				}
 			}
 		}
-		if(backBtn.getState() == STATE_CLICKED)
+		if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAME;
 		}
-		else if(closeBtn.getState() == STATE_CLICKED)
+		else if(closeBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_EXIT;
 
@@ -2143,7 +2143,7 @@ static int MenuGameSettings()
 	char filepath[1024];
 
 	GuiText titleTxt("Game Settings", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -2174,7 +2174,7 @@ static int MenuGameSettings()
 	GuiImage mappingBtnImgOver(&btnLargeOutlineOver);
 	GuiImage mappingBtnIcon(&iconMappings);
 	GuiButton mappingBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	mappingBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	mappingBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	mappingBtn.setPosition(-200, 120);
 	mappingBtn.setLabel(&mappingBtnTxt);
 	mappingBtn.setImage(&mappingBtnImg);
@@ -2192,7 +2192,7 @@ static int MenuGameSettings()
 	GuiImage emulationBtnImgOver(&btnLargeOutlineOver);
 	GuiImage emulationBtnIcon(&iconEmulation);
 	GuiButton emulationBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	emulationBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	emulationBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	emulationBtn.setPosition(0, 120);
 	emulationBtn.setLabel(&emulationBtnTxt);
 	emulationBtn.setImage(&emulationBtnImg);
@@ -2210,7 +2210,7 @@ static int MenuGameSettings()
 	GuiImage videoBtnImgOver(&btnLargeOutlineOver);
 	GuiImage videoBtnIcon(&iconVideo);
 	GuiButton videoBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	videoBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	videoBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	videoBtn.setPosition(200, 120);
 	videoBtn.setLabel(&videoBtnTxt);
 	videoBtn.setImage(&videoBtnImg);
@@ -2227,7 +2227,7 @@ static int MenuGameSettings()
 	GuiImage controllerBtnImgOver(&btnLargeOutlineOver);
 	GuiImage controllerBtnIcon(&iconController);
 	GuiButton controllerBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	controllerBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	controllerBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	controllerBtn.setPosition(-200, 250);
 	controllerBtn.setLabel(&controllerBtnTxt);
 	controllerBtn.setImage(&controllerBtnImg);
@@ -2244,7 +2244,7 @@ static int MenuGameSettings()
 	GuiImage screenshotBtnImgOver(&btnLargeOutlineOver);
 	GuiImage screenshotBtnIcon(&iconScreenshot);
 	GuiButton screenshotBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	screenshotBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	screenshotBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	screenshotBtn.setPosition(0, 250);
 	screenshotBtn.setLabel(&screenshotBtnTxt);
 	screenshotBtn.setImage(&screenshotBtnImg);
@@ -2261,7 +2261,7 @@ static int MenuGameSettings()
 	GuiImage cheatsBtnImgOver(&btnLargeOutlineOver);
 	GuiImage cheatsBtnIcon(&iconCheats);
 	GuiButton cheatsBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	cheatsBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	cheatsBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	cheatsBtn.setPosition(200, 250);
 	cheatsBtn.setLabel(&cheatsBtnTxt);
 	cheatsBtn.setImage(&cheatsBtnImg);
@@ -2277,7 +2277,7 @@ static int MenuGameSettings()
 	GuiImage closeBtnImg(&btnCloseOutline);
 	GuiImage closeBtnImgOver(&btnCloseOutlineOver);
 	GuiButton closeBtn(btnCloseOutline.getWidth(), btnCloseOutline.getHeight());
-	closeBtn.setAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	closeBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
 	closeBtn.setPosition(-50, 35);
 	closeBtn.setLabel(&closeBtnTxt);
 	closeBtn.setImage(&closeBtnImg);
@@ -2293,7 +2293,7 @@ static int MenuGameSettings()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -2326,23 +2326,23 @@ static int MenuGameSettings()
 	{
 		usleep(THREAD_SLEEP);
 
-		if(mappingBtn.getState() == STATE_CLICKED)
+		if(mappingBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS;
 		}
-		else if(videoBtn.getState() == STATE_CLICKED)
+		else if(videoBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_VIDEO;
 		}
-		else if(emulationBtn.getState() == STATE_CLICKED)
+		else if(emulationBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_EMULATION;
 		}
-		else if(controllerBtn.getState() == STATE_CLICKED)
+		else if(controllerBtn.getState() == STATE::CLICKED)
 		{
 			ControllerWindow();
 		}
-		else if(cheatsBtn.getState() == STATE_CLICKED)
+		else if(cheatsBtn.getState() == STATE::CLICKED)
 		{
 			cheatsBtn.resetState();
 			if(numcheats > 0)
@@ -2350,7 +2350,7 @@ static int MenuGameSettings()
 			else
 				InfoPrompt("Cheats file not found!");
 		}
-		else if(screenshotBtn.getState() == STATE_CLICKED)
+		else if(screenshotBtn.getState() == STATE::CLICKED)
 		{
 			if (WindowPrompt("Preview Screenshot", "Save a new Preview Screenshot? Current Screenshot image will be overwritten.", "OK", "Cancel"))
 			{
@@ -2358,7 +2358,7 @@ static int MenuGameSettings()
 				SavePreviewImg(filepath, NOTSILENT); 
 			}
 		}
-		else if(closeBtn.getState() == STATE_CLICKED)
+		else if(closeBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_EXIT;
 
@@ -2374,7 +2374,7 @@ static int MenuGameSettings()
 
 			usleep(350000); // wait for effects to finish
 		}
-		else if(backBtn.getState() == STATE_CLICKED)
+		else if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAME;
 		}
@@ -2414,7 +2414,7 @@ static int MenuGameCheats()
 	options.length = i;
 
 	GuiText titleTxt("Game Settings - Cheats", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -2435,7 +2435,7 @@ static int MenuGameCheats()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -2450,7 +2450,7 @@ static int MenuGameCheats()
 
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.setPosition(0, 108);
-	optionBrowser.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(400);
 
 	HaltGui();
@@ -2474,7 +2474,7 @@ static int MenuGameCheats()
 			optionBrowser.triggerUpdate();
 		}
 
-		if(backBtn.getState() == STATE_CLICKED)
+		if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS;
 		}
@@ -2494,7 +2494,7 @@ static int MenuSettingsMappings()
 	int menu = MENU_NONE;
 
 	GuiText titleTxt("Game Settings - Button Mappings", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -2517,7 +2517,7 @@ static int MenuSettingsMappings()
 	GuiImage nesBtnImgOver(&btnLargeOutlineOver);
 	GuiImage nesBtnIcon(&iconNESController);
 	GuiButton nesBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	nesBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	nesBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	nesBtn.setPosition(-125, 120);
 	nesBtn.setLabel(&nesBtnTxt);
 	nesBtn.setImage(&nesBtnImg);
@@ -2535,7 +2535,7 @@ static int MenuSettingsMappings()
 	GuiImage zapperBtnImgOver(&btnLargeOutlineOver);
 	GuiImage zapperBtnIcon(&iconZapper);
 	GuiButton zapperBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	zapperBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	zapperBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	zapperBtn.setPosition(125, 120);
 	zapperBtn.setLabel(&zapperBtnTxt);
 	zapperBtn.setImage(&zapperBtnImg);
@@ -2551,7 +2551,7 @@ static int MenuSettingsMappings()
 	GuiImage otherBtnImg(&btnLargeOutline);
 	GuiImage otherBtnImgOver(&btnLargeOutlineOver);
 	GuiButton otherBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	otherBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	otherBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	otherBtn.setPosition(0, 250);
 	otherBtn.setLabel(&otherBtnTxt);
 	otherBtn.setImage(&otherBtnImg);
@@ -2566,7 +2566,7 @@ static int MenuSettingsMappings()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -2596,21 +2596,21 @@ static int MenuSettingsMappings()
 	{
 		usleep(THREAD_SLEEP);
 
-		if(nesBtn.getState() == STATE_CLICKED)
+		if(nesBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_CTRL;
 			mapMenuCtrlNES = CTRL_PAD;
 		}
-		else if(zapperBtn.getState() == STATE_CLICKED)
+		else if(zapperBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_CTRL;
 			mapMenuCtrlNES = CTRL_ZAPPER;
 		}
-		else if(otherBtn.getState() == STATE_CLICKED)
+		else if(otherBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_OTHER;
 		}
-		else if(backBtn.getState() == STATE_CLICKED)
+		else if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS;
 		}
@@ -2628,12 +2628,12 @@ static int MenuSettingsMappingsController()
 
 	sprintf(menuTitle, "Game Settings - Button Mappings");
 	GuiText titleTxt(menuTitle, 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,30);
 
 	sprintf(menuSubtitle, "%s", ctrlName[mapMenuCtrlNES]);
 	GuiText subtitleTxt(menuSubtitle, 20, (GXColor){255, 255, 255, 255});
-	subtitleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	subtitleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	subtitleTxt.setPosition(50,60);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -2660,7 +2660,7 @@ static int MenuSettingsMappingsController()
 	GuiImage gamecubeBtnImgOver(&btnLargeOutlineOver);
 	GuiImage gamecubeBtnIcon(&iconGamecube);
 	GuiButton gamecubeBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	gamecubeBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	gamecubeBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	gamecubeBtn.setPosition(-125, 120);
 	gamecubeBtn.setLabel(&gamecubeBtnTxt);
 	gamecubeBtn.setImage(&gamecubeBtnImg);
@@ -2677,7 +2677,7 @@ static int MenuSettingsMappingsController()
 	GuiImage wiimoteBtnImgOver(&btnLargeOutlineOver);
 	GuiImage wiimoteBtnIcon(&iconWiimote);
 	GuiButton wiimoteBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	wiimoteBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	wiimoteBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	wiimoteBtn.setPosition(125, 120);
 	wiimoteBtn.setLabel(&wiimoteBtnTxt);
 	wiimoteBtn.setImage(&wiimoteBtnImg);
@@ -2695,7 +2695,7 @@ static int MenuSettingsMappingsController()
 	GuiImage drcBtnImgOver(&btnLargeOutlineOver);
 	GuiImage drcBtnIcon(&iconDrc);
 	GuiButton drcBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	drcBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	drcBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	drcBtn.setPosition(200, 120);
 	drcBtn.setLabel(&drcBtnTxt);
 	drcBtn.setImage(&drcBtnImg);
@@ -2713,7 +2713,7 @@ static int MenuSettingsMappingsController()
 	GuiImage classicBtnImgOver(&btnLargeOutlineOver);
 	GuiImage classicBtnIcon(&iconClassic);
 	GuiButton classicBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	classicBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	classicBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	classicBtn.setPosition(-200, 250);
 	classicBtn.setLabel(&classicBtnTxt);
 	classicBtn.setImage(&classicBtnImg);
@@ -2734,7 +2734,7 @@ static int MenuSettingsMappingsController()
 	GuiImage nunchukBtnImgOver(&btnLargeOutlineOver);
 	GuiImage nunchukBtnIcon(&iconNunchuk);
 	GuiButton nunchukBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	nunchukBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	nunchukBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	nunchukBtn.setPosition(0, 250);
 	nunchukBtn.setLabel(&nunchukBtnTxt1, 0);
 	nunchukBtn.setLabel(&nunchukBtnTxt2, 1);
@@ -2754,7 +2754,7 @@ static int MenuSettingsMappingsController()
 	GuiImage wiiuproBtnImgOver(&btnLargeOutlineOver);
 	GuiImage wiiuproBtnIcon(&iconWiiupro);
 	GuiButton wiiuproBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	wiiuproBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	wiiuproBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	wiiuproBtn.setPosition(200, 250);
 	wiiuproBtn.setLabel(&wiiuproBtnTxt);
 	wiiuproBtn.setImage(&wiiuproBtnImg);
@@ -2770,7 +2770,7 @@ static int MenuSettingsMappingsController()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -2815,37 +2815,37 @@ static int MenuSettingsMappingsController()
 	{
 		usleep(THREAD_SLEEP);
 
-		if(wiimoteBtn.getState() == STATE_CLICKED)
+		if(wiimoteBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = CTRLR_WIIMOTE;
 		}
-		else if(nunchukBtn.getState() == STATE_CLICKED)
+		else if(nunchukBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = CTRLR_NUNCHUK;
 		}
-		else if(classicBtn.getState() == STATE_CLICKED)
+		else if(classicBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = CTRLR_CLASSIC;
 		}
-		else if(wiiuproBtn.getState() == STATE_CLICKED)
+		else if(wiiuproBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = CTRLR_WUPC;
 		}
-		else if(drcBtn.getState() == STATE_CLICKED)
+		else if(drcBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = CTRLR_WIIDRC;
 		}
-		else if(gamecubeBtn.getState() == STATE_CLICKED)
+		else if(gamecubeBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = CTRLR_GCPAD;
 		}
-		else if(backBtn.getState() == STATE_CLICKED)
+		else if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS;
 		}
@@ -2862,7 +2862,7 @@ static u32
 ButtonMappingWindow()
 {
 	GuiWindow promptWindow(448,288);
-	promptWindow.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	promptWindow.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	promptWindow.setPosition(0, -10);
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND_PCM);
@@ -2873,7 +2873,7 @@ ButtonMappingWindow()
 	GuiImage dialogBoxImg(&dialogBox);
 
 	GuiText titleTxt("Button Mapping", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	titleTxt.setPosition(0,14);
 
 	char msg[200];
@@ -2905,7 +2905,7 @@ ButtonMappingWindow()
 	}
 
 	GuiText msgTxt(msg, 26, (GXColor){0, 0, 0, 255});
-	msgTxt.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	msgTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	msgTxt.setPosition(0,-20);
 	msgTxt.setWrap(true, 430);
 
@@ -2914,7 +2914,7 @@ ButtonMappingWindow()
 	promptWindow.append(&msgTxt);
 
 	HaltGui();
-	mainWindow->setState(STATE_DISABLED);
+	mainWindow->setState(STATE::DISABLED);
 	mainWindow->append(&promptWindow);
 	mainWindow->changeFocus(&promptWindow);
 	ResumeGui();
@@ -3025,7 +3025,7 @@ ButtonMappingWindow()
 
 	HaltGui();
 	mainWindow->remove(&promptWindow);
-	mainWindow->setState(STATE_DEFAULT);
+	mainWindow->setState(STATE::DEFAULT);
 	ResumeGui();
 
 	return pressed;
@@ -3043,12 +3043,12 @@ static int MenuSettingsMappingsMap()
 	sprintf(menuTitle, "Game Settings - Button Mappings");
 
 	GuiText titleTxt(menuTitle, 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,30);
 
 	sprintf(menuSubtitle, "%s - %s", gettext(ctrlName[mapMenuCtrlNES]), gettext(ctrlrName[mapMenuCtrl]));
 	GuiText subtitleTxt(menuSubtitle, 20, (GXColor){255, 255, 255, 255});
-	subtitleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	subtitleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	subtitleTxt.setPosition(50,60);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -3062,7 +3062,7 @@ static int MenuSettingsMappingsMap()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -3077,7 +3077,7 @@ static int MenuSettingsMappingsMap()
 	GuiImage resetBtnImg(&btnShortOutline);
 	GuiImage resetBtnImgOver(&btnShortOutlineOver);
 	GuiButton resetBtn(btnShortOutline.getWidth(), btnShortOutline.getHeight());
-	resetBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	resetBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	resetBtn.setPosition(260, -35);
 	resetBtn.setLabel(&resetBtnTxt);
 	resetBtn.setImage(&resetBtnImg);
@@ -3118,7 +3118,7 @@ static int MenuSettingsMappingsMap()
 
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.setPosition(0, 108);
-	optionBrowser.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(280);
 
 	HaltGui();
@@ -3135,11 +3135,11 @@ static int MenuSettingsMappingsMap()
 	{
 		usleep(THREAD_SLEEP);
 
-		if(backBtn.getState() == STATE_CLICKED)
+		if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS_CTRL;
 		}
-		else if(resetBtn.getState() == STATE_CLICKED)
+		else if(resetBtn.getState() == STATE::CLICKED)
 		{
 			resetBtn.resetState();
 
@@ -3208,7 +3208,7 @@ static int MenuSettingsMappingsMap()
 static void ScreenZoomWindowUpdate(void * ptr, float h, float v)
 {
 	GuiButton * b = (GuiButton *)ptr;
-	if(b->getState() == STATE_CLICKED)
+	if(b->getState() == STATE::CLICKED)
 	{
 		GCSettings.videoZoomHor += h;
 		GCSettings.videoZoomVert += v;
@@ -3230,7 +3230,7 @@ static void ScreenZoomWindowDownClick(void * ptr) { ScreenZoomWindowUpdate(ptr, 
 static void ScreenZoomWindow()
 {
 	GuiWindow * w = new GuiWindow(200,200);
-	w->setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	w->setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 
 	GuiTrigger trigLeft;
 	trigLeft.setButtonOnlyInFocusTrigger(-1, WPAD_BUTTON_LEFT | WPAD_CLASSIC_BUTTON_LEFT, PAD_BUTTON_LEFT, WIIDRC_BUTTON_LEFT);
@@ -3251,7 +3251,7 @@ static void ScreenZoomWindow()
 	GuiButton arrowLeftBtn(arrowLeft.getWidth(), arrowLeft.getHeight());
 	arrowLeftBtn.setImage(&arrowLeftImg);
 	arrowLeftBtn.setImageOver(&arrowLeftOverImg);
-	arrowLeftBtn.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	arrowLeftBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	arrowLeftBtn.setPosition(50, 0);
 	arrowLeftBtn.setTrigger(trigA);
 	arrowLeftBtn.setTrigger(trig2);
@@ -3266,7 +3266,7 @@ static void ScreenZoomWindow()
 	GuiButton arrowRightBtn(arrowRight.getWidth(), arrowRight.getHeight());
 	arrowRightBtn.setImage(&arrowRightImg);
 	arrowRightBtn.setImageOver(&arrowRightOverImg);
-	arrowRightBtn.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	arrowRightBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	arrowRightBtn.setPosition(164, 0);
 	arrowRightBtn.setTrigger(trigA);
 	arrowRightBtn.setTrigger(trig2);
@@ -3281,7 +3281,7 @@ static void ScreenZoomWindow()
 	GuiButton arrowUpBtn(arrowUp.getWidth(), arrowUp.getHeight());
 	arrowUpBtn.setImage(&arrowUpImg);
 	arrowUpBtn.setImageOver(&arrowUpOverImg);
-	arrowUpBtn.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	arrowUpBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	arrowUpBtn.setPosition(-76, -27);
 	arrowUpBtn.setTrigger(trigA);
 	arrowUpBtn.setTrigger(trig2);
@@ -3296,7 +3296,7 @@ static void ScreenZoomWindow()
 	GuiButton arrowDownBtn(arrowDown.getWidth(), arrowDown.getHeight());
 	arrowDownBtn.setImage(&arrowDownImg);
 	arrowDownBtn.setImageOver(&arrowDownOverImg);
-	arrowDownBtn.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	arrowDownBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	arrowDownBtn.setPosition(-76, 27);
 	arrowDownBtn.setTrigger(trigA);
 	arrowDownBtn.setTrigger(trig2);
@@ -3306,7 +3306,7 @@ static void ScreenZoomWindow()
 
 	GuiImageData screenPosition(screen_position_png);
 	GuiImage screenPositionImg(&screenPosition);
-	screenPositionImg.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	screenPositionImg.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	screenPositionImg.setPosition(0, 0);
 
 	settingText = new GuiText(NULL, 20, (GXColor){0, 0, 0, 255});
@@ -3345,7 +3345,7 @@ static void ScreenZoomWindow()
 static void ScreenPositionWindowUpdate(void * ptr, int x, int y)
 {
 	GuiButton * b = (GuiButton *)ptr;
-	if(b->getState() == STATE_CLICKED)
+	if(b->getState() == STATE::CLICKED)
 	{
 		GCSettings.videoXshift += x;
 		GCSettings.videoYshift += y;
@@ -3370,7 +3370,7 @@ static void ScreenPositionWindowDownClick(void * ptr) { ScreenPositionWindowUpda
 static void ScreenPositionWindow()
 {
 	GuiWindow * w = new GuiWindow(150,150);
-	w->setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	w->setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	w->setPosition(0, -10);
 
 	GuiTrigger trigLeft;
@@ -3392,7 +3392,7 @@ static void ScreenPositionWindow()
 	GuiButton arrowLeftBtn(arrowLeft.getWidth(), arrowLeft.getHeight());
 	arrowLeftBtn.setImage(&arrowLeftImg);
 	arrowLeftBtn.setImageOver(&arrowLeftOverImg);
-	arrowLeftBtn.setAlignment(ALIGN_LEFT, ALIGN_MIDDLE);
+	arrowLeftBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	arrowLeftBtn.setTrigger(trigA);
 	arrowLeftBtn.setTrigger(trig2);
 	arrowLeftBtn.setTrigger(&trigLeft);
@@ -3406,7 +3406,7 @@ static void ScreenPositionWindow()
 	GuiButton arrowRightBtn(arrowRight.getWidth(), arrowRight.getHeight());
 	arrowRightBtn.setImage(&arrowRightImg);
 	arrowRightBtn.setImageOver(&arrowRightOverImg);
-	arrowRightBtn.setAlignment(ALIGN_RIGHT, ALIGN_MIDDLE);
+	arrowRightBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::MIDDLE);
 	arrowRightBtn.setTrigger(trigA);
 	arrowRightBtn.setTrigger(trig2);
 	arrowRightBtn.setTrigger(&trigRight);
@@ -3420,7 +3420,7 @@ static void ScreenPositionWindow()
 	GuiButton arrowUpBtn(arrowUp.getWidth(), arrowUp.getHeight());
 	arrowUpBtn.setImage(&arrowUpImg);
 	arrowUpBtn.setImageOver(&arrowUpOverImg);
-	arrowUpBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	arrowUpBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	arrowUpBtn.setTrigger(trigA);
 	arrowUpBtn.setTrigger(trig2);
 	arrowUpBtn.setTrigger(&trigUp);
@@ -3434,7 +3434,7 @@ static void ScreenPositionWindow()
 	GuiButton arrowDownBtn(arrowDown.getWidth(), arrowDown.getHeight());
 	arrowDownBtn.setImage(&arrowDownImg);
 	arrowDownBtn.setImageOver(&arrowDownOverImg);
-	arrowDownBtn.setAlignment(ALIGN_CENTRE, ALIGN_BOTTOM);
+	arrowDownBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::BOTTOM);
 	arrowDownBtn.setTrigger(trigA);
 	arrowDownBtn.setTrigger(trig2);
 	arrowDownBtn.setTrigger(&trigDown);
@@ -3443,7 +3443,7 @@ static void ScreenPositionWindow()
 
 	GuiImageData screenPosition(screen_position_png);
 	GuiImage screenPositionImg(&screenPosition);
-	screenPositionImg.setAlignment(ALIGN_CENTRE, ALIGN_MIDDLE);
+	screenPositionImg.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 
 	settingText = new GuiText(NULL, 20, (GXColor){0, 0, 0, 255});
 	char shift[10];
@@ -3489,11 +3489,11 @@ static int MenuSettingsOtherMappings()
 		options.value[i][0] = 0;
 
 	GuiText titleTxt("Game Settings - Button Mappings", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,30);
 
 	GuiText subtitleTxt("Other Mappings", 20, (GXColor){255, 255, 255, 255});
-	subtitleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	subtitleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	subtitleTxt.setPosition(50,60);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -3510,7 +3510,7 @@ static int MenuSettingsOtherMappings()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -3526,7 +3526,7 @@ static int MenuSettingsOtherMappings()
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.setPosition(0, 108);
 	optionBrowser.setCol2Position(200);
-	optionBrowser.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 
 	HaltGui();
 	GuiWindow w(screenwidth, screenheight);
@@ -3614,7 +3614,7 @@ static int MenuSettingsOtherMappings()
 			optionBrowser.triggerUpdate();
 		}
 
-		if(backBtn.getState() == STATE_CLICKED)
+		if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS_MAPPINGS;
 		}
@@ -3654,7 +3654,7 @@ static int MenuSettingsVideo()
 		options.value[i][0] = 0;
 
 	GuiText titleTxt("Game Settings - Video", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -3671,7 +3671,7 @@ static int MenuSettingsVideo()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -3687,7 +3687,7 @@ static int MenuSettingsVideo()
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.setPosition(0, 108);
 	optionBrowser.setCol2Position(200);
-	optionBrowser.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 
 	HaltGui();
 	GuiWindow w(screenwidth, screenheight);
@@ -3817,7 +3817,7 @@ static int MenuSettingsVideo()
 			optionBrowser.triggerUpdate();
 		}
 
-		if(backBtn.getState() == STATE_CLICKED)
+		if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS;
 		}
@@ -3849,7 +3849,7 @@ static int MenuSettingsEmulation()
 		options.value[i][0] = 0;
 
 	GuiText titleTxt("Game Settings - Emulation", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -3866,7 +3866,7 @@ static int MenuSettingsEmulation()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -3882,7 +3882,7 @@ static int MenuSettingsEmulation()
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.setPosition(0, 108);
 	optionBrowser.setCol2Position(200);
-	optionBrowser.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 
 	HaltGui();
 	GuiWindow w(screenwidth, screenheight);
@@ -3932,7 +3932,7 @@ static int MenuSettingsEmulation()
 			optionBrowser.triggerUpdate();
 		}
 
-		if(backBtn.getState() == STATE_CLICKED)
+		if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESETTINGS;
 		}
@@ -3957,7 +3957,7 @@ static int MenuSettings()
 	else sprintf(gameGenieTxt, "OFF");
 
 	GuiText titleTxt("Settings", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -3986,7 +3986,7 @@ static int MenuSettings()
 	GuiImage savingBtnImgOver(&btnLargeOutlineOver);
 	GuiImage fileBtnIcon(&iconFile);
 	GuiButton savingBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	savingBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	savingBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	savingBtn.setPosition(-125, 120);
 	savingBtn.setLabel(&savingBtnTxt1, 0);
 	savingBtn.setLabel(&savingBtnTxt2, 1);
@@ -4006,7 +4006,7 @@ static int MenuSettings()
 	GuiImage menuBtnImgOver(&btnLargeOutlineOver);
 	GuiImage menuBtnIcon(&iconMenu);
 	GuiButton menuBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	menuBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	menuBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	menuBtn.setPosition(125, 120);
 	menuBtn.setLabel(&menuBtnTxt);
 	menuBtn.setImage(&menuBtnImg);
@@ -4024,7 +4024,7 @@ static int MenuSettings()
 	GuiImage networkBtnImgOver(&btnLargeOutlineOver);
 	GuiImage networkBtnIcon(&iconNetwork);
 	GuiButton networkBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	networkBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	networkBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	networkBtn.setPosition(-200, 250);
 	networkBtn.setLabel(&networkBtnTxt);
 	networkBtn.setImage(&networkBtnImg);
@@ -4044,7 +4044,7 @@ static int MenuSettings()
 	GuiImage cheatsBtnImgOver(&btnLargeOutlineOver);
 	GuiImage cheatsBtnIcon(&iconCheats);
 	GuiButton cheatsBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	cheatsBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	cheatsBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	cheatsBtn.setPosition(0, 250);
 	cheatsBtn.setLabel(&cheatsBtnTxt, 0);
 	cheatsBtn.setLabel(&cheatsBtnTxt2, 1);
@@ -4063,7 +4063,7 @@ static int MenuSettings()
 	GuiImage creditsBtnImgOver(&btnLargeOutlineOver);
 	GuiImage creditsBtnIcon(&iconCredits);
 	GuiButton creditsBtn(btnLargeOutline.getWidth(), btnLargeOutline.getHeight());
-	creditsBtn.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	creditsBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	creditsBtn.setPosition(200, 250);
 	creditsBtn.setLabel(&creditsBtnTxt);
 	creditsBtn.setImage(&creditsBtnImg);
@@ -4080,7 +4080,7 @@ static int MenuSettings()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(90, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -4097,7 +4097,7 @@ static int MenuSettings()
 	GuiImage resetBtnImg(&btnOutline);
 	GuiImage resetBtnImgOver(&btnOutlineOver);
 	GuiButton resetBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	resetBtn.setAlignment(ALIGN_RIGHT, ALIGN_BOTTOM);
+	resetBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	resetBtn.setPosition(-90, -35);
 	resetBtn.setLabel(&resetBtnTxt);
 	resetBtn.setImage(&resetBtnImg);
@@ -4127,24 +4127,24 @@ static int MenuSettings()
 	{
 		usleep(THREAD_SLEEP);
 
-		if(savingBtn.getState() == STATE_CLICKED)
+		if(savingBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_SETTINGS_FILE;
 		}
-		else if(menuBtn.getState() == STATE_CLICKED)
+		else if(menuBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_SETTINGS_MENU;
 		}
-		else if(networkBtn.getState() == STATE_CLICKED)
+		else if(networkBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_SETTINGS_NETWORK;
 		}
-		else if(creditsBtn.getState() == STATE_CLICKED)
+		else if(creditsBtn.getState() == STATE::CLICKED)
 		{
 			showCredits = true;
-			creditsBtn.setState(STATE_SELECTED);
+			creditsBtn.setState(STATE::SELECTED);
 		}
-		else if(cheatsBtn.getState() == STATE_CLICKED)
+		else if(cheatsBtn.getState() == STATE::CLICKED)
 		{
 			cheatsBtn.resetState();
 			
@@ -4160,11 +4160,11 @@ static int MenuSettings()
 				cheatsBtnTxt2.setText(gameGenieTxt);
 			}
 		}
-		else if(backBtn.getState() == STATE_CLICKED)
+		else if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_GAMESELECTION;
 		}
-		else if(resetBtn.getState() == STATE_CLICKED)
+		else if(resetBtn.getState() == STATE::CLICKED)
 		{
 			resetBtn.resetState();
 
@@ -4215,7 +4215,7 @@ static int MenuSettingsFile()
 		options.value[i][0] = 0;
 
 	GuiText titleTxt("Settings - Saving & Loading", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -4232,7 +4232,7 @@ static int MenuSettingsFile()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(90, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -4247,7 +4247,7 @@ static int MenuSettingsFile()
 
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.setPosition(0, 108);
-	optionBrowser.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(215);
 
 	HaltGui();
@@ -4360,7 +4360,7 @@ static int MenuSettingsFile()
 			optionBrowser.triggerUpdate();
 		}
 
-		if(backBtn.getState() == STATE_CLICKED)
+		if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_SETTINGS;
 			autoSaveMethod(SILENT);
@@ -4401,7 +4401,7 @@ static int MenuSettingsMenu()
 		options.value[i][0] = 0;
 
 	GuiText titleTxt("Settings - Menu", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -4418,7 +4418,7 @@ static int MenuSettingsMenu()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(90, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -4433,7 +4433,7 @@ static int MenuSettingsMenu()
 
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.setPosition(0, 108);
-	optionBrowser.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(275);
 
 	HaltGui();
@@ -4582,7 +4582,7 @@ static int MenuSettingsMenu()
 			optionBrowser.triggerUpdate();
 		}
 
-		if(backBtn.getState() == STATE_CLICKED)
+		if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_SETTINGS;
 		}
@@ -4616,7 +4616,7 @@ static int MenuSettingsNetwork()
 		options.value[i][0] = 0;
 
 	GuiText titleTxt("Settings - Network", 26, (GXColor){255, 255, 255, 255});
-	titleTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND_PCM);
@@ -4633,7 +4633,7 @@ static int MenuSettingsNetwork()
 	GuiImage backBtnImg(&btnOutline);
 	GuiImage backBtnImgOver(&btnOutlineOver);
 	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
-	backBtn.setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(90, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
@@ -4648,7 +4648,7 @@ static int MenuSettingsNetwork()
 
 	GuiOptionBrowser optionBrowser(552, 248, &options);
 	optionBrowser.setPosition(0, 108);
-	optionBrowser.setAlignment(ALIGN_CENTRE, ALIGN_TOP);
+	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(290);
 
 	HaltGui();
@@ -4694,7 +4694,7 @@ static int MenuSettingsNetwork()
 			optionBrowser.triggerUpdate();
 		}
 
-		if(backBtn.getState() == STATE_CLICKED)
+		if(backBtn.getState() == STATE::CLICKED)
 		{
 			menu = MENU_SETTINGS;
 		}
@@ -4958,15 +4958,15 @@ MainMenu (int menu)
 	bgTopImg = new GuiImage(&bgTop);
 	GuiImageData bgBottom(bg_bottom_png);
 	bgBottomImg = new GuiImage(&bgBottom);
-	bgBottomImg->setAlignment(ALIGN_LEFT, ALIGN_BOTTOM);
+	bgBottomImg->setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	GuiImageData logo(logo_png);
 	GuiImage logoImg(&logo);
 	GuiImageData logoOver(logo_over_png);
 	GuiImage logoImgOver(&logoOver);
 	GuiText logoTxt(APPVERSION, 18, (GXColor){255, 255, 255, 255});
-	logoTxt.setAlignment(ALIGN_LEFT, ALIGN_TOP);
+	logoTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	btnLogo = new GuiButton(logoImg.getWidth(), logoImg.getHeight());
-	btnLogo->setAlignment(ALIGN_RIGHT, ALIGN_TOP);
+	btnLogo->setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
 	btnLogo->setPosition(-50, 24);
 	btnLogo->setImage(&logoImg);
 	btnLogo->setImageOver(&logoImgOver);
@@ -5082,7 +5082,7 @@ MainMenu (int menu)
 				break;
 		}
 		lastMenu = currentMenu;
-		if (btnLogo->getState() == STATE_CLICKED)
+		if (btnLogo->getState() == STATE::CLICKED)
 		{
 			showCredits = true;
 			btnLogo->resetState();
