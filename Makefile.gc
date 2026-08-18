@@ -24,7 +24,7 @@ SOURCES		:=	source source/libgui source/utils source/utils/unzip source/utils/sz
 				source/fceultra source/fceultra/boards source/fceultra/input \
 				source/fceultra/utils source/fceultra/mbshare source/utils/vm \
 				source/pocketnes source/pocketnes/minilzo
-DATA		:=	source/images source/sounds source/fonts source/lang
+DATA		:=	data/images data/fonts data/lang
 INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------
@@ -80,8 +80,7 @@ CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.ttf) \
-					$(wildcard $(dir)/*.lang) $(wildcard $(dir)/*.png) \
-					$(wildcard $(dir)/*.pcm)))
+					$(wildcard $(dir)/*.lang) $(wildcard $(dir)/*.png)
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C

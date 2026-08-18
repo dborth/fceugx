@@ -24,7 +24,7 @@ SOURCES		:=	source source/libgui source/utils source/utils/sz source/utils/unzip
 				source/fceultra source/fceultra/boards source/fceultra/input \
 				source/fceultra/utils source/fceultra/mbshare \
 				source/pocketnes source/pocketnes/minilzo
-DATA		:=	source/images source/sounds source/fonts source/lang				
+DATA		:=	data/images data/sounds data/fonts data/lang			
 INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------
