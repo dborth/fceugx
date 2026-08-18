@@ -1,7 +1,7 @@
 #ifndef GUISAVEBROWSER_H
 #define GUISAVEBROWSER_H
 
-#include "../libgui/Gui.h"
+#include "Gui.h"
 
 #define MAX_SAVES 				100
 #define SAVELISTSIZE 			6

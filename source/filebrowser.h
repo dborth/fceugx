@@ -13,6 +13,7 @@
 #define _FILEBROWSER_H_
 
 #include <unistd.h>
+#include "fceugx.h"
 
 #define MAXJOLIET 255
 #ifdef HW_DOL
