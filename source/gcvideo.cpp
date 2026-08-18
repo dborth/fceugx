@@ -25,9 +25,9 @@
 #include "fceusupport.h"
 #include "gcvideo.h"
 #include "gcaudio.h"
+#include "gui/Gui.h"
 #include "menu.h"
 #include "pad.h"
-#include "gui/gui.h"
 #include "videofilters.h"
 
 int FDSTimer = 0;

@@ -40,7 +40,7 @@
 #include "videofilters.h"
 #include "pad.h"
 #include "filelist.h"
-#include "gui/gui.h"
+#include "gui/Gui.h"
 #include "utils/wiidrc.h"
 #include "utils/FreeTypeGX.h"
 #ifdef HW_RVL

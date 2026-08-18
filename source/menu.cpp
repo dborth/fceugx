@@ -38,7 +38,7 @@
 #include "fceuload.h"
 #include "filelist.h"
 #include "cheatmgr.h"
-#include "gui/gui.h"
+#include "gui/Gui.h"
 #include "utils/gettext.h"
 #include "utils/FreeTypeGX.h"
 

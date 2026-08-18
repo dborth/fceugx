@@ -21,7 +21,7 @@
 #include "filebrowser.h"
 #include "button_mapping.h"
 #include "fceuload.h"
-#include "gui/gui.h"
+#include "gui/Gui.h"
 
 #define ANALOG_SENSITIVITY 30
 
