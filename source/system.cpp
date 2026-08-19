@@ -26,7 +26,8 @@
 #include "mem2.h"
 #include "font_ttf.h"
 #include "utils/wiidrc.h"
-#include "utils/FreeTypeGX.h"
+#include "utils/WiiGlyphRenderer.h"
+#include "libgui/Gui.h"
 
 #ifdef USE_VM
 	#include "vmalloc.h"
@@ -195,7 +196,9 @@ void SystemInit() {
 	InitMem2Manager();
 	#endif
 
-	InitFreeType((u8*)font_ttf, font_ttf_size); // Initialize font system
+	glyphRenderer = new WiiGlyphRenderer();
+	fontSystem = new GuiTextRenderer(font_ttf, font_ttf_size, glyphRenderer);
+	textTranslator->loadLanguage(en_lang, en_lang_size);
 }
 
 static void ExitCleanup()

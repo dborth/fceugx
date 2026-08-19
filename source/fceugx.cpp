@@ -42,7 +42,7 @@
 #include "filelist.h"
 #include "libgui/Gui.h"
 #include "utils/wiidrc.h"
-#include "utils/FreeTypeGX.h"
+
 #ifdef HW_RVL
 	#include "mem2.h"
 #endif
