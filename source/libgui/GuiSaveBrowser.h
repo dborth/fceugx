@@ -26,7 +26,7 @@ class GuiSaveBrowser : public GuiElement
 		void resetState();
 		void setFocus(int f);
 		void draw();
-		void update(GuiTrigger * t);
+		void update(GuiInputController * c);
 	protected:
 		int selectedItem;
 		int action;
@@ -62,7 +62,6 @@ class GuiSaveBrowser : public GuiElement
 		GuiSound * btnSoundOver;
 		GuiSound * btnSoundClick;
 		GuiTrigger * trigA;
-		GuiTrigger * trig2;
 
 		bool saveBtnLastOver[SAVELISTSIZE];
 };

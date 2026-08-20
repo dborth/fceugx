@@ -13,22 +13,12 @@
 #ifndef BTN_MAP_H
 #define BTN_MAP_H
 
-enum {
-	CTRLR_NONE = -1,
-	CTRLR_GCPAD,
-	CTRLR_WIIMOTE,
-	CTRLR_NUNCHUK,
-	CTRLR_CLASSIC,
-	CTRLR_WUPC,
-	CTRLR_WIIDRC
-};
-
 const char ctrlrName[6][32] =
 { "GameCube Controller", "Wiimote", "Nunchuk + Wiimote", "Classic Controller", "Wii U Pro Controller", "Wii U Gamepad" };
 
 typedef struct _btn_map {
 	u32 btn;					// button 'id'
-	char* name;					// button name
+	char name[7];				// button name
 } BtnMap;
 
 typedef struct _ctrlr_map {

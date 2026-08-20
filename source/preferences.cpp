@@ -190,14 +190,14 @@ preparePrefsData ()
 	createXMLSetting("TurboModeButton", "Turbo Mode Button", toStr(GCSettings.TurboModeButton));
 	createXMLSetting("GamepadMenuToggle", "Gamepad Menu Toggle", toStr(GCSettings.GamepadMenuToggle));
 
-	createXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad", "NES Pad - GameCube Controller");
-	createXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote", "NES Pad - Wiimote");
-	createXMLController(btnmap[CTRL_PAD][CTRLR_CLASSIC], "btnmap_pad_classic", "NES Pad - Classic Controller");
-	createXMLController(btnmap[CTRL_PAD][CTRLR_WUPC], "btnmap_pad_wupc", "NES Pad - Wii U Pro Controller");
-	createXMLController(btnmap[CTRL_PAD][CTRLR_WIIDRC], "btnmap_pad_wiidrc", "NES Pad - Wii U Gamepad");
-	createXMLController(btnmap[CTRL_PAD][CTRLR_NUNCHUK], "btnmap_pad_nunchuk", "NES Pad - Nunchuk + Wiimote");
-	createXMLController(btnmap[CTRL_ZAPPER][CTRLR_GCPAD], "btnmap_zapper_gcpad", "Zapper - GameCube Controller");
-	createXMLController(btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE], "btnmap_zapper_wiimote", "Zapper - Wiimote");
+	createXMLController(btnmap[CTRL_PAD][GUI_HW_GAMECUBE], "btnmapping_pad_gcpad", "NES Pad - GameCube Controller");
+	createXMLController(btnmap[CTRL_PAD][GUI_HW_WIIMOTE], "btnmapping_pad_wiimote", "NES Pad - Wiimote");
+	createXMLController(btnmap[CTRL_PAD][GUI_HW_CLASSIC], "btnmapping_pad_classic", "NES Pad - Classic Controller");
+	createXMLController(btnmap[CTRL_PAD][GUI_HW_WUPC], "btnmapping_pad_wupc", "NES Pad - Wii U Pro Controller");
+	createXMLController(btnmap[CTRL_PAD][GUI_HW_DRC], "btnmapping_pad_wiidrc", "NES Pad - Wii U Gamepad");
+	createXMLController(btnmap[CTRL_PAD][GUI_HW_NUNCHUK], "btnmapping_pad_nunchuk", "NES Pad - Nunchuk + Wiimote");
+	createXMLController(btnmap[CTRL_ZAPPER][GUI_HW_GAMECUBE], "btnmapping_zapper_gcpad", "Zapper - GameCube Controller");
+	createXMLController(btnmap[CTRL_ZAPPER][GUI_HW_WIIMOTE], "btnmapping_zapper_wiimote", "Zapper - Wiimote");
 
 	int datasize = mxmlSaveString(xml, (char *)savebuffer, SAVEBUFFERSIZE, XMLSaveCallback);
 
@@ -360,14 +360,14 @@ decodePrefsData ()
 	loadXMLSetting(&GCSettings.TurboModeButton, "TurboModeButton");
 	loadXMLSetting(&GCSettings.GamepadMenuToggle, "GamepadMenuToggle");
 
-	loadXMLController(btnmap[CTRL_PAD][CTRLR_GCPAD], "btnmap_pad_gcpad");
-	loadXMLController(btnmap[CTRL_PAD][CTRLR_WIIMOTE], "btnmap_pad_wiimote");
-	loadXMLController(btnmap[CTRL_PAD][CTRLR_CLASSIC], "btnmap_pad_classic");
-	loadXMLController(btnmap[CTRL_PAD][CTRLR_WUPC], "btnmap_pad_wupc");
-	loadXMLController(btnmap[CTRL_PAD][CTRLR_WIIDRC], "btnmap_pad_wiidrc");
-	loadXMLController(btnmap[CTRL_PAD][CTRLR_NUNCHUK], "btnmap_pad_nunchuk");
-	loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_GCPAD], "btnmap_zapper_gcpad");
-	loadXMLController(btnmap[CTRL_ZAPPER][CTRLR_WIIMOTE], "btnmap_zapper_wiimote");
+	loadXMLController(btnmap[CTRL_PAD][GUI_HW_GAMECUBE], "btnmapping_pad_gcpad");
+	loadXMLController(btnmap[CTRL_PAD][GUI_HW_WIIMOTE], "btnmapping_pad_wiimote");
+	loadXMLController(btnmap[CTRL_PAD][GUI_HW_CLASSIC], "btnmapping_pad_classic");
+	loadXMLController(btnmap[CTRL_PAD][GUI_HW_WUPC], "btnmapping_pad_wupc");
+	loadXMLController(btnmap[CTRL_PAD][GUI_HW_DRC], "btnmapping_pad_wiidrc");
+	loadXMLController(btnmap[CTRL_PAD][GUI_HW_NUNCHUK], "btnmapping_pad_nunchuk");
+	loadXMLController(btnmap[CTRL_ZAPPER][GUI_HW_GAMECUBE], "btnmapping_zapper_gcpad");
+	loadXMLController(btnmap[CTRL_ZAPPER][GUI_HW_WIIMOTE], "btnmapping_zapper_wiimote");
 
 	mxmlDelete(xml);
 	return true;
