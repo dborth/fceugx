@@ -421,7 +421,7 @@ void UpdatePads()
 		#endif
 
 		// Merge into unified aggregate state for UI Elements
-		for (int hw = 0; hw < GUI_HW_MAX; hw++)
+		for (uint32_t hw = 0; hw < GUI_HW_MAX; hw++)
 		{
 			if (padData.hw_connected[hw])
 			{
@@ -576,7 +576,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 		myzappers[z][2] = 0; // reset trigger
 
 		// Poll all active hardware types for Zapper controls
-		for (int hw = 0; hw < GUI_HW_MAX; hw++)
+		for (uint32_t hw = 0; hw < GUI_HW_MAX; hw++)
 		{
 			if (!pad.hw_connected[hw]) continue;
 			uint32_t hw_held = pad.hw_buttons_h[hw];
@@ -612,7 +612,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 		bool button_pressed = false;
 
 		// Check if ANY connected hardware is triggering this specific NES mapping
-		for (int hw = 0; hw < GUI_HW_MAX; hw++)
+		for (uint32_t hw = 0; hw < GUI_HW_MAX; hw++)
 		{
 			if (!pad.hw_connected[hw]) continue;
 			if (pad.hw_buttons_h[hw] & btnmap[CTRL_PAD][hw][i]) {
