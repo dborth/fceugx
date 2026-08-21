@@ -62,7 +62,7 @@ class GlyphRenderer {
 public:
 	virtual ~GlyphRenderer() = default;
 
-	virtual void* createTexture(uint16_t& width, uint16_t& height) = 0;
+	virtual void* createTexture(uint16_t width, uint16_t height) = 0;
 	virtual void loadTextureData(void* texture, FT_Bitmap* bitmap) = 0;
 	virtual void destroyTexture(void* texture) = 0;
 
