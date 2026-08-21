@@ -1710,6 +1710,10 @@ static int MenuGame()
 				PowerNES();
 				menu = MENU_EXIT;
 			}
+			else
+			{
+				resetBtn.resetState();
+			}
 		}
 		else if(gameSettingsBtn.getState() == STATE::CLICKED)
 		{
