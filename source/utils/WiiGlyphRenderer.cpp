@@ -4,7 +4,7 @@
 
 #define ALIGN8(x) (((x) + 7) & ~7)
 
-IGlyphRenderer* glyphRenderer;
+GlyphRenderer* glyphRenderer;
 
 WiiGlyphRenderer::WiiGlyphRenderer(uint8_t vtxFmtIndex)
 {

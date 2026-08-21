@@ -3,7 +3,7 @@
 #include <gccore.h>
 #include "libgui/GuiTextRenderer.h"
 
-class WiiGlyphRenderer : public IGlyphRenderer {
+class WiiGlyphRenderer : public GlyphRenderer {
 private:
 	uint8_t vertexIndex;
 
