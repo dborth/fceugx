@@ -1028,7 +1028,7 @@ static char* getImageFolder()
 
 static int MenuGameSelection()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int i;
 	bool res;
 
@@ -1126,7 +1126,7 @@ static int MenuGameSelection()
 	gameBrowser.triggerUpdate();
 	titleTxt.setText(inSz ? szname : "Choose Game");
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -1159,7 +1159,7 @@ static int MenuGameSelection()
 					}
 					else
 					{
-						menu = MENU_GAMESELECTION;
+						selection = MENU_GAMESELECTION;
 						break;
 					}
 					
@@ -1175,7 +1175,7 @@ static int MenuGameSelection()
 					#endif
 					mainWindow->setState(STATE::DISABLED);
 					if(BrowserLoadFile())
-						menu = MENU_EXIT;
+						selection = MENU_EXIT;
 					else
 						mainWindow->setState(STATE::DEFAULT);
 				}
@@ -1211,7 +1211,7 @@ static int MenuGameSelection()
 		}
 
 		if(settingsBtn.getState() == STATE::CLICKED)
-			menu = MENU_SETTINGS;
+			selection = MENU_SETTINGS;
 		else if(exitBtn.getState() == STATE::CLICKED)
 			ExitRequested = 1;
 	}
@@ -1225,7 +1225,7 @@ static int MenuGameSelection()
 	mainWindow->remove(&bgPreview);
 	mainWindow->remove(&preview);
 	MEM_DEALLOC(imgBuffer);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -1409,7 +1409,7 @@ static void PlayerMappingWindow(int chan)
  ***************************************************************************/
 static int MenuGame()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 
 	GuiText titleTxt((char *)romFilename, 22, (GuiColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
@@ -1643,7 +1643,7 @@ static int MenuGame()
 	if(lastMenu == MENU_NONE)
 		AutoSave();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -1690,22 +1690,22 @@ static int MenuGame()
 
 		if(saveBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAME_SAVE;
+			selection = MENU_GAME_SAVE;
 		}
 		else if(loadBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAME_LOAD;
+			selection = MENU_GAME_LOAD;
 		}
 		else if(deleteBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAME_DELETE;
+			selection = MENU_GAME_DELETE;
 		}
 		else if(resetBtn.getState() == STATE::CLICKED)
 		{
 			if (WindowPrompt("Reset Game", "Are you sure that you want to reset this game? Any unsaved progress will be lost.", "OK", "Cancel"))
 			{
 				PowerNES();
-				menu = MENU_EXIT;
+				selection = MENU_EXIT;
 			}
 			else
 			{
@@ -1714,7 +1714,7 @@ static int MenuGame()
 		}
 		else if(gameSettingsBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS;
+			selection = MENU_GAMESETTINGS;
 		}
 #ifdef HW_RVL
 		else if(batteryBtn[0]->getState() == STATE::CLICKED)
@@ -1757,13 +1757,13 @@ static int MenuGame()
 					#ifndef NO_SOUND
 					bgMusic->play(); // startup music
 					#endif
-					menu = MENU_GAMESELECTION;
+					selection = MENU_GAMESELECTION;
 				}
 			}
 		}
 		else if(closeBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_EXIT;
+			selection = MENU_EXIT;
 
 			exitSound->play();
 			bgTopImg->setEffect(EFFECT::SLIDE_TOP | EFFECT::SLIDE_OUT, 15);
@@ -1798,7 +1798,7 @@ static int MenuGame()
 	#endif
 
 	mainWindow->remove(&w);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -1839,7 +1839,7 @@ static int FindGameSaveNum(char * savefile, int method)
  ***************************************************************************/
 static int MenuGameSaves(int action)
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int ret, result;
 	int i, n, type, len, len2;
 	int j = 0;
@@ -1976,12 +1976,12 @@ static int MenuGameSaves(int action)
 	if(saves.length == 0 && action == 0) // No Saves to load error
 	{
 		InfoPrompt("No game saves found.");
-		menu = MENU_GAME;
+		selection = MENU_GAME;
 	}
 	if(saves.length == 0 && action == 2) // No Saves to delete error
 	{
 		InfoPrompt("No game saves found.");
-		menu = MENU_GAME;
+		selection = MENU_GAME;
 	}
 	GuiSaveBrowser saveBrowser(552, 248, &saves, action);
 	saveBrowser.setPosition(0, 108);
@@ -1992,7 +1992,7 @@ static int MenuGameSaves(int action)
 	mainWindow->changeFocus(&saveBrowser);
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -2016,7 +2016,7 @@ static int MenuGameSaves(int action)
 						break;
 				}
 				if(result)
-					menu = MENU_EXIT;				
+					selection = MENU_EXIT;
 			}
 			else if(action == 2) // delete RAM/State
 			{
@@ -2043,7 +2043,7 @@ static int MenuGameSaves(int action)
 						break;
 					}							
 				}
-				menu = MENU_GAME_DELETE;
+				selection = MENU_GAME_DELETE;
 			}
 			else // save
 			{
@@ -2057,7 +2057,7 @@ static int MenuGameSaves(int action)
 					{
 						MakeFilePath(filepath, FILE_STATE, romFilename, i);
 						SaveState(filepath, NOTSILENT);
-						menu = MENU_GAME_SAVE;
+						selection = MENU_GAME_SAVE;
 					}
 				}
 				else if(ret == -1 && GCSettings.HideRAMSaving == 0) // new RAM
@@ -2070,7 +2070,7 @@ static int MenuGameSaves(int action)
 					{
 						MakeFilePath(filepath, FILE_RAM, romFilename, i);
 						SaveRAM(filepath, NOTSILENT);
-						menu = MENU_GAME_SAVE;
+						selection = MENU_GAME_SAVE;
 					}
 				}
 				else // overwrite RAM/State
@@ -2085,17 +2085,17 @@ static int MenuGameSaves(int action)
 							SaveState(filepath, NOTSILENT);
 							break;
 					}
-					menu = MENU_GAME_SAVE;
+					selection = MENU_GAME_SAVE;
 				}
 			}
 		}
 		if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAME;
+			selection = MENU_GAME;
 		}
 		else if(closeBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_EXIT;
+			selection = MENU_EXIT;
 
 			exitSound->play();
 			bgTopImg->setEffect(EFFECT::SLIDE_TOP | EFFECT::SLIDE_OUT, 15);
@@ -2121,7 +2121,7 @@ static int MenuGameSaves(int action)
 	mainWindow->remove(&w);
 	mainWindow->remove(&titleTxt);
 	ResetBrowser();
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -2129,7 +2129,7 @@ static int MenuGameSaves(int action)
  ***************************************************************************/
 static int MenuGameSettings()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	char filepath[1024];
 
 	GuiText titleTxt("Game Settings", 26, (GuiColor){255, 255, 255, 255});
@@ -2301,21 +2301,21 @@ static int MenuGameSettings()
 
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
 		if(mappingBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS;
+			selection = MENU_GAMESETTINGS_MAPPINGS;
 		}
 		else if(videoBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_VIDEO;
+			selection = MENU_GAMESETTINGS_VIDEO;
 		}
 		else if(emulationBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_EMULATION;
+			selection = MENU_GAMESETTINGS_EMULATION;
 		}
 		else if(controllerBtn.getState() == STATE::CLICKED)
 		{
@@ -2325,7 +2325,7 @@ static int MenuGameSettings()
 		{
 			cheatsBtn.resetState();
 			if(numcheats > 0)
-				menu = MENU_GAMESETTINGS_CHEATS;
+				selection = MENU_GAMESETTINGS_CHEATS;
 			else
 				InfoPrompt("Cheats file not found!");
 		}
@@ -2339,7 +2339,7 @@ static int MenuGameSettings()
 		}
 		else if(closeBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_EXIT;
+			selection = MENU_EXIT;
 
 			exitSound->play();
 			bgTopImg->setEffect(EFFECT::SLIDE_TOP | EFFECT::SLIDE_OUT, 15);
@@ -2355,14 +2355,14 @@ static int MenuGameSettings()
 		}
 		else if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAME;
+			selection = MENU_GAME;
 		}
 	}
 
 	HaltGui();
 
 	mainWindow->remove(&w);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -2374,7 +2374,7 @@ static int MenuGameSettings()
 
 static int MenuGameCheats()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int ret;
 	u16 i = 0;
 	OptionList options;
@@ -2436,7 +2436,7 @@ static int MenuGameCheats()
 	mainWindow->append(&titleTxt);
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -2451,14 +2451,14 @@ static int MenuGameCheats()
 
 		if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS;
+			selection = MENU_GAMESETTINGS;
 		}
 	}
 	HaltGui();
 	mainWindow->remove(&optionBrowser);
 	mainWindow->remove(&w);
 	mainWindow->remove(&titleTxt);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -2466,7 +2466,7 @@ static int MenuGameCheats()
  ***************************************************************************/
 static int MenuSettingsMappings()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 
 	GuiText titleTxt("Game Settings - Button Mappings", 26, (GuiColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
@@ -2560,37 +2560,37 @@ static int MenuSettingsMappings()
 
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
 		if(nesBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_CTRL;
+			selection = MENU_GAMESETTINGS_MAPPINGS_CTRL;
 			mapMenuCtrlNES = CTRL_PAD;
 		}
 		else if(zapperBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_CTRL;
+			selection = MENU_GAMESETTINGS_MAPPINGS_CTRL;
 			mapMenuCtrlNES = CTRL_ZAPPER;
 		}
 		else if(otherBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_OTHER;
+			selection = MENU_GAMESETTINGS_MAPPINGS_OTHER;
 		}
 		else if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS;
+			selection = MENU_GAMESETTINGS;
 		}
 	}
 	HaltGui();
 	mainWindow->remove(&w);
-	return menu;
+	return selection;
 }
 
 static int MenuSettingsMappingsController()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	char menuTitle[100];
 	char menuSubtitle[100];
 
@@ -2769,48 +2769,48 @@ static int MenuSettingsMappingsController()
 
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
 		if(wiimoteBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
+			selection = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = GUI_HW_WIIMOTE;
 		}
 		else if(nunchukBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
+			selection = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = GUI_HW_NUNCHUK;
 		}
 		else if(classicBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
+			selection = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = GUI_HW_CLASSIC;
 		}
 		else if(wiiuproBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
+			selection = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = GUI_HW_WUPC;
 		}
 		else if(drcBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
+			selection = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = GUI_HW_DRC;
 		}
 		else if(gamecubeBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_MAP;
+			selection = MENU_GAMESETTINGS_MAPPINGS_MAP;
 			mapMenuCtrl = GUI_HW_GAMECUBE;
 		}
 		else if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS;
+			selection = MENU_GAMESETTINGS_MAPPINGS;
 		}
 	}
 	HaltGui();
 	mainWindow->remove(&w);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -2929,7 +2929,7 @@ static u32 ButtonMappingWindow()
 
 static int MenuSettingsMappingsMap()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int ret, i, j;
 	OptionList options;
 	bool firstRun = true;
@@ -3025,13 +3025,13 @@ static int MenuSettingsMappingsMap()
 	mainWindow->append(&subtitleTxt);
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
 		if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS_CTRL;
+			selection = MENU_GAMESETTINGS_MAPPINGS_CTRL;
 		}
 		else if(resetBtn.getState() == STATE::CLICKED)
 		{
@@ -3092,7 +3092,7 @@ static int MenuSettingsMappingsMap()
 	mainWindow->remove(&w);
 	mainWindow->remove(&titleTxt);
 	mainWindow->remove(&subtitleTxt);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -3358,7 +3358,7 @@ static void ScreenPositionWindow()
 
 static int MenuSettingsOtherMappings()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int ret;
 	int i = 0;
 	bool firstRun = true;
@@ -3418,7 +3418,7 @@ static int MenuSettingsOtherMappings()
 	w.append(&subtitleTxt);
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -3497,7 +3497,7 @@ static int MenuSettingsOtherMappings()
 
 		if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS_MAPPINGS;
+			selection = MENU_GAMESETTINGS_MAPPINGS;
 		}
 	}
 	HaltGui();
@@ -3505,7 +3505,7 @@ static int MenuSettingsOtherMappings()
 	mainWindow->remove(&w);
 	mainWindow->remove(&titleTxt);
 	mainWindow->remove(&subtitleTxt);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -3513,7 +3513,7 @@ static int MenuSettingsOtherMappings()
  ***************************************************************************/
 static int MenuSettingsVideo()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int ret;
 	int i = 0;
 	bool firstRun = true;
@@ -3574,7 +3574,7 @@ static int MenuSettingsVideo()
 	mainWindow->append(&titleTxt);
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -3696,14 +3696,14 @@ static int MenuSettingsVideo()
 
 		if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS;
+			selection = MENU_GAMESETTINGS;
 		}
 	}
 	HaltGui();
 	mainWindow->remove(&optionBrowser);
 	mainWindow->remove(&w);
 	mainWindow->remove(&titleTxt);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -3711,7 +3711,7 @@ static int MenuSettingsVideo()
  ***************************************************************************/
 static int MenuSettingsEmulation()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int ret;
 	int i = 0;
 	bool firstRun = true;
@@ -3765,7 +3765,7 @@ static int MenuSettingsEmulation()
 	mainWindow->append(&titleTxt);
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 		ret = optionBrowser.getClickedOption();
@@ -3807,14 +3807,14 @@ static int MenuSettingsEmulation()
 
 		if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESETTINGS;
+			selection = MENU_GAMESETTINGS;
 		}
 	}
 	HaltGui();
 	mainWindow->remove(&optionBrowser);
 	mainWindow->remove(&w);
 	mainWindow->remove(&titleTxt);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -3822,7 +3822,7 @@ static int MenuSettingsEmulation()
  ***************************************************************************/
 static int MenuSettings()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	char gameGenieTxt[10];
 	
 	if(!FindGameGenie()) sprintf(gameGenieTxt, "DISABLED");
@@ -3986,21 +3986,21 @@ static int MenuSettings()
 
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
 		if(savingBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_SETTINGS_FILE;
+			selection = MENU_SETTINGS_FILE;
 		}
 		else if(menuBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_SETTINGS_MENU;
+			selection = MENU_SETTINGS_MENU;
 		}
 		else if(networkBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_SETTINGS_NETWORK;
+			selection = MENU_SETTINGS_NETWORK;
 		}
 		else if(creditsBtn.getState() == STATE::CLICKED)
 		{
@@ -4025,7 +4025,7 @@ static int MenuSettings()
 		}
 		else if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_GAMESELECTION;
+			selection = MENU_GAMESELECTION;
 		}
 		else if(resetBtn.getState() == STATE::CLICKED)
 		{
@@ -4047,7 +4047,7 @@ static int MenuSettings()
 
 	HaltGui();
 	mainWindow->remove(&w);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -4056,7 +4056,7 @@ static int MenuSettings()
 
 static int MenuSettingsFile()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int ret;
 	int i = 0;
 	bool firstRun = true;
@@ -4117,7 +4117,7 @@ static int MenuSettingsFile()
 	mainWindow->append(&titleTxt);
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -4221,7 +4221,7 @@ static int MenuSettingsFile()
 
 		if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_SETTINGS;
+			selection = MENU_SETTINGS;
 			autoSaveMethod(SILENT);
 			autoLoadMethod(SILENT);
 		}
@@ -4230,7 +4230,7 @@ static int MenuSettingsFile()
 	mainWindow->remove(&optionBrowser);
 	mainWindow->remove(&w);
 	mainWindow->remove(&titleTxt);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -4239,7 +4239,7 @@ static int MenuSettingsFile()
 
 static int MenuSettingsMenu()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int ret;
 	int i = 0;
 	bool firstRun = true;
@@ -4299,7 +4299,7 @@ static int MenuSettingsMenu()
 	mainWindow->append(&titleTxt);
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -4439,7 +4439,7 @@ static int MenuSettingsMenu()
 
 		if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_SETTINGS;
+			selection = MENU_SETTINGS;
 		}
 	}
 	ChangeLanguage();
@@ -4447,7 +4447,7 @@ static int MenuSettingsMenu()
 	mainWindow->remove(&optionBrowser);
 	mainWindow->remove(&w);
 	mainWindow->remove(&titleTxt);
-	return menu;
+	return selection;
 }
 
 /****************************************************************************
@@ -4456,7 +4456,7 @@ static int MenuSettingsMenu()
 
 static int MenuSettingsNetwork()
 {
-	int menu = MENU_NONE;
+	int selection = MENU_NONE;
 	int ret;
 	int i = 0;
 	bool firstRun = true;
@@ -4510,7 +4510,7 @@ static int MenuSettingsNetwork()
 	mainWindow->append(&titleTxt);
 	ResumeGui();
 
-	while(menu == MENU_NONE)
+	while(selection == MENU_NONE)
 	{
 		usleep(THREAD_SLEEP);
 
@@ -4547,7 +4547,7 @@ static int MenuSettingsNetwork()
 
 		if(backBtn.getState() == STATE::CLICKED)
 		{
-			menu = MENU_SETTINGS;
+			selection = MENU_SETTINGS;
 		}
 	}
 	HaltGui();
@@ -4555,7 +4555,7 @@ static int MenuSettingsNetwork()
 	mainWindow->remove(&w);
 	mainWindow->remove(&titleTxt);
 	CloseShare();
-	return menu;
+	return selection;
 }
 
 static u8 * CreateBlurredGameTexture() {
@@ -4765,10 +4765,10 @@ static u8 * CreateBlurredGameTexture() {
  ***************************************************************************/
 
 void
-MainMenu (int menu)
+MainMenu (int selection)
 {
 	static bool firstRun = true;
-	int currentMenu = menu;
+	int currentMenu = selection;
 	lastMenu = MENU_NONE;
 	
 	if(firstRun)
@@ -4786,7 +4786,7 @@ MainMenu (int menu)
 
 	mainWindow = new GuiWindow(screenwidth, screenheight);
 
-	if(menu == MENU_GAME)
+	if(selection == MENU_GAME)
 	{
 		gameScreenTexture = CreateBlurredGameTexture();
 		if(gameScreenTexture != NULL) {
