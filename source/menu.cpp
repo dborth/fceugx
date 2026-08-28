@@ -4945,6 +4945,17 @@ MainMenu (int selection)
 	CancelAction();
 	HaltGui();
 
+	if(gameScreenImg != NULL) {
+		mainWindow->remove(gameScreenImg);
+		delete gameScreenImg;
+		gameScreenImg = NULL;
+	}
+
+	if(gameScreenTexture != NULL) {
+		free(gameScreenTexture);
+		gameScreenTexture = NULL;
+	}
+
 	delete btnLogo;
 	delete gameScreenImg;
 	delete bgTopImg;
@@ -4956,11 +4967,6 @@ MainMenu (int selection)
 	bgTopImg = NULL;
 	bgBottomImg = NULL;
 	mainWindow = NULL;
-
-	if(gameScreenTexture != NULL) {
-		free(gameScreenTexture);
-		gameScreenTexture = NULL;
-	}
 
 	ClearScreenshot();
 
