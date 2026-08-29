@@ -189,7 +189,7 @@ void SystemInit() {
 	#endif
 
 	SetupPads();
-	InitDeviceThread();
+	InitFileOpThreads();
 	MountAllFAT(); // Initialize libFAT for SD and USB
 
 	#ifdef HW_RVL
@@ -206,7 +206,7 @@ static void ExitCleanup()
 	ShutdownAudio();
 	StopGX();
 
-	HaltDeviceThread();
+	HaltDeviceCheckingThread();
 	UnmountAllFAT();
 
 #ifdef HW_RVL

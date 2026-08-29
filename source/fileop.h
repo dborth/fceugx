@@ -18,9 +18,9 @@
 
 #define SAVEBUFFERSIZE (1024 * 512)
 
-void InitDeviceThread();
-void ResumeDeviceThread();
-void HaltDeviceThread();
+void InitFileOpThreads();
+void ResumeDeviceCheckingThread();
+void HaltDeviceCheckingThread();
 void HaltParseThread();
 void MountAllFAT();
 void UnmountAllFAT();
