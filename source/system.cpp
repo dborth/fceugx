@@ -196,6 +196,9 @@ void SystemInit() {
 	InitMem2Manager();
 	#endif
 
+	void * decodeScratch = malloc(IMAGE_DECODE_SCRATCH_SIZE);
+	GuiImageData::setDecodeScratch(decodeScratch, decodeScratch ? IMAGE_DECODE_SCRATCH_SIZE : 0);
+
 	glyphRenderer = new WiiGlyphRenderer();
 	fontSystem = new GuiTextRenderer(font_ttf, font_ttf_size, glyphRenderer);
 	textTranslator->loadLanguage(en_lang, en_lang_size);

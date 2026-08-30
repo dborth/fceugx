@@ -14,6 +14,10 @@
 
 #include "libgui/Gui.h"
 
+#define IMAGE_BUFFER_SIZE (640 * 480 * 4)
+#define IMAGE_DECODE_SCRATCH_SIZE (IMAGE_BUFFER_SIZE + (480 * sizeof(void*)))
+#define PNG_FILE_BUFFER_SIZE (512 * 1024)
+
 // color palettes
 #define MAXPAL 12
 
@@ -34,7 +38,7 @@ void ResetVideo_Menu ();
 void ClearScreenshot();
 void TakeScreenshot();
 void Menu_Render ();
-void Menu_DrawImg(u8 data[], f32 xpos, f32 ypos, u16 width, u16 height, f32 degrees, f32 scaleX, f32 scaleY, u8 alphaF );
+void Menu_DrawImg(void * texture, f32 xpos, f32 ypos, u16 width, u16 height, f32 degrees, f32 scaleX, f32 scaleY, u8 alphaF );
 void Menu_DrawRectangle(f32 x, f32 y, f32 width, f32 height, PixelColor color);
 void Check3D();
 
