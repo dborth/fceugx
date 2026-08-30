@@ -75,8 +75,7 @@ bool FCEUD_ShouldDrawInputAids()
 // General Logging
 void FCEUD_PrintError(const char *errormsg)
 {
-	//if(GuiLoaded())
-	//	ErrorPrompt(errormsg);
+
 }
 
 void FCEUD_Message(const char *text)

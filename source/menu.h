@@ -12,7 +12,6 @@
 #ifndef _MENU_H
 #define _MENU_H
 
-bool GuiLoaded();
 void InitGUIThreads();
 void MainMenu (int menuitem);
 void ErrorPrompt(const char * msg);
