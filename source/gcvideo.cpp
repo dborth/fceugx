@@ -1679,7 +1679,7 @@ void Menu_Render()
  *
  * Draws the specified image on screen using GX
  ***************************************************************************/
-void Menu_DrawImg(f32 xpos, f32 ypos, u16 width, u16 height, u8 data[],
+void Menu_DrawImg(u8 data[], f32 xpos, f32 ypos, u16 width, u16 height,
 	f32 degrees, f32 scaleX, f32 scaleY, u8 alpha)
 {
 	if(data == NULL)
@@ -2284,4 +2284,46 @@ void Check3D()
 	}
 	old_shutter_3d_mode = shutter_3d_mode;
 	old_anaglyph_3d_mode = anaglyph_3d_mode;
+}
+
+void* createTexture(int width, int height)
+{
+	int padWidth = width + (4 - width % 4) % 4;
+	int padHeight = height + (4 - height % 4) % 4;
+	int len = (padWidth * padHeight) * 4;
+	if (len % 32) len += (32 - len % 32);
+	return memalign(32, len);
+}
+
+void loadTextureData(void* texture, const uint8_t* rgba, int width, int height)
+{
+	if(!texture || !rgba) return;
+	uint8_t* dst = (uint8_t*)texture;
+	int padWidth = width + (4 - width % 4) % 4;
+	int padHeight = height + (4 - height % 4) % 4;
+
+	for (int y = 0; y < padHeight; y++) {
+		for (int x = 0; x < padWidth; x++) {
+			uint32_t offset = ((((y >> 2) * (padWidth >> 2) + (x >> 2)) << 5) + ((y & 3) << 2) + (x & 3)) << 1;
+			if (y >= height || x >= width) {
+				dst[offset] = 0; dst[offset+1] = 255; dst[offset+32] = 255; dst[offset+33] = 255;
+			} else {
+				const uint8_t* src = rgba + (y * width + x) * 4;
+				dst[offset]   = src[3]; // A
+				dst[offset+1] = src[0]; // R
+				dst[offset+32] = src[1]; // G
+				dst[offset+33] = src[2]; // B
+			}
+		}
+	}
+
+	int len = (padWidth * padHeight) * 2;
+	if (len % 32) len += (32 - len % 32);
+	DCFlushRange(dst, len);
+}
+
+void destroyTexture(void * texture)
+{
+	if(texture)
+		free(texture);
 }
