@@ -754,14 +754,10 @@ void ClearScreenshot()
 }
 
 // Un-swizzles and crops a 4x4-tiled GX_TF_RGB5A3 texture directly to tightly packed RGB24
-static u8 * UntileRGB5A3ToRGB24(const void * tiledTexture, int tex_w, u32 crop_x, u32 crop_y, u32 crop_w, u32 crop_h)
+static void UntileRGB5A3ToRGB24(const void * tiledTexture, int tex_w, u32 crop_x, u32 crop_y, u32 crop_w, u32 crop_h)
 {
 	int padded_width = (tex_w + 3) & ~3;
-
-	// Allocate strictly for the final cropped dimensions
-	u8 * rgb24 = (u8 *) malloc(crop_w * crop_h * 3);
-	if(!rgb24)
-		return NULL;
+	u8 * dst = savebuffer;
 
 	const u16 * tex16 = (const u16 *) tiledTexture;
 
@@ -784,13 +780,11 @@ static u8 * UntileRGB5A3ToRGB24(const void * tiledTexture, int tex_w, u32 crop_x
 			u8 b = color & 0x1F;
 
 			int out_idx = (y * crop_w + x) * 3;
-			rgb24[out_idx]     = (r << 3) | (r >> 2);
-			rgb24[out_idx + 1] = (g << 3) | (g >> 2);
-			rgb24[out_idx + 2] = (b << 3) | (b >> 2);
+			dst[out_idx]     = (r << 3) | (r >> 2);
+			dst[out_idx + 1] = (g << 3) | (g >> 2);
+			dst[out_idx + 2] = (b << 3) | (b >> 2);
 		}
 	}
-
-	return rgb24;
 }
 
 /****************************************************************************
@@ -814,14 +808,11 @@ void TakeScreenshot()
 	}
 
 	// Read directly from texturemem and extract the bounding box
-	u8 * rgb24 = UntileRGB5A3ToRGB24(texturemem, gameScreenPng.width, crop_x, crop_y, crop_w, crop_h);
-	if(!rgb24) {
-		gameScreenPng.size = 0;
-		return;
-	}
+	AllocSaveBuffer();
+	UntileRGB5A3ToRGB24(texturemem, gameScreenPng.width, crop_x, crop_y, crop_w, crop_h);
 
 	u32 size = 0;
-	gameScreenPng.buffer = EncodePNGFromRGB24(crop_w, crop_h, rgb24, 0, &size);
+	gameScreenPng.buffer = EncodePNGFromRGB24(crop_w, crop_h, savebuffer, 0, &size);
 	gameScreenPng.size = (int) size;
 
 	// Update GUI image dimensions so it knows it was physically truncated
@@ -830,7 +821,7 @@ void TakeScreenshot()
 		gameScreenPng.height = crop_h;
 	}
 
-	free(rgb24);
+	FreeSaveBuffer();
 }
 
 /****************************************************************************
