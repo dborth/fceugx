@@ -43,7 +43,7 @@
 #include "cheatmgr.h"
 #include "libgui/Gui.h"
 
-#include "utils/pngu.h"
+#include "utils/pngcodec.h"
 
 #include "drivers/Platform.h"
 #include "drivers/ogc/wiidrc.h"

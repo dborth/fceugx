@@ -25,7 +25,6 @@
 #include "filebrowser.h"
 #include "fileop.h"
 #include "gcvideo.h"
-#include "utils/pngu.h"
 
 bool SaveState (char * filepath, bool silent)
 {

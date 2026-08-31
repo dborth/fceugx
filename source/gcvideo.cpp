@@ -31,7 +31,7 @@
 #include "pad.h"
 #include "videofilters.h"
 
-#include "utils/pngu.h"
+#include "utils/pngcodec.h"
 
 int FDSTimer = 0;
 u32 FrameTimer = 0;
@@ -753,6 +753,46 @@ void ClearScreenshot()
 	gameScreenPng.size = 0;
 }
 
+// Un-swizzles and crops a 4x4-tiled GX_TF_RGB5A3 texture directly to tightly packed RGB24
+static u8 * UntileRGB5A3ToRGB24(const void * tiledTexture, int tex_w, u32 crop_x, u32 crop_y, u32 crop_w, u32 crop_h)
+{
+	int padded_width = (tex_w + 3) & ~3;
+
+	// Allocate strictly for the final cropped dimensions
+	u8 * rgb24 = (u8 *) malloc(crop_w * crop_h * 3);
+	if(!rgb24)
+		return NULL;
+
+	const u16 * tex16 = (const u16 *) tiledTexture;
+
+	for(u32 y = 0; y < crop_h; y++) {
+		u32 tex_y = y + crop_y;
+		int tile_y = tex_y / 4;
+		int in_tile_y = tex_y % 4;
+
+		for(u32 x = 0; x < crop_w; x++) {
+			u32 tex_x = x + crop_x;
+			int tile_x = tex_x / 4;
+			int in_tile_x = tex_x % 4;
+
+			int tex_pixel_idx = (tile_y * (padded_width / 4) + tile_x) * 16 + (in_tile_y * 4 + in_tile_x);
+			u16 color = tex16[tex_pixel_idx];
+
+			// Extract RGB555 from the RGB5A3 encoded integer
+			u8 r = (color >> 10) & 0x1F;
+			u8 g = (color >> 5) & 0x1F;
+			u8 b = color & 0x1F;
+
+			int out_idx = (y * crop_w + x) * 3;
+			rgb24[out_idx]     = (r << 3) | (r >> 2);
+			rgb24[out_idx + 1] = (g << 3) | (g >> 2);
+			rgb24[out_idx + 2] = (b << 3) | (b >> 2);
+		}
+	}
+
+	return rgb24;
+}
+
 /****************************************************************************
  * TakeScreenshot
  *
@@ -760,88 +800,37 @@ void ClearScreenshot()
  ***************************************************************************/
 void TakeScreenshot()
 {
-	IMGCTX pngContext = PNGU_SelectImageFromBuffer(savebuffer);
+	u32 crop_x = 0;
+	u32 crop_y = 0;
+	u32 crop_w = gameScreenPng.width;
+	u32 crop_h = gameScreenPng.height;
 
-	if (pngContext == NULL) {
+	// Calculate physical crop bounds if overscan is hidden
+	if(GCSettings.hideoverscan != HIDEOVERSCAN_OFF) {
+		crop_x = GetBorderWidth() * fscale;
+		crop_y = GetBorderHeight() * fscale;
+		crop_w = gameScreenPng.width - (crop_x * 2);
+		crop_h = gameScreenPng.height - (crop_y * 2);
+	}
+
+	// Read directly from texturemem and extract the bounding box
+	u8 * rgb24 = UntileRGB5A3ToRGB24(texturemem, gameScreenPng.width, crop_x, crop_y, crop_w, crop_h);
+	if(!rgb24) {
+		gameScreenPng.size = 0;
 		return;
 	}
 
-	int res;
+	u32 size = 0;
+	gameScreenPng.buffer = EncodePNGFromRGB24(crop_w, crop_h, rgb24, 0, &size);
+	gameScreenPng.size = (int) size;
 
+	// Update GUI image dimensions so it knows it was physically truncated
 	if(GCSettings.hideoverscan != HIDEOVERSCAN_OFF) {
-		u32 crop_x = GetBorderWidth() * fscale;
-		u32 crop_y = GetBorderHeight() * fscale;
-		u32 crop_w = gameScreenPng.width - (crop_x * 2);
-		u32 crop_h = gameScreenPng.height - (crop_y * 2);
-
-		u32 stride = crop_w * 3;
-		if (stride % 4) {
-			stride = ((stride >> 2) + 1) << 2;
-		}
-
-		u8 *cropbuffer = (u8 *)malloc(stride * crop_h);
-
-		if(!cropbuffer) {
-			free(cropbuffer);
-			PNGU_ReleaseImageContext(pngContext);
-			return;
-		}
-
-		int padded_width = (gameScreenPng.width + 3) & ~3;
-		u16 *tex16 = (u16 *)texturemem;
-
-		for (u32 y = 0; y < crop_h; y++) {
-			u32 tex_y = y + crop_y;
-			int tile_y = tex_y / 4;
-			int in_tile_y = tex_y % 4;
-			u8 *dst_row = cropbuffer + (y * stride);
-
-			for (u32 x = 0; x < crop_w; x++) {
-				u32 tex_x = x + crop_x;
-				int tile_x = tex_x / 4;
-				int in_tile_x = tex_x % 4;
-
-				int tex_pixel_idx = (tile_y * (padded_width / 4) + tile_x) * 16 + (in_tile_y * 4 + in_tile_x);
-				u16 color = tex16[tex_pixel_idx];
-
-				// Extract RGB555 from the RGB5A3 encoded integer
-				u8 r = (color >> 10) & 0x1F;
-				u8 g = (color >> 5) & 0x1F;
-				u8 b = color & 0x1F;
-
-				u32 out_idx = x * 3;
-				dst_row[out_idx]     = (r << 3) | (r >> 2);
-				dst_row[out_idx + 1] = (g << 3) | (g >> 2);
-				dst_row[out_idx + 2] = (b << 3) | (b >> 2);
-			}
-		}
-
 		gameScreenPng.width = crop_w;
 		gameScreenPng.height = crop_h;
-		res = PNGU_EncodeFromRGB(pngContext, crop_w, crop_h, cropbuffer, stride);
-		free(cropbuffer);
-	} else {
-		res = PNGU_EncodeFromGXTexture(pngContext, gameScreenPng.width, gameScreenPng.height, texturemem, gameScreenPng.width * 3);
 	}
 
-	if(res == PNGU_OK) {
-		gameScreenPng.size = pngContext->cursor;
-	} else {
-		gameScreenPng.size = 0;
-	}
-
-	PNGU_ReleaseImageContext(pngContext);
-
-	if (gameScreenPng.size == 0) {
-		return;
-	}
-
-	gameScreenPng.buffer = (u8 *) malloc(gameScreenPng.size);
-	if (gameScreenPng.buffer == NULL) {
-		gameScreenPng.size = 0;
-		return;
-	}
-	memcpy(gameScreenPng.buffer, savebuffer, gameScreenPng.size);
+	free(rgb24);
 }
 
 /****************************************************************************
