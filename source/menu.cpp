@@ -155,7 +155,6 @@ struct ProgressOverlayState {
 	STATE oldState;
 	float angle;
 	u32 count;
-	int lastProgress;
 
 	ProgressOverlayState() :
 		progressWindow(448, 288),
@@ -167,7 +166,7 @@ struct ProgressOverlayState {
 		titleTxt(NULL, 26, (PixelColor){255, 255, 255, 255}),
 		msgTxt(NULL, 26, (PixelColor){0, 0, 0, 255}),
 		overlayShown(false), waitingToShow(false), pendingStart(0),
-		oldState(STATE::DEFAULT), angle(0), count(0), lastProgress(0)
+		oldState(STATE::DEFAULT), angle(0), count(0)
 	{
 		progressWindow.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 		progressWindow.setPosition(0, -10);
@@ -262,7 +261,6 @@ void ProgressOverlayState::update() {
 	if(!progress)
 	{
 		waitingToShow = false;
-		progIdle = true;
 
 		if(overlayShown)
 		{
@@ -271,12 +269,13 @@ void ProgressOverlayState::update() {
 			overlayShown = false;
 		}
 
-		if(lastProgress != 0)
+		LWP_MutexLock(progMutex);
+		if(!progIdle)
 		{
-			LWP_MutexLock(progMutex);
+			progIdle = true;
 			LWP_CondBroadcast(progIdleCond);
-			LWP_MutexUnlock(progMutex);
 		}
+		LWP_MutexUnlock(progMutex);
 	}
 	else if(!overlayShown)
 	{
@@ -336,8 +335,6 @@ void ProgressOverlayState::update() {
 			++count;
 		}
 	}
-
-	lastProgress = progress;
 }
 
 static void ProcessGuiInput() {
