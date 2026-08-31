@@ -19,7 +19,6 @@ void InitialiseAudio();
 void ResetAudio();
 void PlaySound( int32 *Buffer, int samples );
 void SwitchAudioMode(int mode);
-void ShutdownAudio();
 void UpdateSampleRate(int rate);
 void SetSampleRate();
 

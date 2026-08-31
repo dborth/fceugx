@@ -183,17 +183,6 @@ SwitchAudioMode(int mode)
 }
 
 /****************************************************************************
- * ShutdownAudio
- *
- * Shuts down audio subsystem. Useful to avoid unpleasant sounds if a
- * crash occurs during shutdown.
- ***************************************************************************/
-void ShutdownAudio()
-{
-	AUDIO_StopDMA();
-}
-
-/****************************************************************************
  * PlaySound
  *
  * Puts incoming mono samples into mixbuffer

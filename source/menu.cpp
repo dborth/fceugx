@@ -43,6 +43,11 @@
 #include "cheatmgr.h"
 #include "libgui/Gui.h"
 
+#include "utils/pngu.h"
+
+#include "drivers/Platform.h"
+#include "drivers/ogc/wiidrc.h"
+
 #ifdef HW_RVL
 	#include "mem2.h"
 #endif
@@ -213,7 +218,7 @@ struct Menu {
 	ProgressOverlayState progressOverlayState;
 
 	Menu() :
-		mainWindow(screenwidth, screenheight),
+		mainWindow(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight()),
 		bgTop(bg_top_png), bgTopImg(&bgTop),
 		bgBottom(bg_bottom_png), bgBottomImg(&bgBottom),
 		logo(logo_png), logoImg(&logo),
@@ -336,32 +341,28 @@ void ProgressOverlayState::update() {
 }
 
 static void ProcessGuiInput() {
-	UpdatePads();
+	float deltaTime = 1.0f / 60.0f;
+	platform->getInput()->update(deltaTime);
 
-	menu->mainWindow.update(userInput[3]);
-	menu->mainWindow.update(userInput[2]);
-	menu->mainWindow.update(userInput[1]);
-	menu->mainWindow.update(userInput[0]);
+	for(int i = 3; i >= 0; i--)
+		menu->mainWindow.update(userInput[i]);
 }
 
 static void DrawGui() {
 	menu->mainWindow.draw();
 
 	#ifdef HW_RVL
-	int i = 3;
-	do
+	for(int i = 3; i >= 0; i--)
 	{
 		if(userInput[i]->getPadData().validPointer) {
 			cursorImg[i].setPosition(userInput[i]->getPadData().cursor_x-48, userInput[i]->getPadData().cursor_y-48);
 			cursorImg[i].setAngle(userInput[i]->getPadData().cursor_angle);
 			cursorImg[i].draw();
 		}
-		DoRumble(i);
-		--i;
-	} while(i>=0);
+	}
 	#endif
 
-	Menu_Render();
+	platform->getVideo()->render();
 }
 
 /****************************************************************************
@@ -562,8 +563,8 @@ static bool UpdateGui()
 		for(int a = 0; a <= 255; a += 15)
 		{
 			menu->mainWindow.draw();
-			Menu_DrawRectangle(0,0,screenwidth,screenheight,(PixelColor){0, 0, 0, (u8)a});
-			Menu_Render();
+			platform->getVideo()->getImageRenderer()->drawRectangle(0,0,platform->getVideo()->getScreenWidth(),platform->getVideo()->getScreenHeight(),(PixelColor){0, 0, 0, (uint8_t)a});
+			platform->getVideo()->render();
 		}
 		exiting = true;
 		return false;
@@ -1074,7 +1075,7 @@ static int MenuGameSelection()
 	exitBtn.setTrigger(&trigHome);
 	exitBtn.setEffectGrow();
 
-	GuiWindow buttonWindow(screenwidth, screenheight);
+	GuiWindow buttonWindow(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	buttonWindow.append(&settingsBtn);
 	buttonWindow.append(&exitBtn);
 
@@ -1107,10 +1108,6 @@ static int MenuGameSelection()
 	menu->mainWindow.appendWithAutoRemove(&buttonWindow);
 	menu->mainWindow.appendWithAutoRemove(&bgPreview);
 	menu->mainWindow.appendWithAutoRemove(&preview);
-
-	#ifdef HW_RVL
-	ShutoffRumble();
-	#endif
 
 	// populate initial directory listing
 	selectLoadedFile = 1;
@@ -1163,9 +1160,6 @@ static int MenuGameSelection()
 				}
 				else
 				{
-					#ifdef HW_RVL
-					ShutoffRumble();
-					#endif
 					menu->mainWindow.setState(STATE::DISABLED);
 
 					if(RunOnWorkerThread(BrowserLoadFileTask))
@@ -1594,7 +1588,7 @@ static int MenuGame()
 	batteryBtn[3]->setPosition(135, -40);
 	#endif
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&titleTxt);
 	w.append(&saveBtn);
 	w.append(&loadBtn);
@@ -1745,7 +1739,7 @@ static int MenuGame()
 					ExitApp();
 				}
 				else {
-					gameScreenImg = new GuiImage(screenwidth, screenheight, (PixelColor){240, 225, 230, 255});
+					gameScreenImg = new GuiImage(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight(), (PixelColor){240, 225, 230, 255});
 					gameScreenImg->setStripe(10);
 					menu->mainWindow.insert(gameScreenImg, 0);
 					#ifndef NO_SOUND
@@ -1916,7 +1910,7 @@ static int MenuGameSaves(int action)
 	closeBtn.setTrigger(&trigHome);
 	closeBtn.setEffectGrow();
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&backBtn);
 	w.append(&closeBtn);
 	menu->mainWindow.appendWithAutoRemove(&w);
@@ -2283,7 +2277,7 @@ static int MenuGameSettings()
 	backBtn.setTrigger(&trigB);
 	backBtn.setEffectGrow();
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&titleTxt);
 	w.append(&mappingBtn);
 	w.append(&videoBtn);
@@ -2425,7 +2419,7 @@ static int MenuGameCheats()
 	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(400);
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&backBtn);
 	menu->mainWindow.appendWithAutoRemove(&optionBrowser);
 	menu->mainWindow.appendWithAutoRemove(&w);
@@ -2538,7 +2532,7 @@ static int MenuSettingsMappings()
 	backBtn.setTrigger(&trigB);
 	backBtn.setEffectGrow();
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&titleTxt);
 	w.append(&nesBtn);
 	w.append(&zapperBtn);
@@ -2728,7 +2722,7 @@ static int MenuSettingsMappingsController()
 	backBtn.setTrigger(&trigB);
 	backBtn.setEffectGrow();
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&titleTxt);
 	w.append(&subtitleTxt);
 
@@ -2993,7 +2987,7 @@ static int MenuSettingsMappingsMap()
 	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(280);
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&backBtn);
 	w.append(&resetBtn);
 	menu->mainWindow.appendWithAutoRemove(&optionBrowser);
@@ -3380,7 +3374,7 @@ static int MenuSettingsOtherMappings()
 	optionBrowser.setCol2Position(200);
 	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&backBtn);
 	menu->mainWindow.appendWithAutoRemove(&optionBrowser);
 	menu->mainWindow.appendWithAutoRemove(&w);
@@ -3531,7 +3525,7 @@ static int MenuSettingsVideo()
 	optionBrowser.setCol2Position(200);
 	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&backBtn);
 	menu->mainWindow.appendWithAutoRemove(&optionBrowser);
 	menu->mainWindow.appendWithAutoRemove(&w);
@@ -3716,7 +3710,7 @@ static int MenuSettingsEmulation()
 	optionBrowser.setCol2Position(200);
 	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&backBtn);
 	menu->mainWindow.appendWithAutoRemove(&optionBrowser);
 	menu->mainWindow.appendWithAutoRemove(&w);
@@ -3923,7 +3917,7 @@ static int MenuSettings()
 	resetBtn.setTrigger(trigA);
 	resetBtn.setEffectGrow();
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&titleTxt);
 	w.append(&savingBtn);
 	w.append(&menuBtn);
@@ -4057,7 +4051,7 @@ static int MenuSettingsFile()
 	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(215);
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&backBtn);
 	menu->mainWindow.appendWithAutoRemove(&optionBrowser);
 	menu->mainWindow.appendWithAutoRemove(&w);
@@ -4241,8 +4235,8 @@ void ChangeLanguage() {
 		size_t fileSize = LoadFont(filepath);
 
 		if(fileSize > 0) {
-			delete fontSystem;
-			fontSystem = new GuiTextRenderer(ext_font_ttf, fileSize, glyphRenderer);
+			if(fontSystem) delete fontSystem;
+			fontSystem = new GuiTextRenderer(ext_font_ttf, fileSize, platform->getVideo()->getGlyphRenderer());
 		}
 		else {
 			GCSettings.language = currentLanguage;
@@ -4255,10 +4249,10 @@ void ChangeLanguage() {
 #ifdef HW_RVL
 	else {
 		if(ext_font_ttf != NULL) {
-			delete fontSystem;
+			if(fontSystem) delete fontSystem;
 			mem2_free(ext_font_ttf);
 			ext_font_ttf = NULL;
-			fontSystem = new GuiTextRenderer(font_ttf, font_ttf_size, glyphRenderer);
+			fontSystem = new GuiTextRenderer(font_ttf, font_ttf_size, platform->getVideo()->getGlyphRenderer());
 		}
 	}
 #endif
@@ -4324,7 +4318,7 @@ static int MenuSettingsMenu()
 	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(275);
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&backBtn);
 	menu->mainWindow.appendWithAutoRemove(&optionBrowser);
 	menu->mainWindow.appendWithAutoRemove(&w);
@@ -4529,7 +4523,7 @@ static int MenuSettingsNetwork()
 	optionBrowser.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	optionBrowser.setCol2Position(290);
 
-	GuiWindow w(screenwidth, screenheight);
+	GuiWindow w(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	w.append(&backBtn);
 	menu->mainWindow.appendWithAutoRemove(&optionBrowser);
 	menu->mainWindow.appendWithAutoRemove(&w);
@@ -4592,7 +4586,7 @@ static u8 * CreateBlurredGameTexture() {
 	int blurAmount = 4; // blur amount
 	PixelColor blurOverlayColor = (PixelColor){50, 50, 50, 160};
 
-	u8 * dst = (u8 *)memalign(32, screenwidth * screenheight * 4);
+	u8 * dst = (u8 *)memalign(32, platform->getVideo()->getScreenWidth() * platform->getVideo()->getScreenHeight() * 4);
 	if(!dst) {
 		return NULL;
 	}
@@ -4602,13 +4596,13 @@ static u8 * CreateBlurredGameTexture() {
 
 	// Failsafe for invalid scale metrics
 	if (scaledWidth <= 0 || scaledHeight <= 0) {
-		memset(dst, 0, screenwidth * screenheight * 4);
+		memset(dst, 0, platform->getVideo()->getScreenWidth() * platform->getVideo()->getScreenHeight() * 4);
 		return dst;
 	}
 
 	// Calculate the absolute top-left starting pixel of the scaled image.
-	int targetCenterX = (screenwidth / 2) + gameScreenPng.xoffset;
-	int targetCenterY = (screenheight / 2) + gameScreenPng.yoffset;
+	int targetCenterX = (platform->getVideo()->getScreenWidth() / 2) + gameScreenPng.xoffset;
+	int targetCenterY = (platform->getVideo()->getScreenHeight() / 2) + gameScreenPng.yoffset;
 
 	int trueOffsetX = targetCenterX - (scaledWidth / 2);
 	int trueOffsetY = targetCenterY - (scaledHeight / 2);
@@ -4619,8 +4613,8 @@ static u8 * CreateBlurredGameTexture() {
 	int drawY = trueOffsetY < 0 ? 0 : trueOffsetY;
 
 	// Determine the max visible boundaries clipped to screen dimensions
-	int endX = (trueOffsetX + scaledWidth > screenwidth) ? screenwidth : (trueOffsetX + scaledWidth);
-	int endY = (trueOffsetY + scaledHeight > screenheight) ? screenheight : (trueOffsetY + scaledHeight);
+	int endX = (trueOffsetX + scaledWidth > platform->getVideo()->getScreenWidth()) ? platform->getVideo()->getScreenWidth() : (trueOffsetX + scaledWidth);
+	int endY = (trueOffsetY + scaledHeight > platform->getVideo()->getScreenHeight()) ? platform->getVideo()->getScreenHeight() : (trueOffsetY + scaledHeight);
 
 	// Calculate the dimensions of the viewable (cropped) area
 	int cropWidth = endX - drawX;
@@ -4628,7 +4622,7 @@ static u8 * CreateBlurredGameTexture() {
 
 	// Failsafe if the image is pushed entirely off-screen
 	if (cropWidth <= 0 || cropHeight <= 0) {
-		memset(dst, 0, screenwidth * screenheight * 4);
+		memset(dst, 0, platform->getVideo()->getScreenWidth() * platform->getVideo()->getScreenHeight() * 4);
 		return dst;
 	}
 
@@ -4707,8 +4701,8 @@ static u8 * CreateBlurredGameTexture() {
 	u8 bgA = 255;
 
 	// Vertical Blur, Overlay, & Swizzle directly to the GX Destination Layout
-	int tilesX = (screenwidth + 3) / 4;
-	int tilesY = (screenheight + 3) / 4;
+	int tilesX = (platform->getVideo()->getScreenWidth() + 3) / 4;
+	int tilesY = (platform->getVideo()->getScreenHeight() + 3) / 4;
 
 	for (int ty = 0; ty < tilesY; ++ty) {
 		for (int tx = 0; tx < tilesX; ++tx) {
@@ -4721,7 +4715,7 @@ static u8 * CreateBlurredGameTexture() {
 					int currY = ty * 4 + py;
 					int pixelIdx = (py * 4) + px;
 
-					if (currX >= screenwidth || currY >= screenheight) {
+					if (currX >= platform->getVideo()->getScreenWidth() || currY >= platform->getVideo()->getScreenHeight()) {
 						destTilePtr[pixelIdx * 2 + 0] = bgA;
 						destTilePtr[pixelIdx * 2 + 1] = bgR;
 						destTilePtr[32 + (pixelIdx * 2 + 0)] = bgG;
@@ -4773,7 +4767,7 @@ static u8 * CreateBlurredGameTexture() {
 		}
 	}
 
-	DCFlushRange(dst, screenwidth * screenheight * 4);
+	DCFlushRange(dst, platform->getVideo()->getScreenWidth() * platform->getVideo()->getScreenHeight() * 4);
 
 	free(scaledImg);
 	free(rowBuf);
@@ -4798,7 +4792,7 @@ void MainMenu (int selection)
 	static bool firstRun = true;
 	int currentMenu = selection;
 	lastMenu = MENU_NONE;
-	
+
 	if(firstRun)
 	{
 		#ifdef HW_RVL
@@ -4811,19 +4805,19 @@ void MainMenu (int selection)
 		#endif
 
 		trigA = new GuiTrigger;
-		trigA->setPrimaryTrigger();;
+		trigA->setPrimaryTrigger();
 	}
 
 	if(selection == MENU_GAME)
 	{
 		gameScreenTexture = CreateBlurredGameTexture();
 		if(gameScreenTexture != NULL) {
-			gameScreenImg = new GuiImage(gameScreenTexture, screenwidth, screenheight);
+			gameScreenImg = new GuiImage(gameScreenTexture, platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 		}
 	}
 
 	if(gameScreenImg == NULL) {
-		gameScreenImg = new GuiImage(screenwidth, screenheight, (PixelColor){240, 225, 230, 255});
+		gameScreenImg = new GuiImage(platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight(), (PixelColor){240, 225, 230, 255});
 		gameScreenImg->setStripe(10);
 	}
 
@@ -4930,10 +4924,6 @@ void MainMenu (int selection)
 		if(!UpdateGui())
 			break;
 	}
-
-	#ifdef HW_RVL
-	ShutoffRumble();
-	#endif
 
 	CancelAction();
 

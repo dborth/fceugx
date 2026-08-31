@@ -22,14 +22,11 @@
 #include "button_mapping.h"
 #include "fceuload.h"
 #include "libgui/Gui.h"
+#include "drivers/ogc/wiidrc.h"
 
 #define ANALOG_SENSITIVITY 30
 
 int playerMapping[4] = {0,1,2,3};
-
-#ifdef HW_RVL
-static int rumbleCount[4] = {0,0,0,0};
-#endif
 
 static uint32 JSReturn = 0;
 void *InputDPR;
@@ -477,59 +474,9 @@ void SetupPads()
 	#ifdef HW_RVL
 	WPAD_Init();
 	WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC_IR);
-	WPAD_SetVRes(WPAD_CHAN_ALL, screenwidth, screenheight);
+	WPAD_SetVRes(WPAD_CHAN_ALL, platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
 	#endif
-
-	for(int i = 0; i < 4; i++) {
-		userInput[i] = new GuiInputController(i);
-	}
 }
-
-#ifdef HW_RVL
-/****************************************************************************
- * ShutoffRumble
- ***************************************************************************/
-
-void ShutoffRumble()
-{
-	if(CONF_GetPadMotorMode() == 0)
-		return;
-
-	for(int i=0;i<4;i++)
-	{
-		WPAD_Rumble(i, 0);
-		rumbleCount[i] = 0;
-		rumbleRequest[i] = 0;
-	}
-}
-
-/****************************************************************************
- * DoRumble
- ***************************************************************************/
-
-void DoRumble(int i)
-{
-	if(CONF_GetPadMotorMode() == 0 || !GCSettings.Rumble)
-		return;
-
-	if(rumbleRequest[i] && rumbleCount[i] < 3)
-	{
-		WPAD_Rumble(i, 1); // rumble on
-		rumbleCount[i]++;
-	}
-	else if(rumbleRequest[i])
-	{
-		rumbleCount[i] = 12;
-		rumbleRequest[i] = 0;
-	}
-	else
-	{
-		if(rumbleCount[i])
-			rumbleCount[i]--;
-		WPAD_Rumble(i, 0); // rumble off
-	}
-}
-#endif
 
 // hold zapper cursor positions
 static int pos_x = 0;

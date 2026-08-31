@@ -41,8 +41,6 @@
 #include "pad.h"
 #include "filelist.h"
 #include "libgui/Gui.h"
-#include "utils/wiidrc.h"
-
 #ifdef HW_RVL
 	#include "mem2.h"
 #endif

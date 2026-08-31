@@ -27,7 +27,6 @@ struct st_palettes {
 };
 
 void InitVideo ();
-void StopGX();
 void ResetVideo_Emu ();
 void RenderFrame(unsigned char *XBuf);
 void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight); // Stereoscopic 3D
@@ -38,8 +37,6 @@ void ResetVideo_Menu ();
 void ClearScreenshot();
 void TakeScreenshot();
 void Menu_Render ();
-void Menu_DrawImg(void * texture, f32 xpos, f32 ypos, u16 width, u16 height, f32 degrees, f32 scaleX, f32 scaleY, u8 alphaF );
-void Menu_DrawRectangle(f32 x, f32 y, f32 width, f32 height, PixelColor color);
 void Check3D();
 
 void* createTexture(int width, int height);
@@ -61,8 +58,6 @@ typedef struct
 extern GameScreenPng gameScreenPng;
 
 extern GXRModeObj *vmode;
-extern int screenheight;
-extern int screenwidth;
 extern struct st_palettes palettes[];
 extern int FDSSwitchRequested;
 extern bool progressive;
