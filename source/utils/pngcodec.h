@@ -1,5 +1,6 @@
 /****************************************************************************
- * Visual Boy Advance GX
+ * FCE Ultra
+ * Nintendo Wii/Gamecube Port
  *
  * Daryl Borth 2026
  *
