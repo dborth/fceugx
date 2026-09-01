@@ -12,10 +12,8 @@
 
 #include <gccore.h>
 #include <string.h>
-#ifndef NO_SOUND
-#include <asndlib.h>
-#endif
 #include "fceugx.h"
+#include "drivers/Platform.h"
 #include "fceusupport.h"
 
 // Each DMA buffer holds one frame's worth of 16-bit stereo samples.
@@ -120,24 +118,6 @@ static void AudioSwitchBuffers()
 }
 
 /****************************************************************************
- * InitialiseAudio
- *
- * Initializes sound system on first load of emulator
- ***************************************************************************/
-void InitialiseAudio()
-{
-	#ifdef NO_SOUND
-	AUDIO_Init(NULL);
-	AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ);
-	AUDIO_RegisterDMACallback(AudioSwitchBuffers);
-	#else
-	ASND_Init();
-	#endif
-	memset(soundbuffer, 0, sizeof(soundbuffer));
-	memset(mixbuffer, 0, sizeof(mixbuffer));
-}
-
-/****************************************************************************
  * ResetAudio
  *
  * Reset audio output when loading a new game
@@ -155,30 +135,19 @@ void ResetAudio()
  *
  * Switches between menu sound and emulator sound
  ***************************************************************************/
-void
-SwitchAudioMode(int mode)
+void SwitchAudioMode(int mode)
 {
 	if(mode == 0) // emulator
 	{
-		#ifndef NO_SOUND
-		ASND_Pause(1);
-		ASND_End();
-		AUDIO_StopDMA();
-		AUDIO_RegisterDMACallback(NULL);
-		DSP_Halt();
+		platform->getAudio()->stop();
 		AUDIO_RegisterDMACallback(AudioSwitchBuffers);
-		#endif
 	}
 	else // menu
 	{
 		IsPlaying = 0;
-		#ifndef NO_SOUND
-		DSP_Unhalt();
-		ASND_Init();
-		ASND_Pause(0);
-		#else
 		AUDIO_StopDMA();
-		#endif
+		AUDIO_RegisterDMACallback(NULL);
+		platform->getAudio()->start();
 	}
 }
 

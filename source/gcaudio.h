@@ -15,7 +15,6 @@
 
 #include "fceultra/types.h"
 
-void InitialiseAudio();
 void ResetAudio();
 void PlaySound( int32 *Buffer, int samples );
 void SwitchAudioMode(int mode);

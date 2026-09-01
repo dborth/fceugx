@@ -1,13 +1,16 @@
 #pragma once
 
 #include <stdint.h>
-#include "AudioDriver.h"
+#include <ogc/audio.h>
+#include "../AudioDriver.h"
 
-class NullAudioDriver : public AudioDriver
+class OgcNullAudioDriver : public AudioDriver
 {
 	public:
-		void init() override {}
+		void init() override { AUDIO_Init(NULL); AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ); }
 		void shutdown() override {}
+		void start() override {}
+		void stop() override {}
 
 		int32_t playVoice(const uint8_t* data, int32_t length, int volume) override { return -1; }
 		void stopVoice(int32_t voice) override {}
