@@ -208,8 +208,6 @@ void SystemInit() {
 
 static void ExitCleanup()
 {
-	platform->shutdown();
-
 	HaltDeviceCheckingThread();
 	UnmountAllFAT();
 
@@ -227,6 +225,7 @@ static void ExitCleanup()
 void SystemExit(int exitAction, bool autoloadedGame)
 {
 	ExitCleanup();
+	platform->shutdown();
 
 #ifdef HW_RVL
 	if(ShutdownRequested) {
