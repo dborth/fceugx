@@ -8,7 +8,6 @@
 #include <unistd.h>
 
 #include "OgcAudioDriver.h"
-#include "../../gcaudio.h"
 
 static OgcAudioDriver *instance = nullptr;
 
