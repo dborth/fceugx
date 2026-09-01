@@ -23,7 +23,7 @@
 #define RAPID_B			512
 
 extern int playerMapping[4];
-extern u32 btnmap[2][6][12];
+extern uint32_t btnmap[2][6][12];
 
 void SetControllers();
 void ResetControls(int cc = -1, int wc = -1);

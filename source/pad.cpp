@@ -34,9 +34,9 @@ void *InputDPR;
 static INPUTC *zapperdata[2];
 static unsigned int myzappers[2][3];
 
-u32 nespadmap[11]; // Original NES controller buttons
-u32 zapperpadmap[11]; // Original NES Zapper controller buttons
-u32 btnmap[2][6][12]; // button mapping
+uint32_t nespadmap[11]; // Original NES controller buttons
+uint32_t zapperpadmap[11]; // Original NES Zapper controller buttons
+uint32_t btnmap[2][6][12]; // button mapping
 
 void ResetControls(int consoleCtrl, int hardwareProfile)
 {
@@ -347,7 +347,7 @@ void UpdatePads()
 	WPAD_ScanPads();
 	#endif
 
-	u32 activeGamecubePads = PAD_ScanPads();
+	uint32_t activeGamecubePads = PAD_ScanPads();
 
 	float deltaTime = 1.0f / 60.0f;
 

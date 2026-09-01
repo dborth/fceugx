@@ -180,7 +180,7 @@ bool patchApplyUPS(MFILE * f, u8 **rom, int *size) {
 	}
 
 	memfseek(f, 0, MSEEK_SET);
-	u32 crc = computePatchCRC(f, patchSize - 4);
+	uint32_t crc = computePatchCRC(f, patchSize - 4);
 
 	if (crc != patchCRC) {
 		return false;
