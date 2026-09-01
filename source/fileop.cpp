@@ -42,8 +42,8 @@
 
 #define THREAD_SLEEP 100
 
-unsigned char *savebuffer = NULL;
-u8 *ext_font_ttf = NULL;
+unsigned char *savebuffer = nullptr;
+u8 *ext_font_ttf = nullptr;
 static mutex_t bufferLock = LWP_MUTEX_NULL;
 FILE * file; // file pointer - the only one we should ever use!
 bool unmountRequired[9] = { false, false, false, false, false, false, false, false, false };
@@ -60,7 +60,7 @@ bool isMounted[9] = { false, false, false, false, false, false, false, false, fa
 
 // folder parsing thread
 static lwp_t parsethread = LWP_THREAD_NULL;
-static DIR *dir = NULL;
+static DIR *dir = nullptr;
 static volatile bool parseHalt = true;
 static bool parseFilter = true;
 static bool ParseDirEntries();
@@ -97,8 +97,8 @@ static mutex_t workerMutex     = LWP_MUTEX_NULL;
 static cond_t  workerCond      = LWP_COND_NULL; // main -> worker: task available
 static cond_t  workerIdleCond  = LWP_COND_NULL; // worker -> main: now idle
 static bool    workerBusy      = false; // protected by workerMutex - true while a task is running
-static BgTaskFn workerFn       = NULL;  // protected by workerMutex
-static void *  workerArg       = NULL;  // protected by workerMutex
+static BgTaskFn workerFn       = nullptr;  // protected by workerMutex
+static void *  workerArg       = nullptr;  // protected by workerMutex
 static int     workerResult    = 0;     // protected by workerMutex - result of the last completed task
 
 /****************************************************************************
@@ -209,7 +209,7 @@ devicecallback (void *arg)
 			LWP_MutexUnlock(deviceMutex);
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 #endif
 
@@ -231,7 +231,7 @@ parsecallback (void *arg)
 		parseActive = false;
 		LWP_CondBroadcast(parseIdleCond); // wake HaltParseThread / waitParse callers
 	}
-	return NULL;
+	return nullptr;
 }
 
 /****************************************************************************
@@ -256,7 +256,7 @@ static void * workercallback (void *arg)
 		workerBusy = false;
 		LWP_CondBroadcast(workerIdleCond);
 	}
-	return NULL;
+	return nullptr;
 }
 
 bool RunOnWorkerThread(BgTaskFn fn, void * arg)
@@ -525,12 +525,12 @@ bool FindDevice(char * filepath, int * device)
 
 char * StripDevice(char * path)
 {
-	if(path == NULL)
-		return NULL;
+	if(path == nullptr)
+		return nullptr;
 	
 	char * newpath = strchr(path,'/');
 	
-	if(newpath != NULL)
+	if(newpath != nullptr)
 		newpath++;
 	
 	return newpath;
@@ -595,7 +595,7 @@ void CreateAppPath(char * origpath)
 		return;
 	
 	char * loc = strrchr(path,'/');
-	if (loc != NULL)
+	if (loc != nullptr)
 		*loc = 0; // strip file name
 
 	int pos = 0;
@@ -616,15 +616,15 @@ void CreateAppPath(char * origpath)
 static char *GetExt(char *file)
 {
 	if(!file)
-		return NULL;
+		return nullptr;
 
 	char *ext = strrchr(file,'.');
-	if(ext != NULL)
+	if(ext != nullptr)
 	{
 		ext++;
 		int extlen = strlen(ext);
 		if(extlen > 5)
-			return NULL;
+			return nullptr;
 	}
 	return ext;
 }
@@ -669,7 +669,7 @@ static bool ParseDirEntries()
 		return false;
 
 	char *ext;
-	struct dirent *entry = NULL;
+	struct dirent *entry = nullptr;
 	int isdir;
 
 	int i = 0;
@@ -678,7 +678,7 @@ static bool ParseDirEntries()
 	{
 		entry = readdir(dir);
 
-		if(entry == NULL)
+		if(entry == nullptr)
 			break;
 
 		if(entry->d_name[0] == '.' && entry->d_name[1] != '.')
@@ -700,7 +700,7 @@ static bool ParseDirEntries()
 			{
 				ext = GetExt(entry->d_name);
 				
-				if(ext == NULL)
+				if(ext == nullptr)
 					continue;
 
 				if(	strcasecmp(ext, "nes") != 0 && strcasecmp(ext, "fds") != 0 &&
@@ -745,10 +745,10 @@ static bool ParseDirEntries()
 		browser.numEntries += i;
 	}
 
-	if(entry == NULL || parseHalt)
+	if(entry == nullptr || parseHalt)
 	{
 		closedir(dir); // close directory
-		dir = NULL;
+		dir = nullptr;
 		
 		return false; // no more entries
 	}
@@ -772,7 +772,7 @@ ParseDirectory(bool waitParse, bool filter)
 		strcat(browser.dir, "/");
 
 	// open the directory
-	while(dir == NULL && retry == 1)
+	while(dir == nullptr && retry == 1)
 	{
 		mounted = ChangeInterface(browser.dir, NOTSILENT);
 
@@ -781,12 +781,12 @@ ParseDirectory(bool waitParse, bool filter)
 		else
 			return -1;
 
-		if(dir == NULL)
+		if(dir == nullptr)
 			retry = ErrorPromptRetry("Error opening directory!");
 	}
 
 	// if we can't open the dir, try higher levels
-	if (dir == NULL)
+	if (dir == nullptr)
 	{
 		char * devEnd = strrchr(browser.dir, '/');
 
@@ -795,7 +795,7 @@ ParseDirectory(bool waitParse, bool filter)
 			devEnd[0] = 0; // strip slash
 			devEnd = strrchr(browser.dir, '/');
 
-			if(devEnd == NULL)
+			if(devEnd == nullptr)
 				break;
 
 			devEnd[1] = 0; // strip remaining file listing
@@ -805,7 +805,7 @@ ParseDirectory(bool waitParse, bool filter)
 		}
 	}
 	
-	if(dir == NULL)
+	if(dir == nullptr)
 		return -1;
 
 	if(IsDeviceRoot(browser.dir))

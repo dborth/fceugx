@@ -100,13 +100,13 @@ bool SaveRAM (char * filepath, bool silent)
 				}
 
 				// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
-				const stateheader* sh1 = NULL;
-				const stateheader* sh2 = NULL;
+				const stateheader* sh1 = nullptr;
+				const stateheader* sh2 = nullptr;
 
 				const stateheader* sh = stateheader_first(gba_data);
 				while (sh && stateheader_plausible(sh)) {
 					if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) {}
-					else if (sh1 == NULL) {
+					else if (sh1 == nullptr) {
 						sh1 = sh;
 					}
 					else {
@@ -116,12 +116,12 @@ bool SaveRAM (char * filepath, bool silent)
 					sh = stateheader_advance(sh);
 				}
 
-				if (sh1 == NULL)
+				if (sh1 == nullptr)
 				{
 					ErrorPrompt("PocketNES save file has no SRAM.");
 					datasize = 0;
 				}
-				else if (sh2 != NULL)
+				else if (sh2 != nullptr)
 				{
 					ErrorPrompt("PocketNES save file has more than one SRAM.");
 					datasize = 0;
@@ -201,13 +201,13 @@ bool LoadRAM (char * filepath, bool silent)
 		}
 		
 		// Look for just one save file. If there aren't any, or there is more than one, don't read any data.
-		const stateheader* sh1 = NULL;
-		const stateheader* sh2 = NULL;
+		const stateheader* sh1 = nullptr;
+		const stateheader* sh2 = nullptr;
 
 		const stateheader* sh = stateheader_first(savebuffer);
 		while (sh && stateheader_plausible(sh)) {
 			if (little_endian_conv_16(sh->type) != GOOMBA_SRAMSAVE) { }
-			else if (sh1 == NULL) {
+			else if (sh1 == nullptr) {
 				sh1 = sh;
 			}
 			else {
@@ -217,12 +217,12 @@ bool LoadRAM (char * filepath, bool silent)
 			sh = stateheader_advance(sh);
 		}
 
-		if (sh1 == NULL)
+		if (sh1 == nullptr)
 		{
 			ErrorPrompt("PocketNES save file has no SRAM.");
 			offset = 0;
 		}
-		else if (sh2 != NULL)
+		else if (sh2 != nullptr)
 		{
 			ErrorPrompt("PocketNES save file has more than one SRAM.");
 			offset = 0;

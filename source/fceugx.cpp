@@ -60,7 +60,7 @@ char appPath[1024] = { 0 };
 
 int frameskip = 0;
 int turbomode = 0;
-unsigned char * nesrom = NULL;
+unsigned char * nesrom = nullptr;
 int eoptions=0;
 
 static bool autoboot = false;
@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 	
 	#ifdef HW_RVL
 	// store path app was loaded from
-	if(argc > 0 && argv[0] != NULL)
+	if(argc > 0 && argv[0] != nullptr)
 		CreateAppPath(argv[0]);
 
 	InitMem2Manager();
@@ -109,7 +109,7 @@ int main(int argc, char *argv[])
 	int currentTiming = 0;
 
 #ifdef HW_RVL
-	if(argc > 2 && argv[1] != NULL && argv[2] != NULL) {
+	if(argc > 2 && argv[1] != nullptr && argv[2] != nullptr) {
 		LoadPrefs();
 		if(strncmp(argv[1], "sd", 2) == 0)
 		{

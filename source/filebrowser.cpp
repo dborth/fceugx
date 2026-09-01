@@ -39,7 +39,7 @@ extern char* strcasestr(const char *, const char *);
 }
 
 BROWSERINFO browser;
-BROWSERENTRY * browserList = NULL; // list of files/folders in browser
+BROWSERENTRY * browserList = nullptr; // list of files/folders in browser
 
 static char szpath[MAXPATHLEN];
 char szname[MAXPATHLEN];
@@ -238,7 +238,7 @@ static void CleanupPath(char * path)
 
 bool IsDeviceRoot(char * path)
 {
-	if(path == NULL || path[0] == 0)
+	if(path == nullptr || path[0] == 0)
 		return false;
 
 	if( strcmp(path, "sd:/")    == 0 ||
@@ -287,10 +287,10 @@ int UpdateDirName()
 			/* determine last subdirectory namelength */
 			sprintf(temp,"%s",browser.dir);
 			test = strtok(temp,"/");
-			while (test != NULL)
+			while (test != nullptr)
 			{
 				size = strlen(test);
-				test = strtok(NULL,"/");
+				test = strtok(nullptr,"/");
 			}
 	
 			/* remove last subdirectory name */
@@ -434,7 +434,7 @@ static bool IsValidROM()
 	{
 		char * p = strrchr(browserList[browser.selIndex].filename, '.');
 
-		if (p != NULL)
+		if (p != nullptr)
 		{
 			if(strcasecmp(p, ".gba") == 0)
 			{
@@ -442,7 +442,7 @@ static bool IsValidROM()
 				return true;
 			}
 			
-			char * zippedFilename = NULL;
+			char * zippedFilename = nullptr;
 
 			if(strcasecmp(p, ".zip") == 0 && !inSz)
 			{
@@ -452,10 +452,10 @@ static bool IsValidROM()
 				if(zippedFilename && strlen(zippedFilename) > 4)
 					p = strrchr(zippedFilename, '.');
 				else
-					p = NULL;
+					p = nullptr;
 			}
 
-			if(p != NULL)
+			if(p != nullptr)
 			{
 				if (
 					strcasecmp(p, ".nes") == 0 ||
@@ -488,7 +488,7 @@ bool IsSz()
 	{
 		char * p = strrchr(browserList[browser.selIndex].filename, '.');
 
-		if (p != NULL)
+		if (p != nullptr)
 			if(strcasecmp(p, ".7z") == 0)
 				return true;
 	}
@@ -506,11 +506,11 @@ void StripExt(char* returnstring, char * inputstring)
 
 	snprintf(returnstring, MAXJOLIET, "%s", inputstring);
 
-	if(inputstring == NULL || strlen(inputstring) < 4)
+	if(inputstring == nullptr || strlen(inputstring) < 4)
 		return;
 
 	loc_dot = strrchr(returnstring,'.');
-	if (loc_dot != NULL)
+	if (loc_dot != nullptr)
 		*loc_dot = 0; // strip file extension
 }
 
@@ -571,17 +571,17 @@ int BrowserLoadFile()
 		if(filesize > 0) {
 			// check nesrom for PocketNES embedded roms
 			const char *ext = strrchr(filepath, '.');
-			if (ext != NULL && strcmp(ext, ".gba") == 0)
+			if (ext != nullptr && strcmp(ext, ".gba") == 0)
 			{
 				const pocketnes_romheader* rom1 = pocketnes_first_rom(nesrom, filesize);
-				const pocketnes_romheader* rom2 = NULL;
-				if (rom1 != NULL) {
+				const pocketnes_romheader* rom2 = nullptr;
+				if (rom1 != nullptr) {
 					rom2 = pocketnes_next_rom(nesrom, filesize, rom1);
 				}
 
-				if (rom1 == NULL)
+				if (rom1 == nullptr)
 					ErrorPrompt("No NES ROMs found in this file.");
-				else if (rom2 != NULL)
+				else if (rom2 != nullptr)
 					ErrorPrompt("More than one NES ROM found in this file. Only files with one ROM are supported.");
 				else
 				{
@@ -766,7 +766,7 @@ int BrowserChangeFolder()
 	else
 	{
 		char * path = StripDevice(browser.dir);
-		if(path != NULL)
+		if(path != nullptr)
 			strcpy(GCSettings.LoadFolder, path);
 		FindDevice(browser.dir, &GCSettings.LoadMethod);
 	}
@@ -790,7 +790,7 @@ OpenGameList ()
 		if(strlen(GCSettings.LoadFolder) > 0) {
 			DIR *dir = opendir(browser.dir);
 
-			if(dir == NULL) {
+			if(dir == nullptr) {
 				sprintf(browser.dir, "%s", pathPrefix[device]);
 			}
 			else {
@@ -821,7 +821,7 @@ bool AutoloadGame(char* filepath, char* filename) {
 		if (strcmp(browserList[i].filename, ".") == 0 || strcmp(browserList[i].filename, "..") == 0) {
 			continue;
 		}
-		if(strcasestr(browserList[i].filename, filename) != NULL) {
+		if(strcasestr(browserList[i].filename, filename) != nullptr) {
 			browser.selIndex = i;
 			if(IsSz()) {
 				BrowserLoadSz();

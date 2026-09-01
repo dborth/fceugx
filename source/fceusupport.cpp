@@ -59,12 +59,12 @@ CloseGame()
 // File Control
 FILE *FCEUD_UTF8fopen(const char *n, const char *m)
 {
-    return NULL;
+    return nullptr;
 }
 
 EMUFILE_FILE* FCEUD_UTF8_fstream(const char *n, const char *m)
 {
-	return NULL;
+	return nullptr;
 }
 
 bool FCEUD_ShouldDrawInputAids()
@@ -190,7 +190,7 @@ bool FCEUI_AviIsRecording(void) { return 0; }
 bool FCEUI_AviEnableHUDrecording() { return 0; }
 void FCEUI_SetAviEnableHUDrecording(bool enable) { }
 bool FCEUI_AviDisableMovieMessages() { return true; }
-const char *FCEUD_GetCompilerString() { return NULL; }
+const char *FCEUD_GetCompilerString() { return nullptr; }
 void FCEUI_UseInputPreset(int preset) { }
 void FCEUD_SoundVolumeAdjust(int n) { }
 void FCEUD_SetEmulationSpeed(int cmd) { }

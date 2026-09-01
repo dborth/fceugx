@@ -193,8 +193,8 @@ void SetControllers()
 		FCEUI_SetInputFourscore(0);
 
 	// set defaults
-	zapperdata[0]=NULL;
-	zapperdata[1]=NULL;
+	zapperdata[0]=nullptr;
+	zapperdata[1]=nullptr;
 	myzappers[0][0]=myzappers[1][0]=128;
 	myzappers[0][1]=myzappers[1][1]=120;
 	myzappers[0][2]=myzappers[1][2]=0;
