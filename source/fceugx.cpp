@@ -72,8 +72,9 @@ static bool autoboot = false;
 
 int main(int argc, char *argv[])
 {
-	DefaultSettings (); // Set defaults
+	DefaultSettings(); // Set defaults
 	SystemInit();
+	ApplySettings();
 	ResetVideo_Menu (); // change to menu video mode
 	
 	#ifdef HW_RVL
