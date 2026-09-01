@@ -13,8 +13,6 @@
 #ifndef _FILELIST_H_
 #define _FILELIST_H_
 
-#include <gccore.h>
-
 // Fonts
 #include "font_ttf.h"
 

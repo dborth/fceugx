@@ -13,10 +13,8 @@
  * statebuffer below
  ****************************************************************************/
 
-#include <gccore.h>
 #include <string.h>
 #include <malloc.h>
-#include <fat.h>
 #include <zlib.h>
 
 #include "fceugx.h"

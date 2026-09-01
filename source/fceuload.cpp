@@ -16,7 +16,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
-#include <gctypes.h>
 
 #include "fceultra/file.h"
 

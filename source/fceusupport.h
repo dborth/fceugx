@@ -12,7 +12,6 @@
 #ifndef _FCEUSUPPORT_H_
 #define _FCEUSUPPORT_H_
 
-#include <gccore.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>

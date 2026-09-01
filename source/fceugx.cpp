@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include <gctypes.h>
 #include <ogc/system.h>
 #include <fat.h>
 #include <wiiuse/wpad.h>

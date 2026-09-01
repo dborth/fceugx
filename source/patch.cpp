@@ -10,7 +10,6 @@
  ***************************************************************************/
 
 #include <zlib.h>
-#include <gctypes.h>
 
 #include "fceugx.h"
 #include "fceusupport.h"

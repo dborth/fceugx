@@ -14,10 +14,8 @@
  * savebuffer below
  ****************************************************************************/
 
-#include <gccore.h>
 #include <string.h>
 #include <malloc.h>
-#include <fat.h>
 #include <string.h>
 
 #include "fceugx.h"

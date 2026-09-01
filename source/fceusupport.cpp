@@ -9,7 +9,6 @@
  * FCEU Support Functions
  ****************************************************************************/
 
-#include <gctypes.h>
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "pad.h"

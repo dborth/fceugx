@@ -11,6 +11,7 @@
 
 #include <gccore.h>
 #include <ogc/lwp_watchdog.h>
+#include <wiiuse/wpad.h>
 
 #include "fceugx.h"
 #include "fceusupport.h"

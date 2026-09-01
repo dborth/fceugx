@@ -9,12 +9,10 @@
  * Preferences save/load preferences utilities
  ****************************************************************************/
 
-#include <gccore.h>
 #include <stdio.h>
 #include <string.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include <ogcsys.h>
 #include <mxml.h>
 
 #include "fceugx.h"
