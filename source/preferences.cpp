@@ -173,7 +173,7 @@ preparePrefsData ()
 	createXMLSection("Menu", "Menu Settings");
 
 #ifdef HW_RVL
-	createXMLSetting("WiimoteOrientation", "Wiimote Orientation", toStr(GCSettings.WiimoteOrientation));
+	createXMLSetting("wiimoteOrientation", "Wiimote Orientation", toStr(GCSettings.wiimoteOrientation));
 #endif
 	createXMLSetting("ExitAction", "Exit Action", toStr(GCSettings.ExitAction));
 	createXMLSetting("MusicVolume", "Music Volume", toStr(GCSettings.MusicVolume));
@@ -283,6 +283,15 @@ static void loadXMLController(u32 controller[], const char * name)
 	}
 }
 
+static void applySettings() {
+	platform->getInput()->setWiimoteOrientation(GCSettings.wiimoteOrientation);
+	platform->getInput()->setRumbleEnabled(GCSettings.Rumble);
+	GuiSound::setDefaultVolume(SOUND::OGG, GCSettings.MusicVolume);
+	GuiSound::setDefaultVolume(SOUND::PCM, GCSettings.SFXVolume);
+	ResetVideo_Menu();
+	ChangeLanguage();
+}
+
 /****************************************************************************
  * decodePrefsData
  *
@@ -343,7 +352,7 @@ decodePrefsData ()
 
 	// Menu Settings
 
-	loadXMLSetting(&GCSettings.WiimoteOrientation, "WiimoteOrientation");
+	loadXMLSetting(&GCSettings.wiimoteOrientation, "WiimoteOrientation");
 	loadXMLSetting(&GCSettings.ExitAction, "ExitAction");
 	loadXMLSetting(&GCSettings.MusicVolume, "MusicVolume");
 	loadXMLSetting(&GCSettings.SFXVolume, "SFXVolume");
@@ -423,8 +432,8 @@ void FixInvalidSettings()
 		GCSettings.timing = TIMING_AUTOMATIC;
 	if(!(GCSettings.hideoverscan >= HIDEOVERSCAN_OFF && GCSettings.hideoverscan < HIDEOVERSCAN_LENGTH))
 		GCSettings.hideoverscan = HIDEOVERSCAN_BOTH;
-	if(!(GCSettings.WiimoteOrientation >= WIIMOTEORIENTATION_VERTICAL && GCSettings.WiimoteOrientation < WIIMOTEORIENTATION_LENGTH))
-		GCSettings.WiimoteOrientation = WIIMOTEORIENTATION_VERTICAL;
+	if(!(GCSettings.wiimoteOrientation >= WIIMOTE_ORIENTATION_AUTO && GCSettings.wiimoteOrientation < WIIMOTE_ORIENTATION_LENGTH))
+		GCSettings.wiimoteOrientation = WIIMOTE_ORIENTATION_AUTO;
 }
 
 /****************************************************************************
@@ -461,7 +470,7 @@ DefaultSettings ()
 	GCSettings.spritelimit = true; // enforce 8 sprite limit
 	GCSettings.gamegenie = false;
 
-	GCSettings.WiimoteOrientation = WIIMOTEORIENTATION_VERTICAL;
+	GCSettings.wiimoteOrientation = WIIMOTE_ORIENTATION_AUTO;
 	GCSettings.AutoloadGame = false;
 #ifdef HW_RVL
 	GCSettings.ExitAction = EXITACTION_WII_AUTO;
@@ -496,6 +505,8 @@ DefaultSettings ()
 	GCSettings.TurboModeEnabled = true;
 	GCSettings.TurboModeButton = 0; // Default is Right Analog Stick (0)
 	GCSettings.GamepadMenuToggle = GAMEPAD_MENU_TOGGLE_DEFAULT;
+
+	applySettings();
 }
 
 /****************************************************************************
@@ -636,18 +647,13 @@ bool LoadPrefs()
 	}
 
 	FixInvalidSettings();
-
-	if(GCSettings.videoMode > VIDEOMODE_AUTO) {
-		ResetVideo_Menu();
-	}
+	applySettings();
 
 #ifdef HW_RVL
 	bg_music = (u8 * )bg_music_ogg;
 	bg_music_size = bg_music_ogg_size;
 	LoadBgMusic();
 #endif
-
-	ChangeLanguage();
 	return true;
 }
 

@@ -14,6 +14,7 @@
 
 #include <unistd.h>
 
+#include "drivers/InputDriver.h"
 #include "fceultra/driver.h"
 
 #define APPNAME			"FCE Ultra GX"
@@ -141,12 +142,6 @@ enum {
 };
 
 enum {
-	WIIMOTEORIENTATION_VERTICAL = 0,
-	WIIMOTEORIENTATION_HORIZONTAL,
-	WIIMOTEORIENTATION_LENGTH
-};
-
-enum {
 	TIMING_NTSC = 0,
 	TIMING_PAL,
 	TIMING_AUTOMATIC,
@@ -243,7 +238,7 @@ struct SGCSettings
 	bool	gamegenie;
 	int		timing;
 	int		Controller;
-	int		WiimoteOrientation;
+	int		wiimoteOrientation;
 	int		ExitAction;
 	int		MusicVolume;
 	int		SFXVolume;
