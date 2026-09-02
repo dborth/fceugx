@@ -29,7 +29,7 @@
 #include "libgui/Gui.h"
 #include "menu.h"
 #include "pad.h"
-#include "videofilters.h"
+#include "drivers/ogc/videofilters.h"
 
 #include "utils/pngcodec.h"
 

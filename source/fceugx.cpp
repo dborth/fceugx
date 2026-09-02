@@ -36,7 +36,7 @@
 #include "networkop.h"
 #include "gcaudio.h"
 #include "gcvideo.h"
-#include "videofilters.h"
+#include "drivers/ogc/videofilters.h"
 #include "pad.h"
 #include "filelist.h"
 #include "libgui/Gui.h"

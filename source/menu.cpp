@@ -27,7 +27,7 @@
 #include "fceusupport.h"
 #include "pad.h"
 #include "gcvideo.h"
-#include "videofilters.h"
+#include "drivers/ogc/videofilters.h"
 #include "filebrowser.h"
 #include "gcunzip.h"
 #include "networkop.h"
