@@ -21,7 +21,7 @@
 #include "fileop.h"
 #include "pad.h"
 #include "fceuload.h"
-#include "gcunzip.h"
+#include "utils/decompress.h"
 #include "fceuram.h"
 #include "fceustate.h"
 #include "patch.h"
