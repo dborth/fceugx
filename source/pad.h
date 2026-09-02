@@ -26,7 +26,6 @@ void SetControllers();
 void ResetControls(int cc = -1, int wc = -1);
 void GetJoy();
 bool isMenuRequested();
-void SetupPads();
 void UpdatePads();
 
 #endif

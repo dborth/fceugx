@@ -464,21 +464,6 @@ void UpdatePads()
 	}
 }
 
-/****************************************************************************
- * SetupPads
- * Allocates controllers and initializes hardware
- ***************************************************************************/
-void SetupPads()
-{
-	PAD_Init();
-
-	#ifdef HW_RVL
-	WPAD_Init();
-	WPAD_SetDataFormat(WPAD_CHAN_ALL, WPAD_FMT_BTNS_ACC_IR);
-	WPAD_SetVRes(WPAD_CHAN_ALL, platform->getVideo()->getScreenWidth(), platform->getVideo()->getScreenHeight());
-	#endif
-}
-
 // hold zapper cursor positions
 static int pos_x = 0;
 static int pos_y = 0;
