@@ -33,7 +33,7 @@ INCLUDES	:=	source
 #---------------------------------------------------------------------------------
 SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 				-DFORMAT_PAL8 -DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
-				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ -DNO_SOUND \
+				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 				-flto=auto \
 				-fomit-frame-pointer -fno-strict-aliasing \
 				-Wno-format -Wno-format-overflow \
@@ -78,12 +78,11 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-CPPFILES	:=	$(filter-out GuiSoundOggPlayer.cpp OgcAudioDriver.cpp, $(CPPFILES))
+CPPFILES	:=	$(filter-out GuiSoundOggPlayer.cpp WiiAudioDriver.cpp WiiFileSystemDriver.cpp, $(CPPFILES))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.ttf) \
-					$(wildcard $(dir)/*.lang) $(wildcard $(dir)/*.png) \
-					$(wildcard $(dir)/*.pcm)))
+					$(wildcard $(dir)/*.lang) $(wildcard $(dir)/*.png)
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -152,7 +151,7 @@ $(OUTPUT).elf: $(OFILES)
 $(OFILES_SOURCES) : $(HFILES)
 
 #---------------------------------------------------------------------------------
-# This rule links in binary data with these extensions: ttf lang png pcm
+# This rule links in binary data with these extensions: ttf lang png
 #---------------------------------------------------------------------------------
 %.ttf.o %_ttf.h : %.ttf
 	@echo $(notdir $<)
@@ -163,10 +162,6 @@ $(OFILES_SOURCES) : $(HFILES)
 	$(bin2o)
 
 %.png.o %_png.h : %.png
-	@echo $(notdir $<)
-	$(bin2o)
-	
-%.pcm.o %_pcm.h : %.pcm
 	@echo $(notdir $<)
 	$(bin2o)
 
