@@ -29,12 +29,12 @@
 #include "libgui/Gui.h"
 
 #ifdef USE_VM
-	#include "vmalloc.h"
+	#include "drivers/ogc/vm/vmalloc.h"
 #endif
 
 extern "C" {
 #ifdef USE_VM
-	#include "utils/vm/vm.h"
+	#include "drivers/ogc/vm/vm.h"
 #endif
 extern void __exception_setreload(int t);
 s32 __STM_Close();

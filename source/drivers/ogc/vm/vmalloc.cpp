@@ -1,5 +1,6 @@
 /****************************************************************************
- * Snes9x Nintendo Wii/Gamecube Port
+ * FCE Ultra
+ * Nintendo Wii/Gamecube Port
  *
  * emu_kidid 2015
  *
@@ -12,7 +13,7 @@
 
 #include <ogc/lwp_heap.h>
 #include <ogc/system.h>
-#include "utils/vm/vm.h"
+#include "vm.h"
 
 static heap_cntrl vm_heap;
 

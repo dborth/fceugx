@@ -1,5 +1,6 @@
 /****************************************************************************
- * Snes9x Nintendo Wii/Gamecube Port
+ * FCE Ultra
+ * Nintendo Wii/Gamecube Port
  *
  * emu_kidid 2015
  *

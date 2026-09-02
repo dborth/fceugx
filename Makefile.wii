@@ -20,8 +20,8 @@ export	FREETYPE_LIBS	:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config -
 TARGET		:=	fceugx-wii
 TARGETDIR	:=  executables
 BUILD			:=	build_wii
-SOURCES		:=	source source/drivers source/drivers/ogc source/libgui \
-				source/utils source/utils/sz \
+SOURCES		:=	source source/utils source/utils/sz source/libgui \
+				source/drivers source/drivers/ogc \
 				source/fceultra source/fceultra/boards source/fceultra/input \
 				source/fceultra/utils source/fceultra/mbshare \
 				source/pocketnes source/pocketnes/minilzo

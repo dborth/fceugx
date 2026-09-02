@@ -44,7 +44,7 @@
 	#include "mem2.h"
 #endif
 #ifdef USE_VM
-	#include "vmalloc.h"
+	#include "drivers/ogc/vm/vmalloc.h"
 #endif
 
 #include "fceultra/types.h"
