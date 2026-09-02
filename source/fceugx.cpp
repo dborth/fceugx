@@ -19,10 +19,6 @@
 #include <malloc.h>
 #include <sys/iosupport.h>
 
-#ifdef HW_RVL
-#include <di/di.h>
-#endif
-
 #include "fceugx.h"
 #include "system.h"
 #include "fceuload.h"
@@ -43,7 +39,7 @@
 #ifdef HW_RVL
 	#include "mem2.h"
 #endif
-#ifdef USE_VM
+#ifdef HW_DOL
 	#include "drivers/ogc/vm/vmalloc.h"
 #endif
 
@@ -85,7 +81,7 @@ int main(int argc, char *argv[])
 	#endif
 
 	savebuffer = (unsigned char *)memalign(32,SAVEBUFFERSIZE);
-#ifdef USE_VM
+#ifdef HW_DOL
 	browserList = (BROWSERENTRY *)vm_malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
 	nesrom = (unsigned char *)vm_malloc(1024*1024*4);
 #else

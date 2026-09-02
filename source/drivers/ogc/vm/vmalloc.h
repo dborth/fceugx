@@ -9,7 +9,7 @@
  * GC VM memory allocator
  ***************************************************************************/
 
-#ifdef USE_VM
+#ifdef HW_DOL
 
 #ifndef _VMMANAGER_H_
 #define _VMMANAGER_H_

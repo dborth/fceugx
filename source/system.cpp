@@ -28,14 +28,12 @@
 #include "drivers/ogc/wiidrc.h"
 #include "libgui/Gui.h"
 
-#ifdef USE_VM
-	#include "drivers/ogc/vm/vmalloc.h"
+#ifdef HW_DOL
+#include "drivers/ogc/vm/vmalloc.h"
+#include "drivers/ogc/vm/vm.h"
 #endif
 
 extern "C" {
-#ifdef USE_VM
-	#include "drivers/ogc/vm/vm.h"
-#endif
 extern void __exception_setreload(int t);
 s32 __STM_Close();
 s32 __STM_Init();
@@ -147,7 +145,7 @@ static void ipl_set_config(unsigned char c)
 #endif
 
 void SystemInit() {
-	#ifdef USE_VM
+	#ifdef HW_DOL
 	VM_Init(ARAM_SIZE, MRAM_BACKING); // Setup Virtual Memory with the entire ARAM
 	#endif
 
