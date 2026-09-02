@@ -32,9 +32,7 @@
 #include "utils/endian.h"
 #include "utils/memory.h"
 #include "utils/md5.h"
-#ifdef GEKKO
-#include "utils/unzip/unzip.h"
-#else
+#ifndef GEKKO
 #include "utils/unzip.h"
 #endif
 #include "driver.h"
@@ -181,7 +179,7 @@ FileBaseInfo DetermineFileBase(const char *f) {
 }
 
 inline FileBaseInfo DetermineFileBase(const std::string& str) { return DetermineFileBase(str.c_str()); }
-
+#ifndef GEKKO
 static FCEUFILE * TryUnzip(const std::string& path) {
 	unzFile tz;
 	if((tz=unzOpen(path.c_str())))  // If it's not a zip file, use regular file handlers.
@@ -251,9 +249,10 @@ zpfail:
 
 	return 0;
 }
-
+#endif
 FCEUFILE * FCEU_fopen(const char *path, const char *ipsfn, const char *mode, char *ext, int index, const char** extensions, int* userCancel)
 {
+	#ifndef GEKKO
 	FILE *ipsfile=0;
 	FCEUFILE *fceufp=0;
 
@@ -383,6 +382,7 @@ FCEUFILE * FCEU_fopen(const char *path, const char *ipsfn, const char *mode, cha
 		ApplyIPS(ipsfile,fceufp);
 		return fceufp;
 	}
+	#endif
 	return 0;
 }
 
