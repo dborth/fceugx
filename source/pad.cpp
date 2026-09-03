@@ -215,8 +215,8 @@ static int pos_y = 0;
 
 static void UpdateCursorPosition(int chan)
 {
-	if (!userInput[chan]) return;
-	const InputPadData& pad = userInput[chan]->getPadData();
+	if (!controller[chan]) return;
+	const InputPadData& pad = controller[chan]->getPadData();
 
 	// If we have an active IR pointer, snap directly to coordinates
 	if (pad.validPointer)
@@ -255,8 +255,8 @@ extern int rapidAlternator;
 
 static unsigned char DecodeJoy(unsigned short chan)
 {
-	if (!userInput[chan]) return 0;
-	const InputPadData& pad = userInput[chan]->getPadData();
+	if (!controller[chan]) return 0;
+	const InputPadData& pad = controller[chan]->getPadData();
 	unsigned char J = 0;
 
 	// Unified Stick to D-Pad translation
@@ -293,7 +293,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 
 		int zapperChan = 0;
 
-		if (userInput[1] && userInput[1]->getPadData().validPointer) {
+		if (controller[1] && controller[1]->getPadData().validPointer) {
 			zapperChan = 1;
 		}
 
@@ -348,8 +348,8 @@ bool isMenuRequested()
 {
 	for(int i=0; i<4; i++)
 	{
-		if (!userInput[i]) continue;
-		const InputPadData& pad = userInput[i]->getPadData();
+		if (!controller[i]) continue;
+		const InputPadData& pad = controller[i]->getPadData();
 
 		bool rightStickLeft = (pad.substickX < -0.55f);
 		bool homePressed = (pad.buttons_h & INPUT_BTN_HOME);
@@ -380,8 +380,8 @@ bool isMenuRequested()
 
 bool IsTurboModeInputPressed()
 {
-	if (!userInput[0]) return false;
-	const InputPadData& pad = userInput[0]->getPadData();
+	if (!controller[0]) return false;
+	const InputPadData& pad = controller[0]->getPadData();
 
 	switch(GCSettings.TurboModeButton)
 	{

@@ -7,14 +7,14 @@
 #include <cmath>
 #include "InputController.h"
 
-InputController* userInput[4] = {nullptr, nullptr, nullptr, nullptr};
+InputController* controller[4] = {nullptr, nullptr, nullptr, nullptr};
 
 void InitUserInputControllers()
 {
 	for(int i = 0; i < 4; i++)
 	{
-		if(!userInput[i])
-			userInput[i] = new InputController(i);
+		if(!controller[i])
+			controller[i] = new InputController(i);
 	}
 }
 
