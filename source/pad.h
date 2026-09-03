@@ -12,7 +12,7 @@
 #define _PAD_H_
 
 #include "fceugx.h"
-#include "libgui/GuiInput.h"
+#include "drivers/InputData.h"
 
 #define MAXJP 			11
 
