@@ -20,7 +20,7 @@
  * http://code.google.com/p/libgui/
 
  * \section Credits
- * This library was wholly designed and written by Tantric. Thanks to the authors of
+ * This library was wholly designed and written by Daryl Borth. Thanks to the authors of
  * GRRLIB and libwiisprite for laying the foundations.
  *
 */

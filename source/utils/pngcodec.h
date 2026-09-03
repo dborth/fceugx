@@ -1,6 +1,5 @@
 /****************************************************************************
- * FCE Ultra
- * Nintendo Wii/Gamecube Port
+ * FCE Ultra GX
  *
  * Daryl Borth 2026
  *

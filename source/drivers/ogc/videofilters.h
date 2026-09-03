@@ -1,8 +1,7 @@
 /****************************************************************************
- * FCE Ultra
- * Nintendo Wii/Gamecube Port
+ * FCE Ultra GX
  *
- * Tantric 2008-2026
+ * Daryl Borth 2008-2026
  *
  * videofilters.h
  * HQ2x, Scale2X, 2xBR, DDT filters

@@ -1,9 +1,8 @@
 /****************************************************************************
- * FCE Ultra
- * Nintendo Wii/Gamecube Port
+ * FCE Ultra GX
  *
  * michniewski August 2008
- * Tantric 2008-2023
+ * Daryl Borth 2008-2026
  *
  * button_mapping.h
  *

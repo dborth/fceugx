@@ -1,6 +1,5 @@
 /****************************************************************************
- * FCE Ultra
- * Nintendo Wii/Gamecube Port
+ * FCE Ultra GX
  *
  * emu_kidid 2015
  *

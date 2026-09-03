@@ -1,8 +1,7 @@
 /****************************************************************************
- * FCE Ultra
- * Nintendo Wii/Gamecube Port
+ * FCE Ultra GX
  *
- * Tantric 2010-2023
+ * Daryl Borth 2010-2023
  *
  * mem2.cpp
  *

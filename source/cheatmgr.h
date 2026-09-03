@@ -1,8 +1,7 @@
 /****************************************************************************
- * FCE Ultra
- * Nintendo Wii/Gamecube Port
+ * FCE Ultra GX
  *
- * Tantric 2009-2023
+ * Daryl Borth 2009-2023
  *
  * cheatmgr.h
  *
