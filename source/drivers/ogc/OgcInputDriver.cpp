@@ -201,7 +201,7 @@ static float NormalizeWPADAnalog(int pos, int min, int max, int center) {
 }
 #endif
 
-void OgcInputDriver::update(float deltaTime) {
+void OgcInputDriver::update() {
 	#ifdef HW_RVL
 	WPAD_ScanPads();
 	WiiDRC_ScanPads();
@@ -341,7 +341,7 @@ void OgcInputDriver::update(float deltaTime) {
 		}
 
 		// Push the finalized, merged payload to the controller abstraction
-		userInput[i]->update(padData, deltaTime);
+		userInput[i]->update(padData, platform->getVideo()->getDeltaTime());
 		
 		bool doRumble = rumbleRequest[i] && allowRumble;
 

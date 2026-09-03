@@ -9,8 +9,6 @@
  ****************************************************************************/
 
 #include <gccore.h>
-#include <ogc/lwp_watchdog.h>
-#include <wiiuse/wpad.h>
 
 #include "fceugx.h"
 #include "fceusupport.h"
@@ -24,6 +22,8 @@
 #include "drivers/ogc/wiidrc.h"
 
 #define ANALOG_SENSITIVITY 30
+#define RAPID_A 		256
+#define RAPID_B			512
 
 int playerMapping[4] = {0,1,2,3};
 
@@ -33,13 +33,13 @@ void *InputDPR;
 static INPUTC *zapperdata[2];
 static unsigned int myzappers[2][3];
 
-uint32_t nespadmap[11]; // Original NES controller buttons
-uint32_t zapperpadmap[11]; // Original NES Zapper controller buttons
-uint32_t btnmap[2][6][12]; // button mapping
+uint32_t nespadmap[MAXJP]; // Original NES controller buttons
+uint32_t zapperpadmap[MAXJP]; // Original NES Zapper controller buttons
+uint32_t btnmap[CTRL_BTN_MAPPINGS][GUI_HW_MAX][MAXJP]; // button mapping
 
 void ResetControls(int consoleCtrl, int hardwareProfile)
 {
-	int i = 0;
+	int i;
 
 	// Original NES controller buttons
 	// All other pads are mapped to this
@@ -128,18 +128,17 @@ void ResetControls(int consoleCtrl, int hardwareProfile)
 	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == GUI_HW_DRC))
 	{
 		i=0;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_A;
+		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_Y;
 		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_B;
 		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_X;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_Y;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_TRIGGER_L;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_TRIGGER_R;
+		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_A;
 		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_PLUS;
 		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_MINUS;
 		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_UP;
 		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_DOWN;
 		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_LEFT;
 		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_BTN_RIGHT;
+		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = GUI_TRIGGER_L;
 	}
 
 	/*** Nunchuk + Wiimote Padmap ***/
@@ -162,17 +161,15 @@ void ResetControls(int consoleCtrl, int hardwareProfile)
 	/*** Zapper : GC controller button mapping ***/
 	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && hardwareProfile == GUI_HW_GAMECUBE))
 	{
-		i=0;
-		btnmap[CTRL_ZAPPER][GUI_HW_GAMECUBE][i++] = GUI_BTN_A; // shoot
-		btnmap[CTRL_ZAPPER][GUI_HW_GAMECUBE][i++] = GUI_BTN_B; // insert coin
+		btnmap[CTRL_ZAPPER][GUI_HW_GAMECUBE][0] = GUI_BTN_A; // shoot
+		btnmap[CTRL_ZAPPER][GUI_HW_GAMECUBE][1] = GUI_BTN_B; // insert coin
 	}
 
 	/*** Zapper : Wiimote button mapping ***/
 	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && hardwareProfile == GUI_HW_WIIMOTE))
 	{
-		i=0;
-		btnmap[CTRL_ZAPPER][GUI_HW_WIIMOTE][i++] = GUI_BTN_B; // shoot
-		btnmap[CTRL_ZAPPER][GUI_HW_WIIMOTE][i++] = GUI_BTN_A; // insert coin
+		btnmap[CTRL_ZAPPER][GUI_HW_WIIMOTE][0] = GUI_BTN_B; // shoot
+		btnmap[CTRL_ZAPPER][GUI_HW_WIIMOTE][1] = GUI_BTN_A; // insert coin
 	}
 }
 
@@ -209,256 +206,6 @@ void SetControllers()
 		else p = 1;
 		zapperdata[p] = FCEU_InitZapper(p);
 		FCEUI_SetInput(p, SI_ZAPPER, myzappers[p], 1);
-	}
-}
-
-static inline float clampf(float v, float lo, float hi)
-{
-	return (v < lo) ? lo : (v > hi) ? hi : v;
-}
-
-/****************************************************************************
- * Hardware Mapping Helpers
- * Translates raw libogc hardware bits to our generic UI masks
- ***************************************************************************/
-static uint32_t MapPADToGeneric(uint32_t pad_btns)
-{
-	uint32_t mask = GUI_BTN_NONE;
-	if (pad_btns & PAD_BUTTON_A)      mask |= GUI_BTN_A;
-	if (pad_btns & PAD_BUTTON_B)      mask |= GUI_BTN_B;
-	if (pad_btns & PAD_BUTTON_X)      mask |= GUI_BTN_X;
-	if (pad_btns & PAD_BUTTON_Y)      mask |= GUI_BTN_Y;
-	if (pad_btns & PAD_BUTTON_UP)     mask |= GUI_BTN_UP;
-	if (pad_btns & PAD_BUTTON_DOWN)   mask |= GUI_BTN_DOWN;
-	if (pad_btns & PAD_BUTTON_LEFT)   mask |= GUI_BTN_LEFT;
-	if (pad_btns & PAD_BUTTON_RIGHT)  mask |= GUI_BTN_RIGHT;
-	if (pad_btns & PAD_BUTTON_START)  mask |= GUI_BTN_PLUS;
-	if (pad_btns & PAD_TRIGGER_L)     mask |= GUI_TRIGGER_L;
-	if (pad_btns & PAD_TRIGGER_R)     mask |= GUI_TRIGGER_R;
-	if (pad_btns & PAD_TRIGGER_Z)     mask |= GUI_TRIGGER_ZR;
-	return mask;
-}
-
-#ifdef HW_RVL
-static uint32_t MapWiimoteToGeneric(uint32_t wpad_btns)
-{
-	uint32_t mask = GUI_BTN_NONE;
-
-	if (wpad_btns & WPAD_BUTTON_A)     mask |= GUI_BTN_A;
-	if (wpad_btns & WPAD_BUTTON_B)     mask |= GUI_BTN_B;
-	if (wpad_btns & WPAD_BUTTON_1)     mask |= GUI_BTN_1;
-	if (wpad_btns & WPAD_BUTTON_2)     mask |= GUI_BTN_2;
-	if (wpad_btns & WPAD_BUTTON_UP)    mask |= GUI_BTN_UP;
-	if (wpad_btns & WPAD_BUTTON_DOWN)  mask |= GUI_BTN_DOWN;
-	if (wpad_btns & WPAD_BUTTON_LEFT)  mask |= GUI_BTN_LEFT;
-	if (wpad_btns & WPAD_BUTTON_RIGHT) mask |= GUI_BTN_RIGHT;
-	if (wpad_btns & WPAD_BUTTON_PLUS)  mask |= GUI_BTN_PLUS;
-	if (wpad_btns & WPAD_BUTTON_MINUS) mask |= GUI_BTN_MINUS;
-	if (wpad_btns & WPAD_BUTTON_HOME)  mask |= GUI_BTN_HOME;
-
-	return mask;
-}
-
-static uint32_t MapNunchukToGeneric(uint32_t wpad_btns)
-{
-	uint32_t mask = GUI_BTN_NONE;
-
-	if (wpad_btns & WPAD_NUNCHUK_BUTTON_Z) mask |= GUI_TRIGGER_ZL;
-	if (wpad_btns & WPAD_NUNCHUK_BUTTON_C) mask |= GUI_TRIGGER_L;
-
-	return mask;
-}
-
-static uint32_t MapClassicToGeneric(uint32_t wpad_btns)
-{
-	uint32_t mask = GUI_BTN_NONE;
-
-	// Classic Controller inputs (upper 16 bits)
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_A) mask |= GUI_BTN_A;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_B) mask |= GUI_BTN_B;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_X) mask |= GUI_BTN_X;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_Y) mask |= GUI_BTN_Y;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_UP) mask |= GUI_BTN_UP;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_DOWN) mask |= GUI_BTN_DOWN;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_LEFT) mask |= GUI_BTN_LEFT;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_RIGHT) mask |= GUI_BTN_RIGHT;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_PLUS) mask |= GUI_BTN_PLUS;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_MINUS) mask |= GUI_BTN_MINUS;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_HOME) mask |= GUI_BTN_HOME;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_FULL_L) mask |= GUI_TRIGGER_L;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_FULL_R) mask |= GUI_TRIGGER_R;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_ZL) mask |= GUI_TRIGGER_ZL;
-	if (wpad_btns & WPAD_CLASSIC_BUTTON_ZR) mask |= GUI_TRIGGER_ZR;
-
-	return mask;
-}
-
-static uint32_t MapWiiUGamepadToGeneric(uint32_t drc_btns)
-{
-	uint32_t mask = GUI_BTN_NONE;
-	if (drc_btns & WIIDRC_BUTTON_A) mask |= GUI_BTN_A;
-	if (drc_btns & WIIDRC_BUTTON_B) mask |= GUI_BTN_B;
-	if (drc_btns & WIIDRC_BUTTON_X) mask |= GUI_BTN_X;
-	if (drc_btns & WIIDRC_BUTTON_Y) mask |= GUI_BTN_Y;
-	if (drc_btns & WIIDRC_BUTTON_UP) mask |= GUI_BTN_UP;
-	if (drc_btns & WIIDRC_BUTTON_DOWN) mask |= GUI_BTN_DOWN;
-	if (drc_btns & WIIDRC_BUTTON_LEFT) mask |= GUI_BTN_LEFT;
-	if (drc_btns & WIIDRC_BUTTON_RIGHT) mask |= GUI_BTN_RIGHT;
-	if (drc_btns & WIIDRC_BUTTON_PLUS) mask |= GUI_BTN_PLUS;
-	if (drc_btns & WIIDRC_BUTTON_MINUS) mask |= GUI_BTN_MINUS;
-	if (drc_btns & WIIDRC_BUTTON_HOME) mask |= GUI_BTN_HOME;
-	if (drc_btns & WIIDRC_BUTTON_L) mask |= GUI_TRIGGER_L;
-	if (drc_btns & WIIDRC_BUTTON_R) mask |= GUI_TRIGGER_R;
-	if (drc_btns & WIIDRC_BUTTON_ZL) mask |= GUI_TRIGGER_ZL;
-	if (drc_btns & WIIDRC_BUTTON_ZR) mask |= GUI_TRIGGER_ZR;
-	return mask;
-}
-
-/****************************************************************************
- * Analog Normalization Helpers
- ***************************************************************************/
-static float NormalizeWPADAnalog(int pos, int min, int max, int center)
-{
-	if (min == max) return 0.0f;
-
-	// Handle broken 3rd party controller calibration data
-	if ((min >= center) || (max <= center)) {
-		min = 0; max = 64; center = 32; // Generic fallback
-	}
-
-	int offset = pos - center;
-	if (offset > 0) {
-		return clampf((float)offset / (float)(max - center), 0.0f, 1.0f);
-	} else {
-		return clampf((float)offset / (float)(center - min), -1.0f, 0.0f);
-	}
-}
-#endif
-
-/****************************************************************************
- * UpdatePads
- * Scans all controllers, combines states, and updates controllers
- ***************************************************************************/
-void UpdatePads()
-{
-	#ifdef HW_RVL
-	WiiDRC_ScanPads();
-	WPAD_ScanPads();
-	#endif
-
-	uint32_t activeGamecubePads = PAD_ScanPads();
-
-	float deltaTime = 1.0f / 60.0f;
-
-	for(int i = 3; i >= 0; i--) {
-		GuiInputPadData padData;
-
-		// Process GameCube Controller & Third Party USB Adaptors
-		bool gamecubeActive = (activeGamecubePads & (1 << i)) != 0;
-
-		if(gamecubeActive) {
-			padData.hw_connected[GUI_HW_GAMECUBE] = true;
-			padData.hw_buttons_d[GUI_HW_GAMECUBE] = MapPADToGeneric(PAD_ButtonsDown(i));
-			padData.hw_buttons_h[GUI_HW_GAMECUBE] = MapPADToGeneric(PAD_ButtonsHeld(i));
-			padData.hw_buttons_r[GUI_HW_GAMECUBE] = MapPADToGeneric(PAD_ButtonsUp(i));
-			padData.hw_stickX[GUI_HW_GAMECUBE] = clampf((float)PAD_StickX(i) / 128.0f, -1.0f, 1.0f);
-			padData.hw_stickY[GUI_HW_GAMECUBE] = clampf((float)PAD_StickY(i) / 128.0f, -1.0f, 1.0f);
-			padData.hw_substickX[GUI_HW_GAMECUBE] = clampf((float)PAD_SubStickX(i) / 128.0f, -1.0f, 1.0f);
-			padData.hw_substickY[GUI_HW_GAMECUBE] = clampf((float)PAD_SubStickY(i) / 128.0f, -1.0f, 1.0f);
-		}
-
-#ifdef HW_RVL
-		// Process Wiimote and Extensions
-		uint32_t exp_type = WPAD_EXP_NONE;
-
-		if (WPAD_Probe(i, &exp_type) == WPAD_ERR_NONE) {
-			WPADData* wpad = WPAD_Data(i);
-
-			// Always process base Wiimote
-			padData.hw_connected[GUI_HW_WIIMOTE] = true;
-			padData.battery_level = wpad->battery_level;
-
-			if (exp_type == WPAD_EXP_NONE) {
-				padData.hw_buttons_d[GUI_HW_WIIMOTE] = MapWiimoteToGeneric(wpad->btns_d);
-				padData.hw_buttons_h[GUI_HW_WIIMOTE] = MapWiimoteToGeneric(wpad->btns_h);
-				padData.hw_buttons_r[GUI_HW_WIIMOTE] = MapWiimoteToGeneric(wpad->btns_u);
-
-				if (wpad->ir.valid) {
-					padData.validPointer = true;
-					padData.isTouch = false;
-					padData.cursor_x = wpad->ir.x;
-					padData.cursor_y = wpad->ir.y;
-					padData.cursor_angle = wpad->ir.angle;
-				}
-
-				userInput[i]->setSideways(fabs(wpad->gforce.x) > fabs(wpad->gforce.y));
-			}
-			else if (exp_type == WPAD_EXP_NUNCHUK) {
-				padData.hw_buttons_d[GUI_HW_WIIMOTE] = MapWiimoteToGeneric(wpad->btns_d);
-				padData.hw_buttons_h[GUI_HW_WIIMOTE] = MapWiimoteToGeneric(wpad->btns_h);
-				padData.hw_buttons_r[GUI_HW_WIIMOTE] = MapWiimoteToGeneric(wpad->btns_u);
-
-				padData.hw_connected[GUI_HW_NUNCHUK] = true;
-				padData.hw_buttons_d[GUI_HW_NUNCHUK] = MapNunchukToGeneric(wpad->btns_d);
-				padData.hw_buttons_h[GUI_HW_NUNCHUK] = MapNunchukToGeneric(wpad->btns_h);
-				padData.hw_buttons_r[GUI_HW_NUNCHUK] = MapNunchukToGeneric(wpad->btns_u);
-				joystick_t* js = &wpad->exp.nunchuk.js;
-				padData.hw_stickX[GUI_HW_NUNCHUK] = NormalizeWPADAnalog(js->pos.x, js->min.x, js->max.x, js->center.x);
-				padData.hw_stickY[GUI_HW_NUNCHUK] = NormalizeWPADAnalog(js->pos.y, js->min.y, js->max.y, js->center.y);
-				userInput[i]->setSideways(false);
-			}
-			else if (exp_type == WPAD_EXP_CLASSIC) {
-				bool isWUPC = (wpad->exp.classic.type == 2);
-				int hw = isWUPC ? GUI_HW_WUPC : GUI_HW_CLASSIC;
-
-				padData.hw_connected[hw] = true;
-				padData.hw_buttons_d[hw] = MapClassicToGeneric(wpad->btns_d);
-				padData.hw_buttons_h[hw] = MapClassicToGeneric(wpad->btns_h);
-				padData.hw_buttons_r[hw] = MapClassicToGeneric(wpad->btns_u);
-
-				joystick_t* ljs = &wpad->exp.classic.ljs;
-				joystick_t* rjs = &wpad->exp.classic.rjs;
-				padData.hw_stickX[hw] = NormalizeWPADAnalog(ljs->pos.x, ljs->min.x, ljs->max.x, ljs->center.x);
-				padData.hw_stickY[hw] = NormalizeWPADAnalog(ljs->pos.y, ljs->min.y, ljs->max.y, ljs->center.y);
-				padData.hw_substickX[hw] = NormalizeWPADAnalog(rjs->pos.x, rjs->min.x, rjs->max.x, rjs->center.x);
-				padData.hw_substickY[hw] = NormalizeWPADAnalog(rjs->pos.y, rjs->min.y, rjs->max.y, rjs->center.y);
-				userInput[i]->setSideways(false);
-			}
-			else {
-				userInput[i]->setSideways(false);
-			}
-		}
-
-		// Process Wii U Gamepad
-		if(i == 0 && WiiDRC_Inited() && WiiDRC_Connected()) {
-			padData.hw_connected[GUI_HW_DRC] = true;
-			padData.hw_buttons_d[GUI_HW_DRC] = MapWiiUGamepadToGeneric(WiiDRC_ButtonsDown());
-			padData.hw_buttons_h[GUI_HW_DRC] = MapWiiUGamepadToGeneric(WiiDRC_ButtonsHeld());
-			padData.hw_buttons_r[GUI_HW_DRC] = MapWiiUGamepadToGeneric(WiiDRC_ButtonsUp());
-			padData.hw_stickX[GUI_HW_DRC] = clampf((float)WiiDRC_lStickX() / 128.0f, -1.0f, 1.0f);
-			padData.hw_stickY[GUI_HW_DRC] = clampf((float)WiiDRC_lStickY() / 128.0f, -1.0f, 1.0f);
-			padData.hw_substickX[GUI_HW_DRC] = clampf((float)WiiDRC_rStickX() / 128.0f, -1.0f, 1.0f);
-			padData.hw_substickY[GUI_HW_DRC] = clampf((float)WiiDRC_rStickY() / 128.0f, -1.0f, 1.0f);
-		}
-		#endif
-
-		// Merge into unified aggregate state for UI Elements
-		for (uint32_t hw = 0; hw < GUI_HW_MAX; hw++) {
-			if (!padData.hw_connected[hw])
-				continue;
-
-			padData.buttons_d |= padData.hw_buttons_d[hw];
-			padData.buttons_h |= padData.hw_buttons_h[hw];
-			padData.buttons_r |= padData.hw_buttons_r[hw];
-
-			if (std::abs(padData.hw_stickX[hw]) > std::abs(padData.stickX)) padData.stickX = padData.hw_stickX[hw];
-			if (std::abs(padData.hw_stickY[hw]) > std::abs(padData.stickY)) padData.stickY = padData.hw_stickY[hw];
-			if (std::abs(padData.hw_substickX[hw]) > std::abs(padData.substickX)) padData.substickX = padData.hw_substickX[hw];
-			if (std::abs(padData.hw_substickY[hw]) > std::abs(padData.substickY)) padData.substickY = padData.hw_substickY[hw];
-		}
-
-		// Push the finalized, merged payload to the controller abstraction
-		userInput[i]->update(padData, deltaTime);
 	}
 }
 
@@ -512,7 +259,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 	const GuiInputPadData& pad = userInput[chan]->getPadData();
 	unsigned char J = 0;
 
-	// 1. Unified Stick to D-Pad translation
+	// Unified Stick to D-Pad translation
 	float sensitivity = (float)ANALOG_SENSITIVITY / 128.0f;
 
 	if (pad.stickY > sensitivity) J |= JOY_UP;
@@ -522,7 +269,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 
 	bool zapper_triggered = false;
 
-	// 2. Zapper Logic
+	// Zapper Logic
 	if (GCSettings.Controller == CTRL_ZAPPER)
 	{
 		int z = (GameInfo->type == GIT_VSUNI) ? 0 : 1;
@@ -559,7 +306,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 		}
 	}
 
-	// 3. Standard Gamepad Logic
+	// Standard Gamepad Logic
 	for (int i = 0; i < MAXJP; i++)
 	{
 		bool button_pressed = false;
@@ -574,8 +321,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 			}
 		}
 
-		if (button_pressed && !zapper_triggered)
-		{
+		if (button_pressed && !zapper_triggered) {
 			if (rapidAlternator && nespadmap[i] == RAPID_A) {
 				J |= JOY_A;
 			}
@@ -680,7 +426,7 @@ void GetJoy()
 	unsigned char pad[4];
 	short i;
 
-	UpdatePads();
+	platform->getInput()->update();
 
 	// Turbo mode
 	// RIGHT on c-stick and on classic ctrlr right joystick

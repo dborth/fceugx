@@ -35,7 +35,7 @@ class VideoDriver
 		virtual void startMenuVideo() = 0;
 
 		//! Flushes the current frame to the screen and swaps buffers
-		virtual void render() = 0;
+		virtual void renderMenu() = 0;
 
 		//! Clears the current frame buffer
 		virtual void clearScreen(const PixelColor& color) = 0;
@@ -43,6 +43,8 @@ class VideoDriver
 		virtual int getScreenWidth() const = 0;
 		virtual int getScreenHeight() const = 0;
 		virtual uint32_t getFrameTimer() = 0;
+		virtual int getRefreshRate() const = 0;
+		virtual float getDeltaTime() const = 0;
 
 		virtual ImageRenderer* getImageRenderer() = 0;
 		virtual GlyphRenderer* getGlyphRenderer() = 0;

@@ -176,6 +176,8 @@ void OgcEmulatorVideo::updateFilterScale() {
  ***************************************************************************/
 void OgcEmulatorVideo::applyOverscanScissor(uint8_t borderwidth, uint8_t borderheight)
 {
+	GXRModeObj* vmode = videoDriver->getVideoMode();
+
 	if (borderwidth == 0 && borderheight == 0)
 	{
 		// Reset to full EFB screen
@@ -284,7 +286,7 @@ void OgcEmulatorVideo::setupScanlineFilterTEV()
 
 bool OgcEmulatorVideo::shouldApplyScanlines()
 {
-	return GCSettings.videoScanlines && !shutter_3d_mode && !anaglyph_3d_mode && vmode->efbHeight > 300;
+	return GCSettings.videoScanlines && !shutter_3d_mode && !anaglyph_3d_mode && videoDriver->getVideoMode()->efbHeight > 300;
 }
 
 /****************************************************************************
@@ -388,6 +390,7 @@ void OgcEmulatorVideo::drawSquare(Mtx v)
  ***************************************************************************/
 void OgcEmulatorVideo::updateScaling()
 {
+	GXRModeObj* vmode = videoDriver->getVideoMode();
 	int xscale, yscale;
 
 	// update scaling
@@ -923,7 +926,7 @@ void OgcEmulatorVideo::resetFbWidth(int width, GXRModeObj *rmode)
 
 	rmode->fbWidth = width;
 
-	if(rmode != vmode)
+	if(rmode != videoDriver->getVideoMode())
 		return;
 
 	GX_InvVtxCache();

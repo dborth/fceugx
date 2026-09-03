@@ -141,6 +141,8 @@ enum
 	CTRL_LENGTH
 };
 
+#define CTRL_BTN_MAPPINGS 2 // CTRL_PAD and CTRL_ZAPPER
+
 const char ctrlName[6][20] =
 { "NES Controller", "NES Zapper", "NES Controllers (2)", "NES Controllers (4)" };
 

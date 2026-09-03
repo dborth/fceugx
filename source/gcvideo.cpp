@@ -29,7 +29,6 @@
 #include "utils/pngcodec.h"
 
 int FDSSwitchRequested;
-extern bool vmode_60hz;
 
 GameScreenPng gameScreenPng;
 
@@ -59,6 +58,8 @@ void setFrameTimer()
 
 void SyncSpeed()
 {
+	bool vmode_60hz = platform->getVideo()->getRefreshRate() == 60;
+
 	// same timing as game - no adjustment necessary 
 	if((vmode_60hz && normaldiff == 16667) || (!vmode_60hz && normaldiff == 20000)) 
 		if (!shutter_3d_mode && !anaglyph_3d_mode) return; // But don't exit if in a 30/25Hz 3D mode.

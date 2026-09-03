@@ -12,9 +12,6 @@
 #include <stdint.h>
 #include "../EmulatorVideoDriver.h"
 
-extern GXRModeObj *vmode;
-extern bool progressive;
-
 // Original (240p) NES video modes. OgcVideoDriver::findVideoMode() primes the
 // viTVMode/viYOrigin fields of these to match the detected broadcast standard;
 // OgcEmulatorVideo::resetVideo() selects one of them directly when

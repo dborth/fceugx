@@ -337,8 +337,7 @@ void ProgressOverlayState::update() {
 }
 
 static void ProcessGuiInput() {
-	float deltaTime = 1.0f / 60.0f;
-	platform->getInput()->update(deltaTime);
+	platform->getInput()->update();
 
 	for(int i = 3; i >= 0; i--)
 		menu->mainWindow.update(userInput[i]);
@@ -358,7 +357,7 @@ static void DrawGui() {
 	}
 	#endif
 
-	platform->getVideo()->render();
+	platform->getVideo()->renderMenu();
 }
 
 /****************************************************************************
@@ -560,7 +559,7 @@ static bool UpdateGui()
 		{
 			menu->mainWindow.draw();
 			platform->getVideo()->getImageRenderer()->drawRectangle(0,0,platform->getVideo()->getScreenWidth(),platform->getVideo()->getScreenHeight(),(PixelColor){0, 0, 0, (uint8_t)a});
-			platform->getVideo()->render();
+			platform->getVideo()->renderMenu();
 		}
 		exiting = true;
 		return false;
@@ -4945,7 +4944,7 @@ void MainMenu (int selection)
 	// wait for keys to be depressed
 	while(isMenuRequested())
 	{
-		UpdatePads();
+		platform->getInput()->update();
 		usleep(THREAD_SLEEP);
 	}
 
