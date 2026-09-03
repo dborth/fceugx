@@ -8,8 +8,8 @@ $(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>dev
 endif
 
 include $(DEVKITPRO)/libogc2/gamecube_rules
-export	FREETYPE_CFLAGS 	:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --cflags freetype2`
-export	FREETYPE_LIBS	:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --libs freetype2`
+export	FREETYPE_CFLAGS		:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --cflags freetype2`
+export	FREETYPE_LIBS		:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --libs freetype2`
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -22,10 +22,9 @@ TARGETDIR   :=  executables
 BUILD		:=	build_gc
 SOURCES		:=	source source/libgui source/utils source/utils/sz \
 				source/drivers source/drivers/ogc source/drivers/ogc/vm \
-				source/fceultra source/fceultra/boards source/fceultra/input \
-				source/fceultra/utils source/fceultra/mbshare source/utils/vm \
-				source/pocketnes source/pocketnes/minilzo
-DATA		:=	data/images data/fonts data/lang data/sounds
+				source/pocketnes source/pocketnes/minilzo \
+				source/fceultra source/fceultra/boards source/fceultra/input source/fceultra/utils
+DATA		:=	data/images data/sounds data/fonts data/lang
 INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------

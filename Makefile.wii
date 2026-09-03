@@ -8,8 +8,8 @@ $(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>dev
 endif
 
 include $(DEVKITPRO)/libogc2/wii_rules
-export	FREETYPE_CFLAGS 	:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --cflags freetype2`
-export	FREETYPE_LIBS	:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --libs freetype2`
+export	FREETYPE_CFLAGS		:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --cflags freetype2`
+export	FREETYPE_LIBS		:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config --libs freetype2`
 
 #---------------------------------------------------------------------------------
 # TARGET is the name of the output
@@ -19,12 +19,11 @@ export	FREETYPE_LIBS	:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config -
 #---------------------------------------------------------------------------------
 TARGET		:=	fceugx-wii
 TARGETDIR	:=  executables
-BUILD			:=	build_wii
-SOURCES		:=	source source/utils source/utils/sz source/libgui \
+BUILD		:=	build_wii
+SOURCES		:=	source source/libgui source/utils source/utils/sz \
 				source/drivers source/drivers/ogc \
-				source/fceultra source/fceultra/boards source/fceultra/input \
-				source/fceultra/utils source/fceultra/mbshare \
-				source/pocketnes source/pocketnes/minilzo
+				source/pocketnes source/pocketnes/minilzo \
+				source/fceultra source/fceultra/boards source/fceultra/input source/fceultra/utils
 DATA		:=	data/images data/sounds data/fonts data/lang			
 INCLUDES	:=	source
 
