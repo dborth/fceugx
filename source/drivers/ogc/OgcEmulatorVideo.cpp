@@ -17,10 +17,10 @@
 
 #include "OgcEmulatorVideo.h"
 #include "OgcVideoDriver.h"
+#include "OgcEmulatorAudio.h"
 #include "../../fceugx.h"
 #include "../../fceusupport.h"
 #include "../../gcvideo.h"
-#include "../../gcaudio.h"
 #include "../../menu.h"
 #include "../../pad.h"
 #include "videofilters.h"

@@ -30,7 +30,8 @@
 #include "fileop.h"
 #include "filebrowser.h"
 #include "networkop.h"
-#include "gcaudio.h"
+#include "drivers/Platform.h"
+#include "drivers/ogc/OgcEmulatorAudio.h"
 #include "gcvideo.h"
 #include "drivers/ogc/videofilters.h"
 #include "pad.h"
@@ -130,7 +131,7 @@ int main(int argc, char *argv[])
 			// since we're entering the menu
 			ResumeDeviceCheckingThread();
 
-			SwitchAudioMode(1);
+			platform->getAudio()->startMenuAudio();
 
 			if(!romLoaded)
 				MainMenu(MENU_GAMESELECTION);
@@ -153,7 +154,7 @@ int main(int argc, char *argv[])
 		SelectFilterMethod(GCSettings.videoUpscalingFilter); // Initialize / Re-evaluate active filter
 		autoboot = false;
 		MenuRequested = false;
-		SwitchAudioMode(0);
+		platform->getAudio()->startEmulatorAudio();
 
 		// stop checking if devices were removed/inserted
 		// since we're starting emulation again

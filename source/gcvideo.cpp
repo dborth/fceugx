@@ -21,7 +21,7 @@
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "gcvideo.h"
-#include "gcaudio.h"
+#include "drivers/ogc/OgcEmulatorAudio.h"
 #include "fileop.h"
 #include "libgui/Gui.h"
 #include "menu.h"

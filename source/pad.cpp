@@ -16,7 +16,6 @@
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "pad.h"
-#include "gcaudio.h"
 #include "menu.h"
 #include "gcvideo.h"
 #include "filebrowser.h"

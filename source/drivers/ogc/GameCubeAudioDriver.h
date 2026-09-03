@@ -1,16 +1,26 @@
+/****************************************************************************
+ * FCE Ultra GX
+ *
+ * Daryl Borth 2026
+ *
+ * GameCubeAudioDriver.h
+ *
+ * Audio driver
+ ****************************************************************************/
 #pragma once
 
 #include <stdint.h>
 #include <ogc/audio.h>
+#include "OgcEmulatorAudio.h"
 #include "../AudioDriver.h"
 
 class GameCubeAudioDriver : public AudioDriver
 {
 	public:
 		void init() override { AUDIO_Init(NULL); AUDIO_SetDSPSampleRate(AI_SAMPLERATE_48KHZ); }
-		void shutdown() override {}
-		void start() override {}
-		void stop() override {}
+		void shutdown() override { AudioStop(); }
+		void startEmulatorAudio() override { AUDIO_RegisterDMACallback(AudioSwitchBuffers); }
+		void startMenuAudio() override { AudioStop(); }
 
 		int32_t playVoice(const uint8_t* data, int32_t length, int volume) override { return -1; }
 		void stopVoice(int32_t voice) override {}

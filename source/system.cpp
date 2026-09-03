@@ -19,7 +19,6 @@
 
 #include "system.h"
 #include "gcvideo.h"
-#include "gcaudio.h"
 #include "fileop.h"
 #include "pad.h"
 #include "mem2.h"

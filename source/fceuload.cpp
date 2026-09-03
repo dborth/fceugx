@@ -20,7 +20,7 @@
 #include "fceultra/file.h"
 
 #include "fceugx.h"
-#include "gcaudio.h"
+#include "drivers/ogc/OgcEmulatorAudio.h"
 #include "fceusupport.h"
 #include "pad.h"
 #include "menu.h"

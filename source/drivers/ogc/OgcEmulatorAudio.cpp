@@ -5,16 +5,17 @@
  * Tantric 2008-2023
  * eke-eke October 2008
  *
- * gcaudio.cpp
+ * OgcEmulatorAudio.cpp
  *
  * Audio driver
  ****************************************************************************/
 
 #include <gccore.h>
 #include <string.h>
-#include "fceugx.h"
-#include "drivers/Platform.h"
-#include "fceusupport.h"
+
+#include "OgcEmulatorAudio.h"
+#include "../../fceugx.h"
+#include "../../fceusupport.h"
 
 // Each DMA buffer holds one frame's worth of 16-bit stereo samples.
 #define DMA_BUFFER_BYTES 3840
@@ -103,7 +104,7 @@ static int MixerCollect( u8 *outbuffer, int len )
  *
  * Manages which buffer is played next
  ***************************************************************************/
-static void AudioSwitchBuffers()
+void AudioSwitchBuffers()
 {
 	if (!MenuRequested) {
 		IsPlaying = 1;
@@ -118,6 +119,18 @@ static void AudioSwitchBuffers()
 }
 
 /****************************************************************************
+ * AudioStop
+ *
+ * Halts DMA playback so it cleanly restarts on the next PlaySound call
+ ***************************************************************************/
+void AudioStop()
+{
+	IsPlaying = 0;
+	AUDIO_StopDMA();
+	AUDIO_RegisterDMACallback(NULL);
+}
+
+/****************************************************************************
  * ResetAudio
  *
  * Reset audio output when loading a new game
@@ -128,27 +141,6 @@ void ResetAudio()
 	memset(mixbuffer, 0, sizeof(mixbuffer));
 	mixhead = 0;
 	mixtail = 0;
-}
-
-/****************************************************************************
- * SwitchAudioMode
- *
- * Switches between menu sound and emulator sound
- ***************************************************************************/
-void SwitchAudioMode(int mode)
-{
-	if(mode == 0) // emulator
-	{
-		platform->getAudio()->stop();
-		AUDIO_RegisterDMACallback(AudioSwitchBuffers);
-	}
-	else // menu
-	{
-		IsPlaying = 0;
-		AUDIO_StopDMA();
-		AUDIO_RegisterDMACallback(NULL);
-		platform->getAudio()->start();
-	}
 }
 
 /****************************************************************************

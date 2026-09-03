@@ -12,7 +12,7 @@
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "pad.h"
-#include "gcaudio.h"
+#include "drivers/ogc/OgcEmulatorAudio.h"
 #include "gcvideo.h"
 #include "drivers/Platform.h"
 #include "menu.h"
