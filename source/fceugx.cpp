@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 	DefaultSettings(); // Set defaults
 	SystemInit();
 	ApplySettings();
-	ResetVideo_Menu (); // change to menu video mode
+	platform->getVideo()->startMenuVideo(); // change to menu video mode
 	
 	#ifdef HW_RVL
 	// store path app was loaded from
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 		// since we're starting emulation again
 		HaltDeviceCheckingThread();
 
-		ResetVideo_Emu();
+		platform->getVideo()->getEmulatorVideo()->resetVideo();
 		SetControllers();
 		setFrameTimer(); // set frametimer method before emulation
 		SetPalette();
@@ -224,7 +224,7 @@ int main(int argc, char *argv[])
 			{
 				MenuRequested = false;
 				TakeScreenshot();
-				ResetVideo_Menu();
+				platform->getVideo()->startMenuVideo();
 				break;
 			}
 		} // emulation loop

@@ -14,6 +14,7 @@
 #include "pad.h"
 #include "gcaudio.h"
 #include "gcvideo.h"
+#include "drivers/Platform.h"
 #include "menu.h"
 
 bool turbo = false;
@@ -102,7 +103,7 @@ void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count)
 	if(Buffer && Count > 0)
 		PlaySound(Buffer, Count); // play sound
 	if(XBuf)
-		RenderFrame(XBuf); // output video frame
+		platform->getVideo()->getEmulatorVideo()->presentFrame(XBuf); // output video frame
 	GetJoy(); // check controller input
 }
 
@@ -120,7 +121,7 @@ void FCEUD_UpdatePulfrich(uint8 *XBuf, int32 *Buffer, int32 Count)
 	if(Buffer && Count > 0)
 		PlaySound(Buffer, Count); // play sound
 	if(XBuf) {
-		RenderStereoFrames(XBuf, XBufLeft); // output video frame
+		platform->getVideo()->getEmulatorVideo()->presentStereoFrame(XBuf, XBufLeft); // output video frame
 		memcpy(XBufLeft, XBuf, sizeof(XBufLeft)); // output video frame
 	}
 	GetJoy(); // check controller input
@@ -143,7 +144,7 @@ void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int32 Count)
 	if (Buffer && Count > 0)
 		PlaySound(Buffer, Count); // play sound
 	if (XBuf)
-		RenderStereoFrames(XBufLeft, XBuf); // output video frames
+		platform->getVideo()->getEmulatorVideo()->presentStereoFrame(XBufLeft, XBuf); // output video frames
 	GetJoy(); // check controller input
 }
 

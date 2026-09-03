@@ -18,6 +18,9 @@
 #define IMAGE_DECODE_SCRATCH_SIZE (IMAGE_BUFFER_SIZE + (480 * sizeof(void*)))
 #define PNG_FILE_BUFFER_SIZE (512 * 1024)
 
+#define NES_WIDTH 256
+#define NES_HEIGHT 240
+
 // color palettes
 #define MAXPAL 12
 
@@ -26,22 +29,21 @@ struct st_palettes {
     unsigned int data[64];
 };
 
-void InitVideo ();
-void ResetVideo_Emu ();
-void RenderFrame(unsigned char *XBuf);
-void RenderStereoFrames(unsigned char *XBufLeft, unsigned char *XBufRight); // Stereoscopic 3D
+typedef struct {
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+} pcpal;
+
+extern pcpal pcpalette[256];
+extern unsigned short rgb555[256];
+
 void setFrameTimer();
 void SyncSpeed();
 void SetPalette();
-void ResetVideo_Menu ();
 void ClearScreenshot();
 void TakeScreenshot();
-void Menu_Render ();
 void Check3D();
-
-void* createTexture(int width, int height);
-void loadTextureData(void* texture, const uint8_t* rgba, int width, int height);
-void destroyTexture(void * texture);
 
 typedef struct
 {
@@ -57,12 +59,10 @@ typedef struct
 
 extern GameScreenPng gameScreenPng;
 
-extern GXRModeObj *vmode;
 extern struct st_palettes palettes[];
 extern int FDSSwitchRequested;
-extern bool progressive;
-extern u32 FrameTimer;
 extern bool shutter_3d_mode;
+extern bool AnaglyphPaletteValid;
 extern bool anaglyph_3d_mode;
 extern bool eye_3d;
 
