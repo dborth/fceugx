@@ -34,7 +34,7 @@ static unsigned int myzappers[2][3];
 
 uint32_t nespadmap[MAXJP]; // Original NES controller buttons
 uint32_t zapperpadmap[MAXJP]; // Original NES Zapper controller buttons
-uint32_t btnmap[CTRL_BTN_MAPPINGS][GUI_HW_MAX][MAXJP]; // button mapping
+uint32_t btnmap[CTRL_BTN_MAPPINGS][INPUT_HW_MAX][MAXJP]; // button mapping
 
 void ResetControls(int consoleCtrl, int hardwareProfile)
 {
@@ -56,119 +56,119 @@ void ResetControls(int consoleCtrl, int hardwareProfile)
 	nespadmap[i++] = 0; // insert coin for VS games, insert/eject/select disk for FDS
 
 	/*** Gamecube controller Padmap ***/
-	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == GUI_HW_GAMECUBE))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == INPUT_HW_GAMECUBE))
 	{
 		i=0;
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_BTN_B;
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_BTN_A;
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_BTN_Y;
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_BTN_X;
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_TRIGGER_ZL; // GC Z button
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_BTN_PLUS;   // GC Start
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_BTN_UP;
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_BTN_DOWN;
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_BTN_LEFT;
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_BTN_RIGHT;
-		btnmap[CTRL_PAD][GUI_HW_GAMECUBE][i++] = INPUT_TRIGGER_L;
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_B;
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_A;
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_Y;
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_X;
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_TRIGGER_ZL; // GC Z button
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_PLUS;   // GC Start
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_UP;
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_DOWN;
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_LEFT;
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_RIGHT;
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_TRIGGER_L;
 	}
 
 	/*** Wiimote Padmap (Sideways NES mapping) ***/
-	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == GUI_HW_WIIMOTE))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == INPUT_HW_WIIMOTE))
 	{
 		i=0;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = INPUT_BTN_1;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = INPUT_BTN_2;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = 0;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = 0;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = INPUT_BTN_MINUS;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = INPUT_BTN_PLUS;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = INPUT_BTN_RIGHT;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = INPUT_BTN_LEFT;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = INPUT_BTN_UP;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = INPUT_BTN_DOWN;
-		btnmap[CTRL_PAD][GUI_HW_WIIMOTE][i++] = INPUT_BTN_A;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = INPUT_BTN_1;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = INPUT_BTN_2;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = 0;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = 0;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = INPUT_BTN_MINUS;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = INPUT_BTN_PLUS;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = INPUT_BTN_RIGHT;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = INPUT_BTN_LEFT;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = INPUT_BTN_UP;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = INPUT_BTN_DOWN;
+		btnmap[CTRL_PAD][INPUT_HW_WIIMOTE][i++] = INPUT_BTN_A;
 	}
 
 	/*** Classic Controller Padmap ***/
-	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == GUI_HW_CLASSIC))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == INPUT_HW_CLASSIC))
 	{
 		i=0;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_Y;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_B;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_X;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_A;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_MINUS;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_PLUS;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_UP;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_DOWN;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_LEFT;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_BTN_RIGHT;
-		btnmap[CTRL_PAD][GUI_HW_CLASSIC][i++] = INPUT_TRIGGER_L;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_Y;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_B;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_X;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_A;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_MINUS;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_PLUS;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_UP;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_DOWN;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_LEFT;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_BTN_RIGHT;
+		btnmap[CTRL_PAD][INPUT_HW_CLASSIC][i++] = INPUT_TRIGGER_L;
 	}
 
 	/*** Wii U Pro Controller Padmap ***/
-	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == GUI_HW_WUPC))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == INPUT_HW_WUPC))
 	{
 		i=0;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_Y;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_B;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_X;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_A;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_MINUS;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_PLUS;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_UP;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_DOWN;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_LEFT;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_BTN_RIGHT;
-		btnmap[CTRL_PAD][GUI_HW_WUPC][i++] = INPUT_TRIGGER_L;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_Y;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_B;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_X;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_A;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_MINUS;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_PLUS;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_UP;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_DOWN;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_LEFT;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_BTN_RIGHT;
+		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_TRIGGER_L;
 	}
 
 	/*** Wii U Gamepad (DRC) Padmap ***/
-	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == GUI_HW_DRC))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == INPUT_HW_DRC))
 	{
 		i=0;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_Y;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_B;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_X;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_A;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_PLUS;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_MINUS;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_UP;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_DOWN;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_LEFT;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_BTN_RIGHT;
-		btnmap[CTRL_PAD][GUI_HW_DRC][i++] = INPUT_TRIGGER_L;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_Y;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_B;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_X;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_A;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_PLUS;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_MINUS;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_UP;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_DOWN;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_LEFT;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_BTN_RIGHT;
+		btnmap[CTRL_PAD][INPUT_HW_DRC][i++] = INPUT_TRIGGER_L;
 	}
 
 	/*** Nunchuk + Wiimote Padmap ***/
-	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == GUI_HW_NUNCHUK))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == INPUT_HW_NUNCHUK))
 	{
 		i=0;
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = INPUT_TRIGGER_L;  // Nunchuk C mapped to L
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = INPUT_TRIGGER_ZL; // Nunchuk Z mapped to ZL
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = 0;
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = 0;
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = INPUT_BTN_MINUS;
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = INPUT_BTN_PLUS;
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = INPUT_BTN_UP;
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = INPUT_BTN_DOWN;
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = INPUT_BTN_LEFT;
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = INPUT_BTN_RIGHT;
-		btnmap[CTRL_PAD][GUI_HW_NUNCHUK][i++] = INPUT_BTN_A;
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = INPUT_TRIGGER_L;  // Nunchuk C mapped to L
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = INPUT_TRIGGER_ZL; // Nunchuk Z mapped to ZL
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = 0;
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = 0;
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = INPUT_BTN_MINUS;
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = INPUT_BTN_PLUS;
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = INPUT_BTN_UP;
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = INPUT_BTN_DOWN;
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = INPUT_BTN_LEFT;
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = INPUT_BTN_RIGHT;
+		btnmap[CTRL_PAD][INPUT_HW_NUNCHUK][i++] = INPUT_BTN_A;
 	}
 
 	/*** Zapper : GC controller button mapping ***/
-	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && hardwareProfile == GUI_HW_GAMECUBE))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && hardwareProfile == INPUT_HW_GAMECUBE))
 	{
-		btnmap[CTRL_ZAPPER][GUI_HW_GAMECUBE][0] = INPUT_BTN_A; // shoot
-		btnmap[CTRL_ZAPPER][GUI_HW_GAMECUBE][1] = INPUT_BTN_B; // insert coin
+		btnmap[CTRL_ZAPPER][INPUT_HW_GAMECUBE][0] = INPUT_BTN_A; // shoot
+		btnmap[CTRL_ZAPPER][INPUT_HW_GAMECUBE][1] = INPUT_BTN_B; // insert coin
 	}
 
 	/*** Zapper : Wiimote button mapping ***/
-	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && hardwareProfile == GUI_HW_WIIMOTE))
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && hardwareProfile == INPUT_HW_WIIMOTE))
 	{
-		btnmap[CTRL_ZAPPER][GUI_HW_WIIMOTE][0] = INPUT_BTN_B; // shoot
-		btnmap[CTRL_ZAPPER][GUI_HW_WIIMOTE][1] = INPUT_BTN_A; // insert coin
+		btnmap[CTRL_ZAPPER][INPUT_HW_WIIMOTE][0] = INPUT_BTN_B; // shoot
+		btnmap[CTRL_ZAPPER][INPUT_HW_WIIMOTE][1] = INPUT_BTN_A; // insert coin
 	}
 }
 
@@ -275,7 +275,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 		myzappers[z][2] = 0; // reset trigger
 
 		// Poll all active hardware types for Zapper controls
-		for (uint32_t hw = 0; hw < GUI_HW_MAX; hw++)
+		for (uint32_t hw = 0; hw < INPUT_HW_MAX; hw++)
 		{
 			if (!pad.hw_connected[hw]) continue;
 			uint32_t hw_held = pad.hw_buttons_h[hw];
@@ -311,7 +311,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 		bool button_pressed = false;
 
 		// Check if ANY connected hardware is triggering this specific NES mapping
-		for (uint32_t hw = 0; hw < GUI_HW_MAX; hw++)
+		for (uint32_t hw = 0; hw < INPUT_HW_MAX; hw++)
 		{
 			if (!pad.hw_connected[hw]) continue;
 			if (pad.hw_buttons_h[hw] & btnmap[CTRL_PAD][hw][i]) {
