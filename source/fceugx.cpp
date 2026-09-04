@@ -11,12 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
-#include <ogc/system.h>
-#include <fat.h>
-#include <wiiuse/wpad.h>
 #include <malloc.h>
-#include <sys/iosupport.h>
 
 #include "fceugx.h"
 #include "system.h"

@@ -19,7 +19,6 @@
 #include "button_mapping.h"
 #include "fceuload.h"
 #include "libgui/Gui.h"
-#include "drivers/ogc/wiidrc.h"
 
 #define ANALOG_SENSITIVITY 30
 #define RAPID_A 		256

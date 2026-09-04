@@ -12,14 +12,9 @@
 #include <ogc/lwp_watchdog.h>
 #include <stdlib.h>
 #include <string.h>
-#include <wiiuse/wpad.h>
 #include <sys/stat.h>
 #include <algorithm>
 #include <memory>
-
-#ifdef HW_RVL
-#include <di/di.h>
-#endif
 
 #include "fceugx.h"
 #include "system.h"
@@ -45,7 +40,6 @@
 #include "utils/pngcodec.h"
 
 #include "drivers/Platform.h"
-#include "drivers/ogc/wiidrc.h"
 
 #ifdef HW_RVL
 	#include "mem2.h"
@@ -2725,7 +2719,7 @@ static int MenuSettingsMappingsController()
 
 	if(mapMenuCtrlNES == CTRL_PAD)
 	{
-		if(WiiDRC_Inited() && WiiDRC_Connected()) {
+		if(controller[0]->getPadData().hw_connected[GUI_HW_DRC]) {
 			gamecubeBtn.setPosition(-200, 120);
 			wiimoteBtn.setPosition(0, 120);
 			w.append(&drcBtn);

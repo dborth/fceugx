@@ -11,11 +11,6 @@
 #include <sys/iosupport.h>
 #include <ogc/lwp_threads.h>
 
-#ifdef HW_RVL
-#include <di/di.h>
-#include <wiiuse/wpad.h>
-#endif
-
 #include "system.h"
 #include "gcvideo.h"
 #include "fileop.h"
@@ -23,7 +18,6 @@
 #include "mem2.h"
 #include "font_ttf.h"
 #include "drivers/ogc/OgcPlatform.h"
-#include "drivers/ogc/wiidrc.h"
 #include "libgui/Gui.h"
 
 #ifdef HW_DOL
