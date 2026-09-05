@@ -9,10 +9,10 @@
  ****************************************************************************/
 
 #include <errno.h>
-#include <gccore.h>
 #include <network.h>
 #include <malloc.h>
 #include <smb.h>
+#include <ogc/lwp.h>
 
 #include "fceugx.h"
 #include "menu.h"
