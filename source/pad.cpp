@@ -8,8 +8,6 @@
  * Controller input
  ****************************************************************************/
 
-#include <gccore.h>
-
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "pad.h"

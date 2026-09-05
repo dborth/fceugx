@@ -8,14 +8,11 @@
  * Generic video glue: frame pacing/timing, screenshot capture.
  ****************************************************************************/
 
-#include <gccore.h>
 #include <unistd.h>
-#include <ogcsys.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
-#include <ogc/lwp_watchdog.h>
 
 #include "fceugx.h"
 #include "fceusupport.h"
@@ -25,6 +22,7 @@
 #include "libgui/Gui.h"
 #include "menu.h"
 #include "pad.h"
+#include "drivers/Time.h"
 
 #include "utils/pngcodec.h"
 
@@ -44,8 +42,8 @@ bool AnaglyphPaletteValid = false; // Has the anaglyph palette below been genera
  ***************************************************************************/
 
 static u32 normaldiff;
-static long long prev;
-static long long now;
+static Ticks prev;
+static Ticks now;
 
 void setFrameTimer()
 {
@@ -53,7 +51,7 @@ void setFrameTimer()
 		normaldiff = 20000; // 50hz
 	else
 		normaldiff = 16667; // 60hz
-	prev = gettime();
+	prev = SystemTime::now();
 }
 
 void SyncSpeed()
@@ -67,8 +65,8 @@ void SyncSpeed()
 	// Note that the 3D modes (except Pulfrich) still call this function at 60/50Hz, but half the 
 	//     time there is no video rendering to go with it, so we need some delays.
 
-	now = gettime();
-	u32 diff = diff_usec(prev, now);
+	now = SystemTime::now();
+	u32 diff = SystemTime::diffMicrosecs(prev, now);
 
 	if(turbomode)
 	{
@@ -80,9 +78,9 @@ void SyncSpeed()
 	}
 	else // ahead, so hold up
 	{
-		while (diff_usec(prev, now) < normaldiff)
+		while (SystemTime::diffMicrosecs(prev, now) < normaldiff)
 		{
-			now = gettime();
+			now = SystemTime::now();
 			usleep(50);
 		}
 	}
