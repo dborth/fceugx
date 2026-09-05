@@ -23,6 +23,7 @@
 #include "fileop.h"
 #include "gcvideo.h"
 #include "pad.h"
+#include "drivers/ogc/videofilters.h"
 
 struct SGCSettings GCSettings;
 
