@@ -14,7 +14,6 @@
 #include <malloc.h>
 
 #include "fceugx.h"
-#include "system.h"
 #include "fceuload.h"
 #include "fceustate.h"
 #include "fceuram.h"
@@ -24,13 +23,17 @@
 #include "fileop.h"
 #include "filebrowser.h"
 #include "networkop.h"
-#include "drivers/Platform.h"
-#include "drivers/ogc/OgcEmulatorAudio.h"
 #include "gcvideo.h"
-#include "drivers/ogc/videofilters.h"
 #include "pad.h"
 #include "filelist.h"
+#include "font_ttf.h"
+#include "fceultra/types.h"
 #include "libgui/Gui.h"
+
+#include "drivers/Platform.h"
+#include "drivers/ogc/OgcEmulatorAudio.h"
+#include "drivers/ogc/videofilters.h"
+
 #ifdef HW_RVL
 	#include "mem2.h"
 #endif
@@ -38,14 +41,22 @@
 	#include "drivers/ogc/vm/vmalloc.h"
 #endif
 
-#include "fceultra/types.h"
+#ifdef HW_DOL
+#include "drivers/ogc/GameCubePlatform.h"
+static GameCubePlatform platformInstance;
+#else
+#include "drivers/ogc/WiiPlatform.h"
+static WiiPlatform platformInstance;
+#endif
+Platform* platform = &platformInstance;
+
+AppRequest appRequest = AppRequest::NONE;
 
 int fskipc = 0;
 int fskip = 0;
 static uint8 *gfx=0;
 static int32 *sound=0;
 static int32 ssize=0;
-bool MenuRequested = false;
 char appPath[1024] = { 0 };
 
 int frameskip = 0;
@@ -62,10 +73,20 @@ static bool autoboot = false;
 
 int main(int argc, char *argv[])
 {
-	DefaultSettings(); // Set defaults
-	SystemInit();
+	platform->init(640, 480);
+	InitFileOpThreads();
+	MountAllFAT();
+
+	void * decodeScratch = malloc(IMAGE_DECODE_SCRATCH_SIZE);
+	GuiImageData::setDecodeScratch(decodeScratch, IMAGE_DECODE_SCRATCH_SIZE);
+
+	fontSystem = new GuiTextRenderer(font_ttf, font_ttf_size, platform->getVideo()->getGlyphRenderer());
+	textTranslator = new GuiTextTranslator();
+	textTranslator->loadLanguage(en_lang, en_lang_size);
+
+	DefaultSettings();
 	ApplySettings();
-	platform->getVideo()->startMenuVideo(); // change to menu video mode
+	platform->getVideo()->startMenuVideo();
 	
 	#ifdef HW_RVL
 	// store path app was loaded from
@@ -86,7 +107,6 @@ int main(int argc, char *argv[])
 
 	InitGUIThreads();
 
-	/*** Minimal Emulation Loop ***/
 	if (!FCEUI_Initialize())
 		ExitApp();
 
@@ -118,7 +138,7 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	while (!ExitRequested && !ShutdownRequested) // main loop
+	while (appRequest != AppRequest::EXIT && platform->getSystemEvent() != SystemEvent::ShutdownRequested) // main loop
 	{
 		if(!autoboot) {
 			// go back to checking if devices were inserted/removed
@@ -133,7 +153,7 @@ int main(int argc, char *argv[])
 				MainMenu(MENU_GAME);
 		}
 
-		if(ExitRequested || ShutdownRequested) {
+		if(appRequest == AppRequest::EXIT || platform->getSystemEvent() == SystemEvent::ShutdownRequested) {
 			break;
 		}
 
@@ -147,7 +167,7 @@ int main(int argc, char *argv[])
 		currentTiming = GCSettings.timing;
 		SelectFilterMethod(GCSettings.videoUpscalingFilter); // Initialize / Re-evaluate active filter
 		autoboot = false;
-		MenuRequested = false;
+		appRequest = AppRequest::NONE;
 		platform->getAudio()->startEmulatorAudio();
 
 		// stop checking if devices were removed/inserted
@@ -164,8 +184,12 @@ int main(int argc, char *argv[])
 		fskipc=0;
 		frameskip=0;
 
-		while(!MenuRequested && !ExitRequested && !ShutdownRequested) // emulation loop
+		while(appRequest == AppRequest::NONE) // emulation loop
 		{
+			SystemEvent event = platform->getSystemEvent(); // poll exactly once per iteration
+			if(event == SystemEvent::ShutdownRequested)
+				break;
+
 			fskip = 0;
 			
 			if(turbomode)
@@ -210,14 +234,13 @@ int main(int argc, char *argv[])
 
 			SyncSpeed();
 
-			if(ResetRequested)
+			if(event == SystemEvent::ResetRequested)
 			{
 				PowerNES(); // reset game
-				ResetRequested = 0;
 			}
-			if(MenuRequested)
+			if (appRequest == AppRequest::MENU)
 			{
-				MenuRequested = false;
+				appRequest = AppRequest::NONE;
 				TakeScreenshot();
 				platform->getVideo()->startMenuVideo();
 				break;
@@ -231,8 +254,9 @@ void ExitApp()
 {
 	SavePrefs();
 
-	if (romLoaded && !MenuRequested && GCSettings.AutoSave == AUTOSAVE_RAM)
+	if (romLoaded && appRequest != AppRequest::MENU && GCSettings.AutoSave == AUTOSAVE_RAM)
 		SaveRAMAuto(SILENT);
 
-	SystemExit(GCSettings.ExitAction, autoboot);
+	HaltDeviceCheckingThread();
+	platform->requestExit(GCSettings.ExitAction, autoboot);
 }

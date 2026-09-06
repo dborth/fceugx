@@ -17,7 +17,6 @@
 #include <ogc/system.h>
 
 #include "fceugx.h"
-#include "system.h"
 #include "filelist.h"
 #include "button_mapping.h"
 #include "filebrowser.h"
@@ -25,6 +24,9 @@
 #include "fileop.h"
 #include "gcvideo.h"
 #include "pad.h"
+
+#include "drivers/ogc/WiiPlatform.h"
+#include "drivers/ogc/GameCubePlatform.h"
 #include "drivers/ogc/videofilters.h"
 
 struct SGCSettings GCSettings;

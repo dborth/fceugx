@@ -105,7 +105,7 @@ static int MixerCollect( u8 *outbuffer, int len )
  ***************************************************************************/
 void AudioSwitchBuffers()
 {
-	if (!MenuRequested) {
+	if (appRequest == AppRequest::NONE) {
 		IsPlaying = 1;
 		int len = MixerCollect( soundbuffer[whichab], DMA_BUFFER_BYTES );
 		DCFlushRange(soundbuffer[whichab], len);

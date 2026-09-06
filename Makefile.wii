@@ -33,7 +33,7 @@ INCLUDES	:=	source
 SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 				-DFORMAT_PAL8 -DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
-				-flto=auto -fomit-frame-pointer -fno-strict-aliasing \
+				-fomit-frame-pointer -fno-strict-aliasing \
 				-Wno-format -Wno-format-overflow \
 				-Wno-stringop-overflow -Wno-format-truncation \
 				-Wno-unused-parameter -Wno-write-strings -Wno-stringop-truncation -Wno-sign-compare \
@@ -42,7 +42,7 @@ SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 
 CFLAGS		=	$(SHAREDFLAGS) -Wno-incompatible-pointer-types
 CXXFLAGS	=	$(SHAREDFLAGS) -Wno-register -Wno-catch-value -Wno-class-memaccess -fno-exceptions -fno-rtti -fno-threadsafe-statics
-LDFLAGS		=	-g -O3 -flto=auto $(MACHDEP) -Wl,-Map,$(notdir $@).map
+LDFLAGS		=	-g -O3 $(MACHDEP) -Wl,-Map,$(notdir $@).map
 LDFLAGS		+=	-L../buildtools
 
 #---------------------------------------------------------------------------------
@@ -76,7 +76,7 @@ export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 #---------------------------------------------------------------------------------
 CFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.c)))
 CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
-CPPFILES	:=	$(filter-out GameCubeFileSystemDriver.cpp, $(CPPFILES))
+CPPFILES	:=	$(filter-out GameCubeFileSystemDriver.cpp GameCubePlatform.cpp, $(CPPFILES))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.ttf) \

@@ -433,7 +433,7 @@ void GetJoy()
 	}
 	// request to go back to menu
 	if(isMenuRequested())
-		MenuRequested = true; // go to the menu
+		appRequest = AppRequest::MENU; // go to the menu
 
 	for (i = 0; i < 4; i++)
 		pad[playerMapping[i]] = DecodeJoy(i);
