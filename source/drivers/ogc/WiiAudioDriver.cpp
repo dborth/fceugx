@@ -33,10 +33,16 @@ void WiiAudioDriver::handleStreamCallback(int voice) {
 	}
 }
 
+WiiAudioDriver::~WiiAudioDriver() {
+	delete emulatorAudio;
+}
+
 void WiiAudioDriver::init() {
 	instance = this;
 	ASND_Init();
 	streamVolume = 127;
+	emulatorAudio = new OgcEmulatorAudio();
+	emulatorAudio->init();
 }
 
 void WiiAudioDriver::startEmulatorAudio() {
@@ -45,7 +51,7 @@ void WiiAudioDriver::startEmulatorAudio() {
 }
 
 void WiiAudioDriver::stopEmulatorAudio() {
-	AudioStop();
+	emulatorAudio->stopAudio();
 }
 
 void WiiAudioDriver::startMenuAudio() {

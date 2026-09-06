@@ -16,7 +16,7 @@
 
 #include "OgcEmulatorVideo.h"
 #include "OgcVideoDriver.h"
-#include "OgcEmulatorAudio.h"
+#include "../Platform.h"
 #include "../../fceugx.h"
 #include "../../fceusupport.h"
 #include "../../gcvideo.h"
@@ -952,9 +952,9 @@ void OgcEmulatorVideo::resetVideo()
 		rmode = tvmodes[timing];
 
 		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == TIMING_PAL || GCSettings.timing == TIMING_DENDY) // PAL
-			UpdateSampleRate(48070);
+			platform->getAudio()->getEmulatorAudio()->updateSampleRate(48070);
 		else
-			UpdateSampleRate(48220);
+			platform->getAudio()->getEmulatorAudio()->updateSampleRate(48220);
 	}
 	else
 	{
@@ -966,9 +966,9 @@ void OgcEmulatorVideo::resetVideo()
 			resetFbWidth(512, rmode);
 
 		if (FCEUI_GetCurrentVidSystem(NULL, NULL) == TIMING_PAL || GCSettings.timing == TIMING_DENDY) // PAL
-			UpdateSampleRate(48080);
+			platform->getAudio()->getEmulatorAudio()->updateSampleRate(48080);
 		else
-			UpdateSampleRate(48130);
+			platform->getAudio()->getEmulatorAudio()->updateSampleRate(48130);
 	}
 
 	videoDriver->setupVideoMode(rmode); // reconfigure VI

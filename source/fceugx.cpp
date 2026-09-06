@@ -31,7 +31,6 @@
 #include "libgui/Gui.h"
 
 #include "drivers/Platform.h"
-#include "drivers/ogc/OgcEmulatorAudio.h"
 #include "drivers/ogc/videofilters.h"
 
 #ifdef HW_RVL

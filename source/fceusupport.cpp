@@ -11,7 +11,6 @@
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "pad.h"
-#include "drivers/ogc/OgcEmulatorAudio.h"
 #include "gcvideo.h"
 #include "drivers/Platform.h"
 #include "menu.h"
@@ -100,7 +99,7 @@ ArchiveScanRecord FCEUD_ScanArchive(std::string fname) { return ArchiveScanRecor
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count)
 {
 	if(Buffer && Count > 0)
-		PlaySound(Buffer, Count); // play sound
+		platform->getAudio()->getEmulatorAudio()->playSound(Buffer, Count); // play sound
 	if(XBuf)
 		platform->getVideo()->getEmulatorVideo()->presentFrame(XBuf); // output video frame
 	GetJoy(); // check controller input
@@ -118,7 +117,7 @@ uint8 XBufLeft[256*256];
 void FCEUD_UpdatePulfrich(uint8 *XBuf, int32 *Buffer, int32 Count)
 {
 	if(Buffer && Count > 0)
-		PlaySound(Buffer, Count); // play sound
+		platform->getAudio()->getEmulatorAudio()->playSound(Buffer, Count); // play sound
 	if(XBuf) {
 		platform->getVideo()->getEmulatorVideo()->presentStereoFrame(XBuf, XBufLeft); // output video frame
 		memcpy(XBufLeft, XBuf, sizeof(XBufLeft)); // output video frame
@@ -131,7 +130,7 @@ void FCEUD_UpdatePulfrich(uint8 *XBuf, int32 *Buffer, int32 Count)
 void FCEUD_UpdateLeft(uint8 *XBuf, int32 *Buffer, int32 Count)
 {
 	if (Buffer && Count > 0)
-		PlaySound(Buffer, Count); // play sound
+		platform->getAudio()->getEmulatorAudio()->playSound(Buffer, Count); // play sound
 	if (XBuf)
 		memcpy(XBufLeft, XBuf, sizeof(XBufLeft)); // output video frame
 	GetJoy(); // check controller input
@@ -141,7 +140,7 @@ void FCEUD_UpdateLeft(uint8 *XBuf, int32 *Buffer, int32 Count)
 void FCEUD_UpdateRight(uint8 *XBuf, int32 *Buffer, int32 Count)
 {
 	if (Buffer && Count > 0)
-		PlaySound(Buffer, Count); // play sound
+		platform->getAudio()->getEmulatorAudio()->playSound(Buffer, Count); // play sound
 	if (XBuf)
 		platform->getVideo()->getEmulatorVideo()->presentStereoFrame(XBufLeft, XBuf); // output video frames
 	GetJoy(); // check controller input

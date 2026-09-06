@@ -19,7 +19,7 @@
 #include "fceultra/file.h"
 
 #include "fceugx.h"
-#include "drivers/ogc/OgcEmulatorAudio.h"
+#include "drivers/Platform.h"
 #include "fceusupport.h"
 #include "pad.h"
 #include "menu.h"
@@ -52,7 +52,7 @@ int GCMemROM(int size)
 	GameInfo->cspecial=SIS_NONE;
 
 	/*** Set internal sound information ***/
-	SetSampleRate();
+	platform->getAudio()->getEmulatorAudio()->setSampleRate();
 	FCEUI_SetSoundVolume(100); // 0-100
 	FCEUI_SetLowPass(0);
 
@@ -131,7 +131,7 @@ int GCMemROM(int size)
 		FCEU_ResetPalette();
 		FCEU_ResetMessages();	// Save state, status messages, etc.
 		SetupCheats();
-		ResetAudio();
+		platform->getAudio()->getEmulatorAudio()->resetAudio();
 		return 1;
 	}
 	else

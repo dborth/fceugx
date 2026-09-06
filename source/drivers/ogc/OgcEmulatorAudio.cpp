@@ -16,35 +16,48 @@
 #include "../../fceugx.h"
 #include "../../fceusupport.h"
 
-// Each DMA buffer holds one frame's worth of 16-bit stereo samples.
-#define DMA_BUFFER_BYTES 3840
-
-// Ring buffer of stereo samples (one u32 == one L/R sample pair).
-#define MIX_SAMPLES 4000
-
-// AUDIO_InitDMA requires 32-byte aligned lengths.
-#define DMA_ALIGN 32
-
-static u8 soundbuffer[2][DMA_BUFFER_BYTES] ATTRIBUTE_ALIGN(32);
-static u32 mixbuffer[MIX_SAMPLES] ATTRIBUTE_ALIGN(32);
-
-// Shared between the emulator thread (producer) and the DMA interrupt
-// callback (consumer); must not be cached in registers.
-static volatile int mixhead = 0;
-static volatile int mixtail = 0;
-static volatile int IsPlaying = 0;
-static int whichab = 0;
-static int samplerate = 0;
+// The single OgcEmulatorAudio instance currently registered with the DMA
+// callback trampoline below. There is only ever one emulator audio backend
+// alive at a time.
+static OgcEmulatorAudio* instance = nullptr;
 
 /****************************************************************************
- * MixerCollect
+ * AudioSwitchBuffers
+ *
+ * Hardware DMA callback trampoline - forwards into the live instance
+ ***************************************************************************/
+void AudioSwitchBuffers()
+{
+	if (instance)
+		instance->switchBuffers();
+}
+
+OgcEmulatorAudio::OgcEmulatorAudio()
+{
+	memset(soundbuffer, 0, sizeof(soundbuffer));
+	memset(mixbuffer, 0, sizeof(mixbuffer));
+	instance = this;
+}
+
+OgcEmulatorAudio::~OgcEmulatorAudio()
+{
+	if (instance == this)
+		instance = nullptr;
+}
+
+void OgcEmulatorAudio::init()
+{
+}
+
+/****************************************************************************
+ * mixerCollect
  *
  * Collects sound samples from mixbuffer and puts them into outbuffer
  * Makes sure to align them to 32 bytes for AUDIO_InitDMA
  ***************************************************************************/
-static int MixerCollect( u8 *outbuffer, int len )
+int OgcEmulatorAudio::mixerCollect(uint8_t* outbuffer, int len)
 {
-	u32 *dst = (u32 *)outbuffer;
+	u32* dst = (u32*)outbuffer;
 	const int maxsamples = len >> 2; // u32 samples that fit in outbuffer
 	const int head = mixhead;        // snapshot the producer index once
 	int tail = mixtail;
@@ -99,42 +112,42 @@ static int MixerCollect( u8 *outbuffer, int len )
 }
 
 /****************************************************************************
- * AudioSwitchBuffers
+ * switchBuffers
  *
  * Manages which buffer is played next
  ***************************************************************************/
-void AudioSwitchBuffers()
+void OgcEmulatorAudio::switchBuffers()
 {
 	if (appRequest == AppRequest::NONE) {
-		IsPlaying = 1;
-		int len = MixerCollect( soundbuffer[whichab], DMA_BUFFER_BYTES );
+		isPlaying = 1;
+		int len = mixerCollect(soundbuffer[whichab], DMA_BUFFER_BYTES);
 		DCFlushRange(soundbuffer[whichab], len);
 		AUDIO_InitDMA((u32)soundbuffer[whichab], len);
 		whichab ^= 1;
 	}
 	else {
-		IsPlaying = 0;
+		isPlaying = 0;
 	}
 }
 
 /****************************************************************************
- * AudioStop
+ * stopAudio
  *
- * Halts DMA playback so it cleanly restarts on the next PlaySound call
+ * Halts DMA playback so it cleanly restarts on the next playSound call
  ***************************************************************************/
-void AudioStop()
+void OgcEmulatorAudio::stopAudio()
 {
-	IsPlaying = 0;
+	isPlaying = 0;
 	AUDIO_StopDMA();
 	AUDIO_RegisterDMACallback(NULL);
 }
 
 /****************************************************************************
- * ResetAudio
+ * resetAudio
  *
  * Reset audio output when loading a new game
  ***************************************************************************/
-void ResetAudio()
+void OgcEmulatorAudio::resetAudio()
 {
 	memset(soundbuffer, 0, sizeof(soundbuffer));
 	memset(mixbuffer, 0, sizeof(mixbuffer));
@@ -143,18 +156,18 @@ void ResetAudio()
 }
 
 /****************************************************************************
- * PlaySound
+ * playSound
  *
  * Puts incoming mono samples into mixbuffer
  * Splits mono samples into two channels (stereo)
  ****************************************************************************/
-void PlaySound( int32 *Buffer, int count )
+void OgcEmulatorAudio::playSound(const int32_t* buffer, int count)
 {
 	int head = mixhead;
 
-	for( int i = 0; i < count; i++ ) {
+	for (int i = 0; i < count; i++) {
 		// Duplicate the 16-bit mono sample into both stereo channels.
-		u32 sample = (u32)(Buffer[i] & 0xffff);
+		u32 sample = (u32)(buffer[i] & 0xffff);
 		mixbuffer[head++] = sample | (sample << 16);
 		if (head == MIX_SAMPLES)
 			head = 0;
@@ -163,20 +176,20 @@ void PlaySound( int32 *Buffer, int count )
 	mixhead = head;
 
 	// Restart Sound Processing if stopped
-	if (IsPlaying == 0) {
+	if (isPlaying == 0) {
 		AUDIO_StartDMA();
 	}
 }
 
-void UpdateSampleRate(int rate)
+void OgcEmulatorAudio::updateSampleRate(int rate)
 {
-	if(samplerate != rate) {
+	if (samplerate != rate) {
 		samplerate = rate;
 		FCEUI_Sound(samplerate);
 	}
 }
 
-void SetSampleRate()
+void OgcEmulatorAudio::setSampleRate()
 {
 	FCEUI_Sound(samplerate);
 }
