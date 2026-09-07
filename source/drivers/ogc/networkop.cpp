@@ -6,7 +6,6 @@
  * networkop.cpp
  *
  * Network and SMB support routines
- * Wii/GameCube only for now - SMB on Wii U is a later goal.
  ****************************************************************************/
 
 #include <errno.h>
@@ -19,7 +18,7 @@
 #include "../../menu.h"
 #include "../../fileop.h"
 #include "../../filebrowser.h"
-#include "../Thread.h"
+#include "../ThreadDriver.h"
 #include "../Time.h"
 
 static bool networkInit = false;
