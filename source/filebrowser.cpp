@@ -16,7 +16,6 @@
 #include "fceusupport.h"
 #include "menu.h"
 #include "filebrowser.h"
-#include "networkop.h"
 #include "fileop.h"
 #include "pad.h"
 #include "fceuload.h"

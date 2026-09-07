@@ -6,33 +6,36 @@
  * networkop.cpp
  *
  * Network and SMB support routines
+ * Wii/GameCube only for now - SMB on Wii U is a later goal.
  ****************************************************************************/
 
 #include <errno.h>
 #include <network.h>
 #include <malloc.h>
 #include <smb.h>
-#include <ogc/lwp.h>
 
-#include "fceugx.h"
-#include "menu.h"
-#include "fileop.h"
-#include "filebrowser.h"
-#include "drivers/Time.h"
+#include "networkop.h"
+#include "../../fceugx.h"
+#include "../../menu.h"
+#include "../../fileop.h"
+#include "../../filebrowser.h"
+#include "../Thread.h"
+#include "../Time.h"
 
 static bool networkInit = false;
 static bool networkShareInit = false;
 char wiiIP[16] = { 0 };
 
 #ifdef HW_RVL
+#define NETWORK_THREAD_STACKSIZE (32 * 1024)
+
 static int netHalt = 0;
+static Thread networkThread;
 
 /****************************************************************************
  * InitializeNetwork
  * Initializes the Wii/GameCube network interface
  ***************************************************************************/
-
-static lwp_t networkthread = LWP_THREAD_NULL;
 
 static void * netcb (void *arg)
 {
@@ -100,7 +103,7 @@ static void * netcb (void *arg)
 				prevInit = true;
 			}
 		}
-		if(netHalt != 2) LWP_SuspendThread(networkthread);
+		if(netHalt != 2) networkThread.suspend();
 	}
 	return NULL;
 }
@@ -114,10 +117,10 @@ void StartNetworkThread()
 {
 	netHalt = 0;
 
-	if(networkthread == LWP_THREAD_NULL)
-		LWP_CreateThread(&networkthread, netcb, NULL, NULL, 0, 40);
+	if(!networkThread.isRunning())
+		networkThread.start(netcb, nullptr, NETWORK_THREAD_STACKSIZE, ThreadPriority::Low);
 	else
-		LWP_ResumeThread(networkthread);
+		networkThread.resume();
 }
 
 /****************************************************************************
@@ -127,15 +130,14 @@ void StartNetworkThread()
  ***************************************************************************/
 void StopNetworkThread()
 {
-	if(networkthread == LWP_THREAD_NULL || !LWP_ThreadIsSuspended(networkthread))
+	if(!networkThread.isRunning() || !networkThread.isSuspended())
 		return;
 
 	netHalt = 2;
-	LWP_ContinueThread(networkthread);
+	networkThread.resume();
 
 	// wait for thread to finish
-	LWP_JoinThread(networkthread, NULL);
-	networkthread = LWP_THREAD_NULL;
+	networkThread.join();
 }
 
 #endif
@@ -164,7 +166,7 @@ bool InitializeNetwork(bool silent)
 		Ticks start = SystemTime::now();
 		StartNetworkThread();
 
-		while (!LWP_ThreadIsSuspended(networkthread))
+		while (!networkThread.isSuspended())
 		{
 			usleep(50 * 1000);
 

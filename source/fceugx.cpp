@@ -22,7 +22,6 @@
 #include "preferences.h"
 #include "fileop.h"
 #include "filebrowser.h"
-#include "networkop.h"
 #include "gcvideo.h"
 #include "pad.h"
 #include "filelist.h"
@@ -31,7 +30,9 @@
 #include "libgui/Gui.h"
 
 #include "drivers/Platform.h"
+#if defined(HW_RVL) || defined(HW_DOL)
 #include "drivers/ogc/videofilters.h"
+#endif
 
 #ifdef HW_RVL
 	#include "mem2.h"
@@ -164,7 +165,9 @@ int main(int argc, char *argv[])
 		}
 
 		currentTiming = GCSettings.timing;
+#if defined(HW_RVL) || defined(HW_DOL)
 		SelectFilterMethod(GCSettings.videoUpscalingFilter); // Initialize / Re-evaluate active filter
+#endif
 		autoboot = false;
 		appRequest = AppRequest::NONE;
 		platform->getAudio()->startEmulatorAudio();

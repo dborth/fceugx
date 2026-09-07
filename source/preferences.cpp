@@ -27,7 +27,9 @@
 
 #include "drivers/ogc/WiiPlatform.h"
 #include "drivers/ogc/GameCubePlatform.h"
+#if defined(HW_RVL) || defined(HW_DOL)
 #include "drivers/ogc/videofilters.h"
+#endif
 
 struct SGCSettings GCSettings;
 
@@ -427,8 +429,10 @@ void FixInvalidSettings()
 		GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
 	if(!(GCSettings.videoMode >= VIDEOMODE_AUTO && GCSettings.videoMode < VIDEOMODE_LENGTH))
 		GCSettings.videoMode = VIDEOMODE_AUTO;
+#if defined(HW_RVL) || defined(HW_DOL)
 	if(!(GCSettings.videoUpscalingFilter >= FILTER_NONE && GCSettings.videoUpscalingFilter <= NUM_FILTERS))
 		GCSettings.videoUpscalingFilter = FILTER_NONE;
+#endif
 	if(GCSettings.timing < TIMING_NTSC || GCSettings.timing >= TIMING_LENGTH)
 		GCSettings.timing = TIMING_AUTOMATIC;
 	if(!(GCSettings.hideoverscan >= HIDEOVERSCAN_OFF && GCSettings.hideoverscan < HIDEOVERSCAN_LENGTH))
@@ -453,7 +457,11 @@ void DefaultSettings()
 	GCSettings.videoBilinearFilter = true;
 	GCSettings.videoHardwareSoften = VIDEO_HW_SOFTEN_SHARP;
 	GCSettings.videoScanlines = false;
+#if defined(HW_RVL) || defined(HW_DOL)
 	GCSettings.videoUpscalingFilter = FILTER_NONE;
+#else
+	GCSettings.videoUpscalingFilter = 0;
+#endif
 
 #ifdef HW_RVL
 	if (CONF_GetAspectRatio() == CONF_ASPECT_16_9)
