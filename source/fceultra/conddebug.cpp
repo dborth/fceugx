@@ -41,7 +41,7 @@
 * Value     -> 'R' | 'W'
 */
 
-#ifdef GEKKO
+#ifdef FCEUGX
 
 #else
 

@@ -117,7 +117,7 @@ int currRerecordCount; // Keep the global value
 
 char lagcounterbuf[32] = {0};
 
-#ifdef GEKKO
+#ifdef FCEUGX
 void MovieData::clearRecordRange(int start, int len) { }
 void MovieData::eraseRecords(int at, int frames) { }
 void MovieData::insertEmpty(int at, int frames) { }

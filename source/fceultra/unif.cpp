@@ -55,7 +55,7 @@ typedef struct {
 	int (*init)(FCEUFILE *fp);
 } BFMAPPING;
 
-#ifdef GEKKO
+#ifdef FCEUGX
 CartInfo UNIFCart;
 #else
 static CartInfo UNIFCart;
@@ -579,7 +579,7 @@ static void UNIFGI(GI h) {
 		if (UNIFchrrama) memset(UNIFchrrama, 0, 8192);
 		break;
 	case GI_CLOSE:
-		#ifndef GEKKO
+		#ifndef FCEUGX
 		FCEU_SaveGameSave(&UNIFCart);
 		#endif
 		if (UNIFCart.Close)
@@ -640,7 +640,7 @@ int UNIFLoad(const char *name, FCEUFILE *fp) {
 
 init_ok:
 
-	#ifndef GEKKO
+	#ifndef FCEUGX
 	FCEU_LoadGameSave(&UNIFCart);
 	#endif
 	strcpy(LoadedRomFName, name); //For the debugger list

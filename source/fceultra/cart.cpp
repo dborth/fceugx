@@ -343,7 +343,7 @@ void SetupCartMirroring(int m, int hard, uint8 *extra) {
 	mirrorhard = hard;
 }
 
-#ifdef GEKKO
+#ifdef FCEUGX
 uint8 *GENIEROM=0;
 #else
 static uint8 *GENIEROM=0;

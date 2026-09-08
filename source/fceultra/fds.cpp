@@ -70,7 +70,7 @@ static uint8 IRQa;
 
 static uint8 *FDSRAM = NULL;
 static uint32 FDSRAMSize;
-#ifdef GEKKO
+#ifdef FCEUGX
 uint8 *FDSBIOS = NULL;
 #else
 static uint8 *FDSBIOS = NULL;
@@ -833,7 +833,7 @@ static void PostSave(void) {
 }
 
 int FDSLoad(const char *name, FCEUFILE *fp) {
-#ifndef GEKKO
+#ifndef FCEUGX
 	FILE *zp;
 #endif
 	int x;
@@ -853,7 +853,7 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 	}
 
 	// load FDS BIOS next
-#ifndef GEKKO
+#ifndef FCEUGX
 	char *fn = strdup(FCEU_MakeFName(FCEUMKF_FDSROM, 0, 0).c_str());
 
 	if (!(zp = FCEUD_UTF8fopen(fn, "rb"))) {
@@ -873,7 +873,7 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 	fseek(zp, 0L, SEEK_SET);
 #endif
 	ResetCartMapping();
-#ifndef GEKKO
+#ifndef FCEUGX
 	if(FDSBIOS)
 		free(FDSBIOS);
 	FDSBIOS = NULL;
@@ -886,11 +886,11 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 	CHRRAM = NULL;
 
 	FDSBIOSsize = 8192;
-#ifndef GEKKO
+#ifndef FCEUGX
 	FDSBIOS = (uint8*)FCEU_gmalloc(FDSBIOSsize);
 #endif
 	SetupCartPRGMapping(0, FDSBIOS, FDSBIOSsize, 0);
-#ifndef GEKKO
+#ifndef FCEUGX
 	if (fread(FDSBIOS, 1, FDSBIOSsize, zp) != FDSBIOSsize) {
 		if(FDSBIOS)
 			free(FDSBIOS);
@@ -913,7 +913,7 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 			diskdatao[x] = (uint8*)FCEU_malloc(65500);
 			memcpy(diskdatao[x], diskdata[x], 65500);
 		}
-#ifndef GEKKO
+#ifndef FCEUGX
 		if ((tp = FCEU_fopen(fn, 0, "rb", 0))) {
 			FCEU_printf("Disk was written. Auxiliary FDS file open \"%s\".\n",fn);
 			FreeFDSMemory();
@@ -932,7 +932,7 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 		free(fn);
 #endif
 	}
-#ifndef GEKKO
+#ifndef FCEUGX
 	extern char LoadedRomFName[2048];
 	strcpy(LoadedRomFName, name); //For the debugger list
 #endif
@@ -990,7 +990,7 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 }
 
 void FDSClose(void) {
-#ifndef GEKKO
+#ifndef FCEUGX
 	FILE *fp;
 	int x;
 	isFDS = false;
@@ -1017,7 +1017,7 @@ void FDSClose(void) {
 		}
 #endif
 	FreeFDSMemory();
-#ifndef GEKKO
+#ifndef FCEUGX
 	if(FDSBIOS)
 		free(FDSBIOS);
 	FDSBIOS = NULL;
@@ -1028,7 +1028,7 @@ void FDSClose(void) {
 	if(CHRRAM)
 		free(CHRRAM);
 	CHRRAM = NULL;
-#ifndef GEKKO
+#ifndef FCEUGX
 	fclose(fp);
 #endif
 

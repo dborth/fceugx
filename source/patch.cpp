@@ -128,7 +128,7 @@ bool patchApplyIPS(MFILE * f, uint8_t **r, int *s) {
 				b = -1;
 			// check if we need to reallocate our ROM
 			if ((offset + len) >= size) {
-#ifdef GEKKO
+#ifdef FCEUGX
 				size = offset + len;
 #else
 				size *= 2;

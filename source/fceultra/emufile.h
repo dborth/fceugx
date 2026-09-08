@@ -25,7 +25,7 @@ THE SOFTWARE.
 #ifndef EMUFILE_H
 #define EMUFILE_H
 
-#ifdef GEKKO
+#ifdef FCEUGX
 #include <malloc.h>
 #endif
 #include "emufile_types.h"
@@ -268,7 +268,7 @@ public:
 	virtual int size() { return (int)len; }
 };
 
-#ifdef GEKKO
+#ifdef FCEUGX
 class EMUFILE_MEMFILE : public EMUFILE { 
 protected:
 	bool own_buffer;

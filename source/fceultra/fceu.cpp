@@ -75,7 +75,7 @@ extern void RefreshThrottleFPS();
 #include "drivers/win/memwatch.h"
 #include "drivers/win/tracer.h"
 #else
-#ifdef GEKKO
+#ifdef FCEUGX
 #include "driver.h"
 #else
 #include "drivers/sdl/sdl.h"
@@ -741,7 +741,7 @@ extern unsigned int frameAdvHoldTimer;
 
 ///Skip may be passed in, if FRAMESKIP is #defined, to cause this to emulate more than one frame
 void FCEUI_Emulate(uint8 **pXBuf, int32 **SoundBuf, int32 *SoundBufSize, int skip) {
-#ifndef GEKKO
+#ifndef FCEUGX
 	FCEU_PROFILE_FUNC(prof, "Emulate Single Frame");
 #endif
 	//skip initiates frame skip if 1, or frame skip and sound skip if 2
@@ -1104,7 +1104,7 @@ FCEUS FSettings;
 
 void FCEU_printf(const char *format, ...) 
 {
-#ifndef GEKKO
+#ifndef FCEUGX
 	char temp[2048];
 
 	va_list ap;
@@ -1126,7 +1126,7 @@ void FCEU_printf(const char *format, ...)
 
 void FCEU_PrintError(const char *format, ...) 
 {
-#ifndef GEKKO
+#ifndef FCEUGX
 	char temp[2048];
 
 	va_list ap;
@@ -1170,7 +1170,7 @@ int FCEUI_GetCurrentVidSystem(int *slstart, int *slend) {
 	return(PAL);
 }
 
-#ifndef GEKKO
+#ifndef FCEUGX
 int  FCEUI_GetRegion(void)
 {
 	int region;
@@ -1388,7 +1388,7 @@ int FCEU_TextScanlineOffsetFromBottom(int y) {
 }
 
 bool FCEU_IsValidUI(EFCEUI ui) {
-#ifndef GEKKO
+#ifndef FCEUGX
 	switch (ui) {
 	case FCEUI_OPENGAME:
 	case FCEUI_CLOSEGAME:

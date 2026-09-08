@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-#ifdef GEKKO
+#ifdef FCEUGX
 #include <inttypes.h>
 
 typedef uint8_t uint8 ;

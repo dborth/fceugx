@@ -77,7 +77,7 @@ static void ZapperFrapper(int w, uint8 *bg, uint8 *spr, uint32 linets, int final
 endo:
 	ZD[w].zappo=final;
 
-#ifndef GEKKO
+#ifndef FCEUGX
     //if this was a miss, clear out the hit
     if(ZD[w].mzb&2)
         ZD[w].zaphit=0;
@@ -117,7 +117,7 @@ static INLINE int CheckColor(int w)
     }
 
 
-#ifdef GEKKO
+#ifdef FCEUGX
 	if((ZD[w].zaphit+100)>=(timestampbase+timestamp)
 		&& !(ZD[w].mzb&2)) return 0;
 #else
@@ -174,7 +174,7 @@ static void DrawZapper(int w, uint8 *buf, int arg)
 static void UpdateZapper(int w, void *data, int arg)
 {
 	uint32 *ptr=(uint32 *)data;
-#ifdef GEKKO
+#ifdef FCEUGX
 	if(ZD[w].bogo)
 		ZD[w].bogo--;	
 	if(ptr[2]&3 && (!(ZD[w].mzb&3)))

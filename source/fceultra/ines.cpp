@@ -53,7 +53,7 @@ uint8 *MiscROM = NULL;
 uint8 *ExtraNTARAM = NULL;
 iNES_HEADER head;
 
-#ifdef GEKKO
+#ifdef FCEUGX
 CartInfo iNESCart;
 #else
 static CartInfo iNESCart;

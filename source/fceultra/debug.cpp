@@ -1,4 +1,4 @@
-#ifdef GEKKO
+#ifdef FCEUGX
 int debug_loggingCD = 0;
 int StackAddrBackup;
 void IncrementInstructionsCounters() {}

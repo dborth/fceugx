@@ -520,7 +520,7 @@ int GetScreenPixelPalette(int x, int y, bool usebackup) {
 
 int SaveSnapshot(void)
 {
-#ifdef GEKKO
+#ifdef FCEUGX
 	return 0;
 #else
 	int totallines=FSettings.LastSLine-FSettings.FirstSLine+1;
@@ -753,7 +753,7 @@ void ResetFPS(void)
 
 void ShowFPS(void)
 {
-#ifndef GEKKO
+#ifndef FCEUGX
 	if (Show_FPS == false)
 	{
 		return;
