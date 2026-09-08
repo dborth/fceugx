@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 #include "drivers/InputDriver.h"
-#include "drivers/ogc/OgcDeviceTypes.h"
+#include "drivers/FileSystemDriver.h"
 #include "fceultra/driver.h"
 
 #define APPNAME			"FCE Ultra GX"

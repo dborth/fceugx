@@ -85,7 +85,7 @@ int GCMemROM(int size)
 
 			AllocSaveBuffer ();
 
-			sprintf (filepath, "%s%s/disksys.rom", pathPrefix[GCSettings.LoadMethod], APPFOLDER);
+			platform->getFileSystem()->getPath(filepath, GCSettings.LoadMethod, APPFOLDER, "disksys.rom");
 			biosSize = LoadFile(filepath, SILENT);
 			if(biosSize == 0 && strlen(appPath) > 0)
 			{

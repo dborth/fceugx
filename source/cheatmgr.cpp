@@ -15,6 +15,8 @@
 #include "fileop.h"
 #include "filebrowser.h"
 #include "menu.h"
+#include "drivers/Platform.h"
+#include "drivers/FileSystemDriver.h"
 
 #include "fceultra/cheat.h"
 
@@ -156,7 +158,7 @@ bool FindGameGenie()
 	size_t romSize = 0;
 	char filepath[1024];
 
-	sprintf (filepath, "%s%s/gg.rom", pathPrefix[GCSettings.LoadMethod], APPFOLDER);
+	platform->getFileSystem()->getPath(filepath, GCSettings.LoadMethod, APPFOLDER, "gg.rom");
 	romSize = LoadFile(filepath, SILENT);
 	if(romSize == 0 && strlen(appPath) > 0)
 	{
