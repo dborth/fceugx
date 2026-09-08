@@ -13,8 +13,10 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <mxml.h>
+#if defined(HW_RVL) || defined(HW_DOL)
 #include <ogc/conf.h>
 #include <ogc/system.h>
+#endif
 
 #include "fceugx.h"
 #include "filelist.h"
@@ -25,9 +27,9 @@
 #include "gcvideo.h"
 #include "pad.h"
 
+#if defined(HW_RVL) || defined(HW_DOL)
 #include "drivers/ogc/WiiPlatform.h"
 #include "drivers/ogc/GameCubePlatform.h"
-#if defined(HW_RVL) || defined(HW_DOL)
 #include "drivers/ogc/videofilters.h"
 #endif
 
@@ -468,7 +470,7 @@ void DefaultSettings()
 		GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_16_9;
 	else
 		GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
-#else
+#elif HW_DOL
 	GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
 #endif
 
@@ -482,7 +484,7 @@ void DefaultSettings()
 	GCSettings.AutoloadGame = false;
 #ifdef HW_RVL
 	GCSettings.ExitAction = EXITACTION_WII_AUTO;
-#else
+#elif HW_DOL
 	GCSettings.ExitAction = EXITACTION_GC_RETURN_TO_LOADER;
 #endif
 	GCSettings.MusicVolume = 20;
@@ -496,7 +498,7 @@ void DefaultSettings()
 	
 	if(GCSettings.language == LANG_TRAD_CHINESE)
 		GCSettings.language = LANG_SIMP_CHINESE;
-#else
+#elif HW_DOL
 	GCSettings.language = SYS_GetLanguage() + LANG_ENGLISH;
 #endif
 
@@ -633,7 +635,7 @@ bool LoadPrefs()
 	sprintf(filepath[2], "usb:/apps/%s", APPFOLDER);
 	sprintf(filepath[3], "sd:/%s", APPFOLDER);
 	sprintf(filepath[4], "usb:/%s", APPFOLDER);
-#else
+#elif HW_DOL
 	numDevices = 4;
 	sprintf(filepath[0], "carda:/%s", APPFOLDER);
 	sprintf(filepath[1], "cardb:/%s", APPFOLDER);
