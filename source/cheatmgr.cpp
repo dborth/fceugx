@@ -29,7 +29,7 @@ int numcheats = 0;
  * Custom version of FCEU_LoadGameCheats()
  ***************************************************************************/
 
-static int LoadCheats (int length)
+static int LoadCheats ()
 {
 	unsigned int addr;
 	unsigned int val;
@@ -140,7 +140,7 @@ SetupCheats()
 
 	// load cheat file if present
 	if(offset > 0)
-		numcheats = LoadCheats(offset);
+		numcheats = LoadCheats();
 
 	FreeSaveBuffer ();
 }

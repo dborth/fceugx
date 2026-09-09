@@ -37,7 +37,6 @@ int GCMemROM(int size)
 
 	CloseGame();
 	GameInfo = new FCEUGI();
-	memset(GameInfo, 0, sizeof(FCEUGI));
 
 	GameInfo->filename = strdup(romFilename);
 	GameInfo->archiveCount = 0;

@@ -362,24 +362,24 @@ bool MakeFilePath(char filepath[], int type, char * filename, int filenum)
 				if(filenum >= -1)
 				{
 					if(filenum == -1)
-						sprintf(file, "%s.%s", filename, ext);
+						snprintf(file, sizeof(file), "%s.%s", filename, ext);
 					else if(filenum == 0)
 						if (!GCSettings.AppendAuto)
-							sprintf(file, "%s.%s", filename, ext);
+							snprintf(file, sizeof(file), "%s.%s", filename, ext);
 						else
-							sprintf(file, "%s Auto.%s", filename, ext);
+							snprintf(file, sizeof(file), "%s Auto.%s", filename, ext);
 					else
-						sprintf(file, "%s %i.%s", filename, filenum, ext);
+						snprintf(file, sizeof(file), "%s %i.%s", filename, filenum, ext);
 				}
 				else
 				{
-					sprintf(file, "%s", filename);
+					snprintf(file, sizeof(file), "%s", filename);
 				}
 				break;
 
 			case FILE_CHEAT:
 				sprintf(folder, GCSettings.CheatFolder);
-				sprintf(file, "%s.cht", romFilename);
+				snprintf(file, sizeof(file), "%s.cht", romFilename);
 				break;
 		}
 		platform->getFileSystem()->getPath(temppath, GCSettings.SaveMethod, folder, file);
@@ -518,7 +518,9 @@ void StripExt(char* returnstring, char * inputstring)
 int BrowserLoadSz()
 {
 	memset(szpath, 0, MAXPATHLEN);
-	strncpy(szpath, browser.dir, strlen(browser.dir) - 1);
+	size_t dirLen = strlen(browser.dir);
+	if(dirLen > 0)
+		strncpy(szpath, browser.dir, dirLen - 1);
 	
 	strncpy(szname, strrchr(szpath, '/') + 1, strrchr(szpath, '.') - strrchr(szpath, '/'));
 	*strrchr(szname, '.') = '\0';
@@ -826,7 +828,8 @@ bool AutoloadGame(char* filepath, char* filename) {
 	selectLoadedFile = 1;
 	std::string dir(filepath);
 	dir.assign(&dir[dir.find_last_of(":") + 2]);
-	strncpy(GCSettings.LoadFolder, dir.c_str(), sizeof(GCSettings.LoadFolder));
+	strncpy(GCSettings.LoadFolder, dir.c_str(), sizeof(GCSettings.LoadFolder) - 1);
+	GCSettings.LoadFolder[sizeof(GCSettings.LoadFolder) - 1] = 0;
 	OpenGameList();
 
 	for(int i = 0; i < browser.numEntries; i++) {

@@ -233,8 +233,8 @@ int LoadPatch(int size)
 	AllocSaveBuffer ();
 
 	memset(patchpath, 0, sizeof(patchpath));
-	sprintf(patchpath[0], "%s%s.ips", browser.dir, romFilename);
-	sprintf(patchpath[1], "%s%s.ups", browser.dir, romFilename);
+	snprintf(patchpath[0], sizeof(patchpath[0]), "%s%s.ips", browser.dir, romFilename);
+	snprintf(patchpath[1], sizeof(patchpath[1]), "%s%s.ups", browser.dir, romFilename);
 
 	for(patchtype=0; patchtype<2; patchtype++)
 	{
