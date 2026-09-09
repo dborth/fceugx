@@ -4261,7 +4261,11 @@ void ChangeLanguage() {
 	else {
 		if(ext_font_ttf != nullptr) {
 			if(fontSystem) delete fontSystem;
+#ifdef HW_RVL
 			mem2_free(ext_font_ttf);
+#else
+			free(ext_font_ttf);
+#endif
 			ext_font_ttf = nullptr;
 			fontSystem = new GuiTextRenderer(font_ttf, font_ttf_size, platform->getVideo()->getGlyphRenderer());
 		}

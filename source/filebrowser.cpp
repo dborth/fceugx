@@ -702,7 +702,23 @@ int BrowserChangeFolder()
 		browserList[i].isdir = 1;
 		browserList[i].icon = ICON_USB;
 		i++;
-#else
+
+		AddBrowserEntry();
+		sprintf(browserList[i].filename, "smb:/");
+		sprintf(browserList[i].displayname, "Network Share");
+		browserList[i].length = 0;
+		browserList[i].isdir = 1;
+		browserList[i].icon = ICON_SMB;
+		i++;
+
+		AddBrowserEntry();
+		sprintf(browserList[i].filename, "dvd:/");
+		sprintf(browserList[i].displayname, "Data DVD");
+		browserList[i].length = 0;
+		browserList[i].isdir = 1;
+		browserList[i].icon = ICON_DVD;
+		i++;
+#elif HW_DOL
 		AddBrowserEntry();
 		sprintf(browserList[i].filename, "carda:/");
 		sprintf(browserList[i].displayname, "SD Gecko Slot A");
@@ -734,7 +750,7 @@ int BrowserChangeFolder()
 		browserList[i].isdir = 1;
 		browserList[i].icon = ICON_SD;
 		i++;
-#endif
+
 		AddBrowserEntry();
 		sprintf(browserList[i].filename, "smb:/");
 		sprintf(browserList[i].displayname, "Network Share");
@@ -750,7 +766,8 @@ int BrowserChangeFolder()
 		browserList[i].isdir = 1;
 		browserList[i].icon = ICON_DVD;
 		i++;
-		
+#endif
+
 		browser.numEntries += i;
 	}
 	

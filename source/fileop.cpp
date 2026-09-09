@@ -837,7 +837,7 @@ size_t LoadFile(char * filepath, bool silent)
 	return LoadFile((char *)savebuffer, filepath, 0, SAVEBUFFERSIZE, silent);
 }
 
-#ifdef HW_RVL
+#ifndef HW_DOL
 size_t LoadFont(char * filepath)
 {
 	FILE *file = fopen (filepath, "rb");
@@ -856,10 +856,17 @@ size_t LoadFont(char * filepath)
 	}
 
 	if(ext_font_ttf) {
+#ifdef HW_RVL
 		mem2_free(ext_font_ttf);
+#else
+		free(ext_font_ttf);
+#endif
 	}
-
+#ifdef HW_RVL
 	ext_font_ttf = (uint8_t *)mem2_malloc(loadSize);
+#else
+	ext_font_ttf = (uint8_t *)malloc(loadSize);
+#endif
 
 	if(!ext_font_ttf) {
 		ErrorPrompt("Font file is too large!");
@@ -888,9 +895,11 @@ void LoadBgMusic()
 	if(ogg_size == 0) {
 		return;
 	}
-
+#ifdef HW_RVL
 	uint8_t * ogg_data = (uint8_t *)mem2_malloc(ogg_size);
-
+#else
+	uint8_t * ogg_data = (uint8_t *)malloc(ogg_size);
+#endif
 	if(!ogg_data) {
 		return;
 	}
