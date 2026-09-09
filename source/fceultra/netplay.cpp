@@ -19,6 +19,7 @@
 */
 
 #ifdef FCEUGX
+#include "types.h"
 int FCEUnetplay=0;
 void FCEUI_NetplayStop(void) { }
 int FCEUI_NetplayStart(int nlocal, int divisor) { }
