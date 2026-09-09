@@ -52,7 +52,7 @@
 #endif
 
 #ifdef HW_RVL
-	#include "mem2.h"
+	#include "drivers/ogc/mem2.h"
 #endif
 
 #define THREAD_SLEEP 100

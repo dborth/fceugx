@@ -36,7 +36,7 @@
 #endif
 
 #ifdef HW_RVL
-	#include "mem2.h"
+	#include "drivers/ogc/mem2.h"
 #endif
 #ifdef HW_DOL
 	#include "drivers/ogc/vm/vmalloc.h"
