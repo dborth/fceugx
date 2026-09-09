@@ -1,3 +1,8 @@
+#ifdef FCEUGX
+#include "types.h"
+void FCEU_WriteWaveData(int32 *Buffer, int Count) { }
+#else
+
 #include "types.h"
 #include "fceu.h"
 
@@ -129,3 +134,4 @@ bool FCEUI_WaveRecordRunning(void)
 {
 	return (soundlog != NULL);
 }
+#endif
