@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	while (platform->getSystemEvent() != SystemEvent::ShutdownRequested) // main loop
+	while (!platform->shouldExit()) // main loop
 	{
 		if(!autoboot) {
 			// go back to checking if devices were inserted/removed
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 				MainMenu(MENU_GAME);
 		}
 
-		if(platform->getSystemEvent() == SystemEvent::ShutdownRequested) {
+		if(platform->shouldExit()) {
 			break;
 		}
 
@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
 		while(appRequest == AppRequest::NONE) // emulation loop
 		{
 			SystemEvent event = platform->getSystemEvent(); // poll exactly once per iteration
-			if(event == SystemEvent::ShutdownRequested)
+			if(platform->getStatus() == Status::Exiting || event == SystemEvent::ShutdownRequested)
 				break;
 
 			fskip = 0;
