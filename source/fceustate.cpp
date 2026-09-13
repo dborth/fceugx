@@ -21,7 +21,7 @@
 #include "menu.h"
 #include "filebrowser.h"
 #include "fileop.h"
-#include "gcvideo.h"
+#include "videosupport.h"
 
 bool SaveState (char * filepath, bool silent)
 {

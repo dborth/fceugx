@@ -19,7 +19,7 @@
 #include "../Platform.h"
 #include "../../fceugx.h"
 #include "../../fceusupport.h"
-#include "../../gcvideo.h"
+#include "../../videosupport.h"
 #include "../../menu.h"
 #include "../../pad.h"
 #include "videofilters.h"

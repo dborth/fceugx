@@ -3,7 +3,7 @@
  *
  * Daryl Borth 2008-2026
  *
- * gcvideo.cpp
+ * videosupport.cpp
  *
  * Generic video glue: frame pacing/timing, screenshot capture.
  ****************************************************************************/
@@ -16,7 +16,7 @@
 
 #include "fceugx.h"
 #include "fceusupport.h"
-#include "gcvideo.h"
+#include "videosupport.h"
 #include "fileop.h"
 #include "libgui/Gui.h"
 #include "menu.h"

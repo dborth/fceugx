@@ -24,7 +24,7 @@
 #include "filebrowser.h"
 #include "menu.h"
 #include "fileop.h"
-#include "gcvideo.h"
+#include "videosupport.h"
 #include "pad.h"
 
 #if defined(HW_RVL) || defined(HW_DOL)

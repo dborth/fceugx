@@ -15,7 +15,7 @@
 
 #include "OgcVideoDriver.h"
 #include "../../libgui/Gui.h"
-#include "../../gcvideo.h"
+#include "../../videosupport.h"
 #include "../../fceugx.h"
 
 /*** 2D Video ***/

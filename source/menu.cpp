@@ -20,7 +20,7 @@
 #include "fceugx.h"
 #include "fceusupport.h"
 #include "pad.h"
-#include "gcvideo.h"
+#include "videosupport.h"
 #include "filebrowser.h"
 #include "fileop.h"
 #include "fceuram.h"

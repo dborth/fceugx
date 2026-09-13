@@ -22,7 +22,7 @@
 #include "preferences.h"
 #include "fileop.h"
 #include "filebrowser.h"
-#include "gcvideo.h"
+#include "videosupport.h"
 #include "pad.h"
 #include "filelist.h"
 #include "font_ttf.h"

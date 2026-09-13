@@ -12,7 +12,7 @@
 #include "fceusupport.h"
 #include "pad.h"
 #include "menu.h"
-#include "gcvideo.h"
+#include "videosupport.h"
 #include "filebrowser.h"
 #include "button_mapping.h"
 #include "fceuload.h"
