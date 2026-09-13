@@ -120,7 +120,7 @@ int GCMemROM(int size)
 		FCEU_ResetVidSys();
 
 		if(GameInfo->type!=GIT_NSF)
-			if(FEmuSettings.GameGenie)
+			if(FSettings.GameGenie)
 				OpenGameGenie();
 		PowerNES();
 
