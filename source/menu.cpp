@@ -4588,9 +4588,7 @@ static int MenuEmuSettingsNetwork()
 			selection = MENU_SETTINGS;
 		}
 	}
-#if defined(HW_RVL) || defined(HW_DOL)
 	CloseShare();
-#endif
 	return selection;
 }
 
