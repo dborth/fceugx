@@ -557,7 +557,7 @@ static bool UpdateGui()
 
 	DrawGui();
 
-	if(appRequest == AppRequest::EXIT || platform->getSystemEvent() == SystemEvent::ShutdownRequested)
+	if(platform->getSystemEvent() == SystemEvent::ShutdownRequested)
 	{
 		for(int a = 0; a <= 255; a += 15)
 		{
@@ -1212,8 +1212,9 @@ static int MenuGameSelection()
 
 		if(settingsBtn.getState() == STATE::CLICKED)
 			selection = MENU_SETTINGS;
-		else if(exitBtn.getState() == STATE::CLICKED)
-			appRequest = AppRequest::EXIT;
+		else if(exitBtn.getState() == STATE::CLICKED) {
+			platform->triggerExit();
+		}
 	}
 
 	HaltParseThread(); // halt parsing

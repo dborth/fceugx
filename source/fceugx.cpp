@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	while (appRequest != AppRequest::EXIT && platform->getSystemEvent() != SystemEvent::ShutdownRequested) // main loop
+	while (platform->getSystemEvent() != SystemEvent::ShutdownRequested) // main loop
 	{
 		if(!autoboot) {
 			// go back to checking if devices were inserted/removed
@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
 				MainMenu(MENU_GAME);
 		}
 
-		if(appRequest == AppRequest::EXIT || platform->getSystemEvent() == SystemEvent::ShutdownRequested) {
+		if(platform->getSystemEvent() == SystemEvent::ShutdownRequested) {
 			break;
 		}
 
