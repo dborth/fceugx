@@ -85,8 +85,8 @@ int main(int argc, char *argv[])
 	textTranslator = new GuiTextTranslator();
 	textTranslator->loadLanguage(en_lang, en_lang_size);
 
-	DefaultSettings();
-	ApplySettings();
+	DefaultEmuSettings();
+	ApplyEmuSettings();
 	platform->getVideo()->startMenuVideo();
 	
 	#ifdef HW_RVL
@@ -124,18 +124,18 @@ int main(int argc, char *argv[])
 		LoadPrefs();
 		if(strncmp(argv[1], "sd", 2) == 0)
 		{
-			Settings.SaveMethod = DEVICE_SD;
-			Settings.LoadMethod = DEVICE_SD;
+			EmuSettings.SaveMethod = DEVICE_SD;
+			EmuSettings.LoadMethod = DEVICE_SD;
 		}
 		else if(strncmp(argv[1], "usb", 3) == 0)
 		{
-			Settings.SaveMethod = DEVICE_USB;
-			Settings.LoadMethod = DEVICE_USB;
+			EmuSettings.SaveMethod = DEVICE_USB;
+			EmuSettings.LoadMethod = DEVICE_USB;
 		}
 		SavePrefs();
 
-		Settings.AutoloadGame = AutoloadGame(argv[1], argv[2]);
-		autoboot = Settings.AutoloadGame;
+		EmuSettings.AutoloadGame = AutoloadGame(argv[1], argv[2]);
+		autoboot = EmuSettings.AutoloadGame;
 	}
 #endif
 
@@ -158,16 +158,16 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		if(currentTiming != Settings.timing)
+		if(currentTiming != EmuSettings.timing)
 		{
 			GameInfo->vidsys=(EGIV)GetFCEUTiming();
 			UpdateDendy();
 			FCEU_ResetVidSys();
 		}
 
-		currentTiming = Settings.timing;
+		currentTiming = EmuSettings.timing;
 #if defined(HW_RVL) || defined(HW_DOL)
-		SelectFilterMethod(Settings.videoUpscalingFilter); // Initialize / Re-evaluate active filter
+		SelectFilterMethod(EmuSettings.videoUpscalingFilter); // Initialize / Re-evaluate active filter
 #endif
 		autoboot = false;
 		appRequest = AppRequest::NONE;
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 		SetControllers();
 		setFrameTimer(); // set frametimer method before emulation
 		SetPalette();
-		FCEUI_DisableSpriteLimitation(Settings.spritelimit ^ 1);
+		FCEUI_DisableSpriteLimitation(EmuSettings.spritelimit ^ 1);
 
 		fskip=0;
 		fskipc=0;
@@ -257,7 +257,7 @@ void ExitApp()
 {
 	SavePrefs();
 
-	if (romLoaded && appRequest != AppRequest::MENU && Settings.AutoSave == AUTOSAVE_RAM)
+	if (romLoaded && appRequest != AppRequest::MENU && EmuSettings.AutoSave == AUTOSAVE_RAM)
 		SaveRAMAuto(SILENT);
 
 	HaltDeviceCheckingThread();
@@ -267,5 +267,5 @@ void ExitApp()
 	// down inside requestExit()/shutdown().
 	Thread::JoinAll();
 
-	platform->requestExit(Settings.ExitAction, autoboot);
+	platform->requestExit(EmuSettings.ExitAction, autoboot);
 }

@@ -272,7 +272,7 @@ LoadRAMAuto (bool silent)
 	if (LoadRAM(filepath, silent))
 		return true;
 
-	if (!Settings.AppendAuto)
+	if (!EmuSettings.AppendAuto)
 		return false;
 
 	// look for file with no number or Auto appended

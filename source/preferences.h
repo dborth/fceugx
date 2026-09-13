@@ -8,9 +8,9 @@
  * Preferences save/load preferences utilities
  ****************************************************************************/
 
-void FixInvalidSettings();
-void DefaultSettings();
-void ApplySettings();
+void FixInvalidEmuSettings();
+void DefaultEmuSettings();
+void ApplyEmuSettings();
 bool SavePrefs();
 bool LoadPrefs();
 void CreateMissingDirectories();

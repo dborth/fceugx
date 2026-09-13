@@ -180,7 +180,7 @@ void SetControllers()
 
 	InputDPR = &JSReturn;
 
-	if(Settings.Controller == CTRL_PAD4)
+	if(EmuSettings.Controller == CTRL_PAD4)
 		FCEUI_SetInputFourscore(1);
 	else
 		FCEUI_SetInputFourscore(0);
@@ -196,7 +196,7 @@ void SetControllers()
 	FCEUI_SetInput(0, SI_GAMEPAD, InputDPR, 0);
 	FCEUI_SetInput(1, SI_GAMEPAD, InputDPR, 0);
 
-	if(Settings.Controller == CTRL_ZAPPER)
+	if(EmuSettings.Controller == CTRL_ZAPPER)
 	{
 		int p;
 		if(GameInfo->type == GIT_VSUNI) p = 0;
@@ -267,7 +267,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 	bool zapper_triggered = false;
 
 	// Zapper Logic
-	if (Settings.Controller == CTRL_ZAPPER)
+	if (EmuSettings.Controller == CTRL_ZAPPER)
 	{
 		int z = (GameInfo->type == GIT_VSUNI) ? 0 : 1;
 		myzappers[z][2] = 0; // reset trigger
@@ -359,11 +359,11 @@ bool isMenuRequested()
 						  (pad.buttons_h & INPUT_BTN_2) &&
 						  (pad.buttons_h & INPUT_BTN_PLUS);
 
-		if (Settings.GamepadMenuToggle == GAMEPAD_MENU_TOGGLE_HOME_RIGHTSTICK)
+		if (EmuSettings.GamepadMenuToggle == GAMEPAD_MENU_TOGGLE_HOME_RIGHTSTICK)
 		{
 			if (rightStickLeft || homePressed) return true;
 		}
-		else if (Settings.GamepadMenuToggle == GAMEPAD_MENU_TOGGLE_LRSTART_12PLUS)
+		else if (EmuSettings.GamepadMenuToggle == GAMEPAD_MENU_TOGGLE_LRSTART_12PLUS)
 		{
 			if (lPlusRPlusStart || oneTwoPlus) return true;
 		}
@@ -380,7 +380,7 @@ bool IsTurboModeInputPressed()
 	if (!controller[0]) return false;
 	const InputPadData& pad = controller[0]->getPadData();
 
-	switch(Settings.TurboModeButton)
+	switch(EmuSettings.TurboModeButton)
 	{
 		case TURBO_BUTTON_RSTICK:
 			return (pad.substickX > 0.55f);
@@ -427,7 +427,7 @@ void GetJoy()
 
 	// Turbo mode
 	// RIGHT on c-stick and on classic ctrlr right joystick
-	if (Settings.TurboModeEnabled)
+	if (EmuSettings.TurboModeEnabled)
 	{
 		turbomode = IsTurboModeInputPressed();
 	}
