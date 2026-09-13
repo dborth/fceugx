@@ -23,16 +23,16 @@ int KillFCEUXonFrame = 0;
 
 int GetFCEUTiming()
 {
-	if (GCSettings.timing == TIMING_DENDY) {
+	if (Settings.timing == TIMING_DENDY) {
 		return TIMING_AUTOMATIC;
 	}
 
-	return GCSettings.timing;
+	return Settings.timing;
 }
 
 void UpdateDendy()
 {
-	if(GCSettings.timing == TIMING_DENDY) {
+	if(Settings.timing == TIMING_DENDY) {
 		dendy = 1;
 	}
 	else {
@@ -67,7 +67,7 @@ EMUFILE_FILE* FCEUD_UTF8_fstream(const char *, const char *)
 
 bool FCEUD_ShouldDrawInputAids()
 {
-	return GCSettings.crosshair;
+	return Settings.crosshair;
 }
 
 // General Logging

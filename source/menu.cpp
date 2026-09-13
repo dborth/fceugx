@@ -814,16 +814,16 @@ void InfoPrompt(const char *msg)
  ***************************************************************************/
 void AutoSave()
 {
-	if (GCSettings.AutoSave == AUTOSAVE_RAM)
+	if (Settings.AutoSave == AUTOSAVE_RAM)
 	{
 		SaveRAMAuto(SILENT);
 	}
-	else if (GCSettings.AutoSave == AUTOSAVE_STATE)
+	else if (Settings.AutoSave == AUTOSAVE_STATE)
 	{
 		if (WindowPrompt("Save", "Save State?", "Save", "Don't Save") )
 			SaveStateAuto(NOTSILENT);
 	}
-	else if (GCSettings.AutoSave == AUTOSAVE_BOTH)
+	else if (Settings.AutoSave == AUTOSAVE_BOTH)
 	{
 		if (WindowPrompt("Save", "Save RAM and State?", "Save", "Don't Save") )
 		{
@@ -991,12 +991,12 @@ SettingWindow(const char * title, GuiWindow * w)
  ***************************************************************************/
 static char* getImageFolder()
 {
-	switch(GCSettings.PreviewImage)
+	switch(Settings.PreviewImage)
 	{
-		case PREVIEWIMAGE_SCREENSHOT : return GCSettings.ScreenshotsFolder;
-		case PREVIEWIMAGE_COVER : return GCSettings.CoverFolder;
-		case PREVIEWIMAGE_ARTWORK : return GCSettings.ArtworkFolder;
-		default : return GCSettings.CoverFolder;
+		case PREVIEWIMAGE_SCREENSHOT : return Settings.ScreenshotsFolder;
+		case PREVIEWIMAGE_COVER : return Settings.CoverFolder;
+		case PREVIEWIMAGE_ARTWORK : return Settings.ArtworkFolder;
+		default : return Settings.CoverFolder;
 	}
 }
 
@@ -1081,7 +1081,7 @@ static int MenuGameSelection()
 
 	GuiImage bgPreview(&bgPreviewImg);
 	bgPreview.setPosition(365, 98);
-	int previousPreviewImg = GCSettings.PreviewImage;
+	int previousPreviewImg = Settings.PreviewImage;
 
 	GuiImageData previewImageData;
 	GuiImage preview;
@@ -1179,19 +1179,19 @@ static int MenuGameSelection()
 		}
 		
 		//update game screenshot
-		if(previousBrowserIndex != browser.selIndex || previousPreviewImg != GCSettings.PreviewImage)
+		if(previousBrowserIndex != browser.selIndex || previousPreviewImg != Settings.PreviewImage)
 		{
 			previousBrowserIndex = browser.selIndex;
-			previousPreviewImg = GCSettings.PreviewImage;
+			previousPreviewImg = Settings.PreviewImage;
 
 			// ensure selected index is valid
 			bool loadedPreview = false;
 
-			if(browser.dir[0] != 0 && GCSettings.LoadMethod > 0 && browser.numEntries > 0 && browser.selIndex > 0 && browser.selIndex < browser.numEntries)
+			if(browser.dir[0] != 0 && Settings.LoadMethod > 0 && browser.numEntries > 0 && browser.selIndex > 0 && browser.selIndex < browser.numEntries)
 			{
 				char imageFile[MAXJOLIET + 1];
 				snprintf(imageFile, sizeof(imageFile), "%s.png", browserList[browser.selIndex].displayname);
-				platform->getFileSystem()->getPath(imagePath, GCSettings.LoadMethod, getImageFolder(), imageFile);
+				platform->getFileSystem()->getPath(imagePath, Settings.LoadMethod, getImageFolder(), imageFile);
 
 				if(ChangeInterface(imagePath, SILENT) &&
 				   LoadFile((char *)pngFileBuffer.get(), imagePath, 0, PNG_FILE_BUFFER_SIZE, SILENT) &&
@@ -1229,14 +1229,14 @@ static void ControllerWindowUpdate(void * ptr, int dir)
 	GuiButton * b = (GuiButton *)ptr;
 	if(b->getState() == STATE::CLICKED)
 	{
-		GCSettings.Controller += dir;
+		Settings.Controller += dir;
 
-		if(GCSettings.Controller > CTRL_PAD4)
-			GCSettings.Controller = CTRL_ZAPPER;
-		else if(GCSettings.Controller < CTRL_ZAPPER)
-			GCSettings.Controller = CTRL_PAD4;
+		if(Settings.Controller > CTRL_PAD4)
+			Settings.Controller = CTRL_ZAPPER;
+		else if(Settings.Controller < CTRL_ZAPPER)
+			Settings.Controller = CTRL_PAD4;
 
-		settingText->setText(ctrlName[GCSettings.Controller]);
+		settingText->setText(ctrlName[Settings.Controller]);
 		b->resetState();
 	}
 }
@@ -1291,16 +1291,16 @@ static void ControllerWindow()
 	arrowRightBtn.setSelectable(false);
 	arrowRightBtn.setUpdateCallback(ControllerWindowRightClick);
 
-	settingText = new GuiText(ctrlName[GCSettings.Controller], 22, (PixelColor){0, 0, 0, 255});
+	settingText = new GuiText(ctrlName[Settings.Controller], 22, (PixelColor){0, 0, 0, 255});
 
-	int currentController = GCSettings.Controller;
+	int currentController = Settings.Controller;
 
 	w->append(&arrowLeftBtn);
 	w->append(&arrowRightBtn);
 	w->append(settingText);
 
 	if(!SettingWindow("Controller",w))
-		GCSettings.Controller = currentController; // undo changes
+		Settings.Controller = currentController; // undo changes
 
 	delete(w);
 	delete(settingText);
@@ -1511,7 +1511,7 @@ static int MenuGame()
 	gameSettingsBtn.setEffectGrow();
 
 	GuiText mainmenuBtnTxt("Main Menu", 22, (PixelColor){0, 0, 0, 255});
-	if(GCSettings.AutoloadGame) {
+	if(Settings.AutoloadGame) {
 		mainmenuBtnTxt.setText("Exit");
 	}
 	GuiImage mainmenuBtnImg(&btnOutline);
@@ -1734,7 +1734,7 @@ static int MenuGame()
 					gameScreenTexture = nullptr;
 				}
 				ClearScreenshot();
-				if(GCSettings.AutoloadGame) {
+				if(Settings.AutoloadGame) {
 					ExitApp();
 				}
 				else {
@@ -1838,7 +1838,7 @@ static int MenuGameSaves(int action)
 	struct tm * timeinfo;
 
 	static ChangeInterfaceArgs ciArgs;
-	ciArgs.device = GCSettings.SaveMethod;
+	ciArgs.device = Settings.SaveMethod;
 	ciArgs.silent = NOTSILENT;
 	bool changeOk = false;
 
@@ -1913,7 +1913,7 @@ static int MenuGameSaves(int action)
 	menu->mainWindow.appendWithAutoRemove(&w);
 	menu->mainWindow.appendWithAutoRemove(&titleTxt);
 
-	platform->getFileSystem()->getPath(browser.dir, GCSettings.SaveMethod, GCSettings.SaveFolder);
+	platform->getFileSystem()->getPath(browser.dir, Settings.SaveMethod, Settings.SaveFolder);
 	ParseDirectory(true, false);
 
 	len = strlen(romFilename);
@@ -1949,7 +1949,7 @@ static int MenuGameSaves(int action)
 			{
 				char scrname[MAXJOLIET+1];
 				snprintf(scrname, sizeof(scrname), "%s.png", tmp);
-				platform->getFileSystem()->getPath(scrfile, GCSettings.SaveMethod, GCSettings.SaveFolder, scrname);
+				platform->getFileSystem()->getPath(scrfile, Settings.SaveMethod, Settings.SaveFolder, scrname);
 
 				memset(savebuffer, 0, SAVEBUFFERSIZE);
 				if(LoadFile(scrfile, SILENT)) {
@@ -1958,7 +1958,7 @@ static int MenuGameSaves(int action)
 						saves.previewImg[j] = std::move(thumb);
 				}
 			}
-			platform->getFileSystem()->getPath(filepath, GCSettings.SaveMethod, GCSettings.SaveFolder, saves.filename[j]);
+			platform->getFileSystem()->getPath(filepath, Settings.SaveMethod, Settings.SaveFolder, saves.filename[j]);
 			if (stat(filepath, &filestat) == 0)
 			{
 				timeinfo = localtime(&filestat.st_mtime);
@@ -2057,7 +2057,7 @@ static int MenuGameSaves(int action)
 						selection = MENU_GAME_SAVE;
 					}
 				}
-				else if(ret == -1 && GCSettings.HideRAMSaving == 0) // new RAM
+				else if(ret == -1 && Settings.HideRAMSaving == 0) // new RAM
 				{
 					for(i=1; i < 100; i++)
 						if(saves.files[FILE_RAM][i] == 0)
@@ -2322,7 +2322,7 @@ static int MenuGameSettings()
 		{
 			if (WindowPrompt("Preview Screenshot", "Save a new Preview Screenshot? Current Screenshot image will be overwritten.", "OK", "Cancel"))
 			{
-				platform->getFileSystem()->getPath(filepath, GCSettings.LoadMethod, GCSettings.ScreenshotsFolder, romFilename);
+				platform->getFileSystem()->getPath(filepath, Settings.LoadMethod, Settings.ScreenshotsFolder, romFilename);
 				SavePreviewImg(filepath, NOTSILENT); 
 			}
 		}
@@ -3067,13 +3067,13 @@ static void ScreenZoomWindowUpdate(void * ptr, float h, float v)
 	GuiButton * b = (GuiButton *)ptr;
 	if(b->getState() == STATE::CLICKED)
 	{
-		GCSettings.videoZoomHor += h;
-		GCSettings.videoZoomVert += v;
+		Settings.videoZoomHor += h;
+		Settings.videoZoomVert += v;
 
 		char zoom[10];
-		sprintf(zoom, "%.2f%%", GCSettings.videoZoomHor*100);
+		sprintf(zoom, "%.2f%%", Settings.videoZoomHor*100);
 		settingText->setText(zoom);
-		sprintf(zoom, "%.2f%%", GCSettings.videoZoomVert*100);
+		sprintf(zoom, "%.2f%%", Settings.videoZoomVert*100);
 		settingText2->setText(zoom);
 		b->resetState();
 	}
@@ -3165,15 +3165,15 @@ static void ScreenZoomWindow()
 	settingText = new GuiText(nullptr, 20, (PixelColor){0, 0, 0, 255});
 	settingText2 = new GuiText(nullptr, 20, (PixelColor){0, 0, 0, 255});
 	char zoom[10];
-	sprintf(zoom, "%.2f%%", GCSettings.videoZoomHor*100);
+	sprintf(zoom, "%.2f%%", Settings.videoZoomHor*100);
 	settingText->setText(zoom);
 	settingText->setPosition(108, 0);
-	sprintf(zoom, "%.2f%%", GCSettings.videoZoomVert*100);
+	sprintf(zoom, "%.2f%%", Settings.videoZoomVert*100);
 	settingText2->setText(zoom);
 	settingText2->setPosition(-76, 0);
 
-	float currentZoomHor = GCSettings.videoZoomHor;
-	float currentZoomVert = GCSettings.videoZoomVert;
+	float currentZoomHor = Settings.videoZoomHor;
+	float currentZoomVert = Settings.videoZoomVert;
 
 	w->append(&arrowLeftBtn);
 	w->append(&arrowRightBtn);
@@ -3186,8 +3186,8 @@ static void ScreenZoomWindow()
 	if(!SettingWindow("Screen Zoom",w))
 	{
 		// undo changes
-		GCSettings.videoZoomHor = currentZoomHor;
-		GCSettings.videoZoomVert = currentZoomVert;
+		Settings.videoZoomHor = currentZoomHor;
+		Settings.videoZoomVert = currentZoomVert;
 	}
 
 	delete(w);
@@ -3200,16 +3200,16 @@ static void ScreenPositionWindowUpdate(void * ptr, int x, int y)
 	GuiButton * b = (GuiButton *)ptr;
 	if(b->getState() == STATE::CLICKED)
 	{
-		GCSettings.videoXshift += x;
-		GCSettings.videoYshift += y;
+		Settings.videoXshift += x;
+		Settings.videoYshift += y;
 
-		if(!(GCSettings.videoXshift > -50 && GCSettings.videoXshift < 50))
-			GCSettings.videoXshift = 0;
-		if(!(GCSettings.videoYshift > -50 && GCSettings.videoYshift < 50))
-			GCSettings.videoYshift = 0;
+		if(!(Settings.videoXshift > -50 && Settings.videoXshift < 50))
+			Settings.videoXshift = 0;
+		if(!(Settings.videoYshift > -50 && Settings.videoYshift < 50))
+			Settings.videoYshift = 0;
 
 		char shift[10];
-		sprintf(shift, "%hd, %hd", GCSettings.videoXshift, GCSettings.videoYshift);
+		sprintf(shift, "%hd, %hd", Settings.videoXshift, Settings.videoYshift);
 		settingText->setText(shift);
 		b->resetState();
 	}
@@ -3296,11 +3296,11 @@ static void ScreenPositionWindow()
 
 	settingText = new GuiText(nullptr, 20, (PixelColor){0, 0, 0, 255});
 	char shift[10];
-	sprintf(shift, "%i, %i", GCSettings.videoXshift, GCSettings.videoYshift);
+	sprintf(shift, "%i, %i", Settings.videoXshift, Settings.videoYshift);
 	settingText->setText(shift);
 
-	int currentX = GCSettings.videoXshift;
-	int currentY = GCSettings.videoYshift;
+	int currentX = Settings.videoXshift;
+	int currentY = Settings.videoYshift;
 
 	w->append(&arrowLeftBtn);
 	w->append(&arrowRightBtn);
@@ -3312,8 +3312,8 @@ static void ScreenPositionWindow()
 	if(!SettingWindow("Screen Position",w))
 	{
 		// undo changes
-		GCSettings.videoXshift = currentX;
-		GCSettings.videoYshift = currentY;
+		Settings.videoXshift = currentX;
+		Settings.videoYshift = currentY;
 	}
 
 	delete(w);
@@ -3389,28 +3389,28 @@ static int MenuSettingsOtherMappings()
 		switch (ret)
 		{
 			case 0:
-				GCSettings.TurboModeEnabled = !GCSettings.TurboModeEnabled;
+				Settings.TurboModeEnabled = !Settings.TurboModeEnabled;
 				break;
 
 			case 1:
-				GCSettings.TurboModeButton++;
-				if (GCSettings.TurboModeButton > 14)
-					GCSettings.TurboModeButton = 0;
+				Settings.TurboModeButton++;
+				if (Settings.TurboModeButton > 14)
+					Settings.TurboModeButton = 0;
 				break;
 
 			case 2:
-				GCSettings.GamepadMenuToggle++;
-				if (GCSettings.GamepadMenuToggle >= GAMEPAD_MENU_TOGGLE_LENGTH)
-					GCSettings.GamepadMenuToggle = GAMEPAD_MENU_TOGGLE_DEFAULT;
+				Settings.GamepadMenuToggle++;
+				if (Settings.GamepadMenuToggle >= GAMEPAD_MENU_TOGGLE_LENGTH)
+					Settings.GamepadMenuToggle = GAMEPAD_MENU_TOGGLE_DEFAULT;
 				break;
 		}
 
 		if(ret >= 0 || firstRun)
 		{
 			firstRun = false;
-			sprintf (options.value[0], "%s", GCSettings.TurboModeEnabled ? "On" : "Off");
+			sprintf (options.value[0], "%s", Settings.TurboModeEnabled ? "On" : "Off");
 
-			switch(GCSettings.TurboModeButton)
+			switch(Settings.TurboModeButton)
 			{
 				case 0:
 					sprintf (options.value[1], "Default (Right Stick)"); break;
@@ -3444,7 +3444,7 @@ static int MenuSettingsOtherMappings()
 					sprintf (options.value[1], "Minus"); break;
 			}
 
-			switch(GCSettings.GamepadMenuToggle)
+			switch(Settings.GamepadMenuToggle)
 			{
 				case 0:
 					sprintf (options.value[2], "Default (All Enabled)"); break;
@@ -3543,48 +3543,48 @@ static int MenuSettingsVideo()
 		switch (ret)
 		{
 			case 0:
-				GCSettings.videoMode++;
-				if(GCSettings.videoMode >= VIDEOMODE_LENGTH)
-					GCSettings.videoMode = VIDEOMODE_AUTO;
+				Settings.videoMode++;
+				if(Settings.videoMode >= VIDEOMODE_LENGTH)
+					Settings.videoMode = VIDEOMODE_AUTO;
 				break;
 
 			case 1:
-				GCSettings.videoAspectRatioCorrection++;
-				if(GCSettings.videoAspectRatioCorrection >= VIDEO_ASPECT_RATIO_CORRECTION_LENGTH)
-					GCSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
+				Settings.videoAspectRatioCorrection++;
+				if(Settings.videoAspectRatioCorrection >= VIDEO_ASPECT_RATIO_CORRECTION_LENGTH)
+					Settings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
 				break;
 
 			case 2:
-				GCSettings.hideoverscan++;
-				if (GCSettings.hideoverscan >= HIDEOVERSCAN_LENGTH)
-					GCSettings.hideoverscan = HIDEOVERSCAN_OFF;
+				Settings.hideoverscan++;
+				if (Settings.hideoverscan >= HIDEOVERSCAN_LENGTH)
+					Settings.hideoverscan = HIDEOVERSCAN_OFF;
 				break;
 
 			case 3:
-				if ( ++GCSettings.currpal > MAXPAL )
-					GCSettings.currpal = 0;
+				if ( ++Settings.currpal > MAXPAL )
+					Settings.currpal = 0;
 				break;
 
 			case 4:
-				GCSettings.videoBilinearFilter = !GCSettings.videoBilinearFilter;
+				Settings.videoBilinearFilter = !Settings.videoBilinearFilter;
 				break;
 
 			case 5:
-				GCSettings.videoHardwareSoften++;
-				if(GCSettings.videoHardwareSoften >= VIDEO_HW_SOFTEN_LENGTH)
-					GCSettings.videoHardwareSoften = VIDEO_HW_SOFTEN_OFF;
+				Settings.videoHardwareSoften++;
+				if(Settings.videoHardwareSoften >= VIDEO_HW_SOFTEN_LENGTH)
+					Settings.videoHardwareSoften = VIDEO_HW_SOFTEN_OFF;
 				break;
 
 #if defined(HW_RVL) || defined(HW_DOL)
 			case 6:
-				GCSettings.videoUpscalingFilter++;
-				if (GCSettings.videoUpscalingFilter >= NUM_FILTERS)
-					GCSettings.videoUpscalingFilter = FILTER_NONE;
+				Settings.videoUpscalingFilter++;
+				if (Settings.videoUpscalingFilter >= NUM_FILTERS)
+					Settings.videoUpscalingFilter = FILTER_NONE;
 				break;
 #endif
 
 			case 7:
-				GCSettings.videoScanlines = !GCSettings.videoScanlines;
+				Settings.videoScanlines = !Settings.videoScanlines;
 				break;
 
 			case 8:
@@ -3600,7 +3600,7 @@ static int MenuSettingsVideo()
 		{
 			firstRun = false;
 
-			switch(GCSettings.videoMode)
+			switch(Settings.videoMode)
 			{
 				case VIDEOMODE_AUTO:
 					sprintf (options.value[0], "Automatic (Recommended)"); break;
@@ -3616,7 +3616,7 @@ static int MenuSettingsVideo()
 					sprintf (options.value[0], "Original (240p)"); break;
 			}
 
-			switch(GCSettings.videoAspectRatioCorrection)
+			switch(Settings.videoAspectRatioCorrection)
 			{
 				case VIDEO_ASPECT_RATIO_CORRECTION_NONE:
 					sprintf (options.value[1], "None"); break;
@@ -3624,7 +3624,7 @@ static int MenuSettingsVideo()
 					sprintf (options.value[1], "16:9"); break;
 			}
 
-			switch(GCSettings.hideoverscan)
+			switch(Settings.hideoverscan)
 			{
 				case HIDEOVERSCAN_OFF: sprintf (options.value[2], "Off"); break;
 				case HIDEOVERSCAN_VERTICAL: sprintf (options.value[2], "Vertical"); break;
@@ -3632,11 +3632,11 @@ static int MenuSettingsVideo()
 				case HIDEOVERSCAN_BOTH: sprintf (options.value[2], "Both"); break;
 			}
 
-			sprintf (options.value[3], "%s", GCSettings.currpal ? palettes[GCSettings.currpal-1].desc : "Default");
+			sprintf (options.value[3], "%s", Settings.currpal ? palettes[Settings.currpal-1].desc : "Default");
 
-			sprintf (options.value[4], "%s", GCSettings.videoBilinearFilter ? "On" : "Off");
+			sprintf (options.value[4], "%s", Settings.videoBilinearFilter ? "On" : "Off");
 
-			switch(GCSettings.videoHardwareSoften)
+			switch(Settings.videoHardwareSoften)
 			{
 				case VIDEO_HW_SOFTEN_OFF:
 					sprintf (options.value[5], "Off"); break;
@@ -3649,11 +3649,11 @@ static int MenuSettingsVideo()
 			}
 
 #if defined(HW_RVL) || defined(HW_DOL)
-			sprintf (options.value[6], "%s", GetFilterName(GCSettings.videoUpscalingFilter));
+			sprintf (options.value[6], "%s", GetFilterName(Settings.videoUpscalingFilter));
 #endif
-			sprintf (options.value[7], "%s", GCSettings.videoScanlines ? "On" : "Off");
-			sprintf (options.value[8], "%.2f%%, %.2f%%", GCSettings.videoZoomHor*100, GCSettings.videoZoomVert*100);
-			sprintf (options.value[9], "%d, %d", GCSettings.videoXshift, GCSettings.videoYshift);
+			sprintf (options.value[7], "%s", Settings.videoScanlines ? "On" : "Off");
+			sprintf (options.value[8], "%.2f%%, %.2f%%", Settings.videoZoomHor*100, Settings.videoZoomVert*100);
+			sprintf (options.value[9], "%d, %d", Settings.videoXshift, Settings.videoYshift);
 
 			optionBrowser.triggerUpdate();
 		}
@@ -3731,17 +3731,17 @@ static int MenuSettingsEmulation()
 		switch (ret)
 		{
 			case 0:
-				GCSettings.timing++;
-				if(GCSettings.timing >= TIMING_LENGTH)
-					GCSettings.timing = TIMING_NTSC;
+				Settings.timing++;
+				if(Settings.timing >= TIMING_LENGTH)
+					Settings.timing = TIMING_NTSC;
 				break;
 
 			case 1:
-				GCSettings.spritelimit = !GCSettings.spritelimit;
+				Settings.spritelimit = !Settings.spritelimit;
 				break;
 
 			case 2:
-				GCSettings.crosshair = !GCSettings.crosshair;
+				Settings.crosshair = !Settings.crosshair;
 				break;
 		}
 
@@ -3749,7 +3749,7 @@ static int MenuSettingsEmulation()
 		{
 			firstRun = false;
 
-			switch(GCSettings.timing)
+			switch(Settings.timing)
 			{
 				case TIMING_NTSC: sprintf (options.value[0], "NTSC"); break;
 				case TIMING_PAL: sprintf (options.value[0], "PAL"); break;
@@ -3757,8 +3757,8 @@ static int MenuSettingsEmulation()
 				case TIMING_DENDY: sprintf (options.value[0], "Dendy"); break;
 			}
 
-			sprintf (options.value[1], "%s", GCSettings.spritelimit ? "On" : "Off");
-			sprintf (options.value[2], "%s", GCSettings.crosshair ? "On" : "Off");
+			sprintf (options.value[1], "%s", Settings.spritelimit ? "On" : "Off");
+			sprintf (options.value[2], "%s", Settings.crosshair ? "On" : "Off");
 
 			optionBrowser.triggerUpdate();
 		}
@@ -3780,7 +3780,7 @@ static int MenuSettings()
 	char gameGenieTxt[10];
 	
 	if(!FindGameGenie()) sprintf(gameGenieTxt, "DISABLED");
-	else if(GCSettings.gamegenie) sprintf(gameGenieTxt, "ON");
+	else if(Settings.gamegenie) sprintf(gameGenieTxt, "ON");
 	else sprintf(gameGenieTxt, "OFF");
 
 	GuiText titleTxt("Settings", 26, (PixelColor){255, 255, 255, 255});
@@ -3968,8 +3968,8 @@ static int MenuSettings()
 			}
 			else
 			{
-				GCSettings.gamegenie = !GCSettings.gamegenie;
-				if (GCSettings.gamegenie) sprintf(gameGenieTxt, "ON");
+				Settings.gamegenie = !Settings.gamegenie;
+				if (Settings.gamegenie) sprintf(gameGenieTxt, "ON");
 				else sprintf(gameGenieTxt, "OFF");
 				cheatsBtnTxt2.setText(gameGenieTxt);
 			}
@@ -4074,51 +4074,51 @@ static int MenuSettingsFile()
 		switch (ret)
 		{
 			case 0:
-				GCSettings.LoadMethod = getNextLoadDevice(GCSettings.LoadMethod);
+				Settings.LoadMethod = getNextLoadDevice(Settings.LoadMethod);
 				break;
 
 			case 1:
-				GCSettings.SaveMethod = getNextSaveDevice(GCSettings.SaveMethod);
+				Settings.SaveMethod = getNextSaveDevice(Settings.SaveMethod);
 				break;
 
 			case 2:
-				OnScreenKeyboard(GCSettings.LoadFolder, MAXPATHLEN);
+				OnScreenKeyboard(Settings.LoadFolder, MAXPATHLEN);
 				break;
 
 			case 3:
-				OnScreenKeyboard(GCSettings.SaveFolder, MAXPATHLEN);
+				OnScreenKeyboard(Settings.SaveFolder, MAXPATHLEN);
 				break;
 
 			case 4:
-				OnScreenKeyboard(GCSettings.CheatFolder, MAXPATHLEN);
+				OnScreenKeyboard(Settings.CheatFolder, MAXPATHLEN);
 				break;
 				
 			case 5:
-				OnScreenKeyboard(GCSettings.ScreenshotsFolder, MAXPATHLEN);
+				OnScreenKeyboard(Settings.ScreenshotsFolder, MAXPATHLEN);
 				break;
 
 			case 6:
-				OnScreenKeyboard(GCSettings.CoverFolder, MAXPATHLEN);
+				OnScreenKeyboard(Settings.CoverFolder, MAXPATHLEN);
 				break;
 
 			case 7:
-				OnScreenKeyboard(GCSettings.ArtworkFolder, MAXPATHLEN);
+				OnScreenKeyboard(Settings.ArtworkFolder, MAXPATHLEN);
 				break;
 
 			case 8:
-				GCSettings.AutoLoad++;
-				if (GCSettings.AutoLoad > AUTOLOAD_STATE)
-					GCSettings.AutoLoad = AUTOLOAD_OFF;
+				Settings.AutoLoad++;
+				if (Settings.AutoLoad > AUTOLOAD_STATE)
+					Settings.AutoLoad = AUTOLOAD_OFF;
 				break;
 
 			case 9:
-				GCSettings.AutoSave++;
-				if (GCSettings.AutoSave > AUTOSAVE_BOTH)
-					GCSettings.AutoSave = AUTOSAVE_OFF;
+				Settings.AutoSave++;
+				if (Settings.AutoSave > AUTOSAVE_BOTH)
+					Settings.AutoSave = AUTOSAVE_OFF;
 				break;
 
 			case 10:
-				GCSettings.AppendAuto = !GCSettings.AppendAuto;
+				Settings.AppendAuto = !Settings.AppendAuto;
 				break;
 		}
 
@@ -4126,42 +4126,42 @@ static int MenuSettingsFile()
 		{
 			firstRun = false;
 
-			if (GCSettings.LoadMethod == DEVICE_AUTO) sprintf (options.value[0],"Auto Detect");
-			else if (GCSettings.LoadMethod == DEVICE_SD) sprintf (options.value[0],"SD");
-			else if (GCSettings.LoadMethod == DEVICE_USB) sprintf (options.value[0],"USB");
-			else if (GCSettings.LoadMethod == DEVICE_DVD) sprintf (options.value[0],"DVD");
-			else if (GCSettings.LoadMethod == DEVICE_SMB) sprintf (options.value[0],"Network");
-			else if (GCSettings.LoadMethod == DEVICE_SD_SLOTA) sprintf (options.value[0],"SD Gecko Slot A");
-			else if (GCSettings.LoadMethod == DEVICE_SD_SLOTB) sprintf (options.value[0],"SD Gecko Slot B");
-			else if (GCSettings.LoadMethod == DEVICE_SD_PORT2) sprintf (options.value[0],"SD in SP2");
-			else if (GCSettings.LoadMethod == DEVICE_SD_GCLOADER) sprintf (options.value[0],"GC Loader");
+			if (Settings.LoadMethod == DEVICE_AUTO) sprintf (options.value[0],"Auto Detect");
+			else if (Settings.LoadMethod == DEVICE_SD) sprintf (options.value[0],"SD");
+			else if (Settings.LoadMethod == DEVICE_USB) sprintf (options.value[0],"USB");
+			else if (Settings.LoadMethod == DEVICE_DVD) sprintf (options.value[0],"DVD");
+			else if (Settings.LoadMethod == DEVICE_SMB) sprintf (options.value[0],"Network");
+			else if (Settings.LoadMethod == DEVICE_SD_SLOTA) sprintf (options.value[0],"SD Gecko Slot A");
+			else if (Settings.LoadMethod == DEVICE_SD_SLOTB) sprintf (options.value[0],"SD Gecko Slot B");
+			else if (Settings.LoadMethod == DEVICE_SD_PORT2) sprintf (options.value[0],"SD in SP2");
+			else if (Settings.LoadMethod == DEVICE_SD_GCLOADER) sprintf (options.value[0],"GC Loader");
 
-			if (GCSettings.SaveMethod == DEVICE_AUTO) sprintf (options.value[1],"Auto Detect");
-			else if (GCSettings.SaveMethod == DEVICE_SD) sprintf (options.value[1],"SD");
-			else if (GCSettings.SaveMethod == DEVICE_USB) sprintf (options.value[1],"USB");
-			else if (GCSettings.SaveMethod == DEVICE_SMB) sprintf (options.value[1],"Network");
-			else if (GCSettings.SaveMethod == DEVICE_SD_SLOTA) sprintf (options.value[1],"SD Gecko Slot A");
-			else if (GCSettings.SaveMethod == DEVICE_SD_SLOTB) sprintf (options.value[1],"SD Gecko Slot B");
-			else if (GCSettings.SaveMethod == DEVICE_SD_PORT2) sprintf (options.value[1],"SD in SP2");
-			else if (GCSettings.SaveMethod == DEVICE_SD_GCLOADER) sprintf (options.value[1],"GC Loader");
+			if (Settings.SaveMethod == DEVICE_AUTO) sprintf (options.value[1],"Auto Detect");
+			else if (Settings.SaveMethod == DEVICE_SD) sprintf (options.value[1],"SD");
+			else if (Settings.SaveMethod == DEVICE_USB) sprintf (options.value[1],"USB");
+			else if (Settings.SaveMethod == DEVICE_SMB) sprintf (options.value[1],"Network");
+			else if (Settings.SaveMethod == DEVICE_SD_SLOTA) sprintf (options.value[1],"SD Gecko Slot A");
+			else if (Settings.SaveMethod == DEVICE_SD_SLOTB) sprintf (options.value[1],"SD Gecko Slot B");
+			else if (Settings.SaveMethod == DEVICE_SD_PORT2) sprintf (options.value[1],"SD in SP2");
+			else if (Settings.SaveMethod == DEVICE_SD_GCLOADER) sprintf (options.value[1],"GC Loader");
 
-			snprintf (options.value[2], 35, "%s", GCSettings.LoadFolder);
-			snprintf (options.value[3], 35, "%s", GCSettings.SaveFolder);
-			snprintf (options.value[4], 35, "%s", GCSettings.CheatFolder);
-			snprintf (options.value[5], 35, "%s", GCSettings.ScreenshotsFolder);
-			snprintf (options.value[6], 35, "%s", GCSettings.CoverFolder);
-			snprintf (options.value[7], 35, "%s", GCSettings.ArtworkFolder);
+			snprintf (options.value[2], 35, "%s", Settings.LoadFolder);
+			snprintf (options.value[3], 35, "%s", Settings.SaveFolder);
+			snprintf (options.value[4], 35, "%s", Settings.CheatFolder);
+			snprintf (options.value[5], 35, "%s", Settings.ScreenshotsFolder);
+			snprintf (options.value[6], 35, "%s", Settings.CoverFolder);
+			snprintf (options.value[7], 35, "%s", Settings.ArtworkFolder);
 
-			if (GCSettings.AutoLoad == AUTOLOAD_OFF) sprintf (options.value[8],"Off");
-			else if (GCSettings.AutoLoad == AUTOLOAD_RAM) sprintf (options.value[8],"RAM");
-			else if (GCSettings.AutoLoad == AUTOLOAD_STATE) sprintf (options.value[8],"State");
+			if (Settings.AutoLoad == AUTOLOAD_OFF) sprintf (options.value[8],"Off");
+			else if (Settings.AutoLoad == AUTOLOAD_RAM) sprintf (options.value[8],"RAM");
+			else if (Settings.AutoLoad == AUTOLOAD_STATE) sprintf (options.value[8],"State");
 
-			if (GCSettings.AutoSave == AUTOSAVE_OFF) sprintf (options.value[9],"Off");
-			else if (GCSettings.AutoSave == AUTOSAVE_RAM) sprintf (options.value[9],"RAM");
-			else if (GCSettings.AutoSave == AUTOSAVE_STATE) sprintf (options.value[9],"State");
-			else if (GCSettings.AutoSave == AUTOSAVE_BOTH) sprintf (options.value[9],"Both");
+			if (Settings.AutoSave == AUTOSAVE_OFF) sprintf (options.value[9],"Off");
+			else if (Settings.AutoSave == AUTOSAVE_RAM) sprintf (options.value[9],"RAM");
+			else if (Settings.AutoSave == AUTOSAVE_STATE) sprintf (options.value[9],"State");
+			else if (Settings.AutoSave == AUTOSAVE_BOTH) sprintf (options.value[9],"Both");
 
-			if (!GCSettings.AppendAuto) sprintf (options.value[10], "Off");
+			if (!Settings.AppendAuto) sprintf (options.value[10], "Off");
 			else sprintf (options.value[10], "On");
 
 			optionBrowser.triggerUpdate();
@@ -4182,7 +4182,7 @@ static bool LoadLanguage()
 	const uint8_t *buffer;
 	size_t size;
 
-	switch(GCSettings.language)
+	switch(Settings.language)
 	{
 		case LANG_JAPANESE: buffer = jp_lang; size = jp_lang_size; break;
 		case LANG_ENGLISH: buffer = en_lang; size = en_lang_size; break;
@@ -4217,15 +4217,15 @@ static void ResetText()
 }
 
 void ChangeLanguage() {
-	if(currentLanguage == GCSettings.language) {
+	if(currentLanguage == Settings.language) {
 		return;
 	}
 
-	if(GCSettings.language == LANG_JAPANESE || GCSettings.language == LANG_KOREAN || GCSettings.language == LANG_SIMP_CHINESE) {
+	if(Settings.language == LANG_JAPANESE || Settings.language == LANG_KOREAN || Settings.language == LANG_SIMP_CHINESE) {
 #ifndef HW_DOL
 		char filepath[MAXPATHLEN];
 
-		switch(GCSettings.language) {
+		switch(Settings.language) {
 			case LANG_KOREAN:
 				sprintf(filepath, "%s/ko.ttf", appPath);
 				break;
@@ -4244,10 +4244,10 @@ void ChangeLanguage() {
 			fontSystem = new GuiTextRenderer(ext_font_ttf, fileSize, platform->getVideo()->getGlyphRenderer());
 		}
 		else {
-			GCSettings.language = currentLanguage;
+			Settings.language = currentLanguage;
 		}
 #else
-	GCSettings.language = currentLanguage;
+	Settings.language = currentLanguage;
 	ErrorPrompt("Unsupported language!");
 #endif
 	}
@@ -4266,7 +4266,7 @@ void ChangeLanguage() {
 	}
 #endif
 	ResetText();
-	currentLanguage = GCSettings.language;
+	currentLanguage = Settings.language;
 }
 
 /****************************************************************************
@@ -4280,7 +4280,7 @@ static int MenuSettingsMenu()
 	int i = 0;
 	bool firstRun = true;
 	OptionList options;
-	currentLanguage = GCSettings.language;
+	currentLanguage = Settings.language;
 
 #if defined(HW_RVL) || defined(HW_DOL)
 	sprintf(options.name[i++], "Exit Action");
@@ -4346,52 +4346,52 @@ static int MenuSettingsMenu()
 		switch (ret)
 		{
 			case 0:
-				GCSettings.ExitAction++;
+				Settings.ExitAction++;
 				#ifdef HW_RVL
-				if(GCSettings.ExitAction >= EXITACTION_WII_LENGTH)
-					GCSettings.ExitAction = EXITACTION_WII_AUTO;
+				if(Settings.ExitAction >= EXITACTION_WII_LENGTH)
+					Settings.ExitAction = EXITACTION_WII_AUTO;
 				#elif HW_DOL
-				if(GCSettings.ExitAction >= EXITACTION_GC_LENGTH)
-					GCSettings.ExitAction = EXITACTION_GC_RETURN_TO_LOADER;
+				if(Settings.ExitAction >= EXITACTION_GC_LENGTH)
+					Settings.ExitAction = EXITACTION_GC_RETURN_TO_LOADER;
 				#endif
 				break;
 			case 1:
-				GCSettings.wiimoteOrientation++;
-				if(GCSettings.wiimoteOrientation >= WIIMOTE_ORIENTATION_LENGTH)
-					GCSettings.wiimoteOrientation = WIIMOTE_ORIENTATION_AUTO;
-				platform->getInput()->setWiimoteOrientation(GCSettings.wiimoteOrientation);
+				Settings.wiimoteOrientation++;
+				if(Settings.wiimoteOrientation >= WIIMOTE_ORIENTATION_LENGTH)
+					Settings.wiimoteOrientation = WIIMOTE_ORIENTATION_AUTO;
+				platform->getInput()->setWiimoteOrientation(Settings.wiimoteOrientation);
 				break;
 			case 2:
-				GCSettings.MusicVolume += 10;
-				if(GCSettings.MusicVolume > 100)
-					GCSettings.MusicVolume = 0;
-				GuiSound::setDefaultVolume(SOUND::OGG, GCSettings.MusicVolume);
+				Settings.MusicVolume += 10;
+				if(Settings.MusicVolume > 100)
+					Settings.MusicVolume = 0;
+				GuiSound::setDefaultVolume(SOUND::OGG, Settings.MusicVolume);
 				break;
 			case 3:
-				GCSettings.SFXVolume += 10;
-				if(GCSettings.SFXVolume > 100)
-					GCSettings.SFXVolume = 0;
-				GuiSound::setDefaultVolume(SOUND::PCM, GCSettings.SFXVolume);
+				Settings.SFXVolume += 10;
+				if(Settings.SFXVolume > 100)
+					Settings.SFXVolume = 0;
+				GuiSound::setDefaultVolume(SOUND::PCM, Settings.SFXVolume);
 				break;
 			case 4:
-				GCSettings.Rumble = !GCSettings.Rumble;
-				platform->getInput()->setRumbleEnabled(GCSettings.Rumble);
+				Settings.Rumble = !Settings.Rumble;
+				platform->getInput()->setRumbleEnabled(Settings.Rumble);
 				break;
 			case 5:
-				GCSettings.language++;
+				Settings.language++;
 				
-				if(GCSettings.language == LANG_TRAD_CHINESE) // skip (not supported)
-					GCSettings.language = LANG_KOREAN;
-				else if(GCSettings.language >= LANG_LENGTH)
-					GCSettings.language = LANG_JAPANESE;
+				if(Settings.language == LANG_TRAD_CHINESE) // skip (not supported)
+					Settings.language = LANG_KOREAN;
+				else if(Settings.language >= LANG_LENGTH)
+					Settings.language = LANG_JAPANESE;
 				break;
 			case 6:
-				GCSettings.PreviewImage++;
-				if(GCSettings.PreviewImage >= PREVIEWIMAGE_LENGTH)
-					GCSettings.PreviewImage = PREVIEWIMAGE_SCREENSHOT;
+				Settings.PreviewImage++;
+				if(Settings.PreviewImage >= PREVIEWIMAGE_LENGTH)
+					Settings.PreviewImage = PREVIEWIMAGE_SCREENSHOT;
 				break;
 			case 7:
-				GCSettings.HideRAMSaving = !GCSettings.HideRAMSaving;
+				Settings.HideRAMSaving = !Settings.HideRAMSaving;
 				break;
 		}
 
@@ -4400,16 +4400,16 @@ static int MenuSettingsMenu()
 			firstRun = false;
 
 			#ifdef HW_RVL
-			if (GCSettings.ExitAction == EXITACTION_WII_RETURN_TO_MENU)
+			if (Settings.ExitAction == EXITACTION_WII_RETURN_TO_MENU)
 				sprintf (options.value[0], "Return to Wii Menu");
-			else if (GCSettings.ExitAction == EXITACTION_WII_POWER_OFF)
+			else if (Settings.ExitAction == EXITACTION_WII_POWER_OFF)
 				sprintf (options.value[0], "Power Off Wii");
-			else if (GCSettings.ExitAction == EXITACTION_WII_RETURN_TO_LOADER)
+			else if (Settings.ExitAction == EXITACTION_WII_RETURN_TO_LOADER)
 				sprintf (options.value[0], "Return to Loader");
 			else
 				sprintf (options.value[0], "Auto");
 			#elif HW_DOL // GameCube
-			if (GCSettings.ExitAction == EXITACTION_GC_RETURN_TO_LOADER)
+			if (Settings.ExitAction == EXITACTION_GC_RETURN_TO_LOADER)
 				sprintf (options.value[0], "Return to Loader");
 			else
 				sprintf (options.value[0], "Reboot");
@@ -4419,34 +4419,34 @@ static int MenuSettingsMenu()
 			options.name[3][0] = 0; // Sound Effects
 			#endif
 
-			if (GCSettings.wiimoteOrientation == WIIMOTE_ORIENTATION_VERTICAL)
+			if (Settings.wiimoteOrientation == WIIMOTE_ORIENTATION_VERTICAL)
 				sprintf (options.value[1], "Vertical");
-			else if (GCSettings.wiimoteOrientation == WIIMOTE_ORIENTATION_HORIZONTAL)
+			else if (Settings.wiimoteOrientation == WIIMOTE_ORIENTATION_HORIZONTAL)
 				sprintf (options.value[1], "Horizontal");
 			else
 				sprintf (options.value[1], "Auto");
 
-			if(GCSettings.MusicVolume > 0)
-				sprintf(options.value[2], "%d%%", GCSettings.MusicVolume);
+			if(Settings.MusicVolume > 0)
+				sprintf(options.value[2], "%d%%", Settings.MusicVolume);
 			else
 				sprintf(options.value[2], "Mute");
 
-			if(GCSettings.SFXVolume > 0)
-				sprintf(options.value[3], "%d%%", GCSettings.SFXVolume);
+			if(Settings.SFXVolume > 0)
+				sprintf(options.value[3], "%d%%", Settings.SFXVolume);
 			else
 				sprintf(options.value[3], "Mute");
 
-			if (GCSettings.Rumble)
+			if (Settings.Rumble)
 				sprintf (options.value[4], "Enabled");
 			else
 				sprintf (options.value[4], "Disabled");
 
-			if (GCSettings.HideRAMSaving)
+			if (Settings.HideRAMSaving)
 				sprintf (options.value[7], "On");
 			else
 				sprintf (options.value[7], "Off");
 
-			switch(GCSettings.language)
+			switch(Settings.language)
 			{
 				case LANG_JAPANESE:			sprintf(options.value[5], "Japanese"); 	break;
 				case LANG_ENGLISH:			sprintf(options.value[5], "English"); 	break;
@@ -4465,7 +4465,7 @@ static int MenuSettingsMenu()
 				case LANG_SWEDISH:			sprintf(options.value[5], "Swedish"); 	break;
 			}
 			
-			switch(GCSettings.PreviewImage)
+			switch(Settings.PreviewImage)
 			{
 				case 0:	
 					sprintf(options.value[6], "Screenshots");
@@ -4557,29 +4557,29 @@ static int MenuSettingsNetwork()
 		switch (ret)
 		{
 			case 0:
-				OnScreenKeyboard(GCSettings.smbip, 80);
+				OnScreenKeyboard(Settings.smbip, 80);
 				break;
 
 			case 1:
-				OnScreenKeyboard(GCSettings.smbshare, 20);
+				OnScreenKeyboard(Settings.smbshare, 20);
 				break;
 
 			case 2:
-				OnScreenKeyboard(GCSettings.smbuser, 20);
+				OnScreenKeyboard(Settings.smbuser, 20);
 				break;
 
 			case 3:
-				OnScreenKeyboard(GCSettings.smbpwd, 20);
+				OnScreenKeyboard(Settings.smbpwd, 20);
 				break;
 		}
 
 		if(ret >= 0 || firstRun)
 		{
 			firstRun = false;
-			snprintf (options.value[0], 25, "%s", GCSettings.smbip);
-			snprintf (options.value[1], 19, "%s", GCSettings.smbshare);
-			snprintf (options.value[2], 19, "%s", GCSettings.smbuser);
-			snprintf (options.value[3], 19, "%s", GCSettings.smbpwd);
+			snprintf (options.value[0], 25, "%s", Settings.smbip);
+			snprintf (options.value[1], 19, "%s", Settings.smbshare);
+			snprintf (options.value[2], 19, "%s", Settings.smbuser);
+			snprintf (options.value[3], 19, "%s", Settings.smbpwd);
 			optionBrowser.triggerUpdate();
 		}
 

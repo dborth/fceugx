@@ -97,8 +97,8 @@ int getNextSaveDevice(int device)
 ****************************************************************************/
 int autoLoadMethod()
 {
-	if(GCSettings.LoadMethod > DEVICE_AUTO && isValidLoadDevice(GCSettings.LoadMethod)) {
-		return GCSettings.LoadMethod;
+	if(Settings.LoadMethod > DEVICE_AUTO && isValidLoadDevice(Settings.LoadMethod)) {
+		return Settings.LoadMethod;
 	}
 
 	char defaultFolderPath[MAXPATHLEN];
@@ -132,7 +132,7 @@ int autoLoadMethod()
 		}
 	}
 
-	GCSettings.LoadMethod = device; // load device found for later use
+	Settings.LoadMethod = device; // load device found for later use
 	CancelAction();
 	return device;
 }
@@ -144,8 +144,8 @@ int autoLoadMethod()
 ****************************************************************************/
 int autoSaveMethod()
 {
-	if(GCSettings.SaveMethod > DEVICE_AUTO && isValidSaveDevice(GCSettings.SaveMethod)) {
-		return GCSettings.SaveMethod;
+	if(Settings.SaveMethod > DEVICE_AUTO && isValidSaveDevice(Settings.SaveMethod)) {
+		return Settings.SaveMethod;
 	}
 
 	char defaultFolderPath[MAXPATHLEN];
@@ -179,7 +179,7 @@ int autoSaveMethod()
 		}
 	}
 
-	GCSettings.SaveMethod = device; // save device found for later use
+	Settings.SaveMethod = device; // save device found for later use
 
 	CancelAction();
 	return device;
@@ -291,8 +291,8 @@ int UpdateDirName()
 	
 			/* remove last subdirectory name */
 			size = strlen(browser.dir) - size - 1;
-			strncpy(GCSettings.LastFileLoaded, &browser.dir[size], strlen(browser.dir) - size - 1); //set as loaded file the previous dir
-			GCSettings.LastFileLoaded[strlen(browser.dir) - size - 1] = 0;
+			strncpy(Settings.LastFileLoaded, &browser.dir[size], strlen(browser.dir) - size - 1); //set as loaded file the previous dir
+			Settings.LastFileLoaded[strlen(browser.dir) - size - 1] = 0;
 			browser.dir[size] = 0;
 		}
 
@@ -347,14 +347,14 @@ bool MakeFilePath(char filepath[], int type, char * filename, int filenum)
 	}
 	else
 	{
-		if(GCSettings.SaveMethod == DEVICE_AUTO)
+		if(Settings.SaveMethod == DEVICE_AUTO)
 			return false;
 
 		switch(type)
 		{
 			case FILE_RAM:
 			case FILE_STATE:
-				sprintf(folder, GCSettings.SaveFolder);
+				sprintf(folder, Settings.SaveFolder);
 
 				if(type == FILE_RAM) sprintf(ext, "sav");
 				else sprintf(ext, "fcs");
@@ -364,7 +364,7 @@ bool MakeFilePath(char filepath[], int type, char * filename, int filenum)
 					if(filenum == -1)
 						snprintf(file, sizeof(file), "%s.%s", filename, ext);
 					else if(filenum == 0)
-						if (!GCSettings.AppendAuto)
+						if (!Settings.AppendAuto)
 							snprintf(file, sizeof(file), "%s.%s", filename, ext);
 						else
 							snprintf(file, sizeof(file), "%s Auto.%s", filename, ext);
@@ -378,11 +378,11 @@ bool MakeFilePath(char filepath[], int type, char * filename, int filenum)
 				break;
 
 			case FILE_CHEAT:
-				sprintf(folder, GCSettings.CheatFolder);
+				sprintf(folder, Settings.CheatFolder);
 				snprintf(file, sizeof(file), "%s.cht", romFilename);
 				break;
 		}
-		platform->getFileSystem()->getPath(temppath, GCSettings.SaveMethod, folder, file);
+		platform->getFileSystem()->getPath(temppath, Settings.SaveMethod, folder, file);
 	}
 	CleanupPath(temppath); // cleanup path
 	snprintf(filepath, MAXPATHLEN, "%s", temppath);
@@ -611,7 +611,7 @@ int BrowserLoadFile()
 	{
 		// store the filename (w/o ext) - used for ram/state naming
 		StripExt(romFilename, browserList[browser.selIndex].filename);
-		snprintf(GCSettings.LastFileLoaded, MAXPATHLEN, "%s", browserList[browser.selIndex].filename);
+		snprintf(Settings.LastFileLoaded, MAXPATHLEN, "%s", browserList[browser.selIndex].filename);
 		
 		// load UPS/IPS/PPF patch
 		filesize = LoadPatch(filesize);
@@ -621,9 +621,9 @@ int BrowserLoadFile()
 			romLoaded = true;
 
 			// load RAM or state
-			if (GCSettings.AutoLoad == AUTOLOAD_RAM)
+			if (Settings.AutoLoad == AUTOLOAD_RAM)
 				LoadRAMAuto(SILENT);
-			else if (GCSettings.AutoLoad == AUTOLOAD_STATE)
+			else if (Settings.AutoLoad == AUTOLOAD_STATE)
 				LoadStateAuto(SILENT);
 
 			ResetNES();
@@ -775,15 +775,15 @@ int BrowserChangeFolder()
 	
 	if(browser.dir[0] == 0)
 	{
-		GCSettings.LoadFolder[0] = 0;
-		GCSettings.LoadMethod = DEVICE_AUTO;
+		Settings.LoadFolder[0] = 0;
+		Settings.LoadMethod = DEVICE_AUTO;
 	}
 	else
 	{
 		char * path = StripDevice(browser.dir);
 		if(path != nullptr)
-			strcpy(GCSettings.LoadFolder, path);
-		FindDevice(browser.dir, &GCSettings.LoadMethod);
+			strcpy(Settings.LoadFolder, path);
+		FindDevice(browser.dir, &Settings.LoadMethod);
 	}
 
 	return browser.numEntries;
@@ -796,13 +796,13 @@ int BrowserChangeFolder()
 int
 OpenGameList ()
 {
-	int device = GCSettings.LoadMethod;
+	int device = Settings.LoadMethod;
 
 	if(device > 0 && ChangeInterface(device, NOTSILENT)) {
 		// change current dir to roms directory
-		platform->getFileSystem()->getPath(browser.dir, device, GCSettings.LoadFolder, "");
+		platform->getFileSystem()->getPath(browser.dir, device, Settings.LoadFolder, "");
 
-		if(strlen(GCSettings.LoadFolder) > 0) {
+		if(strlen(Settings.LoadFolder) > 0) {
 			DIR *dir = opendir(browser.dir);
 
 			if(dir == nullptr) {
@@ -828,8 +828,8 @@ bool AutoloadGame(char* filepath, char* filename) {
 	selectLoadedFile = 1;
 	std::string dir(filepath);
 	dir.assign(&dir[dir.find_last_of(":") + 2]);
-	strncpy(GCSettings.LoadFolder, dir.c_str(), sizeof(GCSettings.LoadFolder) - 1);
-	GCSettings.LoadFolder[sizeof(GCSettings.LoadFolder) - 1] = 0;
+	strncpy(Settings.LoadFolder, dir.c_str(), sizeof(Settings.LoadFolder) - 1);
+	Settings.LoadFolder[sizeof(Settings.LoadFolder) - 1] = 0;
 	OpenGameList();
 
 	for(int i = 0; i < browser.numEntries; i++) {

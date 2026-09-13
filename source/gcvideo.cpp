@@ -46,7 +46,7 @@ static Ticks now;
 
 void setFrameTimer()
 {
-	if (FCEUI_GetCurrentVidSystem(NULL, NULL) == TIMING_PAL || GCSettings.timing == TIMING_DENDY) // PAL
+	if (FCEUI_GetCurrentVidSystem(NULL, NULL) == TIMING_PAL || Settings.timing == TIMING_DENDY) // PAL
 		normaldiff = 20000; // 50hz
 	else
 		normaldiff = 16667; // 60hz
@@ -177,7 +177,7 @@ void FCEUD_GetPalette(u8 i, u8 *r, u8 *g, u8 *b)
 
 void SetPalette()
 {
-	if ( GCSettings.currpal == 0 )
+	if ( Settings.currpal == 0 )
 	{
 		// Do palette reset
 		FCEU_ResetPalette();
@@ -189,9 +189,9 @@ void SetPalette()
 
 		for ( i = 0; i < 64; i++ )
 		{
-			r = palettes[GCSettings.currpal-1].data[i] >> 16;
-			g = ( palettes[GCSettings.currpal-1].data[i] & 0xff00 ) >> 8;
-			b = ( palettes[GCSettings.currpal-1].data[i] & 0xff );
+			r = palettes[Settings.currpal-1].data[i] >> 16;
+			g = ( palettes[Settings.currpal-1].data[i] & 0xff00 ) >> 8;
+			b = ( palettes[Settings.currpal-1].data[i] & 0xff );
 			FCEUD_SetPalette( i, r, g, b);
 			FCEUD_SetPalette( i+64, r, g, b);
 			FCEUD_SetPalette( i+128, r, g, b);

@@ -124,18 +124,18 @@ int main(int argc, char *argv[])
 		LoadPrefs();
 		if(strncmp(argv[1], "sd", 2) == 0)
 		{
-			GCSettings.SaveMethod = DEVICE_SD;
-			GCSettings.LoadMethod = DEVICE_SD;
+			Settings.SaveMethod = DEVICE_SD;
+			Settings.LoadMethod = DEVICE_SD;
 		}
 		else if(strncmp(argv[1], "usb", 3) == 0)
 		{
-			GCSettings.SaveMethod = DEVICE_USB;
-			GCSettings.LoadMethod = DEVICE_USB;
+			Settings.SaveMethod = DEVICE_USB;
+			Settings.LoadMethod = DEVICE_USB;
 		}
 		SavePrefs();
 
-		GCSettings.AutoloadGame = AutoloadGame(argv[1], argv[2]);
-		autoboot = GCSettings.AutoloadGame;
+		Settings.AutoloadGame = AutoloadGame(argv[1], argv[2]);
+		autoboot = Settings.AutoloadGame;
 	}
 #endif
 
@@ -158,16 +158,16 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		if(currentTiming != GCSettings.timing)
+		if(currentTiming != Settings.timing)
 		{
 			GameInfo->vidsys=(EGIV)GetFCEUTiming();
 			UpdateDendy();
 			FCEU_ResetVidSys();
 		}
 
-		currentTiming = GCSettings.timing;
+		currentTiming = Settings.timing;
 #if defined(HW_RVL) || defined(HW_DOL)
-		SelectFilterMethod(GCSettings.videoUpscalingFilter); // Initialize / Re-evaluate active filter
+		SelectFilterMethod(Settings.videoUpscalingFilter); // Initialize / Re-evaluate active filter
 #endif
 		autoboot = false;
 		appRequest = AppRequest::NONE;
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 		SetControllers();
 		setFrameTimer(); // set frametimer method before emulation
 		SetPalette();
-		FCEUI_DisableSpriteLimitation(GCSettings.spritelimit ^ 1);
+		FCEUI_DisableSpriteLimitation(Settings.spritelimit ^ 1);
 
 		fskip=0;
 		fskipc=0;
@@ -257,7 +257,7 @@ void ExitApp()
 {
 	SavePrefs();
 
-	if (romLoaded && appRequest != AppRequest::MENU && GCSettings.AutoSave == AUTOSAVE_RAM)
+	if (romLoaded && appRequest != AppRequest::MENU && Settings.AutoSave == AUTOSAVE_RAM)
 		SaveRAMAuto(SILENT);
 
 	HaltDeviceCheckingThread();
@@ -267,5 +267,5 @@ void ExitApp()
 	// down inside requestExit()/shutdown().
 	Thread::JoinAll();
 
-	platform->requestExit(GCSettings.ExitAction, autoboot);
+	platform->requestExit(Settings.ExitAction, autoboot);
 }
