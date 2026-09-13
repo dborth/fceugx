@@ -22,9 +22,6 @@
 #include "pad.h"
 #include "gcvideo.h"
 #include "filebrowser.h"
-#if defined(HW_RVL) || defined(HW_DOL)
-#include "drivers/ogc/networkop.h"
-#endif
 #include "fileop.h"
 #include "fceuram.h"
 #include "fceustate.h"
