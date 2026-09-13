@@ -200,10 +200,7 @@ struct SEmuSettings
 	char	ArtworkFolder[MAXPATHLEN]; 	// Path to artwork files
 	bool	AutoloadGame;
 	
-	char	smbip[80];
-	char	smbuser[20];
-	char	smbpwd[20];
-	char	smbshare[20];
+	SmbShareInfo smbShare; // host/share/user/password for DEVICE_SMB
 
 	int		videoMode;
 	int		videoAspectRatioCorrection;

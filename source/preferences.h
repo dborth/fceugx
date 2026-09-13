@@ -8,7 +8,7 @@
  * Preferences save/load preferences utilities
  ****************************************************************************/
 
-void FixInvalidEmuSettings();
+void FixInvalidSettings();
 void DefaultEmuSettings();
 void ApplyEmuSettings();
 bool SavePrefs();
