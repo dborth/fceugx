@@ -169,6 +169,22 @@ static void * devicecallback (void *)
 {
 	while (!deviceThread.stopRequested())
 	{
+		// if halted, block here until ResumeDeviceCheckingThread (or a stop request) wakes us
+		// checked BEFORE the poll so a fresh/parked thread can't race main's startup mounting
+		if(deviceCheckingHalt)
+		{
+			DeviceSync().mutex.lock();
+			deviceIdle = true;
+			DeviceSync().idleCond.signal(); // tell HaltDeviceCheckingThread we've stopped
+			while(deviceCheckingHalt && !deviceThread.stopRequested())
+				DeviceSync().workCond.wait(DeviceSync().mutex);
+			deviceIdle = false;
+			DeviceSync().mutex.unlock();
+		}
+
+		if(deviceThread.stopRequested())
+			break;
+
 		int removed[MAX_STORAGE_DEVICES];
 		int removedCount = 0;
 		bool deviceListChanged = false;
@@ -184,21 +200,6 @@ static void * devicecallback (void *)
 		// sleep ~1 sec in 100us steps so we can react to a halt/stop request quickly
 		for(int i = 0; i < 10000 && !deviceCheckingHalt && !deviceThread.stopRequested(); i++)
 			usleep(THREAD_SLEEP);
-
-		if(deviceThread.stopRequested())
-			break;
-
-		// if halted, block here until ResumeDeviceCheckingThread (or a stop request) wakes us
-		if(deviceCheckingHalt)
-		{
-			DeviceSync().mutex.lock();
-			deviceIdle = true;
-			DeviceSync().idleCond.signal(); // tell HaltDeviceCheckingThread we've stopped
-			while(deviceCheckingHalt && !deviceThread.stopRequested())
-				DeviceSync().workCond.wait(DeviceSync().mutex);
-			deviceIdle = false;
-			DeviceSync().mutex.unlock();
-		}
 	}
 	return nullptr;
 }
