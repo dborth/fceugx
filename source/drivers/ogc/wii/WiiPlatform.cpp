@@ -7,8 +7,8 @@
 #include <malloc.h>
 #include <stdio.h>
 
-#include "WiiPlatform.h"
-#include "../../fceugx.h"
+#include "../WiiPlatform.h"
+#include "../../../fceugx.h"
 
 extern "C" {
 extern void __exception_setreload(int t);

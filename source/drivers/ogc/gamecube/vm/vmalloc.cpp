@@ -8,8 +8,6 @@
  * GC VM memory allocator
  ***************************************************************************/
 
-#ifdef HW_DOL
-
 #include <ogc/lwp_heap.h>
 #include <ogc/system.h>
 #include "vm.h"
@@ -43,5 +41,3 @@ int vm_size_free()
 	__lwp_heap_getinfo(&vm_heap,&info);
 	return info.free_size;
 }
-
-#endif

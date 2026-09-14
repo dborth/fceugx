@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 #include "WiiAudioDriver.h"
-#include "OgcEmulatorAudio.h"
+#include "../OgcEmulatorAudio.h"
 
 static WiiAudioDriver *instance = nullptr;
 

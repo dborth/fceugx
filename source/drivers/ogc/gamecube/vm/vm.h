@@ -5,7 +5,6 @@
 
 #ifndef _VM_H_
 #define _VM_H_
-#ifdef HW_DOL
 #include <gctypes.h>
 
 #define MRAM_BACKING	(4*1024*1024) // Use 4MB to page our 16MB
@@ -22,6 +21,5 @@ void VM_Deinit(void);
 
 #ifdef __cplusplus
 }
-#endif
 #endif
 #endif

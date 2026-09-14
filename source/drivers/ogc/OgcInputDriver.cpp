@@ -12,16 +12,19 @@
 #include <cmath>
 #include <ogcsys.h>
 #include <unistd.h>
-#include <wiiuse/wpad.h>
 #include <ogc/conf.h>
+
+#ifdef HW_RVL
+#include <wiiuse/wpad.h>
+#endif
 
 #include "OgcInputDriver.h"
 #include "../Platform.h"
 #include "../InputController.h"
 
 #ifdef HW_RVL
-#include "wiidrc.h"
-#include "WiiPlatform.h"
+#include "wii/wiidrc.h"
+#include "wii/WiiPlatform.h"
 #endif
 
 extern "C" {

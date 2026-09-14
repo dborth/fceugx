@@ -4,8 +4,8 @@
  * WiiFileSystemDriver.h
  ***************************************************************************/
 #pragma once
-#include "../FileSystemDriver.h"
-#include "OgcSmbDriver.h"
+#include "../../FileSystemDriver.h"
+#include "../OgcSmbDriver.h"
 
 //!Wii FileSystemDriver: hot-pluggable SD and USB (both FAT, via
 //!fatMountSimple) plus DVD (ISO9660), plus DEVICE_SMB via OgcSmbDriver.
