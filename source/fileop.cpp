@@ -165,12 +165,11 @@ static void WakeWorkerThread()
  *
  * This checks our devices for changes (SD/USB/DVD removed)
  ***************************************************************************/
-static void * devicecallback (void *)
+static void * devicecallback(void *)
 {
 	while (!deviceThread.stopRequested())
 	{
 		// if halted, block here until ResumeDeviceCheckingThread (or a stop request) wakes us
-		// checked BEFORE the poll so a fresh/parked thread can't race main's startup mounting
 		if(deviceCheckingHalt)
 		{
 			DeviceSync().mutex.lock();
