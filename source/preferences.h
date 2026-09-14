@@ -9,8 +9,8 @@
  ****************************************************************************/
 
 void FixInvalidSettings();
-void DefaultEmuSettings();
-void ApplyEmuSettings();
+void DefaultSettings();
+void ApplySettings();
 bool SavePrefs();
 bool LoadPrefs();
 void CreateMissingDirectories();
