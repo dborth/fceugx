@@ -1118,6 +1118,23 @@ static int MenuGameSelection()
 	{
 		if(!UpdateGui()) return MENU_EXIT;
 
+		// A device appeared/disappeared since the last check  - refresh the device listing
+		if(browserDeviceListChanged)
+		{
+			browserDeviceListChanged = false;
+
+			if(browser.dir[0] == 0)
+			{
+				ResetBrowser();
+				browser.numEntries = AddDeviceListing();
+				gameBrowser.resetState();
+				if(browser.numEntries > 0)
+					gameBrowser.fileList[0]->setState(STATE::SELECTED);
+				gameBrowser.triggerUpdate();
+				previousBrowserIndex = -1;
+			}
+		}
+
 		if(selectLoadedFile == 2)
 		{
 			selectLoadedFile = 0;
@@ -2446,9 +2463,9 @@ static int MenuGameCheats()
 }
 
 /****************************************************************************
- * MenuEmuSettingsMappings
+ * MenuSettingsMappings
  ***************************************************************************/
-static int MenuEmuSettingsMappings()
+static int MenuSettingsMappings()
 {
 	int selection = MENU_NONE;
 
@@ -2568,7 +2585,7 @@ static int MenuEmuSettingsMappings()
 	return selection;
 }
 
-static int MenuEmuSettingsMappingsController()
+static int MenuSettingsMappingsController()
 {
 	int selection = MENU_NONE;
 	char menuTitle[100];
@@ -2898,7 +2915,7 @@ static uint32_t ButtonMappingWindow()
 	return pressed;
 }
 
-static int MenuEmuSettingsMappingsMap()
+static int MenuSettingsMappingsMap()
 {
 	int selection = MENU_NONE;
 	int ret, i, j;
@@ -3060,7 +3077,7 @@ static int MenuEmuSettingsMappingsMap()
 }
 
 /****************************************************************************
- * MenuEmuSettingsVideo
+ * MenuSettingsVideo
  ***************************************************************************/
 static void ScreenZoomWindowUpdate(void * ptr, float h, float v)
 {
@@ -3320,7 +3337,7 @@ static void ScreenPositionWindow()
 	delete(settingText);
 }
 
-static int MenuEmuSettingsOtherMappings()
+static int MenuSettingsOtherMappings()
 {
 	int selection = MENU_NONE;
 	int ret;
@@ -3467,9 +3484,9 @@ static int MenuEmuSettingsOtherMappings()
 }
 
 /****************************************************************************
- * MenuEmuSettingsVideo
+ * MenuSettingsVideo
  ***************************************************************************/
-static int MenuEmuSettingsVideo()
+static int MenuSettingsVideo()
 {
 	int selection = MENU_NONE;
 	int ret;
@@ -3667,9 +3684,9 @@ static int MenuEmuSettingsVideo()
 }
 
 /****************************************************************************
- * MenuEmuSettingsEmulation
+ * MenuSettingsEmulation
  ***************************************************************************/
-static int MenuEmuSettingsEmulation()
+static int MenuSettingsEmulation()
 {
 	int selection = MENU_NONE;
 	int ret;
@@ -3772,9 +3789,9 @@ static int MenuEmuSettingsEmulation()
 }
 
 /****************************************************************************
- * MenuEmuSettings
+ * MenuSettings
  ***************************************************************************/
-static int MenuEmuSettings()
+static int MenuSettings()
 {
 	int selection = MENU_NONE;
 	char gameGenieTxt[10];
@@ -3841,7 +3858,7 @@ static int MenuEmuSettings()
 	menuBtn.setTrigger(trigA);
 	menuBtn.setEffectGrow();
 
-	GuiText networkBtnTxt("Network", 22, (PixelColor){0, 0, 0, 255});
+	GuiText networkBtnTxt("Network Share", 22, (PixelColor){0, 0, 0, 255});
 	networkBtnTxt.setWrap(true, btnLargeOutline.getWidth()-30);
 	GuiImage networkBtnImg(&btnLargeOutline);
 	GuiImage networkBtnImgOver(&btnLargeOutlineOver);
@@ -4001,10 +4018,10 @@ static int MenuEmuSettings()
 }
 
 /****************************************************************************
- * MenuEmuSettingsFile
+ * MenuSettingsFile
  ***************************************************************************/
 
-static int MenuEmuSettingsFile()
+static int MenuSettingsFile()
 {
 	int selection = MENU_NONE;
 	int ret;
@@ -4130,7 +4147,7 @@ static int MenuEmuSettingsFile()
 			else if (EmuSettings.LoadMethod == DEVICE_SD) sprintf (options.value[0],"SD");
 			else if (EmuSettings.LoadMethod == DEVICE_USB) sprintf (options.value[0],"USB");
 			else if (EmuSettings.LoadMethod == DEVICE_DVD) sprintf (options.value[0],"DVD");
-			else if (EmuSettings.LoadMethod == DEVICE_SMB) sprintf (options.value[0],"Network");
+			else if (EmuSettings.LoadMethod == DEVICE_SMB) sprintf (options.value[0],"Network Share");
 			else if (EmuSettings.LoadMethod == DEVICE_SD_SLOTA) sprintf (options.value[0],"SD Gecko Slot A");
 			else if (EmuSettings.LoadMethod == DEVICE_SD_SLOTB) sprintf (options.value[0],"SD Gecko Slot B");
 			else if (EmuSettings.LoadMethod == DEVICE_SD_PORT2) sprintf (options.value[0],"SD in SP2");
@@ -4139,7 +4156,7 @@ static int MenuEmuSettingsFile()
 			if (EmuSettings.SaveMethod == DEVICE_AUTO) sprintf (options.value[1],"Auto Detect");
 			else if (EmuSettings.SaveMethod == DEVICE_SD) sprintf (options.value[1],"SD");
 			else if (EmuSettings.SaveMethod == DEVICE_USB) sprintf (options.value[1],"USB");
-			else if (EmuSettings.SaveMethod == DEVICE_SMB) sprintf (options.value[1],"Network");
+			else if (EmuSettings.SaveMethod == DEVICE_SMB) sprintf (options.value[1],"Network Share");
 			else if (EmuSettings.SaveMethod == DEVICE_SD_SLOTA) sprintf (options.value[1],"SD Gecko Slot A");
 			else if (EmuSettings.SaveMethod == DEVICE_SD_SLOTB) sprintf (options.value[1],"SD Gecko Slot B");
 			else if (EmuSettings.SaveMethod == DEVICE_SD_PORT2) sprintf (options.value[1],"SD in SP2");
@@ -4270,10 +4287,10 @@ void ChangeLanguage() {
 }
 
 /****************************************************************************
- * MenuEmuSettingsMenu
+ * MenuSettingsMenu
  ***************************************************************************/
 
-static int MenuEmuSettingsMenu()
+static int MenuSettingsMenu()
 {
 	int selection = MENU_NONE;
 	int ret;
@@ -4491,26 +4508,26 @@ static int MenuEmuSettingsMenu()
 }
 
 /****************************************************************************
- * MenuEmuSettingsNetwork
+ * MenuSettingsNetwork
  ***************************************************************************/
 
-static int MenuEmuSettingsNetwork()
+static int MenuSettingsNetwork()
 {
 	int selection = MENU_NONE;
 	int ret;
 	int i = 0;
 	bool firstRun = true;
 	OptionList options;
-	sprintf(options.name[i++], "SMB Share IP");
-	sprintf(options.name[i++], "SMB Share Name");
-	sprintf(options.name[i++], "SMB Share Username");
-	sprintf(options.name[i++], "SMB Share Password");
+	sprintf(options.name[i++], "IP");
+	sprintf(options.name[i++], "Name");
+	sprintf(options.name[i++], "Username");
+	sprintf(options.name[i++], "Password");
 	options.length = i;
 
 	for(i=0; i < options.length; i++)
 		options.value[i][0] = 0;
 
-	GuiText titleTxt("Settings - Network", 26, (PixelColor){255, 255, 255, 255});
+	GuiText titleTxt("Settings - Network Share", 26, (PixelColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
 
@@ -4915,37 +4932,37 @@ void MainMenu (int selection)
 				currentMenu = MenuGameEmuSettings();
 				break;
 			case MENU_GAMESETTINGS_MAPPINGS:
-				currentMenu = MenuEmuSettingsMappings();
+				currentMenu = MenuSettingsMappings();
 				break;
 			case MENU_GAMESETTINGS_MAPPINGS_CTRL:
-				currentMenu = MenuEmuSettingsMappingsController();
+				currentMenu = MenuSettingsMappingsController();
 				break;
 			case MENU_GAMESETTINGS_MAPPINGS_MAP:
-				currentMenu = MenuEmuSettingsMappingsMap();
+				currentMenu = MenuSettingsMappingsMap();
 				break;
 			case MENU_GAMESETTINGS_VIDEO:
-				currentMenu = MenuEmuSettingsVideo();
+				currentMenu = MenuSettingsVideo();
 				break;
 			case MENU_GAMESETTINGS_EMULATION:
-				currentMenu = MenuEmuSettingsEmulation();
+				currentMenu = MenuSettingsEmulation();
 				break;
 			case MENU_GAMESETTINGS_CHEATS:
 				currentMenu = MenuGameCheats();
 				break;
 			case MENU_SETTINGS:
-				currentMenu = MenuEmuSettings();
+				currentMenu = MenuSettings();
 				break;
 			case MENU_SETTINGS_FILE:
-				currentMenu = MenuEmuSettingsFile();
+				currentMenu = MenuSettingsFile();
 				break;
 			case MENU_SETTINGS_MENU:
-				currentMenu = MenuEmuSettingsMenu();
+				currentMenu = MenuSettingsMenu();
 				break;
 			case MENU_SETTINGS_NETWORK:
-				currentMenu = MenuEmuSettingsNetwork();
+				currentMenu = MenuSettingsNetwork();
 				break;
 			case MENU_GAMESETTINGS_MAPPINGS_OTHER:
-				currentMenu = MenuEmuSettingsOtherMappings();
+				currentMenu = MenuSettingsOtherMappings();
 				break;
 			default: // unrecognized menu
 				currentMenu = MenuGameSelection();

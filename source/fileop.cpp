@@ -178,6 +178,9 @@ static void * devicecallback (void *)
 		if(removedCount > 0)
 			parseHalt = true; // abort any in-progress dir parse if a device it's using just disappeared
 
+		if(deviceListChanged)
+			browserDeviceListChanged = true; // signal the menu loop to refresh the device listing if it's on screen
+
 		// sleep ~1 sec in 100us steps so we can react to a halt/stop request quickly
 		for(int i = 0; i < 10000 && !deviceCheckingHalt && !deviceThread.stopRequested(); i++)
 			usleep(THREAD_SLEEP);

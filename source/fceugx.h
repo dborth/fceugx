@@ -188,8 +188,8 @@ struct SEmuSettings
 {
 	int		AutoLoad;
     int		AutoSave;
-    int		LoadMethod; // For ROMS: Auto, SD, DVD, USB, Network (SMB)
-	int		SaveMethod; // For SRAM, Freeze, Prefs: Auto, SD, USB, SMB
+    int		LoadMethod; // For ROMS: Auto, SD, DVD, USB, Network Share
+	int		SaveMethod; // For SRAM, Freeze, Prefs: Auto, SD, USB, Network Share
 	bool	AppendAuto;
 	char	LoadFolder[MAXPATHLEN]; // Path to game files
 	char	LastFileLoaded[MAXPATHLEN]; //Last file loaded filename

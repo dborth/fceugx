@@ -502,8 +502,8 @@ void DefaultEmuSettings()
 	EmuSettings.language = SYS_GetLanguage() + LANG_ENGLISH;
 #endif
 
-	EmuSettings.LoadMethod = DEVICE_AUTO; // Auto, SD, DVD, USB, Network (SMB)
-	EmuSettings.SaveMethod = DEVICE_AUTO; // Auto, SD, USB, Network (SMB)
+	EmuSettings.LoadMethod = DEVICE_AUTO; // Auto, SD, DVD, USB, Network Share
+	EmuSettings.SaveMethod = DEVICE_AUTO; // Auto, SD, USB, Network Share
 	sprintf (EmuSettings.LoadFolder, "%s/%s", APPFOLDER, loadFolder[LOADFOLDER_ROMS].name); // Path to game files
 	sprintf (EmuSettings.SaveFolder, "%s/%s", APPFOLDER, saveFolder[SAVEFOLDER_SAVES].name); // Path to save files
 	sprintf (EmuSettings.CheatFolder, "%s/%s", APPFOLDER, saveFolder[SAVEFOLDER_CHEATS].name); // Path to cheat files
