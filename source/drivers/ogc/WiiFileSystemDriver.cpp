@@ -259,17 +259,17 @@ bool WiiFileSystemDriver::isDevicePresent(int deviceId) const
 	}
 }
 
-//!Mount-path lookup, keyed by the shared Device enum. DEVICE_SMB isn't
-//!here - its path depends on live connection state, so getMountPath()
-//!below asks smbDriver directly rather than a fixed table entry.
-static const char * const kMountPath[DEVICE_LENGTH] =
+//!Mount-path lookup, keyed by the shared Device enum.
+static const char * const mountPath[DEVICE_LENGTH] =
 {
 	"",       // DEVICE_AUTO
 	"sd:/",   // DEVICE_SD
 	"usb:/",  // DEVICE_USB
+	"",  // DEVICE_USB2
+	"",  // DEVICE_USB3
 	"dvd:/",  // DEVICE_DVD
 	"",       // DEVICE_SMB (unused - see above)
-	"", "", "", "",
+	"", "", "", ""
 };
 
 const char * WiiFileSystemDriver::getMountPath(int device) const
@@ -279,7 +279,7 @@ const char * WiiFileSystemDriver::getMountPath(int device) const
 
 	if(device < 0 || device >= DEVICE_LENGTH || !isMounted[device])
 		return "";
-	return kMountPath[device];
+	return mountPath[device];
 }
 
 const int * WiiFileSystemDriver::getValidLoadDevices(int & outCount) const

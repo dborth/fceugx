@@ -9,8 +9,6 @@
 
 //!GameCube FileSystemDriver: memory card slots, GC Loader, and DVD, plus
 //!DEVICE_SMB (broadband adapter) via the shared OgcSmbDriver.
-//!Nothing else here is removable at runtime (see hasRemovableStorageDevices()),
-//!unlike Wii's SD/USB.
 class GameCubeFileSystemDriver : public FileSystemDriver
 {
 	public:

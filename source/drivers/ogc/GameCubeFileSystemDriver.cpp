@@ -288,17 +288,19 @@ bool GameCubeFileSystemDriver::isDevicePresent(int deviceId) const
 }
 
 //!Mount-path lookup, keyed by the shared Device enum.
-static const char * const kMountPath[DEVICE_LENGTH] =
+static const char * const mountPath[DEVICE_LENGTH] =
 {
 	"",         // DEVICE_AUTO
 	"",         // DEVICE_SD
 	"",         // DEVICE_USB
+	"",         // DEVICE_USB2
+	"",         // DEVICE_USB3
 	"dvd:/",    // DEVICE_DVD
 	"",         // DEVICE_SMB
 	"carda:/",  // DEVICE_SD_SLOTA
 	"cardb:/",  // DEVICE_SD_SLOTB
 	"port2:/",  // DEVICE_SD_PORT2
-	"gcloader:/", // DEVICE_SD_GCLOADER
+	"gcloader:/" // DEVICE_SD_GCLOADER
 };
 
 const char * GameCubeFileSystemDriver::getMountPath(int device) const
@@ -308,7 +310,7 @@ const char * GameCubeFileSystemDriver::getMountPath(int device) const
 
 	if(device < 0 || device >= DEVICE_LENGTH || !isMounted[device])
 		return "";
-	return kMountPath[device];
+	return mountPath[device];
 }
 
 const int * GameCubeFileSystemDriver::getValidLoadDevices(int & outCount) const
