@@ -7,7 +7,7 @@
 #include <malloc.h>
 #include <stdio.h>
 
-#include "../WiiPlatform.h"
+#include "WiiPlatform.h"
 #include "../../../fceugx.h"
 
 extern "C" {

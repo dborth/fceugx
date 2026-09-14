@@ -11,8 +11,8 @@
 
 #include <stdint.h>
 #include <ogc/audio.h>
-#include "OgcEmulatorAudio.h"
-#include "../AudioDriver.h"
+#include "../OgcEmulatorAudio.h"
+#include "../../AudioDriver.h"
 
 class GameCubeAudioDriver : public AudioDriver
 {

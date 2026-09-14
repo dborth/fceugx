@@ -4,8 +4,8 @@
  * GameCubeFileSystemDriver.h
  ***************************************************************************/
 #pragma once
-#include "../FileSystemDriver.h"
-#include "OgcSmbDriver.h"
+#include "../../FileSystemDriver.h"
+#include "../OgcSmbDriver.h"
 
 //!GameCube FileSystemDriver: memory card slots, GC Loader, and DVD, plus
 //!DEVICE_SMB (broadband adapter) via the shared OgcSmbDriver.

@@ -36,17 +36,16 @@
 #endif
 
 #ifdef HW_RVL
-	#include "drivers/ogc/mem2.h"
-#endif
-#ifdef HW_DOL
-	#include "drivers/ogc/vm/vmalloc.h"
+	#include "drivers/ogc/wii/mem2.h"
+#elif HW_DOL
+	#include "drivers/ogc/gamecube/vm/vmalloc.h"
 #endif
 
 #ifdef HW_DOL
-#include "drivers/ogc/GameCubePlatform.h"
+#include "drivers/ogc/gamecube/GameCubePlatform.h"
 static GameCubePlatform platformInstance;
 #elif HW_RVL
-#include "drivers/ogc/WiiPlatform.h"
+#include "drivers/ogc/wii/WiiPlatform.h"
 static WiiPlatform platformInstance;
 #endif
 Platform* platform = &platformInstance;

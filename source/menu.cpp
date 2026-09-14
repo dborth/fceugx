@@ -44,12 +44,13 @@
 
 #if defined(HW_RVL) || defined(HW_DOL)
 #include "drivers/ogc/videofilters.h"
-#include "drivers/ogc/WiiPlatform.h"
-#include "drivers/ogc/GameCubePlatform.h"
 #endif
 
 #ifdef HW_RVL
-	#include "drivers/ogc/mem2.h"
+#include "drivers/ogc/wii/WiiPlatform.h"
+#include "drivers/ogc/wii/mem2.h"
+#elif HW_DOL
+#include "drivers/ogc/gamecube/GameCubePlatform.h"
 #endif
 
 #define THREAD_SLEEP 100

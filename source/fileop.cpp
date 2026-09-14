@@ -31,7 +31,7 @@
 #include "drivers/SmbDriver.h"
 
 #ifdef HW_RVL
-	#include "drivers/ogc/mem2.h"
+	#include "drivers/ogc/wii/mem2.h"
 #endif
 
 #define THREAD_SLEEP 100
