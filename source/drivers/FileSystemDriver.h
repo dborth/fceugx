@@ -128,7 +128,8 @@ class FileSystemDriver
 		//! function parameter rather than a fixed array.
 		void getPath(char * out, size_t outSize, int device, const char * suffix) const
 		{
-			snprintf(out, outSize, "%s%s", getMountPath(device), suffix ? suffix : "");
+		    const char * mp = getMountPath(device);
+		    snprintf(out, outSize, "%s%s", mp ? mp : "", suffix ? suffix : "");
 		}
 
 		void getPath(char * out, size_t outSize, int device, const char * folder, const char * file) const
