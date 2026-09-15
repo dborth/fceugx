@@ -863,6 +863,7 @@ static void TaseditorRewindOff(void);
 static void TaseditorCommand(void);
 extern void FCEUI_ToggleShowFPS();
 
+#ifndef FCEUGX
 struct EMUCMDTABLE FCEUI_CommandTable[]=
 {
 	{ EMUCMD_POWER,							EMUCMDTYPE_MISC,	FCEUI_PowerNES,					0, 0, "Power", EMUCMDFLAG_TASEDITOR },
@@ -1448,3 +1449,10 @@ EMUCMDTABLE* GetEmuCommandById(int cmd)
 	}
 	return NULL;
 }
+
+#else
+void LagCounterReset()
+{
+	lagCounter = 0;
+}
+#endif

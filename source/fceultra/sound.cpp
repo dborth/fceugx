@@ -172,7 +172,7 @@ static void PrepDPCM()
  #endif
 
 }
-
+#ifndef FCEUGX
 void LogDPCM(int romaddress, int dpcmsize){
 	int i = GetPRGAddress(romaddress);
 
@@ -191,7 +191,7 @@ void LogDPCM(int romaddress, int dpcmsize){
 		}
 	}
 }
-
+#endif
 /* Instantaneous?  Maybe the new freq value is being calculated all of the time... */
 
 /*static*/ int CheckFreq(uint32 cf, uint8 sr)

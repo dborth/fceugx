@@ -100,6 +100,11 @@ void WutEmulatorVideo::rebuildTexture(int width, int height)
 	}
 }
 
+void WutEmulatorVideo::uploadFrame()
+{
+
+}
+
 /****************************************************************************
  * drawQuad
  ***************************************************************************/
@@ -146,6 +151,11 @@ void WutEmulatorVideo::presentFrame(const uint8_t* buffer)
 	drawQuad();
 
 	videoDriver->presentBuffer();
+}
+
+void WutEmulatorVideo::presentStereoFrame(const uint8_t* bufferLeft, const uint8_t* bufferRight)
+{
+
 }
 
 /****************************************************************************

@@ -39,3 +39,13 @@ void WutEmulatorAudio::playSound(const int32_t* buffer, int count)
 {
 
 }
+
+void WutEmulatorAudio::updateSampleRate(int rate)
+{
+
+}
+
+void WutEmulatorAudio::setSampleRate()
+{
+
+}
