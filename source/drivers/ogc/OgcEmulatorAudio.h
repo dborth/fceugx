@@ -28,12 +28,17 @@ class OgcEmulatorAudio : public EmulatorAudioDriver
 		void init() override;
 		void resetAudio() override;
 		void stopAudio() override;
-		void switchBuffers() override;
 		void playSound(const int32_t* buffer, int samples) override;
 		void updateSampleRate(int rate) override;
 		void setSampleRate() override;
 
+		//! Hardware DMA callback that feeds the sound buffer ring to the audio
+		//! backend. Invoked from interrupt context by the platform's DMA
+		//! callback trampoline - never called directly by emulator core code.
+		void switchBuffers();
 	private:
+		int mixerCollect(uint8_t* outbuffer, int len);
+
 		// Each DMA buffer holds one frame's worth of 16-bit stereo samples.
 		static constexpr int DMA_BUFFER_BYTES = 3840;
 
@@ -42,8 +47,6 @@ class OgcEmulatorAudio : public EmulatorAudioDriver
 
 		// AUDIO_InitDMA requires 32-byte aligned lengths.
 		static constexpr int DMA_ALIGN = 32;
-
-		int mixerCollect(uint8_t* outbuffer, int len);
 
 		uint8_t soundbuffer[2][DMA_BUFFER_BYTES] __attribute__((aligned(32)));
 		uint32_t mixbuffer[MIX_SAMPLES] __attribute__((aligned(32)));

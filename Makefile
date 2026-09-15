@@ -1,8 +1,10 @@
-.PHONY = all wii gc wii-clean gc-clean wii-run gc-run
+.PHONY = all wii gc wiiu wii-clean gc-clean wiiu-clean wii-run gc-run wiiu-run
 
-all: wii gc
+all: wii gc wiiu
 
-clean: wii-clean gc-clean
+run: wii-run
+
+clean: wii-clean gc-clean wiiu-clean
 
 wii:
 	$(MAKE) -f Makefile.wii
@@ -10,7 +12,7 @@ wii:
 wii-clean:
 	$(MAKE) -f Makefile.wii clean
 
-wii-run:
+wii-run: wii
 	$(MAKE) -f Makefile.wii run
 
 gc:
@@ -19,5 +21,14 @@ gc:
 gc-clean:
 	$(MAKE) -f Makefile.gc clean
 
-gc-run:
+gc-run: gc
 	$(MAKE) -f Makefile.gc run
+
+wiiu:
+	$(MAKE) -f Makefile.wiiu
+
+wiiu-clean:
+	$(MAKE) -f Makefile.wiiu clean
+
+wiiu-run: wii
+	$(MAKE) -f Makefile.wiiu run
