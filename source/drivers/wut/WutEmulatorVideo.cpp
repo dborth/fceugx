@@ -11,7 +11,11 @@
 #include "WutEmulatorVideo.h"
 #include "WutVideoDriver.h"
 #include "shaders/Texture2DShader.h"
-#include "../../video.h"
+#include "../../fceugx.h"
+
+bool shutter_3d_mode, anaglyph_3d_mode, eye_3d;
+
+void Check3D() { }
 
 namespace
 {
@@ -136,7 +140,7 @@ void WutEmulatorVideo::drawQuad()
 /****************************************************************************
  * presentFrame
  ***************************************************************************/
-void WutEmulatorVideo::presentFrame(int width, int height)
+void WutEmulatorVideo::presentFrame(const uint8_t* buffer)
 {
 	uploadFrame();
 	drawQuad();

@@ -26,7 +26,7 @@ class WutEmulatorVideo : public EmulatorVideoDriver
 
 		void init(VideoDriver* videoDriver) override;
 		void resetVideo() override;
-		void presentFrame(int width, int height) override;
+		void presentFrame(const uint8_t* buffer) override;
 		void presentStereoFrame(const uint8_t* bufferLeft, const uint8_t* bufferRight) override;
 		void readFrameRGB24(uint8_t* dst) override;
 
