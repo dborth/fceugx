@@ -33,8 +33,13 @@ class WutEmulatorVideo : public EmulatorVideoDriver
 	private:
 		void rebuildTexture(int width, int height);
 		void destroyTexture();
-		void uploadFrame();
+		void uploadFrame(const uint8_t* buffer);
 		void drawQuad();
+
+		// Hidden-overscan border, in NES source pixels, cropped out of the
+		// texture on each side (see EmuSettings.hideoverscan). 0 when off.
+		uint8_t getBorderWidth() const;
+		uint8_t getBorderHeight() const;
 
 		WutVideoDriver* videoDriver;
 
@@ -44,4 +49,10 @@ class WutEmulatorVideo : public EmulatorVideoDriver
 		// On-screen placement of the game quad, in design-canvas pixels
 		// (top-left x/y, size w/h) - recomputed by resetVideo().
 		float quadX, quadY, quadWidth, quadHeight;
+
+		// Raw NES framebuffer (palette indices) passed to the most recent
+		// presentFrame() - reused by readFrameRGB24() so screenshots don't
+		// need a GX2 texture readback. Only valid to dereference synchronously
+		// (TakeScreenshot() runs before the emulator core produces another frame).
+		const uint8_t* lastBuffer;
 };
