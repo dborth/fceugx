@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "SmbDriver.h"
+#include "Mutex.h"
 
 #define MAX_STORAGE_DEVICES 16
 
@@ -33,9 +34,7 @@ struct StorageDevice
 {
 	int  id;
 	char name[20];
-	char prefix[32];          //!< eg. "usb:/" on Wii, but Wii U's runtime-assigned FSA
-	                           //!< paths (eg. "/vol/external01") run longer than the
-	                           //!< 16 bytes the old libogc-style prefixes needed
+	char prefix[32];
 	bool removable;          //!< can this device disappear at runtime? (polled by the device-checking thread)
 	bool autoMountAtStartup; //!< silently attempted at boot (eg. Wii's SD/USB)
 
@@ -140,8 +139,15 @@ class FileSystemDriver
 		virtual const int * getValidLoadDevices(int & outCount) const = 0;
 		virtual const int * getValidSaveDevices(int & outCount) const = 0;
 
-		//! The network-share backend for DEVICE_SMB
 		virtual SmbDriver * getSmb() = 0;
+
+		//! Serializes raw devoptab I/O (open/read/write/readdir/stat) issued
+		//! by more than one thread against a mounted volume.
+		static Mutex & getIoLock()
+		{
+			static Mutex lock;
+			return lock;
+		}
 };
 
 //! Convenience for "try these devices in priority order, use whichever one
