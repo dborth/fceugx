@@ -93,11 +93,11 @@ WutAudioDriver::~WutAudioDriver() {
 
 void WutAudioDriver::startEmulatorAudio() {
 	stopMenuAudio();
-	emulatorAudio->resetAudio();
+	emulatorAudio->startVoice();
 }
 
 void WutAudioDriver::stopEmulatorAudio() {
-
+	emulatorAudio->stopAudio();
 }
 
 void WutAudioDriver::startMenuAudio() {
@@ -110,6 +110,7 @@ void WutAudioDriver::stopMenuAudio() {
 
 void WutAudioDriver::shutdown() {
 	stopEmulatorAudio();
+	emulatorAudio->shutdown();
 	stopStream();
 	AXRegisterFrameCallback(nullptr);
 
