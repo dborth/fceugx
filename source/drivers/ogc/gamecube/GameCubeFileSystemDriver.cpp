@@ -57,20 +57,19 @@ void GameCubeFileSystemDriver::shutdown()
 
 static void CopyLabel(StorageDevice & out, int deviceId)
 {
-	snprintf(out.label, sizeof(out.label), "%s", volumeLabel[deviceId]);
+	snprintf(out.volumeLabel, sizeof(out.volumeLabel), "%s", volumeLabel[deviceId]);
 }
 
 int GameCubeFileSystemDriver::enumerateStorageDevices(StorageDevice outDevices[MAX_STORAGE_DEVICES])
 {
 	int count = 0;
-	// autoMountAtStartup: true for carda/cardb/port2 - all three go through
-	// the same cheap, safe EXI presence probe.
-	outDevices[count] = StorageDevice{ DEVICE_SD_SLOTA,    "SD Gecko Slot A", "carda:/",    false, true,  0, 0, 0, false, false, "", false }; CopyLabel(outDevices[count], DEVICE_SD_SLOTA);    count++;
-	outDevices[count] = StorageDevice{ DEVICE_SD_SLOTB,    "SD Gecko Slot B", "cardb:/",    false, true,  0, 0, 0, false, false, "", false }; CopyLabel(outDevices[count], DEVICE_SD_SLOTB);    count++;
-	outDevices[count] = StorageDevice{ DEVICE_SD_PORT2,    "SD in SP2",       "port2:/",    false, true,  0, 0, 0, false, false, "", false }; CopyLabel(outDevices[count], DEVICE_SD_PORT2);    count++;
-	outDevices[count] = StorageDevice{ DEVICE_SD_GCLOADER, "GC Loader",       "gcloader:/", false, false, 0, 0, 0, false, false, "", true  }; CopyLabel(outDevices[count], DEVICE_SD_GCLOADER); count++;
-	outDevices[count] = StorageDevice{ DEVICE_DVD,         "Data DVD",        "dvd:/",      false, false, 0, 0, 0, false, false, "", true  }; count++;
-	outDevices[count] = StorageDevice{ DEVICE_SMB,         "Network Share",   "smb:/",      false, false, 0, 0, 0, false, false, "", true  }; count++;
+	// autoMountAtStartup: true for carda/cardb/port2 - all three go through the same cheap, safe EXI presence probe
+	outDevices[count] = StorageDevice{ DEVICE_SD_SLOTA,    "carda:/",		"SD Gecko Slot A", "", false, true }; CopyLabel(outDevices[count], DEVICE_SD_SLOTA);    count++;
+	outDevices[count] = StorageDevice{ DEVICE_SD_SLOTB,    "cardb:/",		"SD Gecko Slot B", "", false, true }; CopyLabel(outDevices[count], DEVICE_SD_SLOTB);    count++;
+	outDevices[count] = StorageDevice{ DEVICE_SD_PORT2,    "port2:/",		"SD in SP2", "", false, true }; CopyLabel(outDevices[count], DEVICE_SD_PORT2);    count++;
+	outDevices[count] = StorageDevice{ DEVICE_SD_GCLOADER, "gcloader:/",	"GC Loader", "", false, false }; CopyLabel(outDevices[count], DEVICE_SD_GCLOADER); count++;
+	outDevices[count] = StorageDevice{ DEVICE_DVD,         "dvd:/",			"Data DVD", "", false, false }; count++;
+	outDevices[count] = StorageDevice{ DEVICE_SMB,         "smb:/",			"Network Share", "", false, false }; count++;
 
 	return count;
 }

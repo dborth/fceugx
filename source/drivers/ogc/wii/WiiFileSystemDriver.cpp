@@ -78,18 +78,18 @@ void WiiFileSystemDriver::shutdown()
 
 static void CopyLabel(StorageDevice & out, int deviceId)
 {
-	snprintf(out.label, sizeof(out.label), "%s", volumeLabel[deviceId]);
+	snprintf(out.volumeLabel, sizeof(out.volumeLabel), "%s", volumeLabel[deviceId]);
 }
 
 int WiiFileSystemDriver::enumerateStorageDevices(StorageDevice outDevices[MAX_STORAGE_DEVICES])
 {
 	int count = 0;
-	outDevices[count] = StorageDevice{ DEVICE_SD,   "SD Card",   "sd:/",   true, true, 0, 0, 0, false, false, "", false }; CopyLabel(outDevices[count], DEVICE_SD);   count++;
-	outDevices[count] = StorageDevice{ DEVICE_USB,  "USB Mass Storage",  "usb:/",  true, true, 0, 0, 0, false, false, "", false }; CopyLabel(outDevices[count], DEVICE_USB);  count++;
-	outDevices[count] = StorageDevice{ DEVICE_USB2, "USB Mass Storage 2", "usb2:/", true, true, 0, 0, 0, false, false, "", false }; CopyLabel(outDevices[count], DEVICE_USB2); count++;
-	outDevices[count] = StorageDevice{ DEVICE_USB3, "USB Mass Storage 3", "usb3:/", true, true, 0, 0, 0, false, false, "", false }; CopyLabel(outDevices[count], DEVICE_USB3); count++;
-	outDevices[count] = StorageDevice{ DEVICE_DVD, "Data DVD",    "dvd:/", true, false, 0, 0, 0, false, false, "", true }; count++;
-	outDevices[count] = StorageDevice{ DEVICE_SMB, "Network Share", "smb:/", false, false, 0, 0, 0, false, false, "", true }; count++;
+	outDevices[count] = StorageDevice{ DEVICE_SD,	"sd:/",	"SD Card", "", true, true }; CopyLabel(outDevices[count], DEVICE_SD); count++;
+	outDevices[count] = StorageDevice{ DEVICE_USB,	"usb:/", "USB Mass Storage", "",  true, true }; CopyLabel(outDevices[count], DEVICE_USB); count++;
+	outDevices[count] = StorageDevice{ DEVICE_USB2,	"usb2:/", "USB Mass Storage 2", "", true, true }; CopyLabel(outDevices[count], DEVICE_USB2); count++;
+	outDevices[count] = StorageDevice{ DEVICE_USB3,	"usb3:/", "USB Mass Storage 3", "", true, true }; CopyLabel(outDevices[count], DEVICE_USB3); count++;
+	outDevices[count] = StorageDevice{ DEVICE_DVD,	"dvd:/", "Data DVD", "", true, false }; count++;
+	outDevices[count] = StorageDevice{ DEVICE_SMB,	"smb:/", "Network Share", "", false, false }; count++;
 	return count;
 }
 
