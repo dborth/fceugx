@@ -209,9 +209,6 @@ void WutAudioDriver::setVoiceVolume(int32_t voice, int volume) {
 }
 
 void WutAudioDriver::playStream(const uint8_t *data, int32_t length, bool loop, int volume) {
-	if (!isForeground())
-		return;
-
 	stopStream();
 	streamVolume = volume;
 
@@ -293,10 +290,17 @@ void WutAudioDriver::playStream(const uint8_t *data, int32_t length, bool loop, 
 
 void WutAudioDriver::handleStreamCallback() {
 	if (!isForeground()) {
-		// Lost the foreground - stop driving the stream voices rather than
-		// continuing to feed/play audio in the background.
-		pauseStream();
+		// Lost (or don't yet have) the foreground - hold the hardware voices stopped directly
+		if (streamVoiceL) AXSetVoiceState(streamVoiceL, 0);
+		if (streamVoiceR) AXSetVoiceState(streamVoiceR, 0);
 		return;
+	}
+
+	// We have the foreground. If there's an active, not-explicitly-paused stream whose hardware voices aren't running,
+	// (re)start them here. Fully self-healing.
+	if (streamVoiceL && streamVoiceR && oggPlayer.isPlaying() && !oggPlayer.isPaused() && streamVoiceL->state != AX_VOICE_STATE_PLAYING) {
+		AXSetVoiceState(streamVoiceL, 1);
+		AXSetVoiceState(streamVoiceR, 1);
 	}
 
 	if (!streamVoiceL || !streamVoiceR || oggPlayer.isPaused() || streamVoiceL->state != AX_VOICE_STATE_PLAYING)
