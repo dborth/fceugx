@@ -51,12 +51,17 @@ void WutEmulatorAudio::init()
 	AXSetVoiceType(voice, 0);
 
 	// Mono source, mixed equally to both channels on both output devices
-	AXVoiceDeviceMixData mix;
-	memset(&mix, 0, sizeof(mix));
-	mix.bus[0].volume = 0x8000;
-	mix.bus[1].volume = 0x8000;
-	AXSetVoiceDeviceMix(voice, AX_DEVICE_TYPE_TV, 0, &mix);
-	AXSetVoiceDeviceMix(voice, AX_DEVICE_TYPE_DRC, 0, &mix);
+	// it's two call sites total.
+	AXVoiceDeviceMixData tvMix[6];
+	AXVoiceDeviceMixData drcMix[4];
+	memset(tvMix, 0, sizeof(tvMix));
+	memset(drcMix, 0, sizeof(drcMix));
+	tvMix[0].bus[0].volume = 0x8000;
+	tvMix[1].bus[0].volume = 0x8000;
+	drcMix[0].bus[0].volume = 0x8000;
+	drcMix[1].bus[0].volume = 0x8000;
+	AXSetVoiceDeviceMix(voice, AX_DEVICE_TYPE_TV, 0, tvMix);
+	AXSetVoiceDeviceMix(voice, AX_DEVICE_TYPE_DRC, 0, drcMix);
 
 	AXVoiceOffsets offsets;
 	memset(&offsets, 0, sizeof(offsets));
@@ -86,10 +91,8 @@ void WutEmulatorAudio::init()
 	minFrames = frame * 3;    // ~9ms buffered - below this, stop rather than starve
 	loadFrames = frame * 10;  // ~30ms buffered - required before (re)starting playback
 
-	// This driver's own ring-refill/underrun tracking. Registered as an
-	// *app* frame callback, not the single exclusive AXRegisterFrameCallback
-	// slot WutAudioDriver::init() already owns for the menu stream - see
-	// the design notes above.
+	// This driver's own ring-refill/underrun tracking, registered as an
+	// *app* frame callback
 	AXRegisterAppFrameCallback(WutEmulatorAudioFrameCallback);
 }
 
