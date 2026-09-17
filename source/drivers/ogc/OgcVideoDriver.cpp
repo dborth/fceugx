@@ -496,7 +496,7 @@ void OgcImageRenderer::loadTextureData(void* texture, const uint8_t* rgba, int w
 		}
 	}
 
-	int len = (padWidth * padHeight) * 2;
+	int len = (padWidth * padHeight) * 4;
 	if (len % 32) len += (32 - len % 32);
 	DCFlushRange(dst, len);
 }
@@ -525,7 +525,7 @@ void OgcImageRenderer::fillTexture(void* texture, int width, int height, ImageRe
 		}
 	}
 
-	int len = (padWidth * padHeight) * 2;
+	int len = (padWidth * padHeight) * 4;
 	if (len % 32) len += (32 - len % 32);
 	DCFlushRange(dst, len);
 }
