@@ -130,6 +130,11 @@ bool dvmWutGetVolumeLabel(const char * name, char * labelOut, size_t labelOutSiz
 
 	labelOut[0] = '\0';
 
-	// vfat/exfat only
-	return fatGetVolumeLabel(name, labelOut) && labelOut[0] != '\0';
+	// vfat/exfat
+	if(fatGetVolumeLabel(name, labelOut) && labelOut[0] != '\0')
+		return true;
+
+	// ntfs
+	labelOut[0] = '\0';
+	return ntfsGetVolumeLabel(name, labelOut, labelOutSize) && labelOut[0] != '\0';
 }
