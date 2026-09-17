@@ -81,36 +81,36 @@ static camera cam = { {0.0F, 0.0F, 0.0F},
 /* 240 lines progressive (PAL 50Hz) */
 GXRModeObj PAL_240p =
 {
-	VI_TVMODE_PAL_DS,       // viDisplayMode
-	512,             // fbWidth
-	240,             // efbHeight
-	240,             // xfbHeight
-	(VI_MAX_WIDTH_PAL - 644)/2,         // viXOrigin
-	(VI_MAX_HEIGHT_PAL/2 - 480/2)/2,        // viYOrigin
-	644,             // viWidth
-	480,             // viHeight
-	VI_XFBMODE_SF,   // xFBmode
-	GX_FALSE,        // field_rendering
-	GX_FALSE,        // aa
+    VI_TVMODE_PAL_DS,       // viTVMode
+    512,            // fbWidth
+    240,            // efbHeight
+    240,            // xfbHeight
+    (VI_MAX_WIDTH_PAL - 644)/2,         // viXOrigin
+    (VI_MAX_HEIGHT_PAL/2 - 480/2)/2,    // viYOrigin
+    644,            // viWidth
+    480,            // viHeight
+    VI_XFBMODE_SF,  // xfbMode
+    GX_FALSE,       // field_rendering
+    GX_FALSE,       // aa
 
-  // sample points arranged in increasing Y order
-        {
-                {6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
-                {6,6},{6,6},{6,6},  // pix 1
-                {6,6},{6,6},{6,6},  // pix 2
-                {6,6},{6,6},{6,6}   // pix 3
-        },
-
-  // vertical filter[7], 1/64 units, 6 bits each
-        {
-                 0,         // line n-1
-                 0,         // line n-1
-                21,         // line n
-                22,         // line n
-                21,         // line n
-                 0,         // line n+1
-                 0          // line n+1
-        }
+    // sample points arranged in increasing Y order
+    {
+        {6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
+        {6,6},{6,6},{6,6},  // pix 1
+        {6,6},{6,6},{6,6},  // pix 2
+        {6,6},{6,6},{6,6}   // pix 3
+    },
+    // vertical filter[7], 1/64 units, 6 bits each
+    {
+         0,         // line n-1
+         0,         // line n-1
+        21,         // line n
+        22,         // line n
+        21,         // line n
+         0,         // line n+1
+         0          // line n+1
+    },
+    GX_COPY_PROGRESSIVE     // copy_interlaced
 };
 
 /** Original NES NTSC Resolutions: **/
@@ -118,36 +118,36 @@ GXRModeObj PAL_240p =
 /* 240 lines progressive (NTSC or PAL 60Hz) */
 GXRModeObj NTSC_240p =
 {
-	VI_TVMODE_EURGB60_DS,      // viDisplayMode
-	512,             // fbWidth
-	240,             // efbHeight
-	240,             // xfbHeight
-	(VI_MAX_WIDTH_NTSC - 644)/2,	// viXOrigin
-	(VI_MAX_HEIGHT_NTSC/2 - 480/2)/2,	// viYOrigin
-	644,             // viWidth
-	480,             // viHeight
-	VI_XFBMODE_SF,   // xFBmode
-	GX_FALSE,        // field_rendering
-	GX_FALSE,        // aa
+    VI_TVMODE_EURGB60_DS,   // viTVMode
+    512,            // fbWidth
+    240,            // efbHeight
+    240,            // xfbHeight
+    (VI_MAX_WIDTH_EURGB60 - 644)/2,         // viXOrigin
+    (VI_MAX_HEIGHT_EURGB60/2 - 480/2)/2,    // viYOrigin
+    644,            // viWidth
+    480,            // viHeight
+    VI_XFBMODE_SF,  // xfbMode
+    GX_FALSE,       // field_rendering
+    GX_FALSE,       // aa
 
-  // sample points arranged in increasing Y order
-        {
-                {6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
-                {6,6},{6,6},{6,6},  // pix 1
-                {6,6},{6,6},{6,6},  // pix 2
-                {6,6},{6,6},{6,6}   // pix 3
-        },
-
-  // vertical filter[7], 1/64 units, 6 bits each
-        {
-                  0,         // line n-1
-                  0,         // line n-1
-                 21,         // line n
-                 22,         // line n
-                 21,         // line n
-                  0,         // line n+1
-                  0          // line n+1
-        }
+    // sample points arranged in increasing Y order
+    {
+        {6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
+        {6,6},{6,6},{6,6},  // pix 1
+        {6,6},{6,6},{6,6},  // pix 2
+        {6,6},{6,6},{6,6}   // pix 3
+    },
+    // vertical filter[7], 1/64 units, 6 bits each
+    {
+         0,         // line n-1
+         0,         // line n-1
+        21,         // line n
+        22,         // line n
+        21,         // line n
+         0,         // line n+1
+         0          // line n+1
+    },
+    GX_COPY_PROGRESSIVE     // copy_interlaced
 };
 
 /* TV Modes table */
@@ -978,10 +978,11 @@ void OgcEmulatorVideo::resetVideo()
 
 	// reconfigure GX
 	GX_SetViewport (0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1);
-	GX_SetDispCopyYScale ((f32) rmode->xfbHeight / (f32) rmode->efbHeight);
 	GX_SetScissor (0, 0, rmode->fbWidth, rmode->efbHeight);
 
+	GX_SetDispCopyFrame2Field (rmode->copy_interlaced);
 	GX_SetDispCopySrc (0, 0, rmode->fbWidth, rmode->efbHeight);
+	GX_SetDispCopyYScale (GX_GetYScaleFactor (rmode->efbHeight, rmode->xfbHeight));
 	GX_SetDispCopyDst (rmode->fbWidth, rmode->xfbHeight);
 	u8 sharp[7] = {0,0,21,22,21,0,0};
 	u8 soft[7] = {8,8,10,12,10,8,8};
@@ -990,10 +991,10 @@ void OgcEmulatorVideo::resetVideo()
 		: EmuSettings.videoHardwareSoften == VIDEO_HW_SOFTEN_SOFT ? soft
 		: rmode->vfilter;
 
-	u8 vf_enable = (rmode->xfbMode != VI_XFBMODE_SF || EmuSettings.videoHardwareSoften != VIDEO_HW_SOFTEN_OFF) ? GX_TRUE : GX_FALSE;
+	u8 vf_enable = EmuSettings.videoHardwareSoften != VIDEO_HW_SOFTEN_OFF ? GX_TRUE : GX_FALSE;
 	GX_SetCopyFilter(rmode->aa, rmode->sample_pattern, vf_enable, vfilter);
 
-	GX_SetFieldMode (rmode->field_rendering, ((rmode->viHeight == 2 * rmode->xfbHeight) ? GX_ENABLE : GX_DISABLE));
+	GX_SetFieldMode (rmode->field_rendering, ((rmode->viHeight / rmode->efbHeight == 2) ? GX_ENABLE : GX_DISABLE));
 
 	if (rmode->aa)
 		GX_SetPixelFmt(GX_PF_RGB565_Z16, GX_ZC_LINEAR);
