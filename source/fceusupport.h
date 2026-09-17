@@ -30,6 +30,12 @@
 #include "fceultra/file.h"
 #include "fceultra/cheat.h"
 
+extern int frameskip;
+extern int fskip;
+extern int fskipc;
+extern int turbomode;
+extern bool romLoaded;
+
 extern unsigned char * nesrom;
 
 void FCEUD_Update(uint8 *XBuf, int32 *Buffer, int32 Count);

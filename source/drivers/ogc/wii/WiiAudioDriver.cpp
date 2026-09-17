@@ -45,17 +45,7 @@ void WiiAudioDriver::init() {
 	emulatorAudio->init();
 }
 
-void WiiAudioDriver::startEmulatorAudio() {
-	stopMenuAudio();
-	AUDIO_RegisterDMACallback(AudioSwitchBuffers);
-}
-
-void WiiAudioDriver::stopEmulatorAudio() {
-	emulatorAudio->stopAudio();
-}
-
 void WiiAudioDriver::startMenuAudio() {
-	stopEmulatorAudio();
 	DSP_Unhalt();
 	ASND_Init();
 	ASND_Pause(0);
@@ -70,9 +60,15 @@ void WiiAudioDriver::stopMenuAudio() {
 	DSP_Halt();
 }
 
+void WiiAudioDriver::startEmulatorAudio() {
+	AUDIO_RegisterDMACallback(AudioSwitchBuffers);
+}
+
+void WiiAudioDriver::stopEmulatorAudio() {
+	emulatorAudio->stopAudio();
+}
+
 void WiiAudioDriver::shutdown() {
-	// Stop both audio paths regardless of which was last active
-	stopEmulatorAudio();
 	stopMenuAudio();
 	instance = nullptr;
 }

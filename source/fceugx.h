@@ -238,10 +238,5 @@ extern struct SEmuSettings EmuSettings;
 enum class AppRequest { NONE, MENU };
 extern AppRequest appRequest;
 extern char appPath[];
-extern int frameskip;
-extern int fskip;
-extern int fskipc;
-extern int turbomode;
-extern bool romLoaded;
 
 #endif

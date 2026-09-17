@@ -55,15 +55,11 @@ Platform* platform = &platformInstance;
 
 AppRequest appRequest = AppRequest::NONE;
 
-int fskipc = 0;
-int fskip = 0;
 static uint8 *gfx=0;
 static int32 *sound=0;
 static int32 ssize=0;
 char appPath[1024] = { 0 };
 
-int frameskip = 0;
-int turbomode = 0;
 unsigned char * nesrom = nullptr;
 int eoptions=0;
 
@@ -156,9 +152,15 @@ int main(int argc, char *argv[])
 				MainMenu(MENU_GAME);
 		}
 
+		platform->getAudio()->stopMenuAudio();
+
 		if(platform->shouldExit()) {
 			break;
 		}
+		
+		// stop checking if devices were removed/inserted
+		// since we're starting emulation again
+		HaltDeviceCheckingThread();
 
 		if(currentTiming != EmuSettings.timing)
 		{
@@ -174,10 +176,6 @@ int main(int argc, char *argv[])
 		autoboot = false;
 		appRequest = AppRequest::NONE;
 		platform->getAudio()->startEmulatorAudio();
-
-		// stop checking if devices were removed/inserted
-		// since we're starting emulation again
-		HaltDeviceCheckingThread();
 
 		platform->getVideo()->getEmulatorVideo()->resetVideo();
 		SetControllers();
@@ -240,17 +238,12 @@ int main(int argc, char *argv[])
 			SyncSpeed();
 
 			if(event == SystemEvent::ResetRequested)
-			{
 				PowerNES(); // reset game
-			}
-			if (appRequest == AppRequest::MENU)
-			{
-				appRequest = AppRequest::NONE;
-				TakeScreenshot();
-				platform->getVideo()->startMenuVideo();
-				break;
-			}
 		} // emulation loop
+
+		platform->getAudio()->stopEmulatorAudio();
+		TakeScreenshot();
+		platform->getVideo()->startMenuVideo();
 	} // main loop
 	ExitApp();
 }

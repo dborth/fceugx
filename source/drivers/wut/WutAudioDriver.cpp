@@ -102,7 +102,6 @@ WutAudioDriver::~WutAudioDriver() {
 }
 
 void WutAudioDriver::startEmulatorAudio() {
-	stopMenuAudio();
 	emulatorAudio->startVoice();
 }
 
@@ -111,11 +110,14 @@ void WutAudioDriver::stopEmulatorAudio() {
 }
 
 void WutAudioDriver::startMenuAudio() {
-	stopEmulatorAudio();
+
 }
 
 void WutAudioDriver::stopMenuAudio() {
 	stopStream();
+
+	for (int i = 0; i < 16; i++)
+		stopVoice(i);
 }
 
 void WutAudioDriver::shutdown() {

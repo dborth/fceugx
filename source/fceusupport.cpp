@@ -15,6 +15,10 @@
 #include "drivers/Platform.h"
 #include "menu.h"
 
+int fskipc = 0;
+int fskip = 0;
+int frameskip = 0;
+int turbomode = 0;
 bool turbo = false;
 bool paldeemphswap = 0;
 int dendy;
