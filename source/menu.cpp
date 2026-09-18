@@ -1030,6 +1030,7 @@ static void OnPreviewImageChanged(void *, GuiImage * target)
 }
 
 static int BrowserLoadFileTask(void *) { return BrowserLoadFile(); }
+static int BrowserChangeFolderTask(void * arg) { return BrowserChangeFolder(); }
 
 struct ChangeInterfaceArgs
 {
@@ -1200,8 +1201,23 @@ static int MenuGameSelection()
 				
 				// check corresponding browser entry
 				if(browserList[browser.selIndex].isdir || IsSz())
-				{	
-					res = BrowserChangeFolder();
+				{
+					gameBrowser.setState(STATE::DISABLED);
+
+					if(!RunOnWorkerThread(BrowserChangeFolderTask))
+					{
+						gameBrowser.setState(STATE::DEFAULT);
+						continue;
+					}
+
+					while(!IsWorkerThreadFinished())
+					{
+						if(!UpdateGui()) return MENU_EXIT;
+						gameBrowser.setState(STATE::DISABLED);
+					}
+
+					res = GetWorkerThreadResult() != 0;
+
 					if(res)
 					{
 						gameBrowser.resetState();
@@ -1215,7 +1231,6 @@ static int MenuGameSelection()
 					}
 
 					titleTxt.setText(inSz ? szname : "Choose Game");
-					
 				}
 				else
 				{
