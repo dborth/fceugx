@@ -291,8 +291,8 @@ static void loadXMLController(uint32_t controller[], const char * name)
 void ApplySettings() {
 	platform->getInput()->setWiimoteOrientation(EmuSettings.wiimoteOrientation);
 	platform->getInput()->setRumbleEnabled(EmuSettings.Rumble);
-	GuiSound::setDefaultVolume(SOUND::OGG, EmuSettings.MusicVolume);
-	GuiSound::setDefaultVolume(SOUND::PCM, EmuSettings.SFXVolume);
+	GuiSound::setDefaultVolume(VOLUME_TYPE::MUSIC, EmuSettings.MusicVolume);
+	GuiSound::setDefaultVolume(VOLUME_TYPE::SFX, EmuSettings.SFXVolume);
 	platform->getVideo()->startMenuVideo();
 	ChangeLanguage();
 }
@@ -439,8 +439,8 @@ void FixInvalidSettings()
 		EmuSettings.timing = TIMING_AUTOMATIC;
 	if(!(EmuSettings.hideoverscan >= HIDEOVERSCAN_OFF && EmuSettings.hideoverscan < HIDEOVERSCAN_LENGTH))
 		EmuSettings.hideoverscan = HIDEOVERSCAN_BOTH;
-	if(!(EmuSettings.wiimoteOrientation >= WIIMOTE_ORIENTATION_AUTO && EmuSettings.wiimoteOrientation < WIIMOTE_ORIENTATION_LENGTH))
-		EmuSettings.wiimoteOrientation = WIIMOTE_ORIENTATION_AUTO;
+	if(!(EmuSettings.wiimoteOrientation >= WIIMOTE_ORIENTATION_VERTICAL && EmuSettings.wiimoteOrientation < WIIMOTE_ORIENTATION_LENGTH))
+		EmuSettings.wiimoteOrientation = WIIMOTE_ORIENTATION_VERTICAL;
 }
 
 /****************************************************************************
@@ -480,7 +480,7 @@ void DefaultSettings()
 	EmuSettings.spritelimit = true; // enforce 8 sprite limit
 	EmuSettings.gamegenie = false;
 
-	EmuSettings.wiimoteOrientation = WIIMOTE_ORIENTATION_AUTO;
+	EmuSettings.wiimoteOrientation = WIIMOTE_ORIENTATION_VERTICAL;
 	EmuSettings.AutoloadGame = false;
 #ifdef HW_RVL
 	EmuSettings.ExitAction = EXITACTION_WII_AUTO;
