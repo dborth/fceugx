@@ -41,9 +41,10 @@ DATA		:=	data/images data/sounds data/fonts data/lang
 CFLAGS		=	-g -O3 -Wall -Wextra $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 				-DFCEUGX -D__WIIU__ -D__WUT__ \
 				-DFORMAT_PAL8 -DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
-				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ
+				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
+				-ffunction-sections -fdata-sections
 CXXFLAGS	=	$(CFLAGS) -std=c++17
-LDFLAGS		=	-g $(MACHDEP) $(RPXSPECS) -Wl,-Map,$(notdir $@).map
+LDFLAGS		=	-g $(MACHDEP) $(RPXSPECS) -Wl,-Map,$(notdir $@).map -Wl,--gc-sections
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
