@@ -331,7 +331,7 @@ static unsigned char DecodeJoy(unsigned short chan)
 			else {
 				if (GameInfo->type == GIT_FDS) {
 					if (FDSSwitchRequested == 0) FDSSwitchRequested = 1;
-				} else {
+				} else if (GameInfo->type == GIT_VSUNI) {
 					FCEUI_VSUniCoin();
 				}
 			}
