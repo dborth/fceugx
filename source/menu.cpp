@@ -1949,7 +1949,7 @@ static int FindGameSaveNum(char * savefile)
  *
  * Finds this game's save files and decodes their screenshots on the worker
  * thread. Every save costs several requests to the storage device, and that
- * is slow on some platforms (Wii U). Turning the decoded screenshots into
+ * is slow on some platforms. Turning the decoded screenshots into
  * textures has to wait until we are back on the main thread.
  ***************************************************************************/
 struct SaveScreenData
