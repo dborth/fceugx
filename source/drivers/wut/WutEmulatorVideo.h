@@ -35,6 +35,7 @@ class WutEmulatorVideo : public EmulatorVideoDriver
 		void destroyTexture();
 		void uploadFrame(const uint8_t* buffer);
 		void drawQuad();
+		void syncScreenshotMetrics(int width, int height);
 
 		// Hidden-overscan border, in NES source pixels, cropped out of the
 		// texture on each side (see EmuSettings.hideoverscan). 0 when off.

@@ -79,11 +79,28 @@ void WutEmulatorVideo::resetVideo()
 	quadY = ((screenHeight - quadHeight) * 0.5f) + EmuSettings.videoYshift;
 
 	// Mirror the placement into gameScreenPng so the pause menu's blurred
-	// background reproduces the same on-screen rect as readFrameRGB24()
-	gameScreenPng.width = NES_WIDTH;
-	gameScreenPng.height = NES_HEIGHT;
-	gameScreenPng.scaleX = quadWidth / (float)NES_WIDTH;
-	gameScreenPng.scaleY = quadHeight / (float)NES_HEIGHT;
+	// background reproduces the same on-screen rect as the live game
+	syncScreenshotMetrics(NES_WIDTH - (getBorderWidth() << 1), NES_HEIGHT - (getBorderHeight() << 1));
+}
+
+/****************************************************************************
+ * syncScreenshotMetrics
+ *
+ * Publishes the game quad's on-screen rect through gameScreenPng, which the
+ * pause menu's blurred background (CreateBlurredGameTexture) draws from
+ ***************************************************************************/
+void WutEmulatorVideo::syncScreenshotMetrics(int width, int height)
+{
+	float screenWidth = (float)videoDriver->getScreenWidth();
+	float screenHeight = (float)videoDriver->getScreenHeight();
+
+	gameScreenPng.width = width;
+	gameScreenPng.height = height;
+
+	// The menu truncates width * scaleX to an int; the 0.5f keeps float
+	// rounding error from dropping the last pixel and leaving a hairline gap
+	gameScreenPng.scaleX = (quadWidth + 0.5f) / (float)width;
+	gameScreenPng.scaleY = (quadHeight + 0.5f) / (float)height;
 	gameScreenPng.xoffset = (int)((quadX + quadWidth * 0.5f) - (screenWidth * 0.5f));
 	gameScreenPng.yoffset = (int)((quadY + quadHeight * 0.5f) - (screenHeight * 0.5f));
 }
@@ -281,9 +298,7 @@ void WutEmulatorVideo::readFrameRGB24(uint8_t* dst)
 		}
 	}
 
-	// Reflects the (possibly cropped) size back to TakeScreenshot()/menu.cpp -
-	// resetVideo() leaves gameScreenPng.scaleX/scaleY/xoffset/yoffset valid
-	// for this smaller size.
-	gameScreenPng.width = width;
-	gameScreenPng.height = height;
+	// Reflects the (possibly cropped) size back to TakeScreenshot()/menu.cpp,
+	// with the scale re-derived for that size so it still fills the quad
+	syncScreenshotMetrics((int)width, (int)height);
 }
