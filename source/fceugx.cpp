@@ -95,13 +95,13 @@ int main(int argc, char *argv[])
 	InitMem2Manager();
 	#endif
 
-	savebuffer = (unsigned char *)memalign(32,SAVEBUFFERSIZE);
+	savebuffer = (unsigned char *)memalign(FILE_BUFFER_ALIGN,SAVEBUFFERSIZE);
 #ifdef HW_DOL
 	browserList = (BROWSERENTRY *)vm_malloc(sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
 	nesrom = (unsigned char *)vm_malloc(1024*1024*4);
 #else
 	browserList = (BROWSERENTRY *)memalign(32,sizeof(BROWSERENTRY)*MAX_BROWSER_SIZE);
-	nesrom = (unsigned char *)memalign(32,1024*1024*4);
+	nesrom = (unsigned char *)memalign(FILE_BUFFER_ALIGN,1024*1024*4);
 #endif
 
 	InitGUIThreads();
