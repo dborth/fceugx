@@ -101,14 +101,6 @@ WutAudioDriver::~WutAudioDriver() {
 	delete emulatorAudio;
 }
 
-void WutAudioDriver::startEmulatorAudio() {
-	emulatorAudio->startVoice();
-}
-
-void WutAudioDriver::stopEmulatorAudio() {
-	emulatorAudio->stopAudio();
-}
-
 void WutAudioDriver::startMenuAudio() {
 
 }
@@ -118,6 +110,14 @@ void WutAudioDriver::stopMenuAudio() {
 
 	for (int i = 0; i < 16; i++)
 		stopVoice(i);
+}
+
+void WutAudioDriver::startEmulatorAudio() {
+	emulatorAudio->startVoice();
+}
+
+void WutAudioDriver::stopEmulatorAudio() {
+	emulatorAudio->stopAudio();
 }
 
 void WutAudioDriver::shutdown() {
@@ -211,6 +211,7 @@ void WutAudioDriver::setVoiceVolume(int32_t voice, int volume) {
 }
 
 void WutAudioDriver::playStream(const uint8_t *data, int32_t length, bool loop, int volume) {
+	streamPriming = true;
 	stopStream();
 	streamVolume = volume;
 
@@ -288,9 +289,14 @@ void WutAudioDriver::playStream(const uint8_t *data, int32_t length, bool loop, 
 			AXSetVoiceState(streamVoiceR, 1);
 		}
 	}
+
+	streamPriming = false;
 }
 
 void WutAudioDriver::handleStreamCallback() {
+	if (streamPriming)
+		return;
+
 	if (!isForeground()) {
 		// Lost (or don't yet have) the foreground - hold the hardware voices stopped directly
 		if (streamVoiceL) AXSetVoiceState(streamVoiceL, 0);
