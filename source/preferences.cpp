@@ -456,7 +456,7 @@ void DefaultSettings()
 	EmuSettings.videoMode = VIDEOMODE_AUTO;
 	EmuSettings.hideoverscan = HIDEOVERSCAN_BOTH;
 	EmuSettings.currpal = 1;
-	EmuSettings.videoBilinearFilter = true;
+	EmuSettings.videoBilinearFilter = false;
 	EmuSettings.videoHardwareSoften = VIDEO_HW_SOFTEN_SHARP;
 	EmuSettings.videoScanlines = false;
 #if defined(HW_RVL) || defined(HW_DOL)
