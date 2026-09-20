@@ -472,6 +472,11 @@ void DefaultSettings()
 		EmuSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
 #elif HW_DOL
 	EmuSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
+#elif defined(__WIIU__)
+	if (GX2GetSystemTVAspectRatio() == GX2_ASPECT_RATIO_16_9)
+		EmuSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_16_9;
+	else
+		EmuSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
 #endif
 
 	EmuSettings.timing = TIMING_AUTOMATIC;
