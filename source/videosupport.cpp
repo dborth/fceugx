@@ -177,7 +177,7 @@ void FCEUD_GetPalette(u8 i, u8 *r, u8 *g, u8 *b)
 
 void SetPalette()
 {
-	if ( EmuSettings.currpal == 0 )
+	if ( EmuSettings.currentPalette == 0 )
 	{
 		// Do palette reset
 		FCEU_ResetPalette();
@@ -189,9 +189,9 @@ void SetPalette()
 
 		for ( i = 0; i < 64; i++ )
 		{
-			r = palettes[EmuSettings.currpal-1].data[i] >> 16;
-			g = ( palettes[EmuSettings.currpal-1].data[i] & 0xff00 ) >> 8;
-			b = ( palettes[EmuSettings.currpal-1].data[i] & 0xff );
+			r = palettes[EmuSettings.currentPalette-1].data[i] >> 16;
+			g = ( palettes[EmuSettings.currentPalette-1].data[i] & 0xff00 ) >> 8;
+			b = ( palettes[EmuSettings.currentPalette-1].data[i] & 0xff );
 			FCEUD_SetPalette( i, r, g, b);
 			FCEUD_SetPalette( i+64, r, g, b);
 			FCEUD_SetPalette( i+128, r, g, b);

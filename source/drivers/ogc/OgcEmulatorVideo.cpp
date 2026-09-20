@@ -457,13 +457,13 @@ void OgcEmulatorVideo::updateScaling()
 }
 
 uint8_t OgcEmulatorVideo::getBorderWidth() {
-	if(EmuSettings.hideoverscan == HIDEOVERSCAN_HORIZONTAL || EmuSettings.hideoverscan == HIDEOVERSCAN_BOTH)
+	if(EmuSettings.hideOverscan == HIDEOVERSCAN_HORIZONTAL || EmuSettings.hideOverscan == HIDEOVERSCAN_BOTH)
 		return 8;
 	return 0;
 }
 
 uint8_t OgcEmulatorVideo::getBorderHeight() {
-	if(EmuSettings.hideoverscan == HIDEOVERSCAN_VERTICAL || EmuSettings.hideoverscan == HIDEOVERSCAN_BOTH)
+	if(EmuSettings.hideOverscan == HIDEOVERSCAN_VERTICAL || EmuSettings.hideOverscan == HIDEOVERSCAN_BOTH)
 		return 8;
 	return 0;
 }
@@ -516,7 +516,7 @@ void OgcEmulatorVideo::readFrameRGB24(uint8_t* dst)
 	u32 crop_h = gameScreenPng.height;
 
 	// Calculate physical crop bounds if overscan is hidden
-	if(EmuSettings.hideoverscan != HIDEOVERSCAN_OFF) {
+	if(EmuSettings.hideOverscan != HIDEOVERSCAN_OFF) {
 		crop_x = getBorderWidth() * fscale;
 		crop_y = getBorderHeight() * fscale;
 		crop_w = gameScreenPng.width - (crop_x * 2);
@@ -527,7 +527,7 @@ void OgcEmulatorVideo::readFrameRGB24(uint8_t* dst)
 	untileRGB5A3ToRGB24(texturemem, gameScreenPng.width, crop_x, crop_y, crop_w, crop_h, dst);
 
 	// Update GUI image dimensions so it knows it was physically truncated
-	if(EmuSettings.hideoverscan != HIDEOVERSCAN_OFF) {
+	if(EmuSettings.hideOverscan != HIDEOVERSCAN_OFF) {
 		gameScreenPng.width = crop_w;
 		gameScreenPng.height = crop_h;
 	}

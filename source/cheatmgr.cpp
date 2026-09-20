@@ -128,7 +128,7 @@ SetupCheats()
 	char filepath[1024];
 	size_t offset = 0;
 
-	if(EmuSettings.SaveMethod == DEVICE_AUTO)
+	if(EmuSettings.saveDevice == DEVICE_AUTO)
 		return;
 
 	if(!MakeFilePath(filepath, FILE_CHEAT))
@@ -150,7 +150,7 @@ bool FindGameGenie()
 	if (GENIEROM)
 		return true;
 
-	if(EmuSettings.LoadMethod == DEVICE_AUTO)
+	if(EmuSettings.loadDevice == DEVICE_AUTO)
 		return false;
 
 	AllocSaveBuffer();
@@ -158,7 +158,7 @@ bool FindGameGenie()
 	size_t romSize = 0;
 	char filepath[1024];
 
-	platform->getFileSystem()->getPath(filepath, EmuSettings.LoadMethod, APPFOLDER, "gg.rom");
+	platform->getFileSystem()->getPath(filepath, EmuSettings.loadDevice, APPFOLDER, "gg.rom");
 	romSize = LoadFile(filepath, SILENT);
 	if(romSize == 0 && strlen(appPath) > 0)
 	{
@@ -195,7 +195,7 @@ bool FindGameGenie()
 
 void OpenGameGenie()
 {
-	if(!EmuSettings.gamegenie)
+	if(!EmuSettings.gameGenie)
 		geniestage=0;
 	else if (FindGameGenie())
 		geniestage=1;

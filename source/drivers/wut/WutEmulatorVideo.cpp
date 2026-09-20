@@ -107,14 +107,14 @@ void WutEmulatorVideo::syncScreenshotMetrics(int width, int height)
 
 uint8_t WutEmulatorVideo::getBorderWidth() const
 {
-	if(EmuSettings.hideoverscan == HIDEOVERSCAN_HORIZONTAL || EmuSettings.hideoverscan == HIDEOVERSCAN_BOTH)
+	if(EmuSettings.hideOverscan == HIDEOVERSCAN_HORIZONTAL || EmuSettings.hideOverscan == HIDEOVERSCAN_BOTH)
 		return 8;
 	return 0;
 }
 
 uint8_t WutEmulatorVideo::getBorderHeight() const
 {
-	if(EmuSettings.hideoverscan == HIDEOVERSCAN_VERTICAL || EmuSettings.hideoverscan == HIDEOVERSCAN_BOTH)
+	if(EmuSettings.hideOverscan == HIDEOVERSCAN_VERTICAL || EmuSettings.hideOverscan == HIDEOVERSCAN_BOTH)
 		return 8;
 	return 0;
 }

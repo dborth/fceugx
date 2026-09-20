@@ -186,19 +186,19 @@ enum {
 
 struct SEmuSettings
 {
-	int		AutoLoad;
-    int		AutoSave;
-    int		LoadMethod; // For ROMS: Auto, SD, DVD, USB, Network Share
-	int		SaveMethod; // For SRAM, Freeze, Prefs: Auto, SD, USB, Network Share
-	bool	AppendAuto;
-	char	LoadFolder[MAXPATHLEN]; // Path to game files
-	char	LastFileLoaded[MAXPATHLEN]; //Last file loaded filename
-	char	SaveFolder[MAXPATHLEN]; // Path to save files
-	char	CheatFolder[MAXPATHLEN]; // Path to cheat files
-	char	ScreenshotsFolder[MAXPATHLEN]; // Path to screenshot files
-	char	CoverFolder[MAXPATHLEN]; 	// Path to cover files
-	char	ArtworkFolder[MAXPATHLEN]; 	// Path to artwork files
-	bool	AutoloadGame;
+	int		autoLoad;
+    int		autoSave;
+    int		loadDevice; // For ROMS: Auto, SD, DVD, USB, Network Share
+	int		saveDevice; // For SRAM, Freeze, Prefs: Auto, SD, USB, Network Share
+	bool	appendAuto;
+	char	loadFolder[MAXPATHLEN]; // Path to game files
+	char	lastFileLoaded[MAXPATHLEN]; //Last file loaded filename
+	char	saveFolder[MAXPATHLEN]; // Path to save files
+	char	cheatFolder[MAXPATHLEN]; // Path to cheat files
+	char	screenshotsFolder[MAXPATHLEN]; // Path to screenshot files
+	char	coverFolder[MAXPATHLEN]; 	// Path to cover files
+	char	artworkFolder[MAXPATHLEN]; 	// Path to artwork files
+	bool	autoloadGame;
 	
 	SmbShareInfo smbShare; // host/share/user/password for DEVICE_SMB
 
@@ -212,25 +212,25 @@ struct SEmuSettings
 	float	videoZoomVert;
 	int		videoXshift;
 	int		videoYshift;
-	int		currpal;
-	int		hideoverscan; // 0 = off, 1 = vertical, 2 = horizontal, 3 = both
+	int		currentPalette;
+	int		hideOverscan; // 0 = off, 1 = vertical, 2 = horizontal, 3 = both
 
 	bool	crosshair;
-	bool	spritelimit;
-	bool	gamegenie;
+	bool	spriteLimit;
+	bool	gameGenie;
 	int		timing;
-	int		Controller;
+	int		controller;
 	int		wiimoteOrientation;
-	int		ExitAction;
-	int		MusicVolume;
-	int		SFXVolume;
-	bool	Rumble;
+	int		exitAction;
+	int		musicVolume;
+	int		sfxVolume;
+	bool	rumble;
 	int 	language;
-	int		PreviewImage;
-	bool	HideRAMSaving;
-	bool	TurboModeEnabled;
-	int		TurboModeButton;
-	int		GamepadMenuToggle;
+	int		previewImage;
+	bool	hideSramSaving;
+	bool	turboModeEnabled;
+	int		turboModeButton;
+	int		gamepadMenuToggle;
 };
 
 void ExitApp();

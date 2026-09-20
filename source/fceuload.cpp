@@ -84,7 +84,7 @@ int GCMemROM(int size)
 
 			AllocSaveBuffer ();
 
-			platform->getFileSystem()->getPath(filepath, EmuSettings.LoadMethod, APPFOLDER, "disksys.rom");
+			platform->getFileSystem()->getPath(filepath, EmuSettings.loadDevice, APPFOLDER, "disksys.rom");
 			biosSize = LoadFile(filepath, SILENT);
 			if(biosSize == 0 && strlen(appPath) > 0)
 			{
