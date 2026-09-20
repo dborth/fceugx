@@ -49,23 +49,23 @@ jobs:
     - name: Copy Wii artifacts
       if: ${{ matrix.image == 'Wii' }}
       run: |
-        mkdir -p dist/FCEUltraGX/apps/fceugx
-        mkdir -p dist/FCEUltraGX/fceugx/roms
-        mkdir dist/FCEUltraGX/fceugx/cheats
-        mkdir dist/FCEUltraGX/fceugx/saves
-        touch dist/FCEUltraGX/fceugx/roms/romsdir
-        touch dist/FCEUltraGX/fceugx/cheats/cheatsdir
-        touch dist/FCEUltraGX/fceugx/saves/savesdir
-        cp hbc/* dist/FCEUltraGX/apps/fceugx/
-        cp executables/fceugx-wii.dol dist/FCEUltraGX/apps/fceugx/boot.dol
+        mkdir -p dist/FCEUltraGX-Wii/apps/fceugx
+        mkdir -p dist/FCEUltraGX-Wii/fceugx/roms
+        mkdir dist/FCEUltraGX-Wii/fceugx/cheats
+        mkdir dist/FCEUltraGX-Wii/fceugx/saves
+        touch dist/FCEUltraGX-Wii/fceugx/roms/romsdir
+        touch dist/FCEUltraGX-Wii/fceugx/cheats/cheatsdir
+        touch dist/FCEUltraGX-Wii/fceugx/saves/savesdir
+        cp hbc/* dist/FCEUltraGX-Wii/apps/fceugx/
+        cp executables/fceugx-wii.dol dist/FCEUltraGX-Wii/apps/fceugx/boot.dol
 
     - name: Upload Wii artifacts
       uses: actions/upload-artifact@v4
       if: ${{ matrix.image == 'Wii' }}
       with:
-        name: FCEUltraGX
+        name: FCEUltraGX-Wii
         path: |
-          dist/FCEUltraGX/
+          dist/FCEUltraGX-Wii/
 
     - name: Build GameCube
       if: ${{ matrix.image == 'GameCube' }}
@@ -124,11 +124,11 @@ jobs:
 
     - name: Re-zip artifacts
       run: |
-        cd dist/FCEUltraGX
+        cd dist/FCEUltraGX-Wii
         rm -r fceugx/cheats/*
         rm -r fceugx/roms/*
         rm -r fceugx/saves/*
-        zip -r ../FCEUltraGX.zip *
+        zip -r ../FCEUltraGX-Wii.zip *
         cd ../FCEUltraGX-GameCube
         zip -r ../FCEUltraGX-GameCube.zip *
 
