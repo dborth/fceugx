@@ -91,6 +91,20 @@ jobs:
       run: |
         make -f Makefile.wiiu -j3
 
+    - name: Copy Wii U artifact
+      if: ${{ matrix.image == 'WiiU' }}
+      run: |
+        mkdir -p dist/FCEUltraGX-WiiU
+        cp executables/fceugx-wiiu.wuhb dist/FCEUltraGX-WiiU/
+
+    - name: Upload Wii U artifact
+      uses: actions/upload-artifact@v4
+      if: ${{ matrix.image == 'WiiU' }}
+      with:
+        name: FCEUltraGX-WiiU
+        path: |
+          dist/FCEUltraGX-WiiU/
+
   release:
     name: Release
     runs-on: ubuntu-latest
