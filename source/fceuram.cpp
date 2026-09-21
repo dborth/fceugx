@@ -13,6 +13,7 @@
  * savebuffer below
  ****************************************************************************/
 
+#include <stdlib.h>
 #include <string.h>
 #include <malloc.h>
 #include <string.h>
@@ -22,9 +23,12 @@
 #include "menu.h"
 #include "filebrowser.h"
 #include "fileop.h"
+#include "fceuram.h"
 #include "pocketnes/goombasav.h"
 
-static u32 WiiFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
+// Copies the cart's battery-backed RAM to (operation 0) or from (operation 1) buffer.
+// With operation 0 and a null buffer nothing is copied - it just returns the size.
+static u32 WiiFCEU_GameSave(CartInfo *LocalHWInfo, int operation, unsigned char * buffer)
 {
 	u32 offset = 0;
 
@@ -35,9 +39,12 @@ static u32 WiiFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 			if(LocalHWInfo->SaveGame[x].bufptr)
 			{
 				if(operation == 0) // save to file
-					memcpy(savebuffer+offset, LocalHWInfo->SaveGame[x].bufptr, LocalHWInfo->SaveGame[x].buflen);
+				{
+					if(buffer)
+						memcpy(buffer+offset, LocalHWInfo->SaveGame[x].bufptr, LocalHWInfo->SaveGame[x].buflen);
+				}
 				else // load from file
-					memcpy(LocalHWInfo->SaveGame[x].bufptr, savebuffer+offset, LocalHWInfo->SaveGame[x].buflen);
+					memcpy(LocalHWInfo->SaveGame[x].bufptr, buffer+offset, LocalHWInfo->SaveGame[x].buflen);
 				offset += LocalHWInfo->SaveGame[x].buflen;
 			}
 		}
@@ -45,30 +52,24 @@ static u32 WiiFCEU_GameSave(CartInfo *LocalHWInfo, int operation)
 	return offset;
 }
 
-bool SaveRAM (char * filepath, bool silent)
+// Copies the current game's battery-backed RAM into buffer (null: just measure it)
+// \return size in bytes
+static int GetGameRAM(unsigned char * buffer)
+{
+	if(GameInfo->type == GIT_CART)
+		return WiiFCEU_GameSave(&iNESCart, 0, buffer);
+	else if(GameInfo->type == GIT_VSUNI)
+		return WiiFCEU_GameSave(&UNIFCart, 0, buffer);
+	return 0;
+}
+
+// Writes the RAM that is sitting in the savebuffer (datasize bytes) to filepath,
+// merging it into the existing file if that is a PocketNES save.
+// The caller holds the savebuffer (AllocSaveBuffer).
+static bool WriteRAMFromSaveBuffer (char * filepath, int datasize, bool silent)
 {
 	bool retval = false;
-	int datasize = 0;
 	int offset = 0;
-	int device;
-			
-	if(!FindDevice(filepath, &device))
-		return 0;
-
-	if(GameInfo->type == GIT_FDS)
-	{
-		if(!silent)
-			InfoPrompt("RAM saving is not available for FDS games!");
-		return false;
-	}
-
-	AllocSaveBuffer ();
-
-	// save game save to savebuffer
-	if(GameInfo->type == GIT_CART)
-		datasize = WiiFCEU_GameSave(&iNESCart, 0);
-	else if(GameInfo->type == GIT_VSUNI)
-		datasize = WiiFCEU_GameSave(&UNIFCart, 0);
 
 	if (datasize)
 	{
@@ -155,8 +156,100 @@ bool SaveRAM (char * filepath, bool silent)
 		if (!silent)
 			InfoPrompt("No data to save!");
 	}
+	return retval;
+}
+
+bool SaveRAM (char * filepath, bool silent)
+{
+	bool retval = false;
+	int datasize = 0;
+	int device;
+			
+	if(!FindDevice(filepath, &device))
+		return 0;
+
+	if(GameInfo->type == GIT_FDS)
+	{
+		if(!silent)
+			InfoPrompt("RAM saving is not available for FDS games!");
+		return false;
+	}
+
+	AllocSaveBuffer ();
+
+	// save game save to savebuffer
+	datasize = GetGameRAM(savebuffer);
+
+	retval = WriteRAMFromSaveBuffer(filepath, datasize, silent);
+
 	FreeSaveBuffer ();
 	return retval;
+}
+
+/****************************************************************************
+ * Deferred auto-save
+ *
+ * SnapshotRAMAuto() copies everything that is needed (the RAM and where it
+ * goes) so it can be called from the main thread at the moment the game is
+ * left. WriteRAMSnapshot() then does the slow part - the device I/O - and
+ * can run whenever, on any thread, even after another game has been loaded.
+ ***************************************************************************/
+struct RAMSnapshot
+{
+	char path[MAXPATHLEN];
+	unsigned char * data;
+	int size;
+};
+
+RAMSnapshot * SnapshotRAMAuto ()
+{
+	if(GameInfo->type == GIT_FDS) // RAM saves don't exist for FDS games
+		return nullptr;
+
+	int size = GetGameRAM(nullptr);
+
+	if(size <= 0)
+		return nullptr;
+
+	RAMSnapshot * snapshot = (RAMSnapshot *)calloc(1, sizeof(RAMSnapshot));
+
+	if(!snapshot)
+		return nullptr;
+
+	snapshot->data = (unsigned char *)malloc(size);
+
+	if(!snapshot->data || !MakeFilePath(snapshot->path, FILE_RAM, romFilename, 0))
+	{
+		FreeRAMSnapshot(snapshot);
+		return nullptr;
+	}
+
+	GetGameRAM(snapshot->data);
+	snapshot->size = size;
+	return snapshot;
+}
+
+bool WriteRAMSnapshot (RAMSnapshot * snapshot, bool silent)
+{
+	int device;
+
+	if(!snapshot || !snapshot->data || !FindDevice(snapshot->path, &device))
+		return false;
+
+	AllocSaveBuffer ();
+	memcpy(savebuffer, snapshot->data, snapshot->size);
+	bool retval = WriteRAMFromSaveBuffer(snapshot->path, snapshot->size, silent);
+	FreeSaveBuffer ();
+	return retval;
+}
+
+void FreeRAMSnapshot (RAMSnapshot * snapshot)
+{
+	if(!snapshot)
+		return;
+
+	free(snapshot->data);
+	free(snapshot);
 }
 
 bool
@@ -242,9 +335,9 @@ bool LoadRAM (char * filepath, bool silent)
 	if (offset > 0)
 	{
 		if(GameInfo->type == GIT_CART)
-			WiiFCEU_GameSave(&iNESCart, 1);
+			WiiFCEU_GameSave(&iNESCart, 1, savebuffer);
 		else if(GameInfo->type == GIT_VSUNI)
-			WiiFCEU_GameSave(&UNIFCart, 1);
+			WiiFCEU_GameSave(&UNIFCart, 1, savebuffer);
 
 		ResetNES();
 		retval = true;

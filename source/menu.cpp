@@ -12,6 +12,7 @@
 #include <sys/stat.h>
 #include <algorithm>
 #include <memory>
+#include <new>
 
 #ifdef HW_RVL
 #include <ogc/ios.h>
@@ -1059,61 +1060,105 @@ static bool RunWithGuiUpdates(BgTaskFn task, int * result = nullptr, void * arg 
 }
 
 /****************************************************************************
+ * WaitForQueuedTasks
+ * Lets queued background work (eg. the auto-save of the game that was just
+ * left) finish before something that reads the files it writes. The GUI keeps
+ * drawing meanwhile, and it returns straight away when nothing is queued.
+ * \return false if the app was asked to quit while waiting.
+ ***************************************************************************/
+static bool WaitForQueuedTasks()
+{
+	while(!FlushBackgroundTasks(0))
+	{
+		if(!UpdateGui()) return false;
+	}
+	return true;
+}
+
+/****************************************************************************
  * AutoSave
  *
  * Automatically saves RAM/state when returning from in-game to the menu.
- * Any prompt is shown from the main thread; the actual writing to the
- * storage device is done on the worker thread.
+ *
+ * Everything that has to happen while the game is still loaded - asking the
+ * user (when set to prompt) and capturing the RAM/state - is done right here
+ * on the main thread. Writing it to the storage device is then queued as a
+ * silent background task, so the menu never waits on the device and nothing
+ * on screen is disabled or covered while it happens.
  * \return false if the app was asked to quit
  ***************************************************************************/
-struct AutoSaveArgs
+struct AutoSaveJob
 {
-	bool ram;
-	bool state;
-	bool silent;
+	RAMSnapshot * ram;
+	StateSnapshot * state;
 };
-static AutoSaveArgs autoSaveArgs; // static: the worker may still be running if the app exits mid-save
 
+// Runs on the worker thread, and owns the job
 static int AutoSaveTask(void * arg)
 {
-	AutoSaveArgs * a = (AutoSaveArgs *)arg;
+	AutoSaveJob * job = (AutoSaveJob *)arg;
 
-	if(a->ram)
-		SaveRAMAuto(a->silent);
-	if(a->state)
-		SaveStateAuto(a->silent);
+	if(job->ram)
+		WriteRAMSnapshot(job->ram, SILENT);
+	if(job->state)
+		WriteStateSnapshot(job->state, SILENT);
 
+	FreeRAMSnapshot(job->ram);
+	FreeStateSnapshot(job->state);
+	delete job;
 	return 0;
 }
 
 static bool AutoSave()
 {
-	autoSaveArgs.ram = false;
-	autoSaveArgs.state = false;
-	autoSaveArgs.silent = NOTSILENT;
+	bool saveRam = false;
+	bool saveState = false;
 
 	if (EmuSettings.autoSave == AUTOSAVE_RAM)
 	{
-		autoSaveArgs.ram = true;
-		autoSaveArgs.silent = SILENT;
+		saveRam = true;
 	}
 	else if (EmuSettings.autoSave == AUTOSAVE_STATE)
 	{
-		autoSaveArgs.state = WindowPrompt("Save", "Save State?", "Save", "Don't Save");
+		saveState = WindowPrompt("Save", "Save State?", "Save", "Don't Save");
 	}
 	else if (EmuSettings.autoSave == AUTOSAVE_BOTH)
 	{
 		if (WindowPrompt("Save", "Save RAM and State?", "Save", "Don't Save") )
 		{
-			autoSaveArgs.ram = true;
-			autoSaveArgs.state = true;
+			saveRam = true;
+			saveState = true;
 		}
 	}
 
-	if(!autoSaveArgs.ram && !autoSaveArgs.state)
+	if(guiExiting) // asked to quit while the prompt was up
+		return false;
+
+	if(!saveRam && !saveState)
 		return true; // nothing to save
 
-	return RunWithGuiUpdates(AutoSaveTask, nullptr, &autoSaveArgs);
+	// Capture everything now - the worker may not get to it until the user has
+	// already loaded another game
+	AutoSaveJob * job = new (std::nothrow) AutoSaveJob();
+
+	if(!job)
+		return true;
+
+	job->ram = saveRam ? SnapshotRAMAuto() : nullptr;
+	job->state = saveState ? SnapshotStateAuto() : nullptr;
+
+	if(!job->ram && !job->state)
+	{
+		delete job;
+		return true;
+	}
+
+	if(QueueBackgroundTask(AutoSaveTask, job))
+		return true;
+
+	// Worker unavailable or its queue is full (unlikely) - don't lose the save,
+	// wait for it instead
+	return RunWithGuiUpdates(AutoSaveTask, nullptr, job);
 }
 
 static int MenuGameSelection()
@@ -1308,6 +1353,8 @@ static int MenuGameSelection()
 				else
 				{
 					menu->mainWindow.setState(STATE::DISABLED);
+
+					if(!WaitForQueuedTasks()) return MENU_EXIT; // eg. auto-save of the last game
 
 					if(RunOnWorkerThread(BrowserLoadFileTask))
 					{
@@ -1530,6 +1577,21 @@ static int MenuGame()
 {
 	int selection = MENU_NONE;
 
+	if(lastMenu == MENU_NONE) // coming from the game
+	{
+		// Auto-save first, before the (slow) building of this screen below, so
+		// that a prompt appears right away. The menu frame slides in behind it.
+		enterSound->play();
+		menu->btnLogo.setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
+		menu->btnLogo.setPosition(-50, -40);
+		menu->bgTopImg.setEffect(EFFECT::SLIDE_TOP | EFFECT::SLIDE_IN, 35);
+		menu->bgBottomImg.setEffect(EFFECT::SLIDE_BOTTOM | EFFECT::SLIDE_IN, 35);
+		menu->btnLogo.setEffect(EFFECT::SLIDE_BOTTOM | EFFECT::SLIDE_IN, 35);
+
+		if(!AutoSave())
+			return MENU_EXIT;
+	}
+
 	GuiText titleTxt((char *)romFilename, 22, (PixelColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,40);
@@ -1739,13 +1801,9 @@ static int MenuGame()
 
 	if(lastMenu == MENU_NONE)
 	{
-		enterSound->play();
-		menu->bgTopImg.setEffect(EFFECT::SLIDE_TOP | EFFECT::SLIDE_IN, 35);
 		closeBtn.setEffect(EFFECT::SLIDE_TOP | EFFECT::SLIDE_IN, 35);
 		titleTxt.setEffect(EFFECT::SLIDE_TOP | EFFECT::SLIDE_IN, 35);
 		mainmenuBtn.setEffect(EFFECT::SLIDE_BOTTOM | EFFECT::SLIDE_IN, 35);
-		menu->bgBottomImg.setEffect(EFFECT::SLIDE_BOTTOM | EFFECT::SLIDE_IN, 35);
-		menu->btnLogo.setEffect(EFFECT::SLIDE_BOTTOM | EFFECT::SLIDE_IN, 35);
 		#ifndef HW_DOL
 		batteryBtn[0]->setEffect(EFFECT::SLIDE_BOTTOM | EFFECT::SLIDE_IN, 35);
 		batteryBtn[1]->setEffect(EFFECT::SLIDE_BOTTOM | EFFECT::SLIDE_IN, 35);
@@ -1755,10 +1813,6 @@ static int MenuGame()
 
 		w.setEffect(EFFECT::FADE, 15);
 	}
-
-	
-	if(lastMenu == MENU_NONE && !AutoSave())
-		return MENU_EXIT;
 
 	while(selection == MENU_NONE)
 	{
@@ -2095,6 +2149,12 @@ static int SaveOpTask(void * arg)
 // \return false if the app was asked to quit
 static bool RunSaveOp(int op, int type, const char * filepath, int * result)
 {
+	if(op == SAVEOP_LOAD) // eg. auto-save of the last game
+	{
+		menu->mainWindow.setState(STATE::DISABLED);
+		if(!WaitForQueuedTasks()) return false;
+	}
+
 	saveOpArgs.op = op;
 	saveOpArgs.type = type;
 	snprintf(saveOpArgs.filepath, sizeof(saveOpArgs.filepath), "%s", filepath);
