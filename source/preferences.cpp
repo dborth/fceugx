@@ -17,6 +17,9 @@
 #include <ogc/conf.h>
 #include <ogc/system.h>
 #endif
+#ifdef __WIIU__
+#include <gx2/display.h>
+#endif
 
 #include "fceugx.h"
 #include "filelist.h"
