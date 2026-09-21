@@ -3797,8 +3797,8 @@ static int MenuSettingsVideo()
 #if defined(HW_RVL) || defined(HW_DOL)
 			case 6:
 				EmuSettings.videoUpscalingFilter++;
-				if (EmuSettings.videoUpscalingFilter >= NUM_FILTERS)
-					EmuSettings.videoUpscalingFilter = FILTER_NONE;
+				if (EmuSettings.videoUpscalingFilter >= NUM_UPSCALE_FILTERS)
+					EmuSettings.videoUpscalingFilter = UPSCALE_NONE;
 				break;
 #endif
 
@@ -3868,7 +3868,7 @@ static int MenuSettingsVideo()
 			}
 
 #if defined(HW_RVL) || defined(HW_DOL)
-			sprintf (options.value[6], "%s", GetFilterName(EmuSettings.videoUpscalingFilter));
+			sprintf (options.value[6], "%s", GetUpscaleFilterName(EmuSettings.videoUpscalingFilter));
 #endif
 			sprintf (options.value[7], "%s", EmuSettings.videoScanlines ? "On" : "Off");
 			sprintf (options.value[8], "%.2f%%, %.2f%%", EmuSettings.videoZoomHor*100, EmuSettings.videoZoomVert*100);

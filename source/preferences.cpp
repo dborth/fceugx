@@ -17,6 +17,9 @@
 #include <ogc/conf.h>
 #include <ogc/system.h>
 #endif
+#ifdef __WIIU__
+#include <gx2/display.h>
+#endif
 
 #include "fceugx.h"
 #include "filelist.h"
@@ -432,8 +435,8 @@ void FixInvalidSettings()
 	if(!(EmuSettings.videoMode >= VIDEOMODE_AUTO && EmuSettings.videoMode < VIDEOMODE_LENGTH))
 		EmuSettings.videoMode = VIDEOMODE_AUTO;
 #if defined(HW_RVL) || defined(HW_DOL)
-	if(!(EmuSettings.videoUpscalingFilter >= FILTER_NONE && EmuSettings.videoUpscalingFilter <= NUM_FILTERS))
-		EmuSettings.videoUpscalingFilter = FILTER_NONE;
+	if(!(EmuSettings.videoUpscalingFilter >= UPSCALE_NONE && EmuSettings.videoUpscalingFilter <= NUM_UPSCALE_FILTERS))
+		EmuSettings.videoUpscalingFilter = UPSCALE_NONE;
 #endif
 	if(EmuSettings.timing < TIMING_NTSC || EmuSettings.timing >= TIMING_LENGTH)
 		EmuSettings.timing = TIMING_AUTOMATIC;
@@ -460,7 +463,7 @@ void DefaultSettings()
 	EmuSettings.videoHardwareSoften = VIDEO_HW_SOFTEN_SHARP;
 	EmuSettings.videoScanlines = false;
 #if defined(HW_RVL) || defined(HW_DOL)
-	EmuSettings.videoUpscalingFilter = FILTER_NONE;
+	EmuSettings.videoUpscalingFilter = UPSCALE_NONE;
 #else
 	EmuSettings.videoUpscalingFilter = 0;
 #endif

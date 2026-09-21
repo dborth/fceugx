@@ -158,7 +158,7 @@ static GXRModeObj *tvmodes[2] = {
 static int fscale;
 
 void OgcEmulatorVideo::updateFilterScale() {
-	if (EmuSettings.videoUpscalingFilter != FILTER_NONE && !shutter_3d_mode && !anaglyph_3d_mode)
+	if (EmuSettings.videoUpscalingFilter != UPSCALE_NONE && !shutter_3d_mode && !anaglyph_3d_mode)
 	{
 		fscale = GetFilterScale();
 	}
