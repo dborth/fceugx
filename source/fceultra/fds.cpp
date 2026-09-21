@@ -228,14 +228,23 @@ void FCEU_FDSSelect(void)
 	FCEU_DispMessage("", 0); //FCEU_DispMessage("Disk %d Side %c Selected", 0, SelectDisk >> 1, (SelectDisk & 1) ? 'B' : 'A');
 }
 
-#define IRQ_Repeat  (IRQa & 0x01)
-#define IRQ_Enabled (IRQa & 0x02)
+#define IRQ_Repeat  0x01
+#define IRQ_Enabled 0x02
 
 static void FDSFix(int a) {
-	if ((IRQa & IRQ_Enabled) && IRQCount) {
+	if (IRQa & IRQ_Enabled) {
 		IRQCount -= a;
 		if (IRQCount <= 0) {
 			IRQCount = IRQLatch;
+			/* Puff Puff Golf notes:
+			Game freezes while music playing ingame after inserting Disk Side B.
+			IRQ is usually fired at scanline 169 and 183 for music to work.
+
+			At some point after inserting disk B, an IRQ is fired at scanline 174 which
+			will just freeze game while music plays.
+
+			If you ignore triggering IRQ altogether, game plays but no music
+			*/
 			X6502_IRQBegin(FCEU_IQEXT);
 			if (!(IRQa & IRQ_Repeat)) {
 				IRQa &= ~IRQ_Enabled;
@@ -867,6 +876,7 @@ int FDSLoad(const char *name, FCEUFILE *fp) {
 	fseek(zp, 0L, SEEK_END);
 	if (ftell(zp) != 8192) {
 		fclose(zp);
+		FreeFDSMemory();
 		FCEU_PrintError("FDS BIOS ROM image incompatible: %s", FCEU_MakeFName(FCEUMKF_FDSROM, 0, 0).c_str());
 		return LOADER_HANDLED_ERROR;
 	}
