@@ -163,17 +163,6 @@ void FreeStateSnapshot (StateSnapshot * snapshot)
 	free(snapshot);
 }
 
-bool
-SaveStateAuto (bool silent)
-{
-	char filepath[1024];
-
-	if(!MakeFilePath(filepath, FILE_STATE, romFilename, 0))
-		return false;
-
-	return SaveState(filepath, silent);
-}
-
 bool LoadState (char * filepath, bool silent)
 {
 	int offset = 0;

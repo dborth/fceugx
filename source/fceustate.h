@@ -9,7 +9,6 @@
  ****************************************************************************/
 
 bool SaveState (char * filepath, bool silent);
-bool SaveStateAuto (bool silent);
 bool LoadState (char * filepath, bool silent);
 bool LoadStateAuto (bool silent);
 bool SavePreviewImg (char * filepath, bool silent);
