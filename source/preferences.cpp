@@ -19,6 +19,7 @@
 #endif
 #ifdef __WIIU__
 #include <gx2/display.h>
+#include "drivers/wut/WutUpscaleFilters.h"
 #endif
 
 #include "fceugx.h"
@@ -435,7 +436,7 @@ void FixInvalidSettings()
 	if(!(EmuSettings.videoMode >= VIDEOMODE_AUTO && EmuSettings.videoMode < VIDEOMODE_LENGTH))
 		EmuSettings.videoMode = VIDEOMODE_AUTO;
 #if defined(HW_RVL) || defined(HW_DOL)
-	if(!(EmuSettings.videoUpscalingFilter >= UPSCALE_NONE && EmuSettings.videoUpscalingFilter <= NUM_UPSCALE_FILTERS))
+	if(!(EmuSettings.videoUpscalingFilter >= UPSCALE_NONE && EmuSettings.videoUpscalingFilter < NUM_UPSCALE_FILTERS))
 		EmuSettings.videoUpscalingFilter = UPSCALE_NONE;
 #endif
 	if(EmuSettings.timing < TIMING_NTSC || EmuSettings.timing >= TIMING_LENGTH)
