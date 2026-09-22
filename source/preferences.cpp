@@ -181,7 +181,7 @@ preparePrefsData ()
 
 	createXMLSection("Menu", "Menu Settings");
 
-#ifdef HW_RVL
+#if defined(HW_RVL) || defined(__WIIU__)
 	createXMLSetting("wiimoteOrientation", "Wiimote Orientation", toStr(EmuSettings.wiimoteOrientation));
 #endif
 	createXMLSetting("exitAction", "Exit Action", toStr(EmuSettings.exitAction));
@@ -435,7 +435,7 @@ void FixInvalidSettings()
 		EmuSettings.videoAspectRatioCorrection = VIDEO_ASPECT_RATIO_CORRECTION_NONE;
 	if(!(EmuSettings.videoMode >= VIDEOMODE_AUTO && EmuSettings.videoMode < VIDEOMODE_LENGTH))
 		EmuSettings.videoMode = VIDEOMODE_AUTO;
-#if defined(HW_RVL) || defined(HW_DOL)
+#if defined(HW_RVL) || defined(HW_DOL) || defined(__WIIU__)
 	if(!(EmuSettings.videoUpscalingFilter >= UPSCALE_NONE && EmuSettings.videoUpscalingFilter < NUM_UPSCALE_FILTERS))
 		EmuSettings.videoUpscalingFilter = UPSCALE_NONE;
 #endif
@@ -465,6 +465,8 @@ void DefaultSettings()
 	EmuSettings.videoScanlines = false;
 #if defined(HW_RVL) || defined(HW_DOL)
 	EmuSettings.videoUpscalingFilter = UPSCALE_NONE;
+#elif defined(__WIIU__)
+	EmuSettings.videoUpscalingFilter = UPSCALE_SHARP_BILINEAR;
 #else
 	EmuSettings.videoUpscalingFilter = 0;
 #endif

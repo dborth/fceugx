@@ -283,7 +283,8 @@ static unsigned char DecodeJoy(unsigned short chan)
 				zapper_triggered = true;
 			}
 			if (hw_held & btnmap[CTRL_ZAPPER][hw][1]) {
-				FCEUI_VSUniCoin(); // Coin
+				if (GameInfo->type == GIT_VSUNI)
+					FCEUI_VSUniCoin(); // Coin
 				zapper_triggered = true;
 			}
 		}
