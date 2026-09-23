@@ -1439,7 +1439,7 @@ static void ControllerWindow()
 	trigLeft.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_LEFT);
 
 	GuiTrigger trigRight;
-	trigLeft.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
+	trigRight.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
 
 	GuiImageData arrowLeft(button_arrow_left_png);
 	GuiImage arrowLeftImg(&arrowLeft);
@@ -1519,7 +1519,7 @@ static void PlayerMappingWindow(int chan)
 	trigLeft.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_LEFT);
 
 	GuiTrigger trigRight;
-	trigLeft.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
+	trigRight.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
 
 	GuiImageData arrowLeft(button_arrow_left_png);
 	GuiImage arrowLeftImg(&arrowLeft);
@@ -3362,7 +3362,7 @@ static void ScreenZoomWindow()
 	trigLeft.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_LEFT);
 
 	GuiTrigger trigRight;
-	trigLeft.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
+	trigRight.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
 
 	GuiTrigger trigUp;
 	trigUp.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_UP);
@@ -3499,7 +3499,7 @@ static void ScreenPositionWindow()
 	trigLeft.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_LEFT);
 
 	GuiTrigger trigRight;
-	trigLeft.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
+	trigRight.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
 
 	GuiTrigger trigUp;
 	trigUp.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_UP);
