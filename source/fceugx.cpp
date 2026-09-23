@@ -157,7 +157,9 @@ int main(int argc, char *argv[])
 		if(platform->shouldExit()) {
 			break;
 		}
-		
+
+		FlushBackgroundTasks(15000); 
+
 		// stop checking if devices were removed/inserted
 		// since we're starting emulation again
 		HaltDeviceCheckingThread();
