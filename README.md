@@ -1,765 +1,410 @@
 # FCE Ultra GX
-https://github.com/dborth/fceugx (Under GPL License)
 
-FCE Ultra GX is a modified port of the FCE Ultra Nintendo Entertainment
-system for x86 (Windows/Linux) PCs. With it you can play NES games on your
-Wii/GameCube.
+[github.com/dborth/fceugx](https://github.com/dborth/fceugx) — GPL licensed
 
+FCE Ultra GX is a Nintendo Entertainment System / Famicom emulator for the **Nintendo GameCube**, **Wii**, and **Wii U**, built on [FCEUX](https://fceux.com) and the shared [`libgui`](https://github.com/dborth/libgui) UI/driver framework.
 
-## TABLE OF CONTENTS
- - [Nightly Builds](#nightly-builds)
- - [Features](#features)
- - [Update History](#update-history)
- - [Setup & Installation](#setup--installation)
- - [Credits](#credits)
- - [Links](#links)
+FCE Ultra GX is homebrew — it isn't signed by Nintendo, so your console needs to be set up to run unsigned code first. If you haven't done that yet, jump to **[Installation](#installation)** below; it links to a step-by-step guide for whichever console you have.
 
-## NIGHTLY BUILDS
+## Table of Contents
 
-### Download the latest builds from continuous integration:
+- [Nightly Builds](#nightly-builds)
+- [Features](#features)
+- [Installation](#installation)
+  - [All Platforms: SD Card & Folder Layout](#all-platforms-sd-card--folder-layout)
+  - [Wii](#wii)
+  - [GameCube](#gamecube)
+  - [Wii U](#wii-u)
+- [Initial Setup](#initial-setup)
+- [Configuration](#configuration)
+  - [Button Mappings](#button-mappings)
+  - [Video](#video)
+  - [Emulation](#emulation)
+  - [Saving & Loading](#saving--loading)
+  - [Menu](#menu)
+  - [Language & Custom Fonts](#language--custom-fonts)
+  - [Artwork](#artwork)
+  - [Network Shares (SMB)](#network-shares-smb)
+- [File Browser](#file-browser)
+- [Gameplay](#gameplay)
+- [Cheats & Game Genie](#cheats--game-genie)
+- [Turbo Mode & Rapid Fire](#turbo-mode--rapid-fire)
+- [Famicom Disk System (FDS)](#famicom-disk-system-fds)
+- [VS System](#vs-system)
+- [Famicom 3D System & Anaglyph Games](#famicom-3d-system--anaglyph-games)
+- [Importing and Exporting RAM Saves](#importing-and-exporting-ram-saves)
+- [Credits](#credits)
+- [Links](#links)
 
-| Name                    | Status                            | File                                     |
-|-------------------------|-----------------------------------|------------------------------------------|
-| FCE Ultra GX Wii/Wii U  | [![Build Status][Build]][Actions] | [![Emulator][Download]][fceugx-wii]      |
-| FCE Ultra GX GameCube   | [![Build Status][Build]][Actions] | [![Emulator][Download]][fceugx-gamecube] |
+> 📜 Looking for version notes? They're in the **[CHANGELOG.md](CHANGELOG.md)**.
+
+---
+
+## Nightly Builds
+
+Every push builds automatically. Grab the latest continuous-integration build:
+
+| Platform                    | Status                             | Download                                    |
+|-----------------------------|------------------------------------|---------------------------------------------|
+| Wii / vWii                  | [![Build Status][Build]][Actions]  | [![Download][Download]][fceugx-wii]         |
+| GameCube                    | [![Build Status][Build]][Actions]  | [![Download][Download]][fceugx-gamecube]    |
+| Wii U                       | [![Build Status][Build]][Actions]  | [![Download][Download]][fceugx-wiiu]        |
 
 [Actions]: https://github.com/dborth/fceugx/actions/workflows/build.yml
 [Build]: https://github.com/dborth/fceugx/actions/workflows/build.yml/badge.svg
 [Download]: https://img.shields.io/badge/Download-blue
 [fceugx-wii]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX.zip
 [fceugx-gamecube]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX-GameCube.zip
+[fceugx-wiiu]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX-WiiU.zip
 
+> The Wii build also runs unmodified in **vWii** (the Wii U's built-in Wii-compatibility mode), including via Virtual Console-style injection. The Wii U build is a separate, **native** Wii U (Aroma) application — see [Wii U](#wii-u) below for how the three options compare.
 
-## FEATURES
-
-* Wiimote, Nunchuk, Classic, Wii U Pro, and Gamecube controller support
-* Wii U GamePad support (requires homebrew injection into Wii U VC title)
-* iNES, FDS, VS, UNIF, and NSF ROM support
-* 1-4 Player Support
-* Zapper support
-* Auto Load/Save Game States and RAM
-* Custom controller configurations
-* SD, USB, DVD, SMB, Zip, and 7z support
-* Custom controller configurations
-* 16:9 widescreen support
-* Original/filtered/unfiltered video modes
-* Video filters - hq2x, Scale2x, Scanlines, 2xBR, DDT
-* Turbo Mode - up to 2x the normal speed
-* Cheat support (.CHT files and Game Genie)
-* Artwork (artwork, cover or screenshot) support
-* Famicom 3D System support
-* IPS/UPS automatic patching support
-* NES Compatibility Based on FCEUX 2.6.6+ (git d339f1f)
-* Open Source!
-
-## UPDATE HISTORY
-
-[4.0.1 - August 11, 2026]
-
-* Switched to RGB555
-* Fixed bug during preference loading
-* Fixed crash when loading broken PNGs
-* Compiled with latest devkitPPC/libogc2
-
-[4.0.0 - July 6, 2026]
-
-* Added video filters - hq2x, Scale2x, Scanlines, 2xBR, DDT
-* Fixed audio pop when changing video modes (FCEUX bug)
-* Optimized video rendering
-* Improved audio code
-* Refactored/improved synchronization and frameskip handling
-* Replaced C texture generation with optimized PPC ASM
-* New blur effect when pausing a game
-* Reworked save/load device and preferences logic
-* Fixed crash when removing devices (eg: SD/USB)
-* Fixed flashes/artifacts/colors when switching video modes
-* Streamlined/enhanced build
-* General performance enhancements
-* Other general enhancements
-* Compiled with latest devkitPPC/libogc2
-
-[3.5.7 - April 13, 2026]
-
-* Fixed 240p video in PAL over composite
-* Updated to the latest FCEUX 2.6.6+ (git d339f1f)
-* Compiled with latest devkitPPC/libogc2
-
-[3.5.6 - July 30, 2025]
-
-* Added GC Loader support (mrysav)
-* Compiled with latest devkitPPC/libogc2
-
-[3.5.5 - May 18, 2025]
-
-* Updated to the latest FCEUX 2.6.6+ (git 2b8f6e7)
-* Compiled with latest devkitPPC/libogc2 
-* Added Digital Prime (FBX) palette
-
-[3.5.4 - March 30, 2024]
-* Compiled with latest devkitPPC/libogc
-* Added Swedish translation (IsakTheHacker)
-* Updated translations
-
-[3.5.3 - July 31, 2023]
-
-* Compiled with latest devkitPPC/libogc
-* Switch to chosen video mode on first load if not automatic
-* Added support for mapper 126 for Power Joy 84-in-1 (Tanooki16)
-* Added a toggle to hide/show the "Save RAM" button (InfiniteBlueGX)
-* Added Other Mappings submenu and move Enable Turbo Mode toggle into it (InfiniteBlueGX)
-* Added turbo mode remap option to Other Mappings (InfiniteBlueGX)
-* Added B button back trigger to submenus (InfiniteBlueGX)
-* Added the menu toggle option to Other Mappings (InfiniteBlueGX)
-* Fixed a crash upon relaunching after removing a SD/USB device (InfiniteBlueGX)
-* Added 1+2+Plus menu toggle option (InfiniteBlueGX)
-* Added B/1 cancel trigger to window prompts (InfiniteBlueGX)
-* Fixed initial game selection menu "jump" when using classic controller (InfiniteBlueGX)
-* Added B/1 button press to cancel button remapping prompt (InfiniteBlueGX)
-
-[3.5.2 - June 15, 2022]
-
-* Updated to the latest FCEUX 2.6.4 (git def5768)
-* Compiled with latest devkitPPC/libogc
-* Added "Enable Turbo Mode" toggle to the Video Settings menu (based on InfiniteBlueGX's code)
-* Updated translations
-* Improved forwarder support
-* Added ability to use "Original" render mode in 480p configurations (niuus)
-* Added more color palettes (saulfabregwiivc)
-
-[3.5.1 - March 23, 2021]
-
-* Added L+R+START for back to menu for Wii Classic Controller
-* Updated French translation (thanks Tanooki16!)
-* Fixed issue with displaying screenshots
+---
 
-[3.5.0 - February 6, 2021]
+## Features
 
-* Fixed SD2SP2 / SD gecko issues (again)
+- Based on [FCEUX](https://fceux.com) (compatible with FCEUX 2.6.6+ core behavior)
+- Wiimote, Nunchuk, Wii Classic Controller, Wii U Pro Controller, and GameCube Controller support
+- **Wii U GamePad** support — full touch + buttons on the **native Wii U build**; buttons/sticks and display (no touch) on **vWii via Virtual Console-style injection** — see [Wii U](#wii-u)
+- Native Wii U version outputs up to **1080p**, with a **GX2 shader-based ScaleFX** upscaler built specifically for the Wii U's GPU
+- **1–4 player support**, plus Zapper light gun support
+- iNES (`.nes`), Famicom Disk System (`.fds`), VS System, UNIF, and NSF (NES Sound Format) ROM support
+- **Famicom 3D System** and anaglyph-game support — see [Famicom 3D System & Anaglyph Games](#famicom-3d-system--anaglyph-games)
+- Cheat code support (`.cht` files) plus **Game Genie** code support
+- Cover art / screenshot / artwork preview support
+- Auto load/save of save states and RAM saves (in-game battery saves)
+- Fully customizable, per-controller button mappings, including independent **Rapid Fire** bindings for A/B
+- SD, USB, DVD, and SMB network share support (modern SMB2/3 via `libsmb2` — see [Network Shares (SMB)](#network-shares-smb)), plus ZIP/7z archive loading and automatic IPS/UPS ROM patching
+- Auto-detected PAL/NTSC/Dendy timing, 16:9 widescreen correction
+- Selectable video output mode including authentic 240p on Wii / GameCube
+- A dozen curated color palettes, plus the FCEUX default
+- Upscaling filters (hq2x, Scale2x, 2xBR, DDT on GameCube/Wii; ScaleFX on Wii U) plus scanlines
+- Configurable and remappable Turbo Mode (distinct from per-button Rapid Fire — see [Turbo Mode & Rapid Fire](#turbo-mode--rapid-fire))
+- Adjustable screen zoom, screen position, and overscan cropping
+- Open source
 
-[3.4.9 - January 31, 2021]
+---
 
-* Fixed SD2SP2 issues
-* Changed max game image dimensions to 640x480 to support screenshots
+## Installation
 
-[3.4.8 - January 18, 2021]
+### All Platforms: SD Card & Folder Layout
 
-* Compiled with latest devkitPPC/libogc
-* Added ability to change the player mapped to a connected controller
-* Corrected aspect ratio by changing viWidth to 644 (vaguerant)
-* Fixed PAL audio blips (thanks Tanooki16!)
-* Improved PAL game detection (thanks Tanooki16!)
-* Significant memory usage reductions (fonts and loading cover images)
-* Added Dendy support
-* Other minor fixes
+However you load FCE Ultra GX, it looks for its files in a `fceugx` folder at the root of your storage device. Format your SD card as **FAT32** — it's the most reliable, best-tested option across all three consoles, and the one this guide assumes throughout. USB drives, DVD, and SMB network shares are also supported (see [Saving & Loading](#saving--loading) and [Network](#network)), but SD is the simplest starting point and works identically on GameCube, Wii, and Wii U.
 
-[3.4.7 - June 29, 2020]
+Once you've placed the loader files for your console (below), also create these folders and drop your content in:
 
-* Compiled with latest devkitPPC/libogc
-* Translation updates
-* Added Wii U vWii Channel, widescreen patch, and now reports console/CPU speed
-* Added additional exit combo to match the other emulators (L+R+START)
-* Other minor fixes
+```text
+SD:/fceugx/
+├── roms/          ← your NES/Famicom ROMs (.nes/.fds/.unf/.nsf, or zipped/.7z)
+├── saves/         ← RAM saves and save states
+├── cheats/        ← .cht cheat files (see Cheats & Game Genie)
+├── screenshots/   ← in-game screenshots and/or screenshot preview images
+├── covers/        ← cover art preview images
+└── artwork/       ← artwork preview images
+```
 
-[3.4.6 - March 4, 2020]
+Only `roms/` needs anything in it to get started — the rest are created automatically the first time they're needed. You can point the emulator at different load/save folders later from [Saving & Loading](#saving--loading). Two optional add-on files also go directly in `fceugx/` (not in a subfolder): `disksys.rom` for Famicom Disk System games (see [Famicom Disk System (FDS)](#famicom-disk-system-fds)) and `gg.rom` for Game Genie codes (see [Cheats & Game Genie](#cheats--game-genie)).
 
-* Fixed 3rd party controllers (again)
-* Fixed GameCube version issues with SD2SP2
+### Wii
 
-[3.4.5 - February 17, 2020]
-
-* Fixed box art not working on GameCube
-* Fixed some 3rd party controllers with invalid calibration data
-* Fixed file browser issues
-* Fixed issue changing Auto Save option
+1. Follow the **[Wii Homebrew Guide](https://wii.hacks.guide/)** if you haven't already installed the Homebrew Channel. This is a one-time setup per console.
+2. Download the Wii build (`FCEUltraGX.zip` above) and extract it to the root of your SD card. This adds two things:
+   - `apps/fceugx/boot.dol` (plus its icon/meta files) — this is what the Homebrew Channel launches.
+   - `fceugx/` — your ROMs and saves folder, per [above](#all-platforms-sd-card--folder-layout).
+3. Insert the SD card, open the **Homebrew Channel**, and launch **FCE Ultra GX**.
 
-[3.4.4 - February 9, 2020]
+Your SD card should look like this:
 
-* Added back start+A+B+Z trigger to go back to emulator
-* Updated spanish translation
-* Added support for serial port 2 (SP2 / SD2SP2) on Gamecube
-* Compiled with latest libraries
+```text
+SD:/
+├── apps/
+│   └── fceugx/
+│       ├── boot.dol
+│       ├── icon.png
+│       └── meta.xml
+└── fceugx/
+    └── roms/
+        └── ...
+```
 
-[3.4.3 - April 13, 2019]
+#### About the forwarder channel
 
-* Updated spanish translation (thanks Psycho RFG)
-* Fixed preview image not displaying on GameCube
-* Fixed crash when used as wiiflow plugin
-* Fixed crash on launch when using network shares
-* Fixed issues with on-screen keyboard
-* Updated Korean translation
+A **forwarder** is a small channel installed to your Wii's actual System Menu that, when launched, simply hands off to a homebrew app on your SD card — it makes FCE Ultra GX show up as its own channel on the Wii Menu instead of something you dig for inside the Homebrew Channel every time.
 
-[3.4.2 - January 25, 2019]
+A common point of confusion: **installing the forwarder does not copy the emulator onto the channel itself.** The forwarder is just a pointer — `boot.dol` still needs to exist at `apps/fceugx/boot.dol` on your SD card every time you launch it. If you update FCE Ultra GX later, you only need to replace that `boot.dol` (and the `fceugx` folder if instructed); you do **not** need to reinstall or recreate the forwarder channel itself. The forwarder only needs to be installed once, ever, per console.
 
-* Fixed GameCube controllers not working
-* Added ability to load external fonts and activated Japanese/Korean
-  translations. Simply put the ko.ttf or jp.ttf in the app directory
-* Added ability to customize background music. Simply put a bg_music.ogg
-  in the app directory
-* Added ability to change preview image source with + button (thanks Zalo!)
+To install the forwarder, use the **[official channel installer](https://github.com/dborth/fceugx/releases)**, on the releases page, which points to `apps/fceugx/boot.dol` on your SD card.
 
-[3.4.1 - January 4, 2019]
+### GameCube
 
-* Improved WiiFlow integration
-* Fixed controllers with no analog sticks
-* Added Wii U GamePad support (thanks Fix94!)
+GameCube doesn't have anything like the Wii's Homebrew Channel sitting on the console itself — instead you boot a **loader**, a small piece of software that then launches your `.dol`. The de facto standard today is **[Swiss](https://github.com/emukidid/swiss-gc)**, a GameCube loader/multitool that can read `.dol` files straight off an SD card (via an SD Gecko or SD2SP2 adapter) and handles most other loading methods too. This README assumes Swiss.
 
-[3.4.0 - August 23, 2018]
+Exactly how you get Swiss running (modchip, boot-disc exploit, Broadband Adapter, etc.) depends on your GameCube's hardware revision and what you already own — **[gc-forever.com](https://www.gc-forever.com/)** is the best community hub for GameCube homebrew and hardware guides matched to your exact setup; start there if you're not sure what applies to you.
 
-* Updated to the latest FCEUX core
-* Updated color palettes (thanks Tanooki16!)
-* Allow loader to pass two arguments instead of three (libertyernie)
-* Added PocketNES interoperability (load ROMs and read/write SRAM)
-* Fixed audio pop when returning to a game from the menu
-* Added option to not append " Auto" on saves
-* Added soft and sharp video filtering options
-* Removed update check completely
-* Compilation fixes for DevkitPPC
+Once Swiss is running, the **recommended setup is an SD Gecko (or SD2SP2) memory-card-slot adapter**, using the same FAT32 SD card approach as Wii/Wii U — by far the most reliable and lowest-latency option.
 
-[3.3.9 - December 10, 2016]
+FCE Ultra GX also supports **GC Loader** and **DVD** (burned disc) loading, but be aware going in: both are noticeably rougher experiences than SD — GC Loader in particular has had more reported reliability issues in this port, and burned-disc loading is slow to start and inflexible to update. Use them only if SD Gecko/SD2SP2 genuinely isn't an option for your setup.
 
-* Hide saving dialog that pops up briefly when returning from a game
-* don't ignore buttons when zapper is enabled. prevented "Gotcha! The Sport!" from working (thanks liuhb86!)
+1. Set up Swiss (or another loader of your choice) for your GameCube — see [gc-forever.com](https://www.gc-forever.com/) for hardware-specific guides.
+2. Download the GameCube build (`FCEUltraGX-GameCube.zip` above) and extract it to the root of your SD card.
+3. Boot Swiss, launch `fceugx-gc.dol` from your SD Gecko/SD2SP2, and you should land in the same file browser as the other platforms.
 
-[3.3.8 - May 14, 2016]
+```text
+SD:/
+├── fceugx-gc.dol
+└── fceugx/
+    └── roms/
+        └── ...
+```
 
-* Removed some unused and redundant palettes (thanks to Burnt Lasagna), new naming convention is:
-    Accurate Colors = Unsaturated-V5 Palette By FirebrandX
-    Vivid Colors = YUV-V3 Palette By FirebrandX
-    Wii VC Colors	= Wii's Virtual Console Palette By SuperrSonic
-    3DS VC Colors	= 3DS's Virtual Console Palette By SuperrSonic
-	FCEUGX Colors	= Real Palette by AspiringSquire
-* Added a new "Delete" button in the Game Options, to erase Save States and SRAM files.
-* NES Zapper support fixed (thanks to Burnt Lasagna)
+Note that GameCube does **not** use the `apps/` folder convention that Wii/Wii U do — the `.dol` sits at the SD card root (or wherever your loader expects it), while your ROMs/saves still live in `fceugx/`, same as every other platform.
 
-[3.3.7 -  Apr 18, 2016]
+### Wii U
 
-* Added both Firebrandx NES color palettes (thanks to SuperrSonic and Asho).
-* Added Nestopia's RGB palette (thanks to SuperrSonic and ShadowOne333).
-* Added a new window when selecting a color palette (in order to avoid cycling the color palettes one by one).
-* Reverted FDS file in order to fix Disk System support (thanks to Burnt Lasagna) (Support was broken on ver 3.3.5 MOD).
-* Added option to disable / enable the Virtual Memory messages on the settings menu.
-* Removed the "Reset" and "Power On" messages when loading and reseting a game (Messages were added on ver 3.3.5 MOD).
+Wii U support comes in **three genuinely different forms** — pick the one that matches what you've set up on your console:
 
-[3.3.6 -  Apr 12, 2015]
+|                     | vWii (Homebrew Channel) | vWii (VC-style injection) | Native Wii U build |
+|---------------------|--------------------------|-----------------------------|----------------------|
+| What it is          | The regular **Wii** build, run inside vWii | The same Wii build, launched as its own injected Virtual-Console-style channel | A dedicated Wii U (Aroma) app, `.wuhb` |
+| Requires            | Homebrew Channel *inside vWii* | Homebrew Channel *inside vWii*, plus a channel built with **TeconMoon's WiiVC Injector Mod** | **Aroma** (Wii U homebrew environment) |
+| CPU                 | Standard vWii clock, 1 core | **Unlocked**, faster single-core clock | Full native Wii U, **4 cores** |
+| GamePad             | Not usable | Usable as an **extra controller** (buttons/sticks; with display but no touch) | **Full support** — touch, buttons, second screen |
+| Output              | vWii-level, up to 480p | Same as plain vWii | Native, up to **1080p** |
+| Upscaling filters   | GX-based (hq2x, Scale2x, 2xBR, DDT) | Same as plain vWii | GX2 shader-based (ScaleFX, Sharp Bilinear) |
+| GC/Wii-only settings | **Full access** — Output Mode switching (NTSC/PAL/240p/etc.), Hardware Softening, and other Wii-side [Video](#video) options | Same as plain vWii | Not available — these are Wii/GameCube-specific; the native build gets ScaleFX/1080p in their place instead |
+| Which download      | `FCEUltraGX-Wii.zip` (Wii build) | `FCEUltraGX-Wii.zip` (Wii build) | `FCEUltraGX-WiiU.zip` |
 
-* Merged Emu_kidid's 3.3.5 mod version with Zopenko's 3.3.4 mod version.
-* Added SuperrSonic's 3DS Virtual Console palette.
-* Changed the savestate cursor box color (in order to match the emu's color design).
+If you're not sure which you want: the **native build** is the strongest experience on a console with Aroma installed — full GamePad, four cores, 1080p, and GPU-based upscaling. **VC injection** is the best you'll get out of vWii itself (unlocked CPU and a usable GamePad, at Wii-level output), and plain **Homebrew Channel vWii** is the simplest but weakest of the three.
 
-[3.3.5 MOD -  Apr 22, 2015]
+#### Native Wii U (Aroma)
 
-* Merged in changes from FCEUX (up to r2951)
-* Added tueidj's TLB VM (w/ ARAM storage) for ROM and other data storage
-* Enabled menu audio
-* Less out of memory crashes
-* Free memory displayed on in game menu
+1. Follow the **[Wii U Homebrew Guide](https://wiiu.hacks.guide/)** to install **Aroma** if you haven't already. One-time setup per console.
+2. Download the Wii U build (`FCEUltraGX-WiiU.zip` above) and copy `fceugx.wuhb` to `wiiu/apps/` on your SD card, alongside your other Aroma apps. Also add the `fceugx/` folder from the same download to the SD card root.
+3. Insert the SD card and turn on your Wii U — with Aroma installed, **FCE Ultra GX shows up as its own icon directly on the Wii U Menu**, right alongside your other software. No separate app store or launcher step needed; just select it and go.
 
-[3.3.4 MOD -  Apr 12, 2015]
+```text
+SD:/
+├── wiiu/
+│   └── apps/
+│       └── fceugx.wuhb
+└── fceugx/
+    └── roms/
+        └── ...
+```
 
-* Added Cebolleto's preview image support.
-* Added FIX94's WiiUPro controller support.
-* Added SuperrSonic's Wii Virtual Console Palette.
-* Increase preview image size and reduce game list width.
-* Added a background to the preview image.
-* Added a Screenshot button (under the game settings options, the video scaling option must be set to default otherwise screenshot looks smaller and with black borders around it, also screenshot folder must already exist otherwise a folder error will popup).
-* Added a "WiiuPro" button on the button mapping menu, the options is just for completeness, since the controller mappings are shared between the wiiupro and the classic controller.
-* Fixed the inverted color button selection that was in some option Windows.
-* On the cheat menu, increased the cheat name display size and added scrolling if the name is too long to display at once.
-* Fixed cover image dimensions, now it displays screenshot and cover within the background border.
-* Fixed screenshot option, it no longer creates an additional "dummy" file.
+Note the extra `wiiu/` nesting compared to Wii: the native Wii U app folder is kept separate from vWii's own `apps/` folder so the two can coexist on the same SD card without colliding.
 
-[3.3.4 - January 12, 2013]
+> ⚠️ **Run the latest Aroma.** This port is only tested against, and only intended to work on, whatever the current Aroma release is at the time you're reading this. We can't promise it'll behave — or even boot — on an old Aroma build or an outdated Wii U system version. If something looks wrong, updating Aroma first is the right move before reporting it.
 
-* Updated core to latest FCEUX (r2818)
+**Recommended companions, installed through the same Wii U Homebrew Guide:**
 
-[3.3.3 - December 14, 2012]
+- **[Mocha](https://github.com/wiiu-env/MochaPayload)** — an Aroma component that gives Cafe OS access to USB storage (FAT32/exFAT/NTFS). Without it, USB drives simply won't show up as a load/save option on the native build; SD still works fine either way.
+- **[Bloopair](https://github.com/GaryOderNichts/Bloopair)** — lets you pair non-Nintendo Bluetooth controllers (Switch Pro Controller, Joy-Con, DualShock/DualSense, Xbox controllers, and others) to your Wii U as if they were a Wii U Pro Controller. Handy if you don't have a GamePad or Pro Controller handy. Bloopair works at the system level within the native Wii U environment and doesn't apply inside vWii.
 
-* Updated core to latest FCEUX (r2793)
+#### vWii (Wii Homebrew Channel, inside Wii U)
 
-[3.3.2 - November 9, 2012]
+1. Follow the **[Wii Homebrew Guide](https://wii.hacks.guide/)** to install the Homebrew Channel in vWii — the process runs from inside the Wii U's Wii mode and is otherwise the same as on a standalone Wii.
+2. Follow the [Wii instructions](#wii) above exactly, using the same SD card — the vWii build is the Wii build.
+3. Boot into vWii on your Wii U (from the Wii U Menu) and launch it from the Homebrew Channel, same as on Wii.
 
-* Fixed lag with GameCube controllers
+This is the simplest Wii U path, but it's also the most limited one: standard vWii clock speed, and no GamePad. For GamePad support and a CPU unlock without going all the way to the native build, see VC-style injection below.
 
-[3.3.1 - July 7, 2012]
+One thing plain (and injected) vWii keep that the native build doesn't: full access to the Wii/GameCube-side **[Video](#video)** settings — Output Mode switching (NTSC/PAL/240p/576p/etc.) and Hardware Softening — since those are tied to the GX video hardware vWii emulates. The native build trades that for GX2-based upscaling (ScaleFX) and native 1080p output instead. See the table above.
 
-* Fixed PAL support
+#### vWii via VC-style injection (GamePad + unlocked CPU)
 
-[3.3.0 - July 6, 2012]
+Rather than launching FCE Ultra GX from the Homebrew Channel every time, you can package it as its **own injected channel** using **[TeconMoon's WiiVC Injector Mod](https://github.com/timefox/TeconMoon-s-WiiVC-Injector-Mod)**. This installs FCE Ultra GX as a Virtual-Console-style title in your vWii NAND rather than something launched through the Homebrew Channel, which is what unlocks the faster single-core CPU clock and lets you use the Wii U GamePad for display (without touch) and as an extra controller.
 
-* Support for newer Wiimotes
-* Fixed screen flicker when going back to menu
-* Improved controller behavior - allow two directions to be pressed simultaneously
-* Updated core to latest FCEUX (r2522)
-* Compiled with devkitPPC r26 and libogc 1.8.11
+At a high level:
 
-[3.2.9 - January 25, 2012]
+1. Install the Homebrew Channel in vWii first (see [vWii](#vwii-wii-homebrew-channel-inside-wii-u) above) — you'll still want it for updates and other homebrew.
+2. Download and run **TeconMoon's WiiVC Injector Mod** on a PC, and choose **Wii Homebrew Injection (DOL)** as the injection type.
+3. Point it at FCE Ultra GX's `boot.dol` (from the Wii build), and pick one of the available **GamePad Emulation** modes so the injector configures GamePad input for the resulting channel.
+4. Build the injected package and install it to your Wii U's vWii NAND with the tool of your choice (the injector's own documentation covers this step, since it depends on your existing vWii setup).
+5. Keep the `fceugx/` ROMs/saves folder on your SD card exactly as described [above](#all-platforms-sd-card--folder-layout) — the injected channel reads from the SD card the same way the Homebrew Channel version does.
 
-* Fixed zapper support
+Consult the injector's own documentation/thread for anything version-specific — like forwarder tooling, this is third-party software this README doesn't track closely.
 
-[3.2.8 - January 23, 2012]
+---
 
-* Fixed bug with flipping disk sides for FDS
+## Initial Setup
 
-[3.2.7 - January 14, 2012]
+The first time you run FCE Ultra GX, it writes a new `settings.xml` next to the app (in `apps/fceugx/` on Wii/GameCube, `wiiu/apps/` on Wii U) to store your configuration. On launch it auto-detects your storage device and drops you straight into the ROM browser — highlight a game and press **A** to load it with default settings, or head into **Settings** first to configure things to your liking.
 
-* Updated core to latest FCEUX (r2383)
-* More accurate pixel scaling (thanks eke-eke!)
-* Other minor changes
+## Configuration
 
-[3.2.6 - May 15, 2011]
+Press **A** on the **Settings** box from the main menu to open the settings screen, which is split into Button Mappings, Video, Emulation, Saving & Loading, Menu, and Network. **Reset Settings** restores everything to defaults; **Go Back** returns to the ROM browser.
 
-* Fixed audio skipping (thanks thiagoalvesdealmeida!)
-* Added Turkish translation
+### Button Mappings
 
-[3.2.5 - March 23, 2011]
+Configure the **NES Controller** and **Zapper** independently, each against whichever input devices you have connected (GameCube Controller, Wiimote, Nunchuk+Wiimote, Classic Controller, Wii U Pro Controller, Wii U GamePad). Pick a device to configure, then click each button in turn — FCE Ultra GX will prompt you to press the physical button you want assigned to it. Sensible defaults are already set for every supported input device, so you generally only need this screen if you want something different.
 
-* Fixed browser regressions with stability and speed
+The NES Controller's mappable buttons include the usual **B / A / Select / Start / D-pad**, independent **B (Rapid) / A (Rapid)** bindings for per-button auto-fire (see [Turbo Mode & Rapid Fire](#turbo-mode--rapid-fire)), and a combined **Insert Coin / Switch Disk** button that does VS System coin-insert or FDS disk-switching depending on what's loaded. The Zapper's mappable inputs are **Fire** and **Insert Coin**.
 
-[3.2.4 - March 19, 2011]
+The **Other Mappings** screen (reached from Button Mappings) also lets you configure:
 
-* Updated core to latest FCEUX
-* Support for Famicom 3D System games (thanks Carl Kenner!)
-* Improved USB and controller compatibility (recompiled with latest libogc)
-* Enabled SMB on GameCube (thanks Extrems!)
-* Added Catalan translation
-* Translation updates
+| Option | What it does |
+|---|---|
+| **Turbo Mode** | On/off |
+| **Turbo Mode Button** | Which button/combo triggers Turbo Mode while held (see [Turbo Mode & Rapid Fire](#turbo-mode--rapid-fire)) |
+| **Menu Toggle** | Which button/combo brings up the in-game menu |
 
-[3.2.3 - October 7, 2010]
+### Video
 
-* Sync with upstream SVN - fixes a few specific game issues
-* Fixed "blank listing" issue for SMB
-* Improved USB compatibility and speed
-* Added Portuguese and Brazilian Portuguese translations
-* Channel updated (improved USB compatibility)
-* Other minor changes
+| Setting | Options |
+|---|---|
+| **Output Mode** *(GameCube/Wii only)* | Automatic (recommended), NTSC (480i), Progressive (480p), PAL (50Hz), PAL (60Hz), Progressive (576p), Original (240p) |
+| **Aspect Ratio Correction** | None, 16:9 |
+| **Cropping** | Off, Vertical, Horizontal, Both — hides overscan pixels the original hardware output but most TVs never showed |
+| **Palette** | Default (FCEUX built-in), plus 11 curated presets: Digital Prime, Smooth, PVM Style D93, Composite Direct, Magnum, NES Classic, PC-10, Sony CXA, Wavebeam, PAL, Restored Wii VC, and Wii Virtual Console |
+| **Bilinear Filtering** | On/Off — has no effect when Sharp Bilinear is selected as the Wii U upscaling filter, since that filter does its own filtering |
+| **Hardware Softening** *(GameCube/Wii only)* | Off, Auto, Sharp, Soft |
+| **Upscaling** | GameCube/Wii: None, hq2x, hq2x Soft, hq2x Bold, Scale2x, 2xBR, 2xBR-lv1, DDT · Wii U: None, ScaleFX, Sharp Bilinear |
+| **Scanline Overlay** | On/Off |
+| **Screen Zoom** | Adjust horizontal/vertical zoom with the left/right arrows; 100% is default |
+| **Screen Position** | Nudge the output with the on-screen arrows if it isn't centered on your display |
 
-[3.2.2 - August 14, 2010]
+### Emulation
 
-* IOS 202 support removed
-* USB 2.0 support via IOS 58 added - requires that IOS58 be pre-installed
-* DVD support via AHBPROT - requires latest HBC
+| Option | Notes |
+|---|---|
+| **Game Timing** | Automatic (recommended), NTSC, PAL, or Dendy — sets the console timing FCEUX emulates; Automatic detects it from the loaded ROM |
+| **Sprite Limit** | On by default, matching the real NES/Famicom's 8-sprite-per-scanline limit — the cause of the sprite flicker some games show on real hardware. Turning it off removes that limit, eliminating the flicker at the cost of hardware accuracy |
+| **Zapper Crosshair** | On/Off — shows an on-screen crosshair for Zapper light-gun aiming |
 
-[3.2.1 - July 22, 2010]
+### Saving & Loading
 
-* Fixed broken auto-update
+| Option | Options |
+|---|---|
+| **Load Device** | SD, USB, DVD, Network, Auto |
+| **Save Device** | SD, USB, Network, Auto |
+| **Load Folder** | Opens an on-screen keyboard to set a custom ROM folder |
+| **Save Folder** | Opens an on-screen keyboard to set a custom save folder |
+| **Cheats Folder** | Opens an on-screen keyboard to set a custom cheats folder |
+| **Screenshots Folder** | Opens an on-screen keyboard to set a custom screenshots folder |
+| **Covers Folder** | Opens an on-screen keyboard to set a custom covers folder |
+| **Artwork Folder** | Opens an on-screen keyboard to set a custom artwork folder |
+| **Auto Load** | Off, RAM, State |
+| **Auto Save** | Off, RAM, State, Both |
+| **Append Auto to .SAV Files** | On/Off — when on, auto-created RAM saves get an " Auto" suffix so they don't overwrite a save you made manually |
 
-[3.2.0 - July 20, 2010]
+FCE Ultra GX has two kinds of saves: **RAM** saves, the in-game battery save (only applicable to games that support it), and **save states**, real-time snapshots that capture exactly where you are and let you resume later.
 
-* Reverted USB2 changes
+### Menu
 
-[3.1.9 - July 14, 2010]
+| Option | Options |
+|---|---|
+| **Exit Action** | Return to Loader, Return to Wii Menu, Power Off |
+| **Wiimote Orientation** | Vertical, Horizontal |
+| **Music Volume** / **Sound Effects Volume** | |
+| **Rumble** | Enabled/Disabled — on Wii U, the GamePad uses a shorter, reduced-amplitude pattern than the Wiimote |
+| **Language** | See [Language & Custom Fonts](#language--custom-fonts) |
+| **Preview Image** | See [Artwork](#artwork) |
+| **Hide RAM Saving** | Hides the RAM save option in the in-game save menu, for games where you only ever use save states |
 
-* Fixed 16:9 correction in Original mode
-* Fixed PAL/NTSC timing switching issue
-* Ability to use both USB ports (requires updated IOS 202 - WARNING: older
-  versions of IOS 202 are NO LONGER supported)
-* Hide non-ROM files
-* Other minor improvements
+### Language & Custom Fonts
 
-[3.1.8 - June 20, 2010]
+Set the menu language under **Settings → Menu → Language**. Supported: English, Japanese, German, French, Spanish, Italian, Dutch, Chinese (Simplified), Korean, Portuguese, Brazilian Portuguese, Catalan, Turkish, and Swedish.
 
-* USB improvements
-* GameCube improvements - audio, SD Gecko, show thumbnails for saves
-* Other minor changes
+The built-in font only covers Latin-script languages. For **Japanese, Korean, or Chinese**, you also need to supply a matching font file yourself — this repository ships them in the [`fonts/`](https://github.com/dborth/fceugx/tree/master/fonts) folder:
 
-[3.1.7 - May 19, 2010]
+| Language | Font file |
+|---|---|
+| Japanese | `jp.ttf` |
+| Korean | `ko.ttf` |
+| Chinese (Simplified) | `zh.ttf` |
 
-* DVD support fixed
-* PAL/NTSC timing corrections
-* Fixed some potential hangs when returning to menu
-* Video/audio code changes
-* Fixed scrolling text bug
-* Other minor changes
+Copy the matching `.ttf` into your app folder — `apps/fceugx/` on Wii, `wiiu/apps/` on Wii U — alongside `boot.dol` / `fceugx.wuhb`, then select that language from the menu; it switches fonts automatically once both are in place.
 
-[3.1.6 - April 9, 2010]
+> This is a **Wii and Wii U only** feature — the GameCube build can't load external fonts, so Japanese/Korean/Chinese text won't render correctly there.
 
-* Fix auto-save bug
+### Artwork
 
-[3.1.5 - April 9, 2010]
+Cover art, screenshots, or general artwork can be shown on the main menu when a game is highlighted. Pick which one to display under **Settings → Menu → Preview Image**. Each image lives in its matching folder (`fceugx/covers`, `fceugx/screenshots`, `fceugx/artwork`) and must be a PNG named exactly the same as the ROM (e.g. `Excitebike.png` for `Excitebike.nes`), no larger than 640×480. **256×240** — the NES's own native resolution — is the recommended size.
 
-* Most 3rd party controllers should work now (you're welcome!)
-* Translation updates (German and Dutch)
-* Other minor changes
+### Network Shares (SMB)
 
-[3.1.4 - March 30, 2010]
+To load or save over your LAN, enter your SMB share settings under **Settings → Network**: **IP**, **Name** (the share name), **Username**, and **Password**.
 
-* DVD / USB 2.0 support via IOS 202. DVDx support has been dropped. It is
-  highly recommended to install IOS 202 via the included installer
-* Multi-language support (only French translation is fully complete)
-* Thank you to everyone who submitted translations
-* SMB improvements/bug fixes
-* Minor video & input performance optimizations
-* Synced with official FCEUX (various game fixes)
-* ROMs larger than 3 MB now load
-* Now also searches in application path for gg.rom and disksys.rom
+> 🔑 If your SMB share doesn't have a password, **leave the Password field blank** — don't type anything into it. An empty password connects as guest.
 
-[3.1.3 - December 23, 2009]
+Network Shares (SMB) uses `libsmb2` on all three platforms, with the SMB dialect auto-negotiated (SMB2/3) rather than hardcoded — meaning it talks to modern Windows/Samba shares out of the box. One share can be connected at a time.
 
-* Fixed major file loading issue, more games load now
-* File browser now scrolls down to the last game when returning to browser
-* Auto update for those using USB now works
-* Fixed scrollbar up/down buttons
-* Fixed zapper
-* Updates from FCEUX
-* Minor optimizations
+---
 
-[3.1.2 - December 2, 2009]
+## File Browser
 
-* Fixed SMB (for real this time!)
+The File Browser loads automatically on startup and lists the contents of your `fceugx/roms` folder (or wherever you've pointed Load Folder — see [Saving & Loading](#saving--loading)). Click a game — uncompressed, or zipped in a `.zip`/`.7z` archive — to load it, or click **Up One Level** to navigate.
 
-[3.1.1 - November 30, 2009]
+## Gameplay
 
-* Mapper fixes - several more games work now (Fire Emblem, 76-in-1, etc)
-* Fixed SMB
-* Added separate horizontal/vertical zoom options
-* Improved scrolling timing - the more you scroll, the fast it goes
-* Fixed reset button on Wii console - now you can reset multiple times
-* Reduce memory fragmentation - fixes out of memory crashes
-* Other minor code optimizations
+Press **Home** while playing to open the in-game menu (Save, Load, Reset, Controller, Cheats). Select **Main Menu** to return to the File Browser, or **Close** to resume play.
 
-[3.1.0 - October 7, 2009]
+- **Save** offers options to create a new RAM save or a new save state; click either to create one, or click an existing save to overwrite it.
+- **Load** loads a saved RAM save or save state.
+- **Reset** resets the current game.
+- **Controller** toggles which controller drives the game.
+- **Cheats** toggles your loaded cheat codes (below).
 
-* New default palette - more accurate colors!
-* Revamped filebrowser and file I/O
-* New timing and frameskip code - allows PAL gamers to play NTSC games
-* Fixed FDS/Game Genie errors
-* Many, many other bug fixes
+## Cheats & Game Genie
 
-[3.0.9 - September 16, 2009]
+Cheats load from `fceugx/cheats` in the `.cht` file format, and must be named exactly the same as the ROM they apply to (e.g. `Excitebike.nes` needs `Excitebike.cht`).
 
-* Text rendering corrections
-* SMB improvements
-* Updated to latest FCEUX SVN
-* Built with latest libraries
-* Video mode switching now works properly
-* Other minor bugfixes and cleanup
+FCE Ultra GX also supports **Game Genie** codes, which need a Game Genie patch ROM to work: download a `gg.rom` file and place it directly in your `fceugx` folder (alongside `disksys.rom`, not in a subfolder). With that in place, a **Game Genie** option appears in the in-game menu where you can enter and toggle codes.
 
-[3.0.8 - July 31, 2009]
+## Turbo Mode & Rapid Fire
 
-* Fixed menu crash
-* Fixed turbo mode - reduced to frameskip of 1
-* Fixed .CHT file support
-* Added Game Genie support - required GG rom placed at /fceugx/gg.rom
-* FDS BIOS location changed to /fceugx/disksys.rom
-* DVD file limit of 2000 removed
+FCE Ultra GX has two distinct speed-up features that are easy to mix up:
 
-[3.0.7 - July 24, 2009]
+- **Turbo Mode** roughly doubles overall playback speed while active — game logic, scrolling, everything. It's remappable — set which button or combo triggers it under **Settings → Button Mappings → Other Mappings → Turbo Mode Button** — and can be disabled entirely from the same screen. Hold the assigned button to run at double speed; release it to return to normal playback.
+- **Rapid Fire** (the classic NES-style "turbo" feature) only affects a single button — **B (Rapid)** and **A (Rapid)** are separate bindings under [Button Mappings](#button-mappings) that auto-fire that specific button for as long as it's held, at normal game speed. This is the equivalent of a third-party "turbo controller," useful for shooters and other rapid-tap games, and has nothing to do with overall playback speed.
 
-* Core upgraded to FCEUX 2.1.0a - improved game compatibility
-* State issues fixed - old state files are now invalid!
-* Cheat support (.CHT files)
-* IPS/UPS/PPF automatic patching support
-* Fixed "No game saves found." message when there are actually saves.
-* Fixed shift key on keyboard
-* Text scrolling works again
-* Change default prompt window selection to "Cancel" button
+## Famicom Disk System (FDS)
 
-[3.0.6 - July 9, 2009]
+To play Famicom Disk System games (`.fds`), you need an FDS BIOS file. Download `disksys.rom` (8KB) and place it directly in your `fceugx` folder (not in `roms/`). Once it's there, `.fds` games load like any other ROM.
 
-* Faster SMB/USB browsing
-* Last browsed folder is now remembered
-* Fixed controller mapping reset button
-* Fixed no sound on GameCube version
-* Directory names are no longer altered
-* Preferences now only saved on exit
-* Fixed on-screen keyboard glitches
-* RAM auto-saved on power-off from within a game
-* Prevent 7z lockups, better 7z error messages
+Use the **Insert Coin / Switch Disk** button (configurable under [Button Mappings](#button-mappings)) to switch disk sides on multi-disk FDS games while playing.
 
-[3.0.5 - June 30, 2009]
+## VS System
 
-* Fixed auto-update
-* Increased file browser listing to 10 entries, decreased font size
-* Added text scrolling on file browser
-* Added reset button for controller mappings
-* Settings are now loaded from USB when loading the app from USB on HBC
-* Fixed original mode lockup bug
-* Fixed menu crashes caused by ogg player bugs
-* Fixed memory card saving verification bug
-* Fixed game savebrowser bugs
-* Miscellaneous code cleanup/corrections
-
-[3.0.4 - May 30, 2009]
-
-* Fixed SD/USB corruption bug
-* SMB works again
-* GUI bugs fixed, GUI behavioral improvements
-
-[3.0.3 - May 26, 2009]
-
-* Improved stability
-* Fixed broken SDHC from HBC 1.0.2 update
-* Fixed issues with returning to menu from in-game
-* Add option to disable rumble
-* Auto-determines if HBC is present - returns to Wii menu otherwise
-* Miscellaneous bugfixes
-
-[3.0.2 - April 30, 2009]
-
-* Improved scrollbar
-* Multiple state saves now working
-* Built with more stable libogc/libfat
-* Fixed rumble bug in filebrowser
-* Fixed PAL sound stuttering
-* Added confirmation prompts
-* Fixed settings saving glitches
-
-[3.0.1 - April 22, 2009]
-
-* GameCube controller home trigger fixed
-* USB support fixed
-* More stable SMB support
-* Corrections/improvements to game saving/loading
-* Video mode corrections
-* Settings are now saved when exiting game menu settings area
-* 8 sprite limit and Zapper crosshair can now be turned off from the menu
-* New video mode selection in menu (forcing a video mode is not recommended)
-
-[3.0.0 - April 13, 2009]
-
-* New GX-based menu, with a completely redesigned layout. Has Wiimote IR
-  support, sounds, graphics, animation effects, and more
-* Thanks to the3seashells for designing some top-notch artwork, to
-  Peter de Man for composing the music, and a special thanks to shagkur for
-  fixing libogc bugs that would have otherwise prevented the release
-* Onscreen keyboard for changing save/load folders and network settings
-* Menu configuration options (configurable exit button, wiimote orientation,
-  volumes)
-* Configurable button mapping for zapper
-* New save manager, allowing multiple saves and save browsing. Shows
-  screenshots for Snapshot saves, and save dates/times
-* SMB reconnection feature
-* ISI issue fixed
-
-[2.0.9 - January 27, 2009]
-
-* Fixed a major memory corruption bug in FCE Ultra 0.98.12
-* Faster SD/USB - new read-ahead cache
-* Removed trigger of back to menu for Classic Controller right joystick
-* Changed GameCube controller back to menu from A+Start to A+B+Z+Start
-* Add option for horizontal-only video cropping
-* Decreased minimum game size to 8 KB
-* Fixed a bug with reading files < 2048 bytes
-* Fixed some memory leaks, buffer overflows, etc
-* Code cleanup, other general bugfixes
-
-[2.0.8 - December 24, 2008]
-
-* Fixed unstable SD card access
-* Proper SD/USB hotswap (Wii only)
-* Auto-update feature (Wii only)
-* Rewritten SMB access - speed boost, NTLM now supported (Wii only)
-* Improved file access code
-* Resetting preferences now resets controls
-* Overscan (cropping) setting now saved in preferences
-* Rewritten RAM/state saving - old state saves are now invalid
-* Minor bug fixes
-
-[2.0.7 - November 19, 2008]
-
-* Special thanks to eke-eke & KruLLo for contributions, bugfixes, and tips
-* Video code rewritten - now has original, unfiltered, filtered modes
-* Zoom option
-* 16:9 widescreen support
-* Full widescreen support
-* SDHC support
-* SD/USB hot-swapping
-* A/B rapid-fire
-* Turbo option
-* Video cropping (overscan hiding) option (thanks yxkalle!)
-* Palette changing fixed
-* Fixed audio 'popping' issue
-* Wii - Added console/remote power button support
-* Wii - Added reset button support (resets game)
-* Wii - Settings file is now named settings.xml and is stored in the same
-  folder as the DOL (eg: apps/fceugx/settings.xml)
-* GameCube - Added DVD motor off option
-
-[2.0.6 - October 21, 2008]
-
-* Right audio channel corruption fixed (thanks cyberdog!)
-* Low pass audio filter turned off (muffles audio)
-* Changed to alternate audio filter
-* PAL Timing corrected
-* Cheesy/2X video filters fixed
-* Qoob Pro modchip support for GameCube (thanks emukidid!)
-
-[2.0.5 - October 19, 2008]
-
-* Sound bug fixed - thanks eke-eke!
-* High quality sound enabled, lowpass filter enabled
-* Video threading enabled
-* Fixed timing error (incorrect opcode)
-
-[2.0.4 - October 15, 2008]
-
-* Wii DVD fixed
-* FDS BIOS loading works now
-* FDS disk switching now consistently works with one button press
-* FDS saving implemented
-* 7z support
-* Faster SD/USB (readahead cache enabled)
-* VS coin now mapped to 1 button for VS zapper games
-* Changed GC controller mappings - Select - Z, Start - Start,
-  Home - Start+A, Special - L
-
-[2.0.3 - October 1, 2008]
-
-* Complete rewrite of loading code - FDS / UNIF / NSF support added!
-* VS games work (coin insert submitted by pakitovic)
-* Mapping of 'Special' commands - VS coin insert, FDS switch disk (default A)
-* 480p and DVD now available for GameCube
-* Improved stability - less crashes!
-
-[2.0.2 - September 19, 2008]
-
-* Fixed network freeze-up problem
-* Zapper now mapped to A and B
-* Fixed auto-save feature
-* Performance slowdowns on Gamecube should be fixed
-* Will now attempt to load old save states with CRC filename
-
-[2.0.1 - September 6, 2008]
-
-* Zapper support! Turn this on in the Controller Settings - most games
-  require you to have the Zapper on Port 2. Thanks go to aksommerville whose
-  previous work on the Zapper helped, and michniewski's cursor code
-* RAM game save support! Now you can save your games just like the NES did.
-  By default game saves are saved/loaded automatically. This can be changed
-  in the Preferences menu
-* Start/Select reversed mapping fixed for Wii controllers
-* Small bug fixes / improvements / tweaks
-
-[2.0.0 - September 1, 2008]
-
-* Complete rewrite based on code from SNES9x GX and Genesis Plus GX
-* Wiimote, Nunchuk, and Classic controller support
-* Button mapping for all controller types
-* Full support for SD, USB, DVD, GC Memory Card, and Zip files
-* Game starts immediately after loading
-* Load/save preference selector. ROMs, saves, and preferences are
-  saved/loaded according to these
-* Preliminary Windows file share loading/saving (SMB) support on Wii:
-  You can input your network settings into FCEUGX.xml, or edit
-  fceuconfig.cpp from the source code and compile.
-* 'Auto' settings for save/load - attempts to automatically determine
-  your load/save device(s) - SD, USB, Memory Card, DVD, SMB
-* Preferences are loaded and saved in XML format. You can open
-  FCEUGX.xml edit all settings, including some not available within
-  the program
-* One makefile to make all versions
-
-## SETUP & INSTALLATION
-
-Unzip the archive. You will find the following folders inside:
-
-apps			Contains Homebrew Channel ready files
-				(see Homebrew Channel instructions below)
-
-fceugx			Contains the directory structure required for storing
-				roms and saves (see below)
-
-### ARTWORK
-
-Artwork, covers or screenshots will be displayed on the main menu when
-each game is selected. Select which type to display on the menu by going
-to Settings > Menu > Preview Image. Each image resides in the respectively
-named folder (eg: sd:/fceugx/covers). They should be a PNG named exactly
-the same as as the rom and sized no more than 640px by 480px. Recommendend
-format is 160px x 224px PNG with a 32bit depth.
-
-### Loading / Running the Emulator:
-
-#### Wii - Via Homebrew Channel:
-The most popular method of running homebrew on the Wii is through the Homebrew
-Channel. If you already have the channel installed, just copy over the apps
-folder included in the archive into the root of your SD card.
-
-Remember to also create the fceugx directory structure required. See above.
-
-If you haven't installed the Homebrew Channel yet, read about how to here:
-http://hbc.hackmii.com/
-
-#### Gamecube:
-You can load FCEUGX via sdload and an SD card in slot A, or by streaming
-it to your Gamecube, or by booting a bootable DVD with FCEUGX on it.
-This document doesn't cover how to do any of that.
-
-#### ROMS, Preferences, and Saves:
-By default, roms are loaded from "fceugx/roms/" and saves / preferences are
-stored in "fceugx/saves/".
-
-#### Wii
-On the Wii, you can load roms from SD card (Front SD or SD Gecko), USB, DVD,
-or SMB share. Note that if you are using the Homebrew Channel, to load from
-USB, DVD, or SMB you will first have to load FCEUGX from SD, and then set
-your load method preference.
-
-If you are planning to use your Network (LAN) to load and/or save games from
-you will need to enter in the SMB share settings you haveve setup on your
-computer via the Settings menu. You will need to enter in the SMB Share IP,
-Share Name, Share Username and Share Password.
-
-#### Gamecube
-You can load roms from DVD or SD card. If you create a bootable
-DVD of FCEUGX you can put roms on the same DVD. You may save preferences and
-game data to SD or Memory Card.
-
-
-#### Famicom Disk System (FDS)
-
-FCE Ultra GX supports loading FDS games. The FDS BIOS is required - put it
-in your fceugx folder, and name it disksys.rom (should be 8 KB in size).
-You can switch disks using the A button (by default). The mapped button
-can be changed under Controller Configuration ('Special' button).
-Compatibility is limited, so check that the game in question works on
-FCEUX for Windows before asking for help.
-
-#### 3D Game Support
-
-Supported Famicom 3D System games:
-* Highway Star
-* Famicom Grand Prix II
-* 3D Hot Rally
-* JJ (Tobidase Daisakusen Part 2)
-* Cosmic Epsilon
-* Attack Animal Gakuen
-
-Supported anaglyph games:
-* The 3-D Battles of World Runner (Tobidase Daisakusen)
-* Rad Racer
-
-#### Emulator Options
-
-Palette - The colors used while viewing the game:
-          Default . loopy . quor . chris . matt
-          pasofami . crashman . mess . zaphod-cv
-          zaphod-smb . vs-drmar . vs-cv . vs-smb
-
-Timing - NTSC or PAL (Depends if you're running a PAL or NTSC game)
-
-
-## CREDITS
-
-			Coding & menu design			Tantric
-			Menu artwork					the3seashells
-			Menu sound						Peter de Man
-			Logo design					mvit
-			Additional updates/fixes		Zopenko, Burnt Lasagna, Askot
-			Beta testing, bug reports	Sindrik, niuus
-
-			FCE Ultra GX GameCube			SoftDev,
-											askot & dsbomb
-
-			FCE Ultra						Xodnizel
-			Original FCE					BERO
-			libogc/devkitPPC				shagkur & wintermute
-
-			And many others who have contributed over the years!
-
-
-## LINKS
-
-                               FCE Ultra GX Web Site
-                          https://github.com/dborth/fceugx
+VS System arcade games are supported directly — load them like any other ROM. The same **Insert Coin / Switch Disk** button used for FDS disk-switching also inserts a coin for VS System games that need one to continue.
 
+## Famicom 3D System & Anaglyph Games
+
+FCE Ultra GX includes special handling for games designed around the **Famicom 3D System** (a red/blue anaglyph 3D peripheral) and other anaglyph-rendered NES/Famicom games, rendering them with a red/blue 3D effect you can view with a pair of anaglyph glasses. This support is inherited from the underlying FCEUX core and applies automatically to games it recognizes — no separate toggle is needed.
+
+## Importing and Exporting RAM Saves
+
+FCE Ultra GX can load `.sav` RAM saves created by FCEUX (or compatible emulators) on other platforms (Mac/PC/Linux/etc.), and vice versa.
+
+- **To import**, make sure the `.sav` file's name matches your ROM's filename (aside from the extension).
+- **To export**, copy the save from your console's `fceugx/saves` folder over to the other platform — you may need to rename it to whatever that FCEUX build expects.
+
+---
+
+## Credits
+
+| Role | Credit |
+|---|---|
+| Coding & menu design | Tantric |
+| Menu artwork | the3seashells |
+| Menu sound | Peter de Man |
+| Logo design | mvit |
+| Additional updates/fixes | Zopenko, Burnt Lasagna, Askot, bladeoner |
+| FCE Ultra GX GameCube | SoftDev, askot & dsbomb |
+| FCE Ultra | Xodnizel |
+| Original FCE | BERO |
+| libogc / devkitPPC | shagkur & WinterMute |
+
+## Links
+
+- [FCE Ultra GX Project Page](https://github.com/dborth/fceugx)
+- [FCEUX](https://fceux.com) — the core FCE Ultra GX is built on
+- [Wii Homebrew Guide](https://wii.hacks.guide/)
+- [Wii U Homebrew Guide](https://wiiu.hacks.guide/)
+- [gc-forever.com — GameCube homebrew/hardware hub](https://www.gc-forever.com/)
+- [Swiss](https://github.com/emukidid/swiss-gc) — the recommended GameCube loader
+- [TeconMoon's WiiVC Injector Mod](https://github.com/timefox/TeconMoon-s-WiiVC-Injector-Mod)
+- [Mocha](https://github.com/wiiu-env/MochaPayload) — USB storage access for the native Wii U build
+- [Bloopair](https://github.com/GaryOderNichts/Bloopair) — Bluetooth controller pairing for the native Wii U build
+- [Change History (CHANGELOG.md)](CHANGELOG.md)

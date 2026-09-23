@@ -1,0 +1,528 @@
+# FCE Ultra GX Changelog
+
+All notable changes to FCE Ultra GX are recorded here, newest first. For the current features and setup instructions, see [README.md](README.md).
+
+## 4.0.1 — August 11, 2026
+* Switched to RGB555
+* Fixed bug during preference loading
+* Fixed crash when loading broken PNGs
+* Compiled with latest devkitPPC/libogc2
+
+## 4.0.0 — July 6, 2026
+* Added video filters - hq2x, Scale2x, Scanlines, 2xBR, DDT
+* Fixed audio pop when changing video modes (FCEUX bug)
+* Optimized video rendering
+* Improved audio code
+* Refactored/improved synchronization and frameskip handling
+* Replaced C texture generation with optimized PPC ASM
+* New blur effect when pausing a game
+* Reworked save/load device and preferences logic
+* Fixed crash when removing devices (eg: SD/USB)
+* Fixed flashes/artifacts/colors when switching video modes
+* Streamlined/enhanced build
+* General performance enhancements
+* Other general enhancements
+* Compiled with latest devkitPPC/libogc2
+
+## 3.5.7 — April 13, 2026
+* Fixed 240p video in PAL over composite
+* Updated to the latest FCEUX 2.6.6+ (git d339f1f)
+* Compiled with latest devkitPPC/libogc2
+
+## 3.5.6 — July 30, 2025
+* Added GC Loader support (mrysav)
+* Compiled with latest devkitPPC/libogc2
+
+## 3.5.5 — May 18, 2025
+* Updated to the latest FCEUX 2.6.6+ (git 2b8f6e7)
+* Compiled with latest devkitPPC/libogc2
+* Added Digital Prime (FBX) palette
+
+## 3.5.4 — March 30, 2024
+* Compiled with latest devkitPPC/libogc
+* Added Swedish translation (IsakTheHacker)
+* Updated translations
+
+## 3.5.3 — July 31, 2023
+* Compiled with latest devkitPPC/libogc
+* Switch to chosen video mode on first load if not automatic
+* Added support for mapper 126 for Power Joy 84-in-1 (Tanooki16)
+* Added a toggle to hide/show the "Save RAM" button (InfiniteBlueGX)
+* Added Other Mappings submenu and move Enable Turbo Mode toggle into it (InfiniteBlueGX)
+* Added turbo mode remap option to Other Mappings (InfiniteBlueGX)
+* Added B button back trigger to submenus (InfiniteBlueGX)
+* Added the menu toggle option to Other Mappings (InfiniteBlueGX)
+* Fixed a crash upon relaunching after removing a SD/USB device (InfiniteBlueGX)
+* Added 1+2+Plus menu toggle option (InfiniteBlueGX)
+* Added B/1 cancel trigger to window prompts (InfiniteBlueGX)
+* Fixed initial game selection menu "jump" when using classic controller (InfiniteBlueGX)
+* Added B/1 button press to cancel button remapping prompt (InfiniteBlueGX)
+
+## 3.5.2 — June 15, 2022
+* Updated to the latest FCEUX 2.6.4 (git def5768)
+* Compiled with latest devkitPPC/libogc
+* Added "Enable Turbo Mode" toggle to the Video Settings menu (based on InfiniteBlueGX's code)
+* Updated translations
+* Improved forwarder support
+* Added ability to use "Original" render mode in 480p configurations (niuus)
+* Added more color palettes (saulfabregwiivc)
+
+## 3.5.1 — March 23, 2021
+* Added L+R+START for back to menu for Wii Classic Controller
+* Updated French translation (thanks Tanooki16!)
+* Fixed issue with displaying screenshots
+
+## 3.5.0 — February 6, 2021
+* Fixed SD2SP2 / SD gecko issues (again)
+
+## 3.4.9 — January 31, 2021
+* Fixed SD2SP2 issues
+* Changed max game image dimensions to 640x480 to support screenshots
+
+## 3.4.8 — January 18, 2021
+* Compiled with latest devkitPPC/libogc
+* Added ability to change the player mapped to a connected controller
+* Corrected aspect ratio by changing viWidth to 644 (vaguerant)
+* Fixed PAL audio blips (thanks Tanooki16!)
+* Improved PAL game detection (thanks Tanooki16!)
+* Significant memory usage reductions (fonts and loading cover images)
+* Added Dendy support
+* Other minor fixes
+
+## 3.4.7 — June 29, 2020
+* Compiled with latest devkitPPC/libogc
+* Translation updates
+* Added Wii U vWii Channel, widescreen patch, and now reports console/CPU speed
+* Added additional exit combo to match the other emulators (L+R+START)
+* Other minor fixes
+
+## 3.4.6 — March 4, 2020
+* Fixed 3rd party controllers (again)
+* Fixed GameCube version issues with SD2SP2
+
+## 3.4.5 — February 17, 2020
+* Fixed box art not working on GameCube
+* Fixed some 3rd party controllers with invalid calibration data
+* Fixed file browser issues
+* Fixed issue changing Auto Save option
+
+## 3.4.4 — February 9, 2020
+* Added back start+A+B+Z trigger to go back to emulator
+* Updated spanish translation
+* Added support for serial port 2 (SP2 / SD2SP2) on Gamecube
+* Compiled with latest libraries
+
+## 3.4.3 — April 13, 2019
+* Updated spanish translation (thanks Psycho RFG)
+* Fixed preview image not displaying on GameCube
+* Fixed crash when used as wiiflow plugin
+* Fixed crash on launch when using network shares
+* Fixed issues with on-screen keyboard
+* Updated Korean translation
+
+## 3.4.2 — January 25, 2019
+* Fixed GameCube controllers not working
+* Added ability to load external fonts and activated Japanese/Korean
+  translations. Simply put the ko.ttf or jp.ttf in the app directory
+* Added ability to customize background music. Simply put a bg_music.ogg
+  in the app directory
+* Added ability to change preview image source with + button (thanks Zalo!)
+
+## 3.4.1 — January 4, 2019
+* Improved WiiFlow integration
+* Fixed controllers with no analog sticks
+* Added Wii U GamePad support (thanks Fix94!)
+
+## 3.4.0 — August 23, 2018
+* Updated to the latest FCEUX core
+* Updated color palettes (thanks Tanooki16!)
+* Allow loader to pass two arguments instead of three (libertyernie)
+* Added PocketNES interoperability (load ROMs and read/write SRAM)
+* Fixed audio pop when returning to a game from the menu
+* Added option to not append " Auto" on saves
+* Added soft and sharp video filtering options
+* Removed update check completely
+* Compilation fixes for DevkitPPC
+
+## 3.3.9 — December 10, 2016
+* Hide saving dialog that pops up briefly when returning from a game
+* don't ignore buttons when zapper is enabled. prevented "Gotcha! The Sport!" from working (thanks liuhb86!)
+
+## 3.3.8 — May 14, 2016
+* Removed some unused and redundant palettes (thanks to Burnt Lasagna), new naming convention is:
+    Accurate Colors = Unsaturated-V5 Palette By FirebrandX
+    Vivid Colors = YUV-V3 Palette By FirebrandX
+    Wii VC Colors	= Wii's Virtual Console Palette By SuperrSonic
+    3DS VC Colors	= 3DS's Virtual Console Palette By SuperrSonic
+	FCEUGX Colors	= Real Palette by AspiringSquire
+* Added a new "Delete" button in the Game Options, to erase Save States and SRAM files.
+* NES Zapper support fixed (thanks to Burnt Lasagna)
+
+## 3.3.7 — April 18, 2016
+* Added both Firebrandx NES color palettes (thanks to SuperrSonic and Asho).
+* Added Nestopia's RGB palette (thanks to SuperrSonic and ShadowOne333).
+* Added a new window when selecting a color palette (in order to avoid cycling the color palettes one by one).
+* Reverted FDS file in order to fix Disk System support (thanks to Burnt Lasagna) (Support was broken on ver 3.3.5 MOD).
+* Added option to disable / enable the Virtual Memory messages on the settings menu.
+* Removed the "Reset" and "Power On" messages when loading and reseting a game (Messages were added on ver 3.3.5 MOD).
+
+## 3.3.6 — April 12, 2015
+* Merged Emu_kidid's 3.3.5 mod version with Zopenko's 3.3.4 mod version.
+* Added SuperrSonic's 3DS Virtual Console palette.
+* Changed the savestate cursor box color (in order to match the emu's color design).
+
+## 3.3.5 MOD — April 22, 2015
+* Merged in changes from FCEUX (up to r2951)
+* Added tueidj's TLB VM (w/ ARAM storage) for ROM and other data storage
+* Enabled menu audio
+* Less out of memory crashes
+* Free memory displayed on in game menu
+
+## 3.3.4 MOD — April 12, 2015
+* Added Cebolleto's preview image support.
+* Added FIX94's WiiUPro controller support.
+* Added SuperrSonic's Wii Virtual Console Palette.
+* Increase preview image size and reduce game list width.
+* Added a background to the preview image.
+* Added a Screenshot button (under the game settings options, the video scaling option must be set to default otherwise screenshot looks smaller and with black borders around it, also screenshot folder must already exist otherwise a folder error will popup).
+* Added a "WiiuPro" button on the button mapping menu, the options is just for completeness, since the controller mappings are shared between the wiiupro and the classic controller.
+* Fixed the inverted color button selection that was in some option Windows.
+* On the cheat menu, increased the cheat name display size and added scrolling if the name is too long to display at once.
+* Fixed cover image dimensions, now it displays screenshot and cover within the background border.
+* Fixed screenshot option, it no longer creates an additional "dummy" file.
+
+## 3.3.4 — January 12, 2013
+* Updated core to latest FCEUX (r2818)
+
+## 3.3.3 — December 14, 2012
+* Updated core to latest FCEUX (r2793)
+
+## 3.3.2 — November 9, 2012
+* Fixed lag with GameCube controllers
+
+## 3.3.1 — July 7, 2012
+* Fixed PAL support
+
+## 3.3.0 — July 6, 2012
+* Support for newer Wiimotes
+* Fixed screen flicker when going back to menu
+* Improved controller behavior - allow two directions to be pressed simultaneously
+* Updated core to latest FCEUX (r2522)
+* Compiled with devkitPPC r26 and libogc 1.8.11
+
+## 3.2.9 — January 25, 2012
+* Fixed zapper support
+
+## 3.2.8 — January 23, 2012
+* Fixed bug with flipping disk sides for FDS
+
+## 3.2.7 — January 14, 2012
+* Updated core to latest FCEUX (r2383)
+* More accurate pixel scaling (thanks eke-eke!)
+* Other minor changes
+
+## 3.2.6 — May 15, 2011
+* Fixed audio skipping (thanks thiagoalvesdealmeida!)
+* Added Turkish translation
+
+## 3.2.5 — March 23, 2011
+* Fixed browser regressions with stability and speed
+
+## 3.2.4 — March 19, 2011
+* Updated core to latest FCEUX
+* Support for Famicom 3D System games (thanks Carl Kenner!)
+* Improved USB and controller compatibility (recompiled with latest libogc)
+* Enabled SMB on GameCube (thanks Extrems!)
+* Added Catalan translation
+* Translation updates
+
+## 3.2.3 — October 7, 2010
+* Sync with upstream SVN - fixes a few specific game issues
+* Fixed "blank listing" issue for SMB
+* Improved USB compatibility and speed
+* Added Portuguese and Brazilian Portuguese translations
+* Channel updated (improved USB compatibility)
+* Other minor changes
+
+## 3.2.2 — August 14, 2010
+* IOS 202 support removed
+* USB 2.0 support via IOS 58 added - requires that IOS58 be pre-installed
+* DVD support via AHBPROT - requires latest HBC
+
+## 3.2.1 — July 22, 2010
+* Fixed broken auto-update
+
+## 3.2.0 — July 20, 2010
+* Reverted USB2 changes
+
+## 3.1.9 — July 14, 2010
+* Fixed 16:9 correction in Original mode
+* Fixed PAL/NTSC timing switching issue
+* Ability to use both USB ports (requires updated IOS 202 - WARNING: older
+  versions of IOS 202 are NO LONGER supported)
+* Hide non-ROM files
+* Other minor improvements
+
+## 3.1.8 — June 20, 2010
+* USB improvements
+* GameCube improvements - audio, SD Gecko, show thumbnails for saves
+* Other minor changes
+
+## 3.1.7 — May 19, 2010
+* DVD support fixed
+* PAL/NTSC timing corrections
+* Fixed some potential hangs when returning to menu
+* Video/audio code changes
+* Fixed scrolling text bug
+* Other minor changes
+
+## 3.1.6 — April 9, 2010
+* Fix auto-save bug
+
+## 3.1.5 — April 9, 2010
+* Most 3rd party controllers should work now (you're welcome!)
+* Translation updates (German and Dutch)
+* Other minor changes
+
+## 3.1.4 — March 30, 2010
+* DVD / USB 2.0 support via IOS 202. DVDx support has been dropped. It is
+  highly recommended to install IOS 202 via the included installer
+* Multi-language support (only French translation is fully complete)
+* Thank you to everyone who submitted translations
+* SMB improvements/bug fixes
+* Minor video & input performance optimizations
+* Synced with official FCEUX (various game fixes)
+* ROMs larger than 3 MB now load
+* Now also searches in application path for gg.rom and disksys.rom
+
+## 3.1.3 — December 23, 2009
+* Fixed major file loading issue, more games load now
+* File browser now scrolls down to the last game when returning to browser
+* Auto update for those using USB now works
+* Fixed scrollbar up/down buttons
+* Fixed zapper
+* Updates from FCEUX
+* Minor optimizations
+
+## 3.1.2 — December 2, 2009
+* Fixed SMB (for real this time!)
+
+## 3.1.1 — November 30, 2009
+* Mapper fixes - several more games work now (Fire Emblem, 76-in-1, etc)
+* Fixed SMB
+* Added separate horizontal/vertical zoom options
+* Improved scrolling timing - the more you scroll, the fast it goes
+* Fixed reset button on Wii console - now you can reset multiple times
+* Reduce memory fragmentation - fixes out of memory crashes
+* Other minor code optimizations
+
+## 3.1.0 — October 7, 2009
+* New default palette - more accurate colors!
+* Revamped filebrowser and file I/O
+* New timing and frameskip code - allows PAL gamers to play NTSC games
+* Fixed FDS/Game Genie errors
+* Many, many other bug fixes
+
+## 3.0.9 — September 16, 2009
+* Text rendering corrections
+* SMB improvements
+* Updated to latest FCEUX SVN
+* Built with latest libraries
+* Video mode switching now works properly
+* Other minor bugfixes and cleanup
+
+## 3.0.8 — July 31, 2009
+* Fixed menu crash
+* Fixed turbo mode - reduced to frameskip of 1
+* Fixed .CHT file support
+* Added Game Genie support - required GG rom placed at /fceugx/gg.rom
+* FDS BIOS location changed to /fceugx/disksys.rom
+* DVD file limit of 2000 removed
+
+## 3.0.7 — July 24, 2009
+* Core upgraded to FCEUX 2.1.0a - improved game compatibility
+* State issues fixed - old state files are now invalid!
+* Cheat support (.CHT files)
+* IPS/UPS/PPF automatic patching support
+* Fixed "No game saves found." message when there are actually saves.
+* Fixed shift key on keyboard
+* Text scrolling works again
+* Change default prompt window selection to "Cancel" button
+
+## 3.0.6 — July 9, 2009
+* Faster SMB/USB browsing
+* Last browsed folder is now remembered
+* Fixed controller mapping reset button
+* Fixed no sound on GameCube version
+* Directory names are no longer altered
+* Preferences now only saved on exit
+* Fixed on-screen keyboard glitches
+* RAM auto-saved on power-off from within a game
+* Prevent 7z lockups, better 7z error messages
+
+## 3.0.5 — June 30, 2009
+* Fixed auto-update
+* Increased file browser listing to 10 entries, decreased font size
+* Added text scrolling on file browser
+* Added reset button for controller mappings
+* Settings are now loaded from USB when loading the app from USB on HBC
+* Fixed original mode lockup bug
+* Fixed menu crashes caused by ogg player bugs
+* Fixed memory card saving verification bug
+* Fixed game savebrowser bugs
+* Miscellaneous code cleanup/corrections
+
+## 3.0.4 — May 30, 2009
+* Fixed SD/USB corruption bug
+* SMB works again
+* GUI bugs fixed, GUI behavioral improvements
+
+## 3.0.3 — May 26, 2009
+* Improved stability
+* Fixed broken SDHC from HBC 1.0.2 update
+* Fixed issues with returning to menu from in-game
+* Add option to disable rumble
+* Auto-determines if HBC is present - returns to Wii menu otherwise
+* Miscellaneous bugfixes
+
+## 3.0.2 — April 30, 2009
+* Improved scrollbar
+* Multiple state saves now working
+* Built with more stable libogc/libfat
+* Fixed rumble bug in filebrowser
+* Fixed PAL sound stuttering
+* Added confirmation prompts
+* Fixed settings saving glitches
+
+## 3.0.1 — April 22, 2009
+* GameCube controller home trigger fixed
+* USB support fixed
+* More stable SMB support
+* Corrections/improvements to game saving/loading
+* Video mode corrections
+* Settings are now saved when exiting game menu settings area
+* 8 sprite limit and Zapper crosshair can now be turned off from the menu
+* New video mode selection in menu (forcing a video mode is not recommended)
+
+## 3.0.0 — April 13, 2009
+* New GX-based menu, with a completely redesigned layout. Has Wiimote IR
+  support, sounds, graphics, animation effects, and more
+* Thanks to the3seashells for designing some top-notch artwork, to
+  Peter de Man for composing the music, and a special thanks to shagkur for
+  fixing libogc bugs that would have otherwise prevented the release
+* Onscreen keyboard for changing save/load folders and network settings
+* Menu configuration options (configurable exit button, wiimote orientation,
+  volumes)
+* Configurable button mapping for zapper
+* New save manager, allowing multiple saves and save browsing. Shows
+  screenshots for Snapshot saves, and save dates/times
+* SMB reconnection feature
+* ISI issue fixed
+
+## 2.0.9 — January 27, 2009
+* Fixed a major memory corruption bug in FCE Ultra 0.98.12
+* Faster SD/USB - new read-ahead cache
+* Removed trigger of back to menu for Classic Controller right joystick
+* Changed GameCube controller back to menu from A+Start to A+B+Z+Start
+* Add option for horizontal-only video cropping
+* Decreased minimum game size to 8 KB
+* Fixed a bug with reading files < 2048 bytes
+* Fixed some memory leaks, buffer overflows, etc
+* Code cleanup, other general bugfixes
+
+## 2.0.8 — December 24, 2008
+* Fixed unstable SD card access
+* Proper SD/USB hotswap (Wii only)
+* Auto-update feature (Wii only)
+* Rewritten SMB access - speed boost, NTLM now supported (Wii only)
+* Improved file access code
+* Resetting preferences now resets controls
+* Overscan (cropping) setting now saved in preferences
+* Rewritten RAM/state saving - old state saves are now invalid
+* Minor bug fixes
+
+## 2.0.7 — November 19, 2008
+* Special thanks to eke-eke & KruLLo for contributions, bugfixes, and tips
+* Video code rewritten - now has original, unfiltered, filtered modes
+* Zoom option
+* 16:9 widescreen support
+* Full widescreen support
+* SDHC support
+* SD/USB hot-swapping
+* A/B rapid-fire
+* Turbo option
+* Video cropping (overscan hiding) option (thanks yxkalle!)
+* Palette changing fixed
+* Fixed audio 'popping' issue
+* Wii - Added console/remote power button support
+* Wii - Added reset button support (resets game)
+* Wii - Settings file is now named settings.xml and is stored in the same
+  folder as the DOL (eg: apps/fceugx/settings.xml)
+* GameCube - Added DVD motor off option
+
+## 2.0.6 — October 21, 2008
+* Right audio channel corruption fixed (thanks cyberdog!)
+* Low pass audio filter turned off (muffles audio)
+* Changed to alternate audio filter
+* PAL Timing corrected
+* Cheesy/2X video filters fixed
+* Qoob Pro modchip support for GameCube (thanks emukidid!)
+
+## 2.0.5 — October 19, 2008
+* Sound bug fixed - thanks eke-eke!
+* High quality sound enabled, lowpass filter enabled
+* Video threading enabled
+* Fixed timing error (incorrect opcode)
+
+## 2.0.4 — October 15, 2008
+* Wii DVD fixed
+* FDS BIOS loading works now
+* FDS disk switching now consistently works with one button press
+* FDS saving implemented
+* 7z support
+* Faster SD/USB (readahead cache enabled)
+* VS coin now mapped to 1 button for VS zapper games
+* Changed GC controller mappings - Select - Z, Start - Start,
+  Home - Start+A, Special - L
+
+## 2.0.3 — October 1, 2008
+* Complete rewrite of loading code - FDS / UNIF / NSF support added!
+* VS games work (coin insert submitted by pakitovic)
+* Mapping of 'Special' commands - VS coin insert, FDS switch disk (default A)
+* 480p and DVD now available for GameCube
+* Improved stability - less crashes!
+
+## 2.0.2 — September 19, 2008
+* Fixed network freeze-up problem
+* Zapper now mapped to A and B
+* Fixed auto-save feature
+* Performance slowdowns on Gamecube should be fixed
+* Will now attempt to load old save states with CRC filename
+
+## 2.0.1 — September 6, 2008
+* Zapper support! Turn this on in the Controller Settings - most games
+  require you to have the Zapper on Port 2. Thanks go to aksommerville whose
+  previous work on the Zapper helped, and michniewski's cursor code
+* RAM game save support! Now you can save your games just like the NES did.
+  By default game saves are saved/loaded automatically. This can be changed
+  in the Preferences menu
+* Start/Select reversed mapping fixed for Wii controllers
+* Small bug fixes / improvements / tweaks
+
+## 2.0.0 — September 1, 2008
+* Complete rewrite based on code from SNES9x GX and Genesis Plus GX
+* Wiimote, Nunchuk, and Classic controller support
+* Button mapping for all controller types
+* Full support for SD, USB, DVD, GC Memory Card, and Zip files
+* Game starts immediately after loading
+* Load/save preference selector. ROMs, saves, and preferences are
+  saved/loaded according to these
+* Preliminary Windows file share loading/saving (SMB) support on Wii:
+  You can input your network settings into FCEUGX.xml, or edit
+  fceuconfig.cpp from the source code and compile.
+* 'Auto' settings for save/load - attempts to automatically determine
+  your load/save device(s) - SD, USB, Memory Card, DVD, SMB
+* Preferences are loaded and saved in XML format. You can open
+  FCEUGX.xml edit all settings, including some not available within
+  the program
+* One makefile to make all versions
