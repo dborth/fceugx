@@ -413,6 +413,8 @@ void FixInvalidSettings()
 		}
 	}
 
+	if(!(EmuSettings.currentPalette >= 0 && EmuSettings.currentPalette <= MAXPAL))
+		EmuSettings.currentPalette = 1;
 	if(!(EmuSettings.videoZoomHor > 0.5 && EmuSettings.videoZoomHor < 1.5))
 		EmuSettings.videoZoomHor = 1.0;
 	if(!(EmuSettings.videoZoomVert > 0.5 && EmuSettings.videoZoomVert < 1.5))
