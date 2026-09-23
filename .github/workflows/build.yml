@@ -131,6 +131,8 @@ jobs:
         zip -r ../FCEUltraGX-Wii.zip *
         cd ../FCEUltraGX-GameCube
         zip -r ../FCEUltraGX-GameCube.zip *
+        cd ../FCEUltraGX-WiiU
+        zip -r ../FCEUltraGX-WiiU.zip *
 
     - name: Update Git Tag
       run: |
