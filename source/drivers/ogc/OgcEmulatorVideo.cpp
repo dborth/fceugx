@@ -450,10 +450,65 @@ void OgcEmulatorVideo::updateScaling()
 	gameScreenPng.scaleY = targetHeight / (float)gameScreenPng.height;
 
 	// 5. Shift calculations must map EFB distances physically through to the Menu canvas
-	gameScreenPng.xoffset = EmuSettings.videoXshift * (videoDriver->getScreenWidth() / (float)menu_vmode->viWidth) * ((float)vmode->viWidth / (float)vmode->fbWidth);
-	gameScreenPng.yoffset = EmuSettings.videoYshift * (videoDriver->getScreenHeight() / menuViHeightAdjusted) * (viHeightAdjusted / (float)vmode->efbHeight);
+	const float offsetX = EmuSettings.videoXshift * (videoDriver->getScreenWidth() / (float)menu_vmode->viWidth) * ((float)vmode->viWidth / (float)vmode->fbWidth);
+	const float offsetY = EmuSettings.videoYshift * (videoDriver->getScreenHeight() / menuViHeightAdjusted) * (viHeightAdjusted / (float)vmode->efbHeight);
+
+	gameScreenPng.xoffset = offsetX;
+	gameScreenPng.yoffset = offsetY;
+
+	// The game quad's rect on the canvas, for mapping the pointer to the frame
+	frameW = targetWidth;
+	frameH = targetHeight;
+	frameX = (videoDriver->getScreenWidth() * 0.5f) + offsetX - (targetWidth * 0.5f);
+	frameY = (videoDriver->getScreenHeight() * 0.5f) + offsetY - (targetHeight * 0.5f);
 
 	drawInit ();
+}
+
+/****************************************************************************
+ * mapPointerToFrame
+ *
+ * Maps a UI-canvas pointer position to a pixel of the NES framebuffer
+ * (XBuf coordinates, which is what the Zapper reads) through the game quad's
+ * current on-screen rect. The whole 256x240 frame is spread across the quad -
+ * hidden overscan is only scissored away, not stretched - so the pointer maps
+ * linearly, then clamps to the visible part of the frame.
+ ***************************************************************************/
+bool OgcEmulatorVideo::mapPointerToFrame(float canvasX, float canvasY, bool, int* outX, int* outY)
+{
+	if (!outX || !outY || frameW <= 0.0f || frameH <= 0.0f) // updateScaling() hasn't run yet
+		return false;
+
+	float u = (canvasX - frameX) / frameW;
+	float v = (canvasY - frameY) / frameH;
+	u = u < 0.0f ? 0.0f : (u > 1.0f ? 1.0f : u);
+	v = v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+
+	const int borderW = getBorderWidth();
+	const int borderH = getBorderHeight();
+
+	int x = (int)(u * NES_WIDTH);
+	int y = (int)(v * NES_HEIGHT);
+	if (x < borderW) x = borderW;
+	if (y < borderH) y = borderH;
+	if (x > NES_WIDTH - 1 - borderW) x = NES_WIDTH - 1 - borderW;
+	if (y > NES_HEIGHT - 1 - borderH) y = NES_HEIGHT - 1 - borderH;
+
+	*outX = x;
+	*outY = y;
+	return true;
+}
+
+bool OgcEmulatorVideo::getVisibleFrameRect(int* x, int* y, int* w, int* h)
+{
+	if (!x || !y || !w || !h)
+		return false;
+
+	*x = getBorderWidth();
+	*y = getBorderHeight();
+	*w = NES_WIDTH - (getBorderWidth() << 1);
+	*h = NES_HEIGHT - (getBorderHeight() << 1);
+	return true;
 }
 
 uint8_t OgcEmulatorVideo::getBorderWidth() {

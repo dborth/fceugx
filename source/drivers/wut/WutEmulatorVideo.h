@@ -30,6 +30,8 @@ class WutEmulatorVideo : public EmulatorVideoDriver
 		void presentFrame(const uint8_t* buffer) override;
 		void presentStereoFrame(const uint8_t* bufferLeft, const uint8_t* bufferRight) override;
 		void readFrameRGB24(uint8_t* dst) override;
+		bool mapPointerToFrame(float canvasX, float canvasY, bool onGamePad, int* frameX, int* frameY) override;
+		bool getVisibleFrameRect(int* x, int* y, int* w, int* h) override;
 
 	private:
 		void rebuildTexture(int width, int height);
@@ -48,18 +50,17 @@ class WutEmulatorVideo : public EmulatorVideoDriver
 		GX2Texture* texture;
 		GX2Sampler sampler;
 
-		// On-screen placement of the game quad, in design-canvas pixels
-		// (top-left x/y, size w/h) - recomputed by resetVideo(). This is the
-		// source of truth for the zoom/shift/aspect settings, and the metrics
-		// the menu's game screenshot background (gameScreenPng) is drawn with.
-		float quadX, quadY, quadWidth, quadHeight;
+		// The game quad's placement is decided per output target
+		struct FrameRect { float x, y, w, h; }; // fractions of the target, top-left origin
+		FrameRect frame[OUTPUT_TARGET_COUNT];
 
-		// The same quad in physical pixels of each render target (top-left
-		// x/y, size w/h), derived from the canvas placement above by the
-		// canvas-to-target stretch. This is what actually gets drawn, and what
-		// scaling/filtering needs (source-to-output scale = size / vwidth,vheight).
+		// The same rect in physical pixels of each target (top-left x/y, size
+		// w/h): what actually gets drawn, and what scaling/filtering needs.
 		struct TargetPlacement { float x, y, w, h; };
 		TargetPlacement placement[OUTPUT_TARGET_COUNT];
+
+		// The TV rect expressed in UI-canvas pixels. Only used to mirror the placement into gameScreenPng
+		float quadX, quadY, quadWidth, quadHeight;
 
 		// Raw NES framebuffer (palette indices) passed to the most recent
 		// presentFrame() - reused by readFrameRGB24() so screenshots don't

@@ -24,13 +24,15 @@ class OgcVideoDriver;
 class OgcEmulatorVideo : public EmulatorVideoDriver
 {
 	public:
-		OgcEmulatorVideo() : videoDriver(nullptr), updateVideo(true) {}
+		OgcEmulatorVideo() : videoDriver(nullptr), updateVideo(true), frameX(0), frameY(0), frameW(0), frameH(0) {}
 
 		void init(VideoDriver* videoDriver) override;
 		void resetVideo() override;
 		void presentFrame(const uint8_t* buffer) override;
 		void presentStereoFrame(const uint8_t* bufferLeft, const uint8_t* bufferRight) override;
 		void readFrameRGB24(uint8_t* dst) override;
+		bool mapPointerToFrame(float canvasX, float canvasY, bool onGamePad, int* outX, int* outY) override;
+		bool getVisibleFrameRect(int* x, int* y, int* w, int* h) override;
 
 	private:
 		void updateFilterScale();
@@ -48,4 +50,8 @@ class OgcEmulatorVideo : public EmulatorVideoDriver
 
 		OgcVideoDriver* videoDriver;
 		bool updateVideo;
+
+		// The game quad's on-screen rect in UI-canvas pixels (top-left x/y, size w/h)
+		// Recomputed by updateScaling(); used to map the pointer to the frame.
+		float frameX, frameY, frameW, frameH;
 };

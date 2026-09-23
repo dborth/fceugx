@@ -17,6 +17,9 @@
 #include "button_mapping.h"
 #include "fceuload.h"
 #include "libgui/Gui.h"
+#include "drivers/Platform.h"
+#include "drivers/VideoDriver.h"
+#include "drivers/EmulatorVideoDriver.h"
 
 #define ANALOG_SENSITIVITY 30
 #define RAPID_A 		256
@@ -215,11 +218,26 @@ static void UpdateCursorPosition(int chan)
 	if (!controller[chan]) return;
 	const InputPadData& pad = controller[chan]->getPadData();
 
-	// If we have an active IR pointer, snap directly to coordinates
+	EmulatorVideoDriver* emuVideo = platform->getVideo()->getEmulatorVideo();
+
+	// If we have an active IR pointer / touch, snap directly to coordinates
 	if (pad.validPointer)
 	{
-		pos_x = (int)((pad.cursor_x * 256.0f) / 640.0f);
-		pos_y = (int)((pad.cursor_y * 224.0f) / 480.0f);
+		int frameX, frameY;
+
+		// The video driver maps through the game's real on-screen placement
+		// (aspect correction, zoom, shift, cropping)
+		if (emuVideo && emuVideo->mapPointerToFrame(pad.cursor_x, pad.cursor_y, pad.isTouch, &frameX, &frameY))
+		{
+			pos_x = frameX;
+			pos_y = frameY;
+		}
+		else
+		{
+			// No driver mapping: assume the frame fills the whole canvas
+			pos_x = (int)((pad.cursor_x * NES_WIDTH) / platform->getVideo()->getScreenWidth());
+			pos_y = (int)((pad.cursor_y * NES_HEIGHT) / platform->getVideo()->getScreenHeight());
+		}
 	}
 	else
 	{
@@ -237,11 +255,22 @@ static void UpdateCursorPosition(int chan)
 		}
 	}
 
-	// Clamp to virtual FCE Ultra NES bounds
-	if (pos_x > 256) pos_x = 256;
-	if (pos_x < 0) pos_x = 0;
-	if (pos_y > 224) pos_y = 224;
-	if (pos_y < 0) pos_y = 0;
+	// Clamp to the visible part of the NES frame (hidden overscan is unreachable)
+	int minX = 0, minY = 0, maxX = NES_WIDTH - 1, maxY = NES_HEIGHT - 1;
+	int visX, visY, visW, visH;
+
+	if (emuVideo && emuVideo->getVisibleFrameRect(&visX, &visY, &visW, &visH))
+	{
+		minX = visX;
+		minY = visY;
+		maxX = visX + visW - 1;
+		maxY = visY + visH - 1;
+	}
+
+	if (pos_x > maxX) pos_x = maxX;
+	if (pos_x < minX) pos_x = minX;
+	if (pos_y > maxY) pos_y = maxY;
+	if (pos_y < minY) pos_y = minY;
 }
 
 /****************************************************************************

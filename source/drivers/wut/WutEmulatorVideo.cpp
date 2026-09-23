@@ -44,8 +44,9 @@ namespace
 
 WutEmulatorVideo::WutEmulatorVideo()
 	: videoDriver(nullptr), texture(nullptr)
-	, quadX(0), quadY(0), quadWidth(0), quadHeight(0)
+	, frame{ {0, 0, 0, 0}, {0, 0, 0, 0} }
 	, placement{ {0, 0, 0, 0}, {0, 0, 0, 0} }
+	, quadX(0), quadY(0), quadWidth(0), quadHeight(0)
 	, lastBuffer(nullptr)
 {
 	GX2InitSampler(&sampler, GX2_TEX_CLAMP_MODE_CLAMP, GX2_TEX_XY_FILTER_MODE_LINEAR);
@@ -64,45 +65,104 @@ void WutEmulatorVideo::init(VideoDriver* driver)
 /****************************************************************************
  * resetVideo
  *
- * Recomputes the on-screen placement of the game quad. Called once by
- * fceugx.cpp whenever emulation (re)starts, so game settings changed from
- * the menu (aspect ratio, zoom, shift) take effect on the next run.
+ * Recomputes the on-screen placement of the game quad on every output target
  ***************************************************************************/
 void WutEmulatorVideo::resetVideo()
 {
-	float screenWidth = (float)videoDriver->getScreenWidth();
-	float screenHeight = (float)videoDriver->getScreenHeight();
+	const float canvasWidth = (float)videoDriver->getScreenWidth();
+	const float canvasHeight = (float)videoDriver->getScreenHeight();
 
-	// Base size fills the design canvas at either the NES's native 4:3
-	// shape, or stretched to 16:9 when the user asks for widescreen
-	// correction - then user zoom/shift are layered on top.
-	float baseHeight = screenHeight;
-	float baseWidth = baseHeight * (EmuSettings.videoAspectRatioCorrection == VIDEO_ASPECT_RATIO_CORRECTION_16_9 ? (16.0f / 9.0f) : (4.0f / 3.0f));
+	const bool correct = EmuSettings.videoAspectRatioCorrection == VIDEO_ASPECT_RATIO_CORRECTION_16_9;
 
-	quadWidth = baseWidth * EmuSettings.videoZoomHor;
-	quadHeight = baseHeight * EmuSettings.videoZoomVert;
-
-	quadX = ((screenWidth - quadWidth) * 0.5f) + EmuSettings.videoXshift;
-	quadY = ((screenHeight - quadHeight) * 0.5f) + EmuSettings.videoYshift;
-
-	// Same quad in physical pixels of each target. The canvas is stretched onto
-	// every target independently per axis, so this is exactly where the
-	// canvas placement above lands on screen.
 	for (int i = 0; i < OUTPUT_TARGET_COUNT; i++)
 	{
 		const OutputTarget target = static_cast<OutputTarget>(i);
-		const float sx = (float) videoDriver->getTargetWidth(target)  / screenWidth;
-		const float sy = (float) videoDriver->getTargetHeight(target) / screenHeight;
+		const float tw = (float) videoDriver->getTargetWidth(target);
+		const float th = (float) videoDriver->getTargetHeight(target);
 
-		placement[i].x = quadX * sx;
-		placement[i].y = quadY * sy;
-		placement[i].w = quadWidth * sx;
-		placement[i].h = quadHeight * sy;
+		// Base size as a fraction of the target: full height, and either the
+		// full width or the width that gives a 4:3 picture on this target
+		const float baseW = correct ? ((4.0f / 3.0f) * th / tw) : 1.0f;
+		const float baseH = 1.0f;
+
+		FrameRect& r = frame[i];
+		r.w = baseW * EmuSettings.videoZoomHor;
+		r.h = baseH * EmuSettings.videoZoomVert;
+
+		// Centered, then shifted. The shift setting is in UI-canvas pixels;
+		// as a fraction of the canvas it means the same on every target.
+		r.x = (1.0f - r.w) * 0.5f + (float)EmuSettings.videoXshift / canvasWidth;
+		r.y = (1.0f - r.h) * 0.5f + (float)EmuSettings.videoYshift / canvasHeight;
+
+		placement[i].x = r.x * tw;
+		placement[i].y = r.y * th;
+		placement[i].w = r.w * tw;
+		placement[i].h = r.h * th;
 	}
 
-	// Mirror the placement into gameScreenPng so the pause menu's blurred
-	// background reproduces the same on-screen rect as the live game
+	// The menu's blurred background is drawn on the canvas, so mirror the TV
+	// (primary display) rect into canvas pixels for it
+	const FrameRect& tv = frame[static_cast<int>(OutputTarget::TV)];
+	quadX = tv.x * canvasWidth;
+	quadY = tv.y * canvasHeight;
+	quadWidth = tv.w * canvasWidth;
+	quadHeight = tv.h * canvasHeight;
+
 	syncScreenshotMetrics(NES_WIDTH - (getBorderWidth() << 1), NES_HEIGHT - (getBorderHeight() << 1));
+}
+
+/****************************************************************************
+ * mapPointerToFrame
+ *
+ * Maps a UI-canvas pointer position to a pixel of the NES framebuffer
+ * (XBuf coordinates, which is what the Zapper reads), through the game's
+ * actual placement on the output the pointer is on.
+ ***************************************************************************/
+bool WutEmulatorVideo::mapPointerToFrame(float canvasX, float canvasY, bool onGamePad, int* frameX, int* frameY)
+{
+	if (!frameX || !frameY)
+		return false;
+
+	const FrameRect& r = frame[static_cast<int>(onGamePad ? OutputTarget::DRC : OutputTarget::TV)];
+	if (r.w <= 0.0f || r.h <= 0.0f) // resetVideo() hasn't run yet
+		return false;
+
+	float u = ((canvasX / (float)videoDriver->getScreenWidth()) - r.x) / r.w;
+	float v = ((canvasY / (float)videoDriver->getScreenHeight()) - r.y) / r.h;
+	u = u < 0.0f ? 0.0f : (u > 1.0f ? 1.0f : u);
+	v = v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+
+	const int borderW = getBorderWidth();
+	const int borderH = getBorderHeight();
+	const int visibleW = NES_WIDTH - (borderW << 1);
+	const int visibleH = NES_HEIGHT - (borderH << 1);
+
+	int x = borderW + (int)(u * visibleW);
+	int y = borderH + (int)(v * visibleH);
+	if (x > borderW + visibleW - 1) x = borderW + visibleW - 1;
+	if (y > borderH + visibleH - 1) y = borderH + visibleH - 1;
+
+	*frameX = x;
+	*frameY = y;
+	return true;
+}
+
+/****************************************************************************
+ * getVisibleFrameRect
+ *
+ * Cropped overscan is removed from the uploaded texture entirely and the
+ * remainder is stretched to the game rect, so only this region is reachable
+ ***************************************************************************/
+bool WutEmulatorVideo::getVisibleFrameRect(int* x, int* y, int* w, int* h)
+{
+	if (!x || !y || !w || !h)
+		return false;
+
+	*x = getBorderWidth();
+	*y = getBorderHeight();
+	*w = NES_WIDTH - (getBorderWidth() << 1);
+	*h = NES_HEIGHT - (getBorderHeight() << 1);
+	return true;
 }
 
 /****************************************************************************
