@@ -53,7 +53,7 @@ Every push builds automatically. Grab the latest continuous-integration build:
 [Actions]: https://github.com/dborth/fceugx/actions/workflows/build.yml
 [Build]: https://github.com/dborth/fceugx/actions/workflows/build.yml/badge.svg
 [Download]: https://img.shields.io/badge/Download-blue
-[fceugx-wii]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX.zip
+[fceugx-wii]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX-Wii.zip
 [fceugx-gamecube]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX-GameCube.zip
 [fceugx-wiiu]: https://github.com/dborth/fceugx/releases/download/Pre-release/FCEUltraGX-WiiU.zip
 
@@ -108,7 +108,7 @@ Only `roms/` needs anything in it to get started — the rest are created automa
 ### Wii
 
 1. Follow the **[Wii Homebrew Guide](https://wii.hacks.guide/)** if you haven't already installed the Homebrew Channel. This is a one-time setup per console.
-2. Download the Wii build (`FCEUltraGX.zip` above) and extract it to the root of your SD card. This adds two things:
+2. Download the Wii build (`FCEUltraGX-Wii.zip` above) and extract it to the root of your SD card. This adds two things:
    - `apps/fceugx/boot.dol` (plus its icon/meta files) — this is what the Homebrew Channel launches.
    - `fceugx/` — your ROMs and saves folder, per [above](#all-platforms-sd-card--folder-layout).
 3. Insert the SD card, open the **Homebrew Channel**, and launch **FCE Ultra GX**.
