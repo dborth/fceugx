@@ -972,23 +972,6 @@ size_t LoadSzFile(char * filepath, unsigned char * rbuffer)
 }
 
 /****************************************************************************
- * NeedsDeviceThreadHalt
- *
- * File I/O pauses the device-checking thread so that its removal/insertion
- * probing can't run concurrently with a transfer over the same raw disc
- * interface.
- ***************************************************************************/
-static bool NeedsDeviceThreadHalt(int device)
-{
-	#ifdef __WIIU__
-	return device != DEVICE_SD;
-	#else
-	(void)device;
-	return true;
-	#endif
-}
-
-/****************************************************************************
  * LoadFile
  ***************************************************************************/
 size_t LoadFile (char * rbuffer, char *filepath, size_t length, size_t buffersize, bool silent)
@@ -1001,13 +984,7 @@ size_t LoadFile (char * rbuffer, char *filepath, size_t length, size_t buffersiz
 	if(!FindDevice(filepath, &device))
 		return 0;
 
-	// stop checking if devices were removed/inserted
-	// since we're loading a file
-	bool haltDeviceThread = NeedsDeviceThreadHalt(device);
-	if(haltDeviceThread)
-		PauseDeviceChecking();
-
-	// halt parsing
+	PauseDeviceChecking();
 	HaltParseThread();
 
 	// open the file
@@ -1086,9 +1063,7 @@ size_t LoadFile (char * rbuffer, char *filepath, size_t length, size_t buffersiz
 		fclose (fp);
 	}
 
-	// go back to checking if devices were inserted/removed
-	if(haltDeviceThread)
-		ResumeDeviceChecking();
+	ResumeDeviceChecking();
 	CancelAction();
 	return size;
 }
@@ -1190,13 +1165,7 @@ size_t SaveFile (char * buffer, char *filepath, size_t datasize, bool silent)
 	if(datasize == 0)
 		return 0;
 
-	// stop checking if devices were removed/inserted
-	// since we're saving a file
-	bool haltDeviceThread = NeedsDeviceThreadHalt(device);
-	if(haltDeviceThread)
-		PauseDeviceChecking();
-
-	// halt parsing
+	PauseDeviceChecking();
 	HaltParseThread();
 
 	if(!silent)
@@ -1238,9 +1207,8 @@ size_t SaveFile (char * buffer, char *filepath, size_t datasize, bool silent)
 		}
 	}
 
-	// go back to checking if devices were inserted/removed
-	if(haltDeviceThread)
-		ResumeDeviceChecking();
+	ResumeDeviceChecking();
+
 	if(!silent)
 		CancelAction();
 	return written;
