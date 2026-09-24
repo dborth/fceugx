@@ -140,9 +140,7 @@ int main(int argc, char *argv[])
 	while (!platform->shouldExit()) // main loop
 	{
 		if(!autoboot) {
-			// go back to checking if devices were inserted/removed
-			// since we're entering the menu
-			ResumeDeviceCheckingThread();
+			ResumeBackgroundThreads();
 
 			platform->getAudio()->startMenuAudio();
 
@@ -158,11 +156,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 
-		WaitForBackgroundTasks(15000); 
-
-		// stop checking if devices were removed/inserted
-		// since we're starting emulation again
-		HaltDeviceCheckingThread();
+		SuspendBackgroundThreads();
 
 		if(currentTiming != EmuSettings.timing)
 		{
@@ -257,11 +251,10 @@ void ExitApp()
 	if (romLoaded && appRequest != AppRequest::MENU && EmuSettings.autoSave == AUTOSAVE_RAM)
 		SaveRAMAuto(SILENT);
 
-	HaltDeviceCheckingThread();
-
 	// Generic safety net: stop and join every Thread still outstanding
 	// (device/parse/worker) before any driver it might touch gets torn
-	// down inside requestExit()/shutdown().
+	// down inside requestExit()/shutdown(). Parked threads are released to
+	// exit by this.
 	Thread::JoinAll();
 
 	platform->requestExit(EmuSettings.exitAction, autoboot);
