@@ -1234,6 +1234,8 @@ static int MenuGameSelection()
 	buttonWindow.append(&hiddenHomeBtn);
 	#endif
 
+	DeviceCheckingScope deviceChecking;
+
 	GuiFileBrowser gameBrowser(330, 268);
 	gameBrowser.setPosition(20, 98);
 	ResetBrowser();
@@ -1271,6 +1273,8 @@ static int MenuGameSelection()
 	while(selection == MENU_NONE)
 	{
 		if(!UpdateGui()) return MENU_EXIT;
+
+		deviceChecking.update(); // starts device checking once its delay has elapsed
 
 		// A device the currently-open folder lives on just disappeared - the cached browserList is stale
 		if(removedDeviceMask != 0)
@@ -1356,6 +1360,8 @@ static int MenuGameSelection()
 					menu->mainWindow.setState(STATE::DISABLED);
 
 					if(!WaitForQueuedTasks()) return MENU_EXIT; // eg. auto-save of the last game
+
+					deviceChecking.leave();
 
 					if(RunOnWorkerThread(BrowserLoadFileTask))
 					{
