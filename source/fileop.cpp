@@ -692,6 +692,7 @@ int ParseDirectory(bool waitParse, bool filter, const char * namePrefix)
 {
 	int retry = 1;
 	bool mounted = false;
+	int device;
 	parseFilter = filter;
 	snprintf(parsePrefix, sizeof(parsePrefix), "%s", namePrefix ? namePrefix : "");
 	parsePrefixLen = strlen(parsePrefix);
@@ -701,6 +702,8 @@ int ParseDirectory(bool waitParse, bool filter, const char * namePrefix)
 	// add trailing slash
 	if(browser.dir[strlen(browser.dir)-1] != '/')
 		strcat(browser.dir, "/");
+
+	FindDevice(browser.dir, &device);
 
 	// open the directory
 	while(dir == nullptr && retry == 1)
@@ -737,7 +740,11 @@ int ParseDirectory(bool waitParse, bool filter, const char * namePrefix)
 	}
 	
 	if(dir == nullptr)
+	{
+		if(device > DEVICE_AUTO)
+			platform->getFileSystem()->invalidateStorageDevice(device);
 		return -1;
+	}
 
 	// Always add a static "Up One Level" entry
 	AddBrowserEntry();
