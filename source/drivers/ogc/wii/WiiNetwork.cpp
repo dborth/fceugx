@@ -14,7 +14,6 @@
 
 #define NETWORK_THREAD_STACKSIZE (32 * 1024)
 #define NETWORK_BRINGUP_TIMEOUT_SECS 10 // don't block forever if the network never comes up
-#define NETWORK_RETRY_BACKOFF_SECS 15   // gap between unattended retry cycles once notifyWhenUp() is still waiting and nothing else has woken us
 
 static ThreadSync & NetSync() { static ThreadSync s; return s; }
 static Thread networkThread;
