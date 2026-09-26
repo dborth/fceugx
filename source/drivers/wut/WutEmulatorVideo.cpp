@@ -388,6 +388,8 @@ void WutEmulatorVideo::presentFrame(const uint8_t* buffer)
 	if(!buffer)
 		return;
 
+	videoDriver->prepareFrame();
+
 	lastBuffer = buffer;
 
 	int width = NES_WIDTH - (getBorderWidth() << 1);
