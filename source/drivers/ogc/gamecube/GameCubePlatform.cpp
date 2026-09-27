@@ -41,8 +41,10 @@ static void ipl_set_config(unsigned char c)
 /****************************************************************************
  * init/shutdown
  ***************************************************************************/
-void GameCubePlatform::init(int width, int height)
+void GameCubePlatform::init(const PlatformConfig& config)
 {
+	this->config = config;
+
 	VM_Init(ARAM_SIZE, MRAM_BACKING); // Setup Virtual Memory with the entire ARAM
 	
 	ipl_set_config(6); // disable Qoob modchip
@@ -52,7 +54,7 @@ void GameCubePlatform::init(int width, int height)
 	this->threadDriver->init();
 
 	this->videoDriver = new OgcVideoDriver();
-	this->videoDriver->init(width, height);
+	this->videoDriver->init(config.canvasWidth, config.canvasHeight);
 
 	this->audioDriver = new GameCubeAudioDriver();
 	this->audioDriver->init();

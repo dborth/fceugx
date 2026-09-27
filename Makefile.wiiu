@@ -31,7 +31,7 @@ SOURCES		:=	source source/libgui source/utils source/utils/sz \
 				source/pocketnes source/pocketnes/minilzo \
 				source/fceultra source/fceultra/boards source/fceultra/input source/fceultra/utils
 INCLUDES	:=	source
-DATA		:=	data/images data/sounds data/fonts data/lang
+DATA		:=	data/images_hd data/sounds data/fonts data/lang
 
 #---------------------------------------------------------------------------------
 # options for code generation
