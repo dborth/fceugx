@@ -8,7 +8,6 @@
 #include <stdio.h>
 
 #include "SmbDriver.h"
-#include "Mutex.h"
 
 #define MAX_STORAGE_DEVICES 16
 
