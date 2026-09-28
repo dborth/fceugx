@@ -178,9 +178,10 @@ void WutEmulatorAudio::playSound(const int32_t* buffer, int count)
 		DCStoreRange(&ring[0], remaining * sizeof(int16_t));
 
 	writePos = (pos + count) % RING_SAMPLES;
-	queuedFrames += count;
 
-	if (!voiceRunning && queuedFrames >= loadFrames)
+	const uint32_t queued = __atomic_add_fetch(&queuedFrames, (uint32_t)count, __ATOMIC_RELAXED);
+
+	if (!voiceRunning && queued >= loadFrames)
 		startVoice();
 }
 
@@ -198,18 +199,21 @@ void WutEmulatorAudio::onAppFrame()
 		return;
 	}
 
-	if (queuedFrames < minFrames)
-	{
-		// Starving - stop outright rather than let AX loop over stale
-		// ring content. playSound() won't call start() again until
-		// loadFrames worth is buffered back up.
-		AXSetVoiceState(voice, AX_VOICE_STATE_STOPPED);
-		voiceRunning = false;
-		return;
-	}
+	const uint32_t frame = AXGetInputSamplesPerFrame();
 
-	uint32_t frame = AXGetInputSamplesPerFrame();
-	queuedFrames = (queuedFrames > frame) ? (queuedFrames - frame) : 0;
+	uint32_t queued = __atomic_load_n(&queuedFrames, __ATOMIC_RELAXED);
+	do
+	{
+		if (queued < minFrames)
+		{
+			// Starving - stop outright rather than let AX loop over stale
+			// ring content. playSound() won't call start() again until
+			// loadFrames worth is buffered back up.
+			AXSetVoiceState(voice, AX_VOICE_STATE_STOPPED);
+			voiceRunning = false;
+			return;
+		}
+	} while (!__atomic_compare_exchange_n(&queuedFrames, &queued, (queued > frame) ? (queued - frame) : 0, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED));
 }
 
 void WutEmulatorAudio::updateSampleRate(int rate)
