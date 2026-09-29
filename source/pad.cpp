@@ -430,9 +430,9 @@ bool IsTurboModeInputPressed()
 			return (pad.buttons_h & INPUT_TRIGGER_ZL);
 		case TURBO_BUTTON_ZR:
 			return (pad.buttons_h & INPUT_TRIGGER_ZR);
-		case TURBO_BUTTON_Z: // Fallback generic Z trigger
-			return (pad.buttons_h & INPUT_TRIGGER_ZL);
-		case TURBO_BUTTON_C: // Fallback generic C trigger
+		case TURBO_BUTTON_Z: // GC Z (reported as ZR by the generic mapping)
+			return (pad.buttons_h & INPUT_TRIGGER_ZR);
+		case TURBO_BUTTON_C: // Nunchuk C (reported as L by the generic mapping)
 			return (pad.buttons_h & INPUT_TRIGGER_L);
 		case TURBO_BUTTON_1:
 			return (pad.buttons_h & INPUT_BTN_1);
