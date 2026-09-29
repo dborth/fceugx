@@ -2,6 +2,30 @@
 
 All notable changes to FCE Ultra GX are recorded here, newest first. For the current features and setup instructions, see [README.md](README.md).
 
+## Unreleased
+* **Native Wii U release!** FCE Ultra GX now runs natively on the Wii U as its own app, with its own icon on the Wii U Menu. Requires [Aroma](https://wiiu.hacks.guide/) - run the latest Aroma release and launch the `.wuhb` directly from it
+  * Output up to 1080p, with a new GPU-powered **ScaleFX** upscaler shader and a **Sharp Bilinear** shader, plus a scanline shader
+  * Crisp, upscaled menus with sharper text and HD artwork
+  * Full **Wii U GamePad** support - touch screen, buttons, and rumble - alongside Wiimote, Nunchuk, Classic Controller, and Wii U Pro Controller
+  * Correct 16:9 aspect ratio handling, with Wii U aspect ratio handling
+  * SD card plus up to 3 USB drives at once, with hotplug. USB supports FAT32, exFAT, and NTFS (requires [Mocha](https://github.com/wiiu-env/MochaPayload), an optional Aroma component)
+  * Press the HOME button to open the Wii U menu overlay. In game, HOME still opens the app menu.
+  * Sound plays on both the TV and the GamePad
+  * Recommended: install [Bloopair](https://github.com/GaryOderNichts/Bloopair) to pair Bluetooth controllers (Switch Pro, Joy-Con, DualShock/DualSense, Xbox, and more) as if they were a Wii U Pro Controller
+* Network shares now use libsmb2 (replacing the old SMB code) for modern SMB2/3 server support, on GameCube, Wii, and Wii U.
+* Wii: added support for multiple USB devices at once, with proper hotplug. Only devices that are actually mounted appear in the device list
+* GameCube: added hotplug support for SD Gecko and SD2SP2 - devices can now be inserted and removed while the app is running
+* Reworked and simplified the video settings, and added a new Emulation menu:
+  * Video options are now: Output Mode, Aspect Ratio Correction, Cropping, Bilinear Filtering, Hardware Softening (GameCube/Wii), Upscaling, Scanline Overlay, Screen Zoom, and Screen Position
+  * Scanlines are now an independent overlay that can be combined with any upscaling filter, replacing the old "TV Mode" filter
+  * Game Timing, Sprite Limit, and Zapper Crosshair moved to the new Emulation menu
+* Note: due to renaming, settings will all be reset upon first load
+* Menu rumble is gentler
+* Updated FCEUX emulation with upstream fixes: PAL noise channel fix, an FDS IRQ timer fix, and added support for mapper 471
+* Fixed cheats from a cheat file not all starting disabled - they now all start off until you turn them on
+* Fixed a bogus "Not Vs. System; can't insert coin" message when pressing the coin/disk button in non-VS games
+* Korean translation updated
+
 ## 4.0.1 — August 11, 2026
 * Switched to RGB555
 * Fixed bug during preference loading
