@@ -101,6 +101,7 @@ static char progressTitle[101];
 static char progressMsg[201];
 static int progressDone = 0;
 static int progressTotal = 0;
+static void (*progressCancelFn)(void) = nullptr; // protected by ProgressSync().mutex - non-null means the overlay offers a Cancel button
 static bool buttonMappingCancelled = false;
 
 static ThreadId mainThreadId;
@@ -156,7 +157,15 @@ struct ProgressOverlayState {
 	GuiImage throbberImg;
 	GuiText titleTxt;
 	GuiText msgTxt;
+	GuiImageData cancelOutline;
+	GuiImageData cancelOutlineOver;
+	GuiImage cancelImg;
+	GuiImage cancelImgOver;
+	GuiText cancelTxt;
+	GuiButton cancelBtn;
+	GuiTrigger cancelTrigB;
 
+	bool cancelShown;
 	bool overlayShown;
 	bool waitingToShow;
 	Ticks pendingStart;
@@ -173,6 +182,11 @@ struct ProgressOverlayState {
 		throbber(throbber_png), throbberImg(&throbber),
 		titleTxt(nullptr, 26, (PixelColor){255, 255, 255, 255}),
 		msgTxt(nullptr, 26, (PixelColor){0, 0, 0, 255}),
+		cancelOutline(button_prompt_png), cancelOutlineOver(button_prompt_over_png),
+		cancelImg(&cancelOutline), cancelImgOver(&cancelOutlineOver),
+		cancelTxt("Cancel", 22, (PixelColor){0, 0, 0, 255}),
+		cancelBtn(cancelOutline.getWidth(), cancelOutline.getHeight()),
+		cancelShown(false),
 		overlayShown(false), waitingToShow(false), pendingStart(0),
 		oldState(STATE::DEFAULT), angle(0), count(0)
 	{
@@ -200,6 +214,13 @@ struct ProgressOverlayState {
 
 		throbberImg.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 		throbberImg.setPosition(0, 40);
+
+		cancelBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::BOTTOM);
+		cancelBtn.setPosition(0, -25);
+		cancelBtn.setLabel(&cancelTxt);
+		cancelBtn.setImage(&cancelImg);
+		cancelBtn.setImageOver(&cancelImgOver);
+		cancelTrigB.setSecondaryTrigger();
 	}
 
 	void update();
@@ -262,6 +283,7 @@ void ProgressOverlayState::update() {
 	int progress = showProgress;
 	int done = progressDone;
 	int total = progressTotal;
+	void (*cancelFn)(void) = progressCancelFn;
 	char title[101]; snprintf(title, sizeof(title), "%s", progressTitle);
 	char msg[201]; snprintf(msg, sizeof(msg), "%s", progressMsg);
 	ProgressSync().mutex.unlock();
@@ -275,6 +297,7 @@ void ProgressOverlayState::update() {
 			menu->mainWindow.remove(&progressWindow);
 			menu->mainWindow.setState(oldState);
 			overlayShown = false;
+			cancelShown = false;
 		}
 
 		ProgressSync().mutex.lock();
@@ -301,6 +324,8 @@ void ProgressOverlayState::update() {
 			progressWindow.remove(&progressbarImg);
 			progressWindow.remove(&progressbarOutlineImg);
 			progressWindow.remove(&throbberImg);
+			progressWindow.remove(&cancelBtn);
+			throbberImg.setPosition(0, 40);
 
 			if(progress == 1)
 			{
@@ -311,6 +336,19 @@ void ProgressOverlayState::update() {
 			else
 			{
 				progressWindow.append(&throbberImg);
+
+				if(cancelFn)
+				{
+					// Move the throbber up so the button fits below
+					throbberImg.setPosition(0, 15);
+					cancelBtn.setSoundOver(&menu->btnSoundOver);
+					cancelBtn.setSoundClick(&menu->btnSoundClick);
+					cancelBtn.setTrigger(0, trigA);
+					cancelBtn.setTrigger(1, &cancelTrigB);
+					cancelBtn.setState(STATE::SELECTED);
+					progressWindow.append(&cancelBtn);
+					cancelShown = true;
+				}
 			}
 
 			oldState = menu->mainWindow.getState();
@@ -341,6 +379,17 @@ void ProgressOverlayState::update() {
 				throbberImg.setAngle(angle);
 			}
 			++count;
+		}
+
+		if(cancelShown && cancelBtn.getState() == STATE::CLICKED)
+		{
+			cancelBtn.resetState();
+			progressWindow.remove(&cancelBtn);
+			cancelShown = false;
+			msgTxt.setText("Cancelling...");
+
+			if(cancelFn)
+				cancelFn();
 		}
 	}
 }
@@ -554,7 +603,20 @@ static void ServicePendingWindowPromptRequest()
  ***************************************************************************/
 
 // Set once the OS has asked the app to quit and the fade-out has played
-static bool guiExiting = false;
+static volatile bool guiExiting = false;
+
+// A background thread can be parked waiting for the GUI thread to acknowledge
+// an overlay (CancelAction) or answer a prompt (WindowPromptRequest)
+static void ReleaseBackgroundWaiters()
+{
+	ProgressSync().mutex.lock();
+	ProgressSync().idleCond.signal();
+	ProgressSync().mutex.unlock();
+
+	PromptSync().mutex.lock();
+	PromptSync().idleCond.signal();
+	PromptSync().mutex.unlock();
+}
 
 static bool UpdateGui()
 {
@@ -578,6 +640,7 @@ static bool UpdateGui()
 			platform->getVideo()->renderMenu();
 		}
 		guiExiting = true;
+		ReleaseBackgroundWaiters();
 		return false;
 	}
 
@@ -712,6 +775,7 @@ void CancelAction()
 
 	ProgressSync().mutex.lock();
 	showProgress = 0;
+	progressCancelFn = nullptr;
 	ProgressSync().mutex.unlock();
 
 	if(IsMainThread())
@@ -722,7 +786,7 @@ void CancelAction()
 	{
 		ProgressSync().mutex.lock();
 
-		while(!progIdle)
+		while(!progIdle && !guiExiting) // nobody acknowledges once the GUI thread has stopped
 			ProgressSync().idleCond.wait(ProgressSync().mutex);
 
 		ProgressSync().mutex.unlock();
@@ -755,6 +819,7 @@ void ShowProgress (const char *msg, int done, int total)
 	snprintf(progressMsg, 200, "%s", msg);
 	sprintf(progressTitle, "Please Wait");
 	showProgress = 1;
+	progressCancelFn = nullptr;
 	progressTotal = total;
 	progressDone = done;
 	progIdle = false;
@@ -767,7 +832,7 @@ void ShowProgress (const char *msg, int done, int total)
  * Shows that an action is underway. Safe to call from a background worker
  * thread - see CancelAction().
  ***************************************************************************/
-void ShowAction (const char *msg)
+void ShowAction (const char *msg, void (*onCancel)(void))
 {
 	if(!menu)
 		return;
@@ -779,6 +844,7 @@ void ShowAction (const char *msg)
 	snprintf(progressMsg, 200, "%s", msg);
 	sprintf(progressTitle, "Please Wait");
 	showProgress = 2;
+	progressCancelFn = onCancel;
 	progressDone = 0;
 	progressTotal = 0;
 	progIdle = false;
@@ -790,7 +856,7 @@ static int WindowPromptRequest(const char *title, const char *msg, const char *b
 	if(IsMainThread())
 		return WindowPrompt(title, msg, btn1Label, btn2Label);
 
-	if(!menu)
+	if(!menu || guiExiting)
 		return 0;
 
 	PromptSync().mutex.lock();
@@ -800,9 +866,10 @@ static int WindowPromptRequest(const char *title, const char *msg, const char *b
 	promptPendingBtn2 = btn2Label;
 	promptResultReady = false;
 	promptPending = true;
-	while(!promptResultReady)
+	while(!promptResultReady && !guiExiting) // nobody answers once the GUI thread has stopped
 		PromptSync().idleCond.wait(PromptSync().mutex);
-	int result = promptResult;
+	int result = promptResultReady ? promptResult : 0;
+	promptPending = false;
 	PromptSync().mutex.unlock();
 	return result;
 }
