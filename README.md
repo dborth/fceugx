@@ -33,6 +33,7 @@ FCE Ultra GX is homebrew — it isn't signed by Nintendo, so your console needs 
 - [VS System](#vs-system)
 - [Famicom 3D System & Anaglyph Games](#famicom-3d-system--anaglyph-games)
 - [Importing and Exporting RAM Saves](#importing-and-exporting-ram-saves)
+- [Building from Source](#building-from-source)
 - [Credits](#credits)
 - [Links](#links)
 
@@ -381,6 +382,27 @@ FCE Ultra GX can load `.sav` RAM saves created by FCEUX (or compatible emulators
 - **To export**, copy the save from your console's `fceugx/saves` folder over to the other platform — you may need to rename it to whatever that FCEUX build expects.
 
 ---
+
+## Building from Source
+
+FCE Ultra GX builds for GameCube, Wii and Wii U from this one repository. The toolchain
+and dependencies (devkitPro, `libogc2` or `wut`, and `libsmb2`, `libmocha` and
+`libdvm` built from source) are the same for every project that uses libgui,
+so they are documented once in the
+**[libgui Building guide](https://github.com/dborth/libgui/blob/master/doc/building.md)**.
+Follow it through to the end of the dependency steps, then:
+
+```sh
+git clone https://github.com/dborth/fceugx.git
+cd fceugx
+make -f Makefile.wii -j3     # Wii      -> executables/fceugx-wii.dol
+make -f Makefile.gc -j3      # GameCube -> executables/fceugx-gc.dol
+make -f Makefile.wiiu -j3    # Wii U    -> executables/fceugx-wiiu.wuhb
+```
+
+Besides the libgui dependencies, FCE Ultra GX also needs `ppc-mxml`. This
+repository's `.github/workflows/build.yml` is a working reference for the full
+build.
 
 ## Credits
 
