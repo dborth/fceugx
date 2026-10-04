@@ -4,6 +4,7 @@ All notable changes to FCE Ultra GX are recorded here, newest first. For the cur
 
 ## Unreleased
 * Wii U: Japanese/Korean/Chinese fonts are now also found in `fceugx/` or `wiiu/apps/fceugx/` on the SD card even before settings have been saved, and stay crisp at 1080p
+* Wii U: fix texture reuse causing cover art issues with varying image sizes
 
 ## 4.0.2 - October 1, 2026
 * **Native Wii U release!** FCE Ultra GX now runs natively on the Wii U as its own app, with its own icon on the Wii U Menu. Requires [Aroma](https://wiiu.hacks.guide/) - run the latest Aroma release and launch the `.wuhb` directly from it
