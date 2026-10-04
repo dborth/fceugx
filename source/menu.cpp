@@ -4569,6 +4569,32 @@ static void ResetText()
 	}
 }
 
+#ifndef HW_DOL
+static void GetFontFilePath(char *filepath, size_t size, const char *fontName)
+{
+	snprintf(filepath, size, "%s/%s", appPath, fontName);
+#ifdef __WIIU__
+	struct stat st;
+	if(appPath[0] != 0 && stat(filepath, &st) == 0)
+		return;
+
+	static const char * const folders[] = { "wiiu/apps/" APPFOLDER, APPFOLDER };
+
+	for(const char * folder : folders)
+	{
+		char candidate[MAXPATHLEN];
+		platform->getFileSystem()->getPath(candidate, DEVICE_SD, folder, fontName);
+
+		if(stat(candidate, &st) == 0)
+		{
+			snprintf(filepath, size, "%s", candidate);
+			return;
+		}
+	}
+#endif
+}
+#endif
+
 void ChangeLanguage() {
 	if(currentLanguage == EmuSettings.language) {
 		return;
@@ -4580,13 +4606,13 @@ void ChangeLanguage() {
 
 		switch(EmuSettings.language) {
 			case LANG_KOREAN:
-				sprintf(filepath, "%s/ko.ttf", appPath);
+				GetFontFilePath(filepath, sizeof(filepath), "ko.ttf");
 				break;
 			case LANG_JAPANESE:
-				sprintf(filepath, "%s/jp.ttf", appPath);
+				GetFontFilePath(filepath, sizeof(filepath), "jp.ttf");
 				break;
 			case LANG_SIMP_CHINESE:
-				sprintf(filepath, "%s/zh.ttf", appPath);
+				GetFontFilePath(filepath, sizeof(filepath), "zh.ttf");
 				break;
 		}
 
@@ -4594,7 +4620,7 @@ void ChangeLanguage() {
 
 		if(fileSize > 0) {
 			if(fontSystem) delete fontSystem;
-			fontSystem = new GuiTextRenderer(ext_font_ttf, fileSize, platform->getVideo()->getGlyphRenderer());
+			fontSystem = new GuiTextRenderer(ext_font_ttf, fileSize, platform->getVideo()->getGlyphRenderer(), platform->getVideo()->getUIScale());
 		}
 		else {
 			EmuSettings.language = currentLanguage;
@@ -4614,7 +4640,7 @@ void ChangeLanguage() {
 			free(ext_font_ttf);
 #endif
 			ext_font_ttf = nullptr;
-			fontSystem = new GuiTextRenderer(font_ttf, font_ttf_size, platform->getVideo()->getGlyphRenderer());
+			fontSystem = new GuiTextRenderer(font_ttf, font_ttf_size, platform->getVideo()->getGlyphRenderer(), platform->getVideo()->getUIScale());
 		}
 	}
 #endif
