@@ -398,7 +398,7 @@ static void OnShareConnectCancel()
 
 static bool ShareConnectCancelRequested()
 {
-	return shareConnectCancelled || platform->getStatus() == Status::Exiting;
+	return shareConnectCancelled || platform->isExiting();
 }
 
 bool ConnectShare(bool silent)
