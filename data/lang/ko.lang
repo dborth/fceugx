@@ -835,7 +835,7 @@ msgstr "재퍼건 십자 버튼"
 msgid "Zapper"
 msgstr "재퍼건"
 
-msgid "Other Mappins"
+msgid "Other Mappings"
 msgstr "기타 매핑"
 
 msgid "Turbo Mode"
@@ -850,7 +850,7 @@ msgstr "메뉴 전환"
 msgid "Default (Right Stick)"
 msgstr "기본 (오른쪽 스틱)"
 
-msgid "Default (All Enable)"
+msgid "Default (All Enabled)"
 msgstr "기본 (모두 활성화)"
 
 msgid "Plus"
@@ -868,6 +868,36 @@ msgstr "L+R+스타트 / 1+2+플러스"
 msgid "HOME"
 msgstr "홈"
 
+msgid "Emulation"
+msgstr "에뮬레이션"
+
+msgid "Output Mode"
+msgstr "출력 모드"
+
+msgid "Aspect Ratio Correction"
+msgstr "화면비 보정"
+
+msgid "Aspect Ratio Correction"
+msgstr "화면비 보정"
+
+msgid "Bilinear Filtering"
+msgstr "선형 필터링"
+
+msgid "Hardware Softening"
+msgstr "하드웨어 연성"
+
+msgid "Sharp"
+msgstr "선명함"
+
+msgid "Soft"
+msgstr "부드러움"
+
+msgid "Upscaling"
+msgstr "업스케일링"
+
+msgid "Scanline Overlay"
+msgstr "스캔라인 오버레이"
+
 msgid "Original (240p)"
 msgstr "오리지널 (240p)"
 
@@ -883,7 +913,7 @@ msgstr "고품질2배율"
 msgid "hq2x Soft"
 msgstr "고품질2배율 부드러움"
 
-msgid "hq2x Bolt"
+msgid "hq2x Bold"
 msgstr "고품질2배율 두꺼움"
 
 msgid "Scale2x"
