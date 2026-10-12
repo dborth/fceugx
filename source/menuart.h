@@ -285,3 +285,27 @@ class MenuSpinner : public GuiElement
 		int phase;
 		GuiShape dots[MENU_SPINNER_DOTS];
 };
+
+//!The window behind the on-screen keyboard: a card with a chrome band holding the text
+//!field. Insert it as the keyboard's first element: keyboard.insert(&box, 0). It is
+//!wider than the keyboard itself so the keys keep a margin from the card's edge.
+class MenuKeyboardBox : public MenuDialogShape
+{
+	public:
+		MenuKeyboardBox() : MenuDialogShape(MENU_KEYBOARD_W, MENU_KEYBOARD_H, MENU_KEYBOARD_HEADER_H)
+		{
+			setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
+		}
+};
+
+//!A gray rounded tile standing in for the screen in the zoom and position windows
+class MenuScreenShape : public GuiShape
+{
+	public:
+		MenuScreenShape() : GuiShape(MENU_SCREEN_W, MENU_SCREEN_H)
+		{
+			const GuiTheme& theme = GuiTheme::current();
+			setCorners(GuiCorners(12.0f));
+			setPaint(GuiPaint().gradient(theme.outline, theme.outlineStrong).stroke(1.5f, theme.outlineStrong));
+		}
+};

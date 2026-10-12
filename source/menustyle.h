@@ -51,6 +51,18 @@
 #define MENU_CREDITS_H			448
 #define MENU_CREDITS_HEADER_H	60
 #define MENU_DIALOG_RADIUS		14.0f
+// title text sits this far down on the band, so its glyphs look centered in it
+#define MENU_DIALOG_TITLE_Y		18
+#define MENU_CREDITS_TITLE_Y	18
+
+// the on-screen keyboard: a card with a band across the top that holds the text field
+#define MENU_KEYBOARD_W			580
+#define MENU_KEYBOARD_H			400
+#define MENU_KEYBOARD_HEADER_H	60
+
+// the gray stand-in for the screen in the zoom and position windows
+#define MENU_SCREEN_W			68
+#define MENU_SCREEN_H			64
 
 // page-turning arrows: hit area of the button, and the glyph drawn inside it
 #define MENU_ARROW_HIT_LONG		32

@@ -181,7 +181,7 @@ struct ProgressOverlayState {
 		progressWindow.append(&dialogBoxImg);
 
 		titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-		titleTxt.setPosition(0, 14);
+		titleTxt.setPosition(0, MENU_DIALOG_TITLE_Y);
 		progressWindow.append(&titleTxt);
 
 		msgTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
@@ -414,7 +414,7 @@ static void CreditsWindow()
 
 	// the title sits on the dialog's chrome band, so it is white; the credits start below the band
 	txt[i] = new GuiText("Credits", 30, (PixelColor){255, 255, 255, 255});
-	txt[i]->setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP); txt[i]->setPosition(0,y); i++; y+=56;
+	txt[i]->setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP); txt[i]->setPosition(0, MENU_CREDITS_TITLE_Y); i++; y+=56;
 
 	txt[i] = new GuiText("Official Site: https://github.com/dborth/fceugx", 20, (PixelColor){0, 0, 0, 255});
 	txt[i]->setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP); txt[i]->setPosition(0,y); i++; y+=32;
@@ -635,7 +635,7 @@ static int WindowPrompt(const char *title, const char *msg, const char *btn1Labe
 
 	GuiText titleTxt(title, 26, (PixelColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	titleTxt.setPosition(0,14);
+	titleTxt.setPosition(0, MENU_DIALOG_TITLE_Y);
 	GuiText msgTxt(msg, 26, (PixelColor){0, 0, 0, 255});
 	msgTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	msgTxt.setPosition(0,-20);
@@ -885,6 +885,8 @@ static void OnScreenKeyboard(char * var, uint32_t maxlen)
 	cancelBtn.setTrigger(trigA);
 	cancelBtn.setEffectGrow();
 
+	MenuKeyboardBox keyboardBox;
+	keyboard.insert(&keyboardBox, 0);
 	keyboard.append(&okBtn);
 	keyboard.append(&cancelBtn);
 
@@ -930,7 +932,7 @@ SettingWindow(const char * title, GuiWindow * w)
 
 	GuiText titleTxt(title, 26, (PixelColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	titleTxt.setPosition(0,14);
+	titleTxt.setPosition(0, MENU_DIALOG_TITLE_Y);
 
 	GuiText okBtnTxt("OK", 22, (PixelColor){0, 0, 0, 255});
 	MenuButtonShape okBtnImg(MenuButtonShape::NORMAL);
@@ -3009,7 +3011,7 @@ static uint32_t ButtonMappingWindow()
 
 	GuiText titleTxt("Button Mapping", 26, (PixelColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	titleTxt.setPosition(0,14);
+	titleTxt.setPosition(0, MENU_DIALOG_TITLE_Y);
 
 	char msg[200];
 
@@ -3335,8 +3337,7 @@ static void ScreenZoomWindow()
 	arrowDownBtn.setSelectable(false);
 	arrowDownBtn.setUpdateCallback(ScreenZoomWindowDownClick);
 
-	GuiImageData screenPosition(screen_position_png);
-	GuiImage screenPositionImg(&screenPosition);
+	MenuScreenShape screenPositionImg;
 	screenPositionImg.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	screenPositionImg.setPosition(0, 0);
 
@@ -3452,8 +3453,7 @@ static void ScreenPositionWindow()
 	arrowDownBtn.setSelectable(false);
 	arrowDownBtn.setUpdateCallback(ScreenPositionWindowDownClick);
 
-	GuiImageData screenPosition(screen_position_png);
-	GuiImage screenPositionImg(&screenPosition);
+	MenuScreenShape screenPositionImg;
 	screenPositionImg.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 
 	settingText = new GuiText(nullptr, 20, (PixelColor){0, 0, 0, 255});
