@@ -146,22 +146,12 @@ InitGUIThreads()
  ***************************************************************************/
 struct ProgressOverlayState {
 	GuiWindow progressWindow;
-	GuiImageData dialogBox;
-	GuiImage dialogBoxImg;
-	GuiImageData progressbarOutline;
-	GuiImage progressbarOutlineImg;
-	GuiImageData progressbarEmpty;
-	GuiImage progressbarEmptyImg;
-	GuiImageData progressbar;
-	GuiImage progressbarImg;
-	GuiImageData throbber;
-	GuiImage throbberImg;
+	MenuDialogShape dialogBoxImg;
+	MenuProgressBar progressBar;
+	MenuSpinner spinner;
 	GuiText titleTxt;
 	GuiText msgTxt;
-	GuiImageData cancelOutline;
-	GuiImageData cancelOutlineOver;
-	GuiImage cancelImg;
-	GuiImage cancelImgOver;
+	MenuButtonShape cancelImg;
 	GuiText cancelTxt;
 	GuiButton cancelBtn;
 	GuiTrigger cancelTrigB;
@@ -176,17 +166,12 @@ struct ProgressOverlayState {
 
 	ProgressOverlayState() :
 		progressWindow(448, 288),
-		dialogBox(dialogue_box_png), dialogBoxImg(&dialogBox),
-		progressbarOutline(progressbar_outline_png), progressbarOutlineImg(&progressbarOutline),
-		progressbarEmpty(progressbar_empty_png), progressbarEmptyImg(&progressbarEmpty),
-		progressbar(progressbar_png), progressbarImg(&progressbar),
-		throbber(throbber_png), throbberImg(&throbber),
+		dialogBoxImg(MENU_DIALOG_W, MENU_DIALOG_H, MENU_DIALOG_HEADER_H),
 		titleTxt(nullptr, 26, (PixelColor){255, 255, 255, 255}),
 		msgTxt(nullptr, 26, (PixelColor){0, 0, 0, 255}),
-		cancelOutline(button_prompt_png), cancelOutlineOver(button_prompt_over_png),
-		cancelImg(&cancelOutline), cancelImgOver(&cancelOutlineOver),
+		cancelImg(MenuButtonShape::NORMAL),
 		cancelTxt("Cancel", 22, (PixelColor){0, 0, 0, 255}),
-		cancelBtn(cancelOutline.getWidth(), cancelOutline.getHeight()),
+		cancelBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H),
 		cancelShown(false),
 		overlayShown(false), waitingToShow(false), pendingStart(0),
 		oldState(STATE::DEFAULT), angle(0), count(0)
@@ -203,24 +188,16 @@ struct ProgressOverlayState {
 		msgTxt.setPosition(0, 80);
 		progressWindow.append(&msgTxt);
 
-		progressbarOutlineImg.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
-		progressbarOutlineImg.setPosition(25, 40);
+		progressBar.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
+		progressBar.setPosition((MENU_DIALOG_W - MENU_PROGRESS_W) / 2, 40);
 
-		progressbarEmptyImg.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
-		progressbarEmptyImg.setPosition(25, 40);
-		progressbarEmptyImg.setTile(100);
-
-		progressbarImg.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
-		progressbarImg.setPosition(25, 40);
-
-		throbberImg.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
-		throbberImg.setPosition(0, 40);
+		spinner.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
+		spinner.setPosition(0, 40);
 
 		cancelBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::BOTTOM);
 		cancelBtn.setPosition(0, -25);
 		cancelBtn.setLabel(&cancelTxt);
 		cancelBtn.setImage(&cancelImg);
-		cancelBtn.setImageOver(&cancelImgOver);
 		cancelTrigB.setSecondaryTrigger();
 	}
 
@@ -317,27 +294,24 @@ void ProgressOverlayState::update() {
 			titleTxt.setText(title);
 			msgTxt.setText(msg);
 
-			progressWindow.remove(&progressbarEmptyImg);
-			progressWindow.remove(&progressbarImg);
-			progressWindow.remove(&progressbarOutlineImg);
-			progressWindow.remove(&throbberImg);
+			progressWindow.remove(&progressBar);
+			progressWindow.remove(&spinner);
 			progressWindow.remove(&cancelBtn);
-			throbberImg.setPosition(0, 40);
+			spinner.setPosition(0, 40);
 
 			if(progress == 1)
 			{
-				progressWindow.append(&progressbarEmptyImg);
-				progressWindow.append(&progressbarImg);
-				progressWindow.append(&progressbarOutlineImg);
+				progressBar.setProgress(0);
+				progressWindow.append(&progressBar);
 			}
 			else
 			{
-				progressWindow.append(&throbberImg);
+				progressWindow.append(&spinner);
 
 				if(cancelFn)
 				{
 					// Move the throbber up so the button fits below
-					throbberImg.setPosition(0, 15);
+					spinner.setPosition(0, 15);
 					cancelBtn.setSoundOver(&menu->btnSoundOver);
 					cancelBtn.setSoundClick(&menu->btnSoundClick);
 					cancelBtn.setTrigger(0, trigA);
@@ -364,7 +338,7 @@ void ProgressOverlayState::update() {
 	{
 		if(progress == 1 && total > 0)
 		{
-			progressbarImg.setTile(100*done/total);
+			progressBar.setProgress((int)(100*done/total));
 		}
 		else if(progress == 2)
 		{
@@ -373,7 +347,7 @@ void ProgressOverlayState::update() {
 				angle += 45.0f;
 				if(angle >= 360.0f)
 					angle = 0;
-				throbberImg.setAngle(angle);
+				spinner.setPhase((int)(angle / 45.0f));
 			}
 			++count;
 		}
@@ -427,21 +401,20 @@ static bool UpdateGui();
 static void CreditsWindow()
 {
 	int i = 0;
-	int y = 20;
+	int y = 14;
 
-	GuiWindow creditsWindowBox(580,448);
+	GuiWindow creditsWindowBox(MENU_CREDITS_W, MENU_CREDITS_H);
 	creditsWindowBox.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 
-	GuiImageData creditsBox(credits_box_png);
-	GuiImage creditsBoxImg(&creditsBox);
-	creditsBoxImg.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
+	MenuDialogShape creditsBoxImg(MENU_CREDITS_W, MENU_CREDITS_H, MENU_CREDITS_HEADER_H);
 	creditsWindowBox.append(&creditsBoxImg);
 
 	int numEntries = 26;
 	GuiText * txt[numEntries];
 
-	txt[i] = new GuiText("Credits", 30, (PixelColor){0, 0, 0, 255});
-	txt[i]->setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP); txt[i]->setPosition(0,y); i++; y+=32;
+	// the title sits on the dialog's chrome band, so it is white; the credits start below the band
+	txt[i] = new GuiText("Credits", 30, (PixelColor){255, 255, 255, 255});
+	txt[i]->setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP); txt[i]->setPosition(0,y); i++; y+=56;
 
 	txt[i] = new GuiText("Official Site: https://github.com/dborth/fceugx", 20, (PixelColor){0, 0, 0, 255});
 	txt[i]->setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP); txt[i]->setPosition(0,y); i++; y+=32;
@@ -658,14 +631,11 @@ static int WindowPrompt(const char *title, const char *msg, const char *btn1Labe
 	promptWindow.setPosition(0, -10);
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_prompt_png);
-	GuiImageData btnOutlineOver(button_prompt_over_png);
 
 	GuiTrigger trigB;
 	trigB.setSecondaryTrigger();
 
-	GuiImageData dialogBox(dialogue_box_png);
-	GuiImage dialogBoxImg(&dialogBox);
+	MenuDialogShape dialogBoxImg(MENU_DIALOG_W, MENU_DIALOG_H, MENU_DIALOG_HEADER_H);
 
 	GuiText titleTxt(title, 26, (PixelColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
@@ -676,9 +646,8 @@ static int WindowPrompt(const char *title, const char *msg, const char *btn1Labe
 	msgTxt.setWrap(true, 430);
 
 	GuiText btn1Txt(btn1Label, 22, (PixelColor){0, 0, 0, 255});
-	GuiImage btn1Img(&btnOutline);
-	GuiImage btn1ImgOver(&btnOutlineOver);
-	GuiButton btn1(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape btn1Img(MenuButtonShape::NORMAL);
+	GuiButton btn1(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 
 	if(btn2Label)
 	{
@@ -694,7 +663,6 @@ static int WindowPrompt(const char *title, const char *msg, const char *btn1Labe
 
 	btn1.setLabel(&btn1Txt);
 	btn1.setImage(&btn1Img);
-	btn1.setImageOver(&btn1ImgOver);
 	btn1.setSoundOver(&btnSoundOver);
 	btn1.setSoundClick(&btnSoundClick);
 	btn1.setTrigger(trigA);
@@ -702,14 +670,12 @@ static int WindowPrompt(const char *title, const char *msg, const char *btn1Labe
 	btn1.setEffectGrow();
 
 	GuiText btn2Txt(btn2Label, 22, (PixelColor){0, 0, 0, 255});
-	GuiImage btn2Img(&btnOutline);
-	GuiImage btn2ImgOver(&btnOutlineOver);
-	GuiButton btn2(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape btn2Img(MenuButtonShape::NORMAL);
+	GuiButton btn2(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	btn2.setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	btn2.setPosition(-20, -25);
 	btn2.setLabel(&btn2Txt);
 	btn2.setImage(&btn2Img);
-	btn2.setImageOver(&btn2ImgOver);
 	btn2.setSoundOver(&btnSoundOver);
 	btn2.setSoundClick(&btnSoundClick);
 	btn2.setTrigger(trigA);
@@ -896,34 +862,28 @@ static void OnScreenKeyboard(char * var, uint32_t maxlen)
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
 
 	GuiText okBtnTxt("OK", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage okBtnImg(&btnOutline);
-	GuiImage okBtnImgOver(&btnOutlineOver);
-	GuiButton okBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape okBtnImg(MenuButtonShape::NORMAL);
+	GuiButton okBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 
 	okBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	okBtn.setPosition(25, -25);
 
 	okBtn.setLabel(&okBtnTxt);
 	okBtn.setImage(&okBtnImg);
-	okBtn.setImageOver(&okBtnImgOver);
 	okBtn.setSoundOver(&btnSoundOver);
 	okBtn.setSoundClick(&btnSoundClick);
 	okBtn.setTrigger(trigA);
 	okBtn.setEffectGrow();
 
 	GuiText cancelBtnTxt("Cancel", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage cancelBtnImg(&btnOutline);
-	GuiImage cancelBtnImgOver(&btnOutlineOver);
-	GuiButton cancelBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape cancelBtnImg(MenuButtonShape::NORMAL);
+	GuiButton cancelBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	cancelBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	cancelBtn.setPosition(-25, -25);
 	cancelBtn.setLabel(&cancelBtnTxt);
 	cancelBtn.setImage(&cancelBtnImg);
-	cancelBtn.setImageOver(&cancelBtnImgOver);
 	cancelBtn.setSoundOver(&btnSoundOver);
 	cancelBtn.setSoundClick(&btnSoundClick);
 	cancelBtn.setTrigger(trigA);
@@ -969,41 +929,34 @@ SettingWindow(const char * title, GuiWindow * w)
 	promptWindow.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
 
-	GuiImageData dialogBox(dialogue_box_png);
-	GuiImage dialogBoxImg(&dialogBox);
+	MenuDialogShape dialogBoxImg(MENU_DIALOG_W, MENU_DIALOG_H, MENU_DIALOG_HEADER_H);
 
 	GuiText titleTxt(title, 26, (PixelColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	titleTxt.setPosition(0,14);
 
 	GuiText okBtnTxt("OK", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage okBtnImg(&btnOutline);
-	GuiImage okBtnImgOver(&btnOutlineOver);
-	GuiButton okBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape okBtnImg(MenuButtonShape::NORMAL);
+	GuiButton okBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 
 	okBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	okBtn.setPosition(20, -25);
 
 	okBtn.setLabel(&okBtnTxt);
 	okBtn.setImage(&okBtnImg);
-	okBtn.setImageOver(&okBtnImgOver);
 	okBtn.setSoundOver(&btnSoundOver);
 	okBtn.setSoundClick(&btnSoundClick);
 	okBtn.setTrigger(trigA);
 	okBtn.setEffectGrow();
 
 	GuiText cancelBtnTxt("Cancel", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage cancelBtnImg(&btnOutline);
-	GuiImage cancelBtnImgOver(&btnOutlineOver);
-	GuiButton cancelBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape cancelBtnImg(MenuButtonShape::NORMAL);
+	GuiButton cancelBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	cancelBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
 	cancelBtn.setPosition(-20, -25);
 	cancelBtn.setLabel(&cancelBtnTxt);
 	cancelBtn.setImage(&cancelBtnImg);
-	cancelBtn.setImageOver(&cancelBtnImgOver);
 	cancelBtn.setSoundOver(&btnSoundOver);
 	cancelBtn.setSoundClick(&btnSoundClick);
 	cancelBtn.setTrigger(trigA);
@@ -1523,26 +1476,18 @@ static void ControllerWindow()
 	GuiTrigger trigRight;
 	trigRight.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
 
-	GuiImageData arrowLeft(button_arrow_left_png);
-	GuiImage arrowLeftImg(&arrowLeft);
-	GuiImageData arrowLeftOver(button_arrow_left_over_png);
-	GuiImage arrowLeftOverImg(&arrowLeftOver);
-	GuiButton arrowLeftBtn(arrowLeft.getWidth(), arrowLeft.getHeight());
+	MenuArrowImage arrowLeftImg(ARROW::LEFT);
+	GuiButton arrowLeftBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowLeftBtn.setImage(&arrowLeftImg);
-	arrowLeftBtn.setImageOver(&arrowLeftOverImg);
 	arrowLeftBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	arrowLeftBtn.setTrigger(trigA);
 	arrowLeftBtn.setTrigger(&trigLeft);
 	arrowLeftBtn.setSelectable(false);
 	arrowLeftBtn.setUpdateCallback(ControllerWindowLeftClick);
 
-	GuiImageData arrowRight(button_arrow_right_png);
-	GuiImage arrowRightImg(&arrowRight);
-	GuiImageData arrowRightOver(button_arrow_right_over_png);
-	GuiImage arrowRightOverImg(&arrowRightOver);
-	GuiButton arrowRightBtn(arrowRight.getWidth(), arrowRight.getHeight());
+	MenuArrowImage arrowRightImg(ARROW::RIGHT);
+	GuiButton arrowRightBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowRightBtn.setImage(&arrowRightImg);
-	arrowRightBtn.setImageOver(&arrowRightOverImg);
 	arrowRightBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::MIDDLE);
 	arrowRightBtn.setTrigger(trigA);
 	arrowRightBtn.setTrigger(&trigRight);
@@ -1603,26 +1548,18 @@ static void PlayerMappingWindow(int chan)
 	GuiTrigger trigRight;
 	trigRight.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
 
-	GuiImageData arrowLeft(button_arrow_left_png);
-	GuiImage arrowLeftImg(&arrowLeft);
-	GuiImageData arrowLeftOver(button_arrow_left_over_png);
-	GuiImage arrowLeftOverImg(&arrowLeftOver);
-	GuiButton arrowLeftBtn(arrowLeft.getWidth(), arrowLeft.getHeight());
+	MenuArrowImage arrowLeftImg(ARROW::LEFT);
+	GuiButton arrowLeftBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowLeftBtn.setImage(&arrowLeftImg);
-	arrowLeftBtn.setImageOver(&arrowLeftOverImg);
 	arrowLeftBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	arrowLeftBtn.setTrigger(trigA);
 	arrowLeftBtn.setTrigger(&trigLeft);
 	arrowLeftBtn.setSelectable(false);
 	arrowLeftBtn.setUpdateCallback(PlayerMappingWindowLeftClick);
 
-	GuiImageData arrowRight(button_arrow_right_png);
-	GuiImage arrowRightImg(&arrowRight);
-	GuiImageData arrowRightOver(button_arrow_right_over_png);
-	GuiImage arrowRightOverImg(&arrowRightOver);
-	GuiButton arrowRightBtn(arrowRight.getWidth(), arrowRight.getHeight());
+	MenuArrowImage arrowRightImg(ARROW::RIGHT);
+	GuiButton arrowRightBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowRightBtn.setImage(&arrowRightImg);
-	arrowRightBtn.setImageOver(&arrowRightOverImg);
 	arrowRightBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::MIDDLE);
 	arrowRightBtn.setTrigger(trigA);
 	arrowRightBtn.setTrigger(&trigRight);
@@ -1683,10 +1620,6 @@ static int MenuGame()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
-	GuiImageData btnCloseOutline(button_small_png);
-	GuiImageData btnCloseOutlineOver(button_small_over_png);
 	MenuIconData iconGameSettings(icon_game_settings_png);
 	MenuIconData iconLoad(icon_game_load_png);
 	MenuIconData iconSave(icon_game_save_png);
@@ -1777,28 +1710,24 @@ static int MenuGame()
 	if(EmuSettings.autoloadGame) {
 		mainmenuBtnTxt.setText("Exit");
 	}
-	GuiImage mainmenuBtnImg(&btnOutline);
-	GuiImage mainmenuBtnImgOver(&btnOutlineOver);
-	GuiButton mainmenuBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape mainmenuBtnImg(MenuButtonShape::NORMAL);
+	GuiButton mainmenuBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	mainmenuBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::BOTTOM);
 	mainmenuBtn.setPosition(0, -35);
 	mainmenuBtn.setLabel(&mainmenuBtnTxt);
 	mainmenuBtn.setImage(&mainmenuBtnImg);
-	mainmenuBtn.setImageOver(&mainmenuBtnImgOver);
 	mainmenuBtn.setSoundOver(&btnSoundOver);
 	mainmenuBtn.setSoundClick(&btnSoundClick);
 	mainmenuBtn.setTrigger(trigA);
 	mainmenuBtn.setEffectGrow();
 
 	GuiText closeBtnTxt("Close", 20, (PixelColor){0, 0, 0, 255});
-	GuiImage closeBtnImg(&btnCloseOutline);
-	GuiImage closeBtnImgOver(&btnCloseOutlineOver);
-	GuiButton closeBtn(btnCloseOutline.getWidth(), btnCloseOutline.getHeight());
+	MenuButtonShape closeBtnImg(MenuButtonShape::SMALL);
+	GuiButton closeBtn(MENU_BTN_SMALL_W, MENU_BTN_SMALL_H);
 	closeBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
 	closeBtn.setPosition(-50, 35);
 	closeBtn.setLabel(&closeBtnTxt);
 	closeBtn.setImage(&closeBtnImg);
-	closeBtn.setImageOver(&closeBtnImgOver);
 	closeBtn.setSoundOver(&btnSoundOver);
 	closeBtn.setSoundClick(&btnSoundClick);
 	closeBtn.setTrigger(trigA);
@@ -2278,10 +2207,6 @@ static int MenuGameSaves(int action)
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
-	GuiImageData btnCloseOutline(button_small_png);
-	GuiImageData btnCloseOutlineOver(button_small_over_png);
 
 	GuiTrigger trigHome;
 	GuiTrigger trigB;
@@ -2289,14 +2214,12 @@ static int MenuGameSaves(int action)
 	trigB.setSecondaryTrigger();
 	
 	GuiText backBtnTxt("Go Back", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape backBtnImg(MenuButtonShape::NORMAL);
+	GuiButton backBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
-	backBtn.setImageOver(&backBtnImgOver);
 	backBtn.setSoundOver(&btnSoundOver);
 	backBtn.setSoundClick(&btnSoundClick);
 	backBtn.setTrigger(trigA);
@@ -2304,14 +2227,12 @@ static int MenuGameSaves(int action)
 	backBtn.setEffectGrow();
 
 	GuiText closeBtnTxt("Close", 20, (PixelColor){0, 0, 0, 255});
-	GuiImage closeBtnImg(&btnCloseOutline);
-	GuiImage closeBtnImgOver(&btnCloseOutlineOver);
-	GuiButton closeBtn(btnCloseOutline.getWidth(), btnCloseOutline.getHeight());
+	MenuButtonShape closeBtnImg(MenuButtonShape::SMALL);
+	GuiButton closeBtn(MENU_BTN_SMALL_W, MENU_BTN_SMALL_H);
 	closeBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
 	closeBtn.setPosition(-50, 35);
 	closeBtn.setLabel(&closeBtnTxt);
 	closeBtn.setImage(&closeBtnImg);
-	closeBtn.setImageOver(&closeBtnImgOver);
 	closeBtn.setSoundOver(&btnSoundOver);
 	closeBtn.setSoundClick(&btnSoundClick);
 	closeBtn.setTrigger(trigA);
@@ -2475,16 +2396,12 @@ static int MenuGameSettings()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
 	MenuIconData iconMappings(icon_settings_mappings_png, -4.0f);
 	MenuIconData iconVideo(icon_settings_video_png);
 	MenuIconData iconEmulation(icon_settings_emulation_png);
 	MenuIconData iconController(icon_game_controllers_png);
 	MenuIconData iconCheats(icon_game_cheats_png);
 	MenuIconData iconScreenshot(icon_settings_screenshot_png);
-	GuiImageData btnCloseOutline(button_small_png);
-	GuiImageData btnCloseOutlineOver(button_small_over_png);
 
 	GuiTrigger trigHome;
 	GuiTrigger trigB;
@@ -2579,14 +2496,12 @@ static int MenuGameSettings()
 	cheatsBtn.setEffectGrow();
 
 	GuiText closeBtnTxt("Close", 20, (PixelColor){0, 0, 0, 255});
-	GuiImage closeBtnImg(&btnCloseOutline);
-	GuiImage closeBtnImgOver(&btnCloseOutlineOver);
-	GuiButton closeBtn(btnCloseOutline.getWidth(), btnCloseOutline.getHeight());
+	MenuButtonShape closeBtnImg(MenuButtonShape::SMALL);
+	GuiButton closeBtn(MENU_BTN_SMALL_W, MENU_BTN_SMALL_H);
 	closeBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
 	closeBtn.setPosition(-50, 35);
 	closeBtn.setLabel(&closeBtnTxt);
 	closeBtn.setImage(&closeBtnImg);
-	closeBtn.setImageOver(&closeBtnImgOver);
 	closeBtn.setSoundOver(&btnSoundOver);
 	closeBtn.setSoundClick(&btnSoundClick);
 	closeBtn.setTrigger(trigA);
@@ -2594,14 +2509,12 @@ static int MenuGameSettings()
 	closeBtn.setEffectGrow();
 
 	GuiText backBtnTxt("Go Back", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape backBtnImg(MenuButtonShape::NORMAL);
+	GuiButton backBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
-	backBtn.setImageOver(&backBtnImgOver);
 	backBtn.setSoundOver(&btnSoundOver);
 	backBtn.setSoundClick(&btnSoundClick);
 	backBtn.setTrigger(trigA);
@@ -2720,10 +2633,6 @@ static int MenuGameCheats()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
-	GuiImageData btnCloseOutline(button_small_png);
-	GuiImageData btnCloseOutlineOver(button_small_over_png);
 
 	GuiTrigger trigHome;
 	GuiTrigger trigB;
@@ -2731,14 +2640,12 @@ static int MenuGameCheats()
 	trigB.setSecondaryTrigger();
 	
 	GuiText backBtnTxt("Go Back", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape backBtnImg(MenuButtonShape::NORMAL);
+	GuiButton backBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
-	backBtn.setImageOver(&backBtnImgOver);
 	backBtn.setSoundOver(&btnSoundOver);
 	backBtn.setSoundClick(&btnSoundClick);
 	backBtn.setTrigger(trigA);
@@ -2790,8 +2697,6 @@ static int MenuSettingsMappings()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
 	MenuIconData iconNESController(icon_settings_nescontroller_png);
 	MenuIconData iconZapper(icon_settings_zapper_png);
 
@@ -2841,14 +2746,12 @@ static int MenuSettingsMappings()
 	otherBtn.setEffectGrow();
 
 	GuiText backBtnTxt("Go Back", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape backBtnImg(MenuButtonShape::NORMAL);
+	GuiButton backBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
-	backBtn.setImageOver(&backBtnImgOver);
 	backBtn.setSoundOver(&btnSoundOver);
 	backBtn.setSoundClick(&btnSoundClick);
 	backBtn.setTrigger(trigA);
@@ -2910,8 +2813,6 @@ static int MenuSettingsMappingsController()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
 	MenuIconData iconWiimote(icon_settings_wiimote_png);
 	MenuIconData iconClassic(icon_settings_classic_png);
 	MenuIconData iconGamecube(icon_settings_gamecube_png);
@@ -3017,14 +2918,12 @@ static int MenuSettingsMappingsController()
 	wiiuproBtn.setEffectGrow();
 
 	GuiText backBtnTxt("Go Back", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape backBtnImg(MenuButtonShape::NORMAL);
+	GuiButton backBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
-	backBtn.setImageOver(&backBtnImgOver);
 	backBtn.setSoundOver(&btnSoundOver);
 	backBtn.setSoundClick(&btnSoundClick);
 	backBtn.setTrigger(trigA);
@@ -3109,11 +3008,8 @@ static uint32_t ButtonMappingWindow()
 	promptWindow.setPosition(0, -10);
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
 
-	GuiImageData dialogBox(dialogue_box_png);
-	GuiImage dialogBoxImg(&dialogBox);
+	MenuDialogShape dialogBoxImg(MENU_DIALOG_W, MENU_DIALOG_H, MENU_DIALOG_HEADER_H);
 
 	GuiText titleTxt("Button Mapping", 26, (PixelColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
@@ -3230,34 +3126,26 @@ static int MenuSettingsMappingsMap()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
-	GuiImageData btnShortOutline(button_short_png);
-	GuiImageData btnShortOutlineOver(button_short_over_png);
 
 	GuiText backBtnTxt("Go Back", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape backBtnImg(MenuButtonShape::NORMAL);
+	GuiButton backBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
-	backBtn.setImageOver(&backBtnImgOver);
 	backBtn.setSoundOver(&btnSoundOver);
 	backBtn.setSoundClick(&btnSoundClick);
 	backBtn.setTrigger(trigA);
 	backBtn.setEffectGrow();
 
 	GuiText resetBtnTxt("Reset Mappings", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage resetBtnImg(&btnShortOutline);
-	GuiImage resetBtnImgOver(&btnShortOutlineOver);
-	GuiButton resetBtn(btnShortOutline.getWidth(), btnShortOutline.getHeight());
+	MenuButtonShape resetBtnImg(MenuButtonShape::SHORT);
+	GuiButton resetBtn(MENU_BTN_SHORT_W, MENU_BTN_SHORT_H);
 	resetBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	resetBtn.setPosition(260, -35);
 	resetBtn.setLabel(&resetBtnTxt);
 	resetBtn.setImage(&resetBtnImg);
-	resetBtn.setImageOver(&resetBtnImgOver);
 	resetBtn.setSoundOver(&btnSoundOver);
 	resetBtn.setSoundClick(&btnSoundClick);
 	resetBtn.setTrigger(trigA);
@@ -3411,13 +3299,9 @@ static void ScreenZoomWindow()
 	GuiTrigger trigDown;
 	trigDown.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_DOWN);
 
-	GuiImageData arrowLeft(button_arrow_left_png);
-	GuiImage arrowLeftImg(&arrowLeft);
-	GuiImageData arrowLeftOver(button_arrow_left_over_png);
-	GuiImage arrowLeftOverImg(&arrowLeftOver);
-	GuiButton arrowLeftBtn(arrowLeft.getWidth(), arrowLeft.getHeight());
+	MenuArrowImage arrowLeftImg(ARROW::LEFT);
+	GuiButton arrowLeftBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowLeftBtn.setImage(&arrowLeftImg);
-	arrowLeftBtn.setImageOver(&arrowLeftOverImg);
 	arrowLeftBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	arrowLeftBtn.setPosition(50, 0);
 	arrowLeftBtn.setTrigger(trigA);
@@ -3425,13 +3309,9 @@ static void ScreenZoomWindow()
 	arrowLeftBtn.setSelectable(false);
 	arrowLeftBtn.setUpdateCallback(ScreenZoomWindowLeftClick);
 
-	GuiImageData arrowRight(button_arrow_right_png);
-	GuiImage arrowRightImg(&arrowRight);
-	GuiImageData arrowRightOver(button_arrow_right_over_png);
-	GuiImage arrowRightOverImg(&arrowRightOver);
-	GuiButton arrowRightBtn(arrowRight.getWidth(), arrowRight.getHeight());
+	MenuArrowImage arrowRightImg(ARROW::RIGHT);
+	GuiButton arrowRightBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowRightBtn.setImage(&arrowRightImg);
-	arrowRightBtn.setImageOver(&arrowRightOverImg);
 	arrowRightBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	arrowRightBtn.setPosition(164, 0);
 	arrowRightBtn.setTrigger(trigA);
@@ -3439,13 +3319,9 @@ static void ScreenZoomWindow()
 	arrowRightBtn.setSelectable(false);
 	arrowRightBtn.setUpdateCallback(ScreenZoomWindowRightClick);
 
-	GuiImageData arrowUp(button_arrow_up_png);
-	GuiImage arrowUpImg(&arrowUp);
-	GuiImageData arrowUpOver(button_arrow_up_over_png);
-	GuiImage arrowUpOverImg(&arrowUpOver);
-	GuiButton arrowUpBtn(arrowUp.getWidth(), arrowUp.getHeight());
+	MenuArrowImage arrowUpImg(ARROW::UP);
+	GuiButton arrowUpBtn(MENU_ARROW_HIT_LONG, MENU_ARROW_HIT_SHORT);
 	arrowUpBtn.setImage(&arrowUpImg);
-	arrowUpBtn.setImageOver(&arrowUpOverImg);
 	arrowUpBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	arrowUpBtn.setPosition(-76, -27);
 	arrowUpBtn.setTrigger(trigA);
@@ -3453,13 +3329,9 @@ static void ScreenZoomWindow()
 	arrowUpBtn.setSelectable(false);
 	arrowUpBtn.setUpdateCallback(ScreenZoomWindowUpClick);
 
-	GuiImageData arrowDown(button_arrow_down_png);
-	GuiImage arrowDownImg(&arrowDown);
-	GuiImageData arrowDownOver(button_arrow_down_over_png);
-	GuiImage arrowDownOverImg(&arrowDownOver);
-	GuiButton arrowDownBtn(arrowDown.getWidth(), arrowDown.getHeight());
+	MenuArrowImage arrowDownImg(ARROW::DOWN);
+	GuiButton arrowDownBtn(MENU_ARROW_HIT_LONG, MENU_ARROW_HIT_SHORT);
 	arrowDownBtn.setImage(&arrowDownImg);
-	arrowDownBtn.setImageOver(&arrowDownOverImg);
 	arrowDownBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 	arrowDownBtn.setPosition(-76, 27);
 	arrowDownBtn.setTrigger(trigA);
@@ -3548,52 +3420,36 @@ static void ScreenPositionWindow()
 	GuiTrigger trigDown;
 	trigDown.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_DOWN);
 
-	GuiImageData arrowLeft(button_arrow_left_png);
-	GuiImage arrowLeftImg(&arrowLeft);
-	GuiImageData arrowLeftOver(button_arrow_left_over_png);
-	GuiImage arrowLeftOverImg(&arrowLeftOver);
-	GuiButton arrowLeftBtn(arrowLeft.getWidth(), arrowLeft.getHeight());
+	MenuArrowImage arrowLeftImg(ARROW::LEFT);
+	GuiButton arrowLeftBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowLeftBtn.setImage(&arrowLeftImg);
-	arrowLeftBtn.setImageOver(&arrowLeftOverImg);
 	arrowLeftBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 	arrowLeftBtn.setTrigger(trigA);
 	arrowLeftBtn.setTrigger(&trigLeft);
 	arrowLeftBtn.setSelectable(false);
 	arrowLeftBtn.setUpdateCallback(ScreenPositionWindowLeftClick);
 
-	GuiImageData arrowRight(button_arrow_right_png);
-	GuiImage arrowRightImg(&arrowRight);
-	GuiImageData arrowRightOver(button_arrow_right_over_png);
-	GuiImage arrowRightOverImg(&arrowRightOver);
-	GuiButton arrowRightBtn(arrowRight.getWidth(), arrowRight.getHeight());
+	MenuArrowImage arrowRightImg(ARROW::RIGHT);
+	GuiButton arrowRightBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowRightBtn.setImage(&arrowRightImg);
-	arrowRightBtn.setImageOver(&arrowRightOverImg);
 	arrowRightBtn.setAlignment(ALIGN_H::RIGHT, ALIGN_V::MIDDLE);
 	arrowRightBtn.setTrigger(trigA);
 	arrowRightBtn.setTrigger(&trigRight);
 	arrowRightBtn.setSelectable(false);
 	arrowRightBtn.setUpdateCallback(ScreenPositionWindowRightClick);
 
-	GuiImageData arrowUp(button_arrow_up_png);
-	GuiImage arrowUpImg(&arrowUp);
-	GuiImageData arrowUpOver(button_arrow_up_over_png);
-	GuiImage arrowUpOverImg(&arrowUpOver);
-	GuiButton arrowUpBtn(arrowUp.getWidth(), arrowUp.getHeight());
+	MenuArrowImage arrowUpImg(ARROW::UP);
+	GuiButton arrowUpBtn(MENU_ARROW_HIT_LONG, MENU_ARROW_HIT_SHORT);
 	arrowUpBtn.setImage(&arrowUpImg);
-	arrowUpBtn.setImageOver(&arrowUpOverImg);
 	arrowUpBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	arrowUpBtn.setTrigger(trigA);
 	arrowUpBtn.setTrigger(&trigUp);
 	arrowUpBtn.setSelectable(false);
 	arrowUpBtn.setUpdateCallback(ScreenPositionWindowUpClick);
 
-	GuiImageData arrowDown(button_arrow_down_png);
-	GuiImage arrowDownImg(&arrowDown);
-	GuiImageData arrowDownOver(button_arrow_down_over_png);
-	GuiImage arrowDownOverImg(&arrowDownOver);
-	GuiButton arrowDownBtn(arrowDown.getWidth(), arrowDown.getHeight());
+	MenuArrowImage arrowDownImg(ARROW::DOWN);
+	GuiButton arrowDownBtn(MENU_ARROW_HIT_LONG, MENU_ARROW_HIT_SHORT);
 	arrowDownBtn.setImage(&arrowDownImg);
-	arrowDownBtn.setImageOver(&arrowDownOverImg);
 	arrowDownBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::BOTTOM);
 	arrowDownBtn.setTrigger(trigA);
 	arrowDownBtn.setTrigger(&trigDown);
@@ -3657,21 +3513,17 @@ static int MenuSettingsOtherMappings()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
 
 	GuiTrigger trigB;
 	trigB.setSecondaryTrigger();
 
 	GuiText backBtnTxt("Go Back", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape backBtnImg(MenuButtonShape::NORMAL);
+	GuiButton backBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
-	backBtn.setImageOver(&backBtnImgOver);
 	backBtn.setSoundOver(&btnSoundOver);
 	backBtn.setSoundClick(&btnSoundClick);
 	backBtn.setTrigger(trigA);
@@ -3820,21 +3672,17 @@ static int MenuSettingsVideo()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
 
 	GuiTrigger trigB;
 	trigB.setSecondaryTrigger();
 
 	GuiText backBtnTxt("Go Back", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape backBtnImg(MenuButtonShape::NORMAL);
+	GuiButton backBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
-	backBtn.setImageOver(&backBtnImgOver);
 	backBtn.setSoundOver(&btnSoundOver);
 	backBtn.setSoundClick(&btnSoundClick);
 	backBtn.setTrigger(trigA);
@@ -4014,21 +3862,17 @@ static int MenuSettingsEmulation()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData btnOutline(button_png);
-	GuiImageData btnOutlineOver(button_over_png);
 
 	GuiTrigger trigB;
 	trigB.setSecondaryTrigger();
 
 	GuiText backBtnTxt("Go Back", 22, (PixelColor){0, 0, 0, 255});
-	GuiImage backBtnImg(&btnOutline);
-	GuiImage backBtnImgOver(&btnOutlineOver);
-	GuiButton backBtn(btnOutline.getWidth(), btnOutline.getHeight());
+	MenuButtonShape backBtnImg(MenuButtonShape::NORMAL);
+	GuiButton backBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
 	backBtn.setImage(&backBtnImg);
-	backBtn.setImageOver(&backBtnImgOver);
 	backBtn.setSoundOver(&btnSoundOver);
 	backBtn.setSoundClick(&btnSoundClick);
 	backBtn.setTrigger(trigA);

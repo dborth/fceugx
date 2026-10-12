@@ -7,6 +7,32 @@
 
 #include "Gui.h"
 
+// Layout of the browser, in design pixels: one rounded card, rows inset from its edge,
+// the scrollbar column down the right side. Matches GuiFileBrowser.
+#define OB_PAD				6		// card edge to rows, and top/bottom of the scrollbar column
+#define OB_ROW_HEIGHT		30		// the highlight pill is 2 shorter, leaving a gap between rows
+#define OB_ROW_TEXT_Y		2		// text sits this far below the row's middle (see GuiFileBrowser)
+#define OB_ROW_GAP			6		// rows to scrollbar column
+#define OB_SB_WIDTH			22		// scrollbar column (arrow buttons)
+#define OB_SB_INSET			7		// column to card's right edge
+#define OB_SB_ARROW			22
+#define OB_SB_TRACK_WIDTH	6
+#define OB_SB_TRACK_Y		(OB_PAD + OB_SB_ARROW + 6)
+#define OB_THUMB_WIDTH		14
+#define OB_THUMB_MIN_HEIGHT	24
+#define OB_TEXT_X			12
+#define OB_TEXT_PAD			6		// room kept at a column's right end
+
+//! The selected-row tint a little deeper, for the moment the row is clicked
+static PixelColor optionRowPressColor(PixelColor tint, PixelColor accent)
+{
+	PixelColor c = tint;
+	c.r = (uint8_t)(tint.r + (accent.r - tint.r) * 0.18f + 0.5f);
+	c.g = (uint8_t)(tint.g + (accent.g - tint.g) * 0.18f + 0.5f);
+	c.b = (uint8_t)(tint.b + (accent.b - tint.b) * 0.18f + 0.5f);
+	return c;
+}
+
 GuiOptionBrowser::GuiOptionBrowser(int w, int h, OptionList * l)
 {
 	width = w;
@@ -17,6 +43,15 @@ GuiOptionBrowser::GuiOptionBrowser(int w, int h, OptionList * l)
 	listChanged = true; // trigger an initial list update
 	selectedItem = 0;
 	focus = 0; // allow focus
+	visibleCount = 0;
+	visiblePos = 0;
+	col1X = OB_TEXT_X;
+	col2X = 400;
+
+	const GuiTheme& theme = GuiTheme::current();
+	rowWidth = w - OB_PAD - OB_ROW_GAP - OB_SB_WIDTH - OB_SB_INSET;
+	trackHeight = h - 2 * OB_SB_TRACK_Y;
+	const int rowTop = (h - OPTION_PAGESIZE * OB_ROW_HEIGHT) / 2;	// rows centred in the card
 
 	trigA = new GuiTrigger;
 	trigA->setPrimaryTrigger();
@@ -24,78 +59,101 @@ GuiOptionBrowser::GuiOptionBrowser(int w, int h, OptionList * l)
 	btnSoundOver = new GuiSound(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	btnSoundClick = new GuiSound(button_click_pcm, button_click_pcm_size, SOUND::PCM);
 
-	bgOptions = new GuiImageData(bg_options_png);
-	bgOptionsImg = new GuiImage(bgOptions);
-	bgOptionsImg->setParent(this);
-	bgOptionsImg->setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
+	// the card everything sits on
+	cardShape = new GuiShape(w, h);
+	cardShape->setParent(this);
+	cardShape->setCorners(GuiCorners(theme.radius));
+	cardShape->setStyle(theme.cardStyle());
 
-	bgOptionsEntry = new GuiImageData(bg_options_entry_png);
-	bgOptionsEntryTop = new GuiImageData(bg_options_entry_top_png);
-	bgOptionsEntryBottom = new GuiImageData(bg_options_entry_bottom_png);
+	// scrollbar: a thin track with a thumb showing the position, and round arrow buttons
+	// that gray at rest and take the accent color when the pointer is on them
+	trackShape = new GuiShape(OB_SB_TRACK_WIDTH, trackHeight);
+	trackShape->setParent(this);
+	trackShape->setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
+	trackShape->setPosition(-(OB_SB_INSET + (OB_SB_WIDTH - OB_SB_TRACK_WIDTH) / 2), OB_SB_TRACK_Y);
+	trackShape->setCapsule();
+	trackShape->setPaint(GuiPaint().color(theme.outline));
 
-	scrollbar = new GuiImageData(scrollbar_png);
-	scrollbarImg = new GuiImage(scrollbar);
-	scrollbarImg->setParent(this);
-	scrollbarImg->setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
-	scrollbarImg->setPosition(0, 30);
+	thumbShape = new GuiShape(OB_THUMB_WIDTH, trackHeight);
+	thumbShape->setParent(this);
+	thumbShape->setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
+	thumbShape->setCapsule();
+	thumbShape->setPaint(GuiPaint().color(theme.outlineStrong));
+	thumbShape->setVisible(false);
 
-	arrowDown = new GuiImageData(scrollbar_arrowdown_png);
-	arrowDownImg = new GuiImage(arrowDown);
-	arrowDownOver = new GuiImageData(scrollbar_arrowdown_over_png);
-	arrowDownOverImg = new GuiImage(arrowDownOver);
-	arrowUp = new GuiImageData(scrollbar_arrowup_png);
-	arrowUpImg = new GuiImage(arrowUp);
-	arrowUpOver = new GuiImageData(scrollbar_arrowup_over_png);
-	arrowUpOverImg = new GuiImage(arrowUpOver);
+	const GuiPaint controlRest = GuiPaint().color(theme.surfaceRaised).stroke(1.5f, theme.outline);
+	const GuiPaint controlLit = GuiPaint().color(theme.accent).stroke(1.5f, theme.accent);
+	const GuiPaint controlHeld = GuiPaint().color(theme.accentDark).stroke(1.5f, theme.accentDark);
+	const GuiShapeStyle controlStyle = GuiShapeStyle(controlRest).onFocus(controlLit).onPress(controlHeld);
 
-	arrowUpBtn = new GuiButton(arrowUpImg->getWidth(), arrowUpImg->getHeight());
+	arrowUpShape = new GuiShape(OB_SB_ARROW, OB_SB_ARROW);
+	arrowUpShape->setShape(SHAPE::ELLIPSE);
+	arrowUpShape->setStyle(controlStyle);
+	arrowUpShape->setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
+	arrowUpGlyph = new GuiArrow(ARROW::UP, 10, 7, theme.textMuted, theme.textOnAccent);
+	arrowUpGlyph->setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
+	arrowUpGlyph->setPosition(0, -1);
+
+	arrowDownShape = new GuiShape(OB_SB_ARROW, OB_SB_ARROW);
+	arrowDownShape->setShape(SHAPE::ELLIPSE);
+	arrowDownShape->setStyle(controlStyle);
+	arrowDownShape->setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
+	arrowDownGlyph = new GuiArrow(ARROW::DOWN, 10, 7, theme.textMuted, theme.textOnAccent);
+	arrowDownGlyph->setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
+	arrowDownGlyph->setPosition(0, 1);
+
+	arrowUpBtn = new GuiButton(OB_SB_WIDTH, OB_SB_ARROW);
 	arrowUpBtn->setParent(this);
-	arrowUpBtn->setImage(arrowUpImg);
-	arrowUpBtn->setImageOver(arrowUpOverImg);
+	arrowUpBtn->setImage(arrowUpShape);
+	arrowUpBtn->setIcon(arrowUpGlyph);
 	arrowUpBtn->setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
-	arrowUpBtn->setPosition(0, -1);
+	arrowUpBtn->setPosition(-OB_SB_INSET, OB_PAD);
 	arrowUpBtn->setSelectable(false);
 	arrowUpBtn->setTrigger(trigA);
 	arrowUpBtn->setSoundOver(btnSoundOver);
 	arrowUpBtn->setSoundClick(btnSoundClick);
 
-	arrowDownBtn = new GuiButton(arrowDownImg->getWidth(), arrowDownImg->getHeight());
+	arrowDownBtn = new GuiButton(OB_SB_WIDTH, OB_SB_ARROW);
 	arrowDownBtn->setParent(this);
-	arrowDownBtn->setImage(arrowDownImg);
-	arrowDownBtn->setImageOver(arrowDownOverImg);
+	arrowDownBtn->setImage(arrowDownShape);
+	arrowDownBtn->setIcon(arrowDownGlyph);
 	arrowDownBtn->setAlignment(ALIGN_H::RIGHT, ALIGN_V::BOTTOM);
-	arrowDownBtn->setPosition(0, -1);
+	arrowDownBtn->setPosition(-OB_SB_INSET, -OB_PAD);
 	arrowDownBtn->setSelectable(false);
 	arrowDownBtn->setTrigger(trigA);
 	arrowDownBtn->setSoundOver(btnSoundOver);
 	arrowDownBtn->setSoundClick(btnSoundClick);
 
+	// The selected row is a rounded, tinted pill inset from the card edge, so it never
+	// touches the card's corners. It fades in and out as the selection moves.
+	const GuiPaint rowLit = GuiPaint().color(theme.highlight).stroke(1.5f, theme.accent);
+	const GuiPaint rowHeld = GuiPaint().color(optionRowPressColor(theme.highlight, theme.accent)).stroke(1.5f, theme.accent);
+	const GuiShapeStyle rowStyle = GuiShapeStyle(GuiPaint()).onFocus(rowLit).onPress(rowHeld);
+
 	for(int i=0; i<OPTION_PAGESIZE; i++)
 	{
-		optionTxt[i] = new GuiText(nullptr, 20, (PixelColor){0, 0, 0, 0xff});
+		// names in the theme's text color, values in the accent so the two columns read apart
+		optionTxt[i] = new GuiText(nullptr, 20, theme.text);
 		optionTxt[i]->setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
-		optionTxt[i]->setPosition(8,0);
-		optionTxt[i]->setMaxWidth(375);
 
-		optionVal[i] = new GuiText(nullptr, 20, (PixelColor){0, 0, 0, 0xff});
+		optionVal[i] = new GuiText(nullptr, 20, theme.accentDark);
 		optionVal[i]->setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
-		optionVal[i]->setPosition(400,0);
-		optionVal[i]->setMaxWidth(300);
 
-		GuiImageData * optionEntryImg = bgOptionsEntry;
-		if(i == 0) optionEntryImg = bgOptionsEntryTop;
-		else if(i == OPTION_PAGESIZE-1) optionEntryImg = bgOptionsEntryBottom;
-		optionBg[i] = new GuiImage(optionEntryImg);
+		optionBg[i] = new GuiShape(rowWidth, OB_ROW_HEIGHT - 2);
+		optionBg[i]->setCorners(GuiCorners(10.0f));
+		optionBg[i]->setStyle(rowStyle);
+		optionBg[i]->setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
 
-		optionBtn[i] = new GuiButton(512,30);
+		optionBtn[i] = new GuiButton(rowWidth, OB_ROW_HEIGHT);
 		optionBtn[i]->setParent(this);
 		optionBtn[i]->setLabel(optionTxt[i], 0);
 		optionBtn[i]->setLabel(optionVal[i], 1);
-		optionBtn[i]->setImageOver(optionBg[i]);
-		optionBtn[i]->setPosition(0,30*i+3);
+		optionBtn[i]->setImage(optionBg[i]);
+		optionBtn[i]->setPosition(OB_PAD, rowTop + OB_ROW_HEIGHT * i);
 		optionBtn[i]->setTrigger(trigA);
 		optionBtn[i]->setSoundClick(btnSoundClick);
 	}
+	updateColumns();
 }
 
 GuiOptionBrowser::~GuiOptionBrowser()
@@ -103,22 +161,13 @@ GuiOptionBrowser::~GuiOptionBrowser()
 	delete arrowUpBtn;
 	delete arrowDownBtn;
 
-	delete bgOptionsImg;
-	delete scrollbarImg;
-	delete arrowDownImg;
-	delete arrowDownOverImg;
-	delete arrowUpImg;
-	delete arrowUpOverImg;
-
-	delete bgOptions;
-	delete bgOptionsEntry;
-	delete bgOptionsEntryTop;
-	delete bgOptionsEntryBottom;
-	delete scrollbar;
-	delete arrowDown;
-	delete arrowDownOver;
-	delete arrowUp;
-	delete arrowUpOver;
+	delete cardShape;
+	delete trackShape;
+	delete thumbShape;
+	delete arrowUpShape;
+	delete arrowDownShape;
+	delete arrowUpGlyph;
+	delete arrowDownGlyph;
 
 	delete trigA;
 	delete btnSoundOver;
@@ -133,16 +182,60 @@ GuiOptionBrowser::~GuiOptionBrowser()
 	}
 }
 
-void GuiOptionBrowser::setCol1Position(int x)
+//! Positions the two text columns, and limits each to the room it has: a name stops
+//! short of the value column and a value stops short of the row's end (longer text
+//! scrolls while its row is selected, rather than running into its neighbor).
+void GuiOptionBrowser::updateColumns()
 {
 	for(int i=0; i<OPTION_PAGESIZE; i++)
-		optionTxt[i]->setPosition(x,0);
+	{
+		optionTxt[i]->setPosition(col1X, OB_ROW_TEXT_Y);
+		optionTxt[i]->setMaxWidth(std::max(col2X - col1X - 8, 20));
+		optionVal[i]->setPosition(col2X, OB_ROW_TEXT_Y);
+		optionVal[i]->setMaxWidth(std::max(rowWidth - col2X - OB_TEXT_PAD, 20));
+	}
+}
+
+//! Sizes and places the scrollbar thumb for the rows currently shown
+void GuiOptionBrowser::updateThumb()
+{
+	visibleCount = 0;
+	visiblePos = 0;
+	for(int i=0; i<options->length; i++)
+	{
+		if(strlen(options->name[i]) == 0)
+			continue;
+		if(i < listOffset)
+			visiblePos++;
+		visibleCount++;
+	}
+
+	if(visibleCount <= OPTION_PAGESIZE)
+	{
+		thumbShape->setVisible(false);
+		return;
+	}
+
+	const int thumbHeight = std::max(OB_THUMB_MIN_HEIGHT, trackHeight * OPTION_PAGESIZE / visibleCount);
+	const int travel = trackHeight - thumbHeight;
+	int y = travel * visiblePos / (visibleCount - OPTION_PAGESIZE);
+	if(y > travel) y = travel;
+
+	thumbShape->setVisible(true);
+	thumbShape->setSize(OB_THUMB_WIDTH, thumbHeight);
+	thumbShape->setPosition(-(OB_SB_INSET + (OB_SB_WIDTH - OB_THUMB_WIDTH) / 2), OB_SB_TRACK_Y + y);
+}
+
+void GuiOptionBrowser::setCol1Position(int x)
+{
+	col1X = x;
+	updateColumns();
 }
 
 void GuiOptionBrowser::setCol2Position(int x)
 {
-	for(int i=0; i<OPTION_PAGESIZE; i++)
-		optionVal[i]->setPosition(x,0);
+	col2X = x;
+	updateColumns();
 }
 
 void GuiOptionBrowser::setFocus(int f)
@@ -212,7 +305,7 @@ void GuiOptionBrowser::draw()
 	if(!this->isVisible())
 		return;
 
-	bgOptionsImg->draw();
+	cardShape->draw();
 
 	int next = listOffset;
 
@@ -227,7 +320,8 @@ void GuiOptionBrowser::draw()
 			break;
 	}
 
-	scrollbarImg->draw();
+	trackShape->draw();
+	thumbShape->draw();
 	arrowUpBtn->draw();
 	arrowDownBtn->draw();
 
@@ -270,6 +364,7 @@ void GuiOptionBrowser::update(InputController * controller)
 	if(listChanged)
 	{
 		listChanged = false;
+		updateThumb();
 		for(int i=0; i<OPTION_PAGESIZE; ++i)
 		{
 			if(next >= 0)

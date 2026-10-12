@@ -36,7 +36,7 @@ class GuiOptionBrowser : public GuiElement
 		int optionIndex[OPTION_PAGESIZE];
 		GuiButton * optionBtn[OPTION_PAGESIZE];
 		GuiText * optionTxt[OPTION_PAGESIZE];
-		GuiImage * optionBg[OPTION_PAGESIZE];
+		GuiShape * optionBg[OPTION_PAGESIZE];
 
 		int selectedItem;
 		int listOffset;
@@ -45,22 +45,23 @@ class GuiOptionBrowser : public GuiElement
 		GuiButton * arrowUpBtn;
 		GuiButton * arrowDownBtn;
 
-		GuiImage * bgOptionsImg;
-		GuiImage * scrollbarImg;
-		GuiImage * arrowDownImg;
-		GuiImage * arrowDownOverImg;
-		GuiImage * arrowUpImg;
-		GuiImage * arrowUpOverImg;
+		GuiShape * cardShape;
+		GuiShape * trackShape;
+		GuiShape * thumbShape;		// shows where the visible rows sit in the whole list; not interactive
+		GuiShape * arrowUpShape;
+		GuiShape * arrowDownShape;
+		GuiArrow * arrowUpGlyph;
+		GuiArrow * arrowDownGlyph;
 
-		GuiImageData * bgOptions;
-		GuiImageData * bgOptionsEntry;
-		GuiImageData * bgOptionsEntryTop;
-		GuiImageData * bgOptionsEntryBottom;
-		GuiImageData * scrollbar;
-		GuiImageData * arrowDown;
-		GuiImageData * arrowDownOver;
-		GuiImageData * arrowUp;
-		GuiImageData * arrowUpOver;
+		int rowWidth;
+		int trackHeight;
+		int col1X;
+		int col2X;
+		int visibleCount;			// options that are listed (those with a name)
+		int visiblePos;				// listed options before the first row shown
+
+		void updateColumns();
+		void updateThumb();
 
 		GuiSound * btnSoundOver;
 		GuiSound * btnSoundClick;

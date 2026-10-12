@@ -14,20 +14,74 @@
  *   btn.setImage(&img);
  ***************************************************************************/
 #pragma once
+#include <algorithm>
+#include <math.h>
 #include "menustyle.h"
 
-//!A button face: the long or large button
+//!A button face. LONG, LARGE, NORMAL, SHORT and SMALL match the sizes of the buttons
+//!they replace (see the MENU_BTN_* sizes); NORMAL is the standard 196x52 button and
+//!the one used in dialogs.
 class MenuButtonShape : public GuiShape
 {
 	public:
-		enum Kind { LONG, LARGE };
+		enum Kind { LONG, LARGE, NORMAL, SHORT, SMALL };
 
 		MenuButtonShape(Kind kind) :
-			GuiShape(kind == LONG ? MENU_BTN_LONG_W : MENU_BTN_LARGE_W,
-					kind == LONG ? MENU_BTN_LONG_H : MENU_BTN_LARGE_H)
+			GuiShape(widthOf(kind), heightOf(kind))
 		{
-			setCorners(GuiCorners(kind == LONG ? MENU_BTN_LONG_RADIUS : MENU_BTN_LARGE_RADIUS));
+			setCorners(GuiCorners(radiusOf(kind)));
 			setStyle(MenuButtonStyle());
+		}
+
+	private:
+		static int widthOf(Kind k)
+		{
+			switch(k)
+			{
+				case LONG: return MENU_BTN_LONG_W;
+				case LARGE: return MENU_BTN_LARGE_W;
+				case SHORT: return MENU_BTN_SHORT_W;
+				case SMALL: return MENU_BTN_SMALL_W;
+				default: return MENU_BTN_NORMAL_W;
+			}
+		}
+		static int heightOf(Kind k)
+		{
+			switch(k)
+			{
+				case LONG: return MENU_BTN_LONG_H;
+				case LARGE: return MENU_BTN_LARGE_H;
+				case SHORT: return MENU_BTN_SHORT_H;
+				case SMALL: return MENU_BTN_SMALL_H;
+				default: return MENU_BTN_NORMAL_H;
+			}
+		}
+		static float radiusOf(Kind k)
+		{
+			switch(k)
+			{
+				case LONG: return MENU_BTN_LONG_RADIUS;
+				case LARGE: return MENU_BTN_LARGE_RADIUS;
+				case SHORT: return MENU_BTN_SHORT_RADIUS;
+				case SMALL: return MENU_BTN_SMALL_RADIUS;
+				default: return MENU_BTN_NORMAL_RADIUS;
+			}
+		}
+};
+
+//!A page-turning arrow: gray, turning to the accent color while its button is
+//!highlighted. Use it as the image of a GuiButton of MENU_ARROW_* size; it centers
+//!itself in the button.
+class MenuArrowImage : public GuiArrow
+{
+	public:
+		MenuArrowImage(ARROW dir) :
+			GuiArrow(dir,
+				(dir == ARROW::LEFT || dir == ARROW::RIGHT) ? MENU_ARROW_SHORT : MENU_ARROW_LONG,
+				(dir == ARROW::LEFT || dir == ARROW::RIGHT) ? MENU_ARROW_LONG : MENU_ARROW_SHORT,
+				MenuArrowRest(), MenuArrowLit())
+		{
+			setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
 		}
 };
 
@@ -107,4 +161,127 @@ class MenuCoverShadow : public GuiShape
 			setVisible(w > 0 && h > 0);
 			setSize(w, h);
 		}
+};
+
+//!The window behind a dialog or the credits: a card with a chrome title band across
+//!the top. Append it first, and put the (white) title text on the band.
+class MenuDialogShape : public GuiElement
+{
+	public:
+		MenuDialogShape(int w, int h, int headerHeight) : body(w, h), header(w, headerHeight)
+		{
+			width = w;
+			height = h;
+			body.setParent(this);
+			body.setCorners(GuiCorners(MENU_DIALOG_RADIUS));
+			body.setPaint(MenuDialogBodyPaint());
+			header.setParent(this);
+			header.setCorners(GuiCorners(MENU_DIALOG_RADIUS, MENU_DIALOG_RADIUS, 0.0f, 0.0f));
+			header.setPaint(MenuDialogHeaderPaint());
+		}
+
+		void draw() override
+		{
+			if(!this->isVisible())
+				return;
+			body.draw();
+			header.draw();
+			this->updateEffects();
+		}
+
+	private:
+		GuiShape body;
+		GuiShape header;
+};
+
+//!A progress bar: a rounded track with a fill that grows from the left
+class MenuProgressBar : public GuiElement
+{
+	public:
+		MenuProgressBar() : track(MENU_PROGRESS_W, MENU_PROGRESS_H), fill(0, MENU_PROGRESS_H - 2 * FILL_INSET)
+		{
+			width = MENU_PROGRESS_W;
+			height = MENU_PROGRESS_H;
+			track.setParent(this);
+			track.setCorners(GuiCorners(MENU_PROGRESS_H / 2.0f));
+			track.setPaint(MenuProgressTrackPaint());
+			fill.setParent(this);
+			fill.setCorners(GuiCorners((MENU_PROGRESS_H - 2 * FILL_INSET) / 2.0f));
+			fill.setPaint(MenuProgressFillPaint());
+			fill.setPosition(FILL_INSET, FILL_INSET);
+			fill.setVisible(false);
+		}
+
+		//!\param percent 0 to 100
+		void setProgress(int percent)
+		{
+			if(percent < 0) percent = 0;
+			if(percent > 100) percent = 100;
+			const int full = MENU_PROGRESS_W - 2 * FILL_INSET;
+			const int minimum = MENU_PROGRESS_H - 2 * FILL_INSET; // a full circle: the smallest the fill can be drawn
+			fill.setVisible(percent > 0);
+			fill.setSize(std::max(minimum, full * percent / 100), minimum);
+		}
+
+		void draw() override
+		{
+			if(!this->isVisible())
+				return;
+			track.draw();
+			fill.draw();
+			this->updateEffects();
+		}
+
+	private:
+		enum { FILL_INSET = 2 };
+		GuiShape track;
+		GuiShape fill;
+};
+
+//!A busy spinner: a ring of dots with a bold head and a fading tail. Advance it by
+//!calling setPhase() with a growing number; each step moves the head one dot clockwise.
+class MenuSpinner : public GuiElement
+{
+	public:
+		MenuSpinner() : phase(0)
+		{
+			width = MENU_SPINNER_SIZE;
+			height = MENU_SPINNER_SIZE;
+			const float radius = MENU_SPINNER_SIZE / 2.0f - 10.0f;
+			for(int i = 0; i < MENU_SPINNER_DOTS; i++)
+			{
+				const float a = (-90.0f + 360.0f * i / MENU_SPINNER_DOTS) * 3.14159265f / 180.0f;
+				dots[i].setParent(this);
+				dots[i].setShape(SHAPE::ELLIPSE);
+				dots[i].setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
+				dots[i].setPosition((int)(radius * cosf(a) + (cosf(a) < 0 ? -0.5f : 0.5f)),
+									(int)(radius * sinf(a) + (sinf(a) < 0 ? -0.5f : 0.5f)));
+			}
+			setPhase(0);
+		}
+
+		void setPhase(int p)
+		{
+			phase = ((p % MENU_SPINNER_DOTS) + MENU_SPINNER_DOTS) % MENU_SPINNER_DOTS;
+			for(int i = 0; i < MENU_SPINNER_DOTS; i++)
+			{
+				const int level = (phase - i + MENU_SPINNER_DOTS) % MENU_SPINNER_DOTS;
+				const int d = (int)(MenuSpinnerDotSize(level) + 0.5f);
+				dots[i].setSize(d, d);
+				dots[i].setPaint(MenuSpinnerDotPaint(level));
+			}
+		}
+
+		void draw() override
+		{
+			if(!this->isVisible())
+				return;
+			for(int i = 0; i < MENU_SPINNER_DOTS; i++)
+				dots[i].draw();
+			this->updateEffects();
+		}
+
+	private:
+		int phase;
+		GuiShape dots[MENU_SPINNER_DOTS];
 };

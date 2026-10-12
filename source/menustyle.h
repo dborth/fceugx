@@ -32,6 +32,38 @@
 #define MENU_BTN_LARGE_RADIUS	46.0f	// capsule (half the button height)
 #define MENU_BTN_ICON_INSET		3.0f	// icons stay clear of the button's outline (up to its highlighted width)
 
+#define MENU_BTN_NORMAL_RADIUS	26.0f
+#define MENU_BTN_SHORT_RADIUS	26.0f
+#define MENU_BTN_SMALL_RADIUS	20.0f
+
+#define MENU_BTN_NORMAL_W	196
+#define MENU_BTN_NORMAL_H	52
+#define MENU_BTN_SHORT_W	160
+#define MENU_BTN_SHORT_H	52
+#define MENU_BTN_SMALL_W	104
+#define MENU_BTN_SMALL_H	40
+
+// dialogs: a card with a chrome title band
+#define MENU_DIALOG_W			448
+#define MENU_DIALOG_H			288
+#define MENU_DIALOG_HEADER_H	52
+#define MENU_CREDITS_W			580
+#define MENU_CREDITS_H			448
+#define MENU_CREDITS_HEADER_H	60
+#define MENU_DIALOG_RADIUS		14.0f
+
+// page-turning arrows: hit area of the button, and the glyph drawn inside it
+#define MENU_ARROW_HIT_LONG		32
+#define MENU_ARROW_HIT_SHORT	28
+#define MENU_ARROW_LONG			24
+#define MENU_ARROW_SHORT		17
+
+// progress bar and spinner inside the progress dialog
+#define MENU_PROGRESS_W			398
+#define MENU_PROGRESS_H			22
+#define MENU_SPINNER_SIZE		72
+#define MENU_SPINNER_DOTS		8
+
 // the two cards of the game list page (the list itself is drawn by GuiFileBrowser)
 #define MENU_LIST_X			20
 #define MENU_LIST_Y			101
@@ -179,3 +211,56 @@ static inline GuiPaint MenuBackgroundPaint()
 	const MenuPalette& p = MenuPaletteCurrent();
 	return GuiPaint().gradient(p.backgroundTop, p.backgroundBottom);
 }
+
+//!The body of a dialog or the credits window: a light card with a firm chrome outline
+//!and a deep shadow that lifts it off the page.
+static inline GuiPaint MenuDialogBodyPaint()
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+	return GuiPaint()
+		.gradient(p.surfaceRaised, p.surface)
+		.stroke(2.0f, p.chromeDark)
+		.shadow(26.0f, MenuRGBA(0, 0, 0, 150), 0.0f, 8.0f);
+}
+
+//!The title band across the top of a dialog (the title text on it is white)
+static inline GuiPaint MenuDialogHeaderPaint()
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+	return GuiPaint()
+		.gradient(p.chromeLight, p.chromeDark)
+		.stroke(2.0f, p.chromeDark);
+}
+
+//!The empty part of a progress bar
+static inline GuiPaint MenuProgressTrackPaint()
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+	return GuiPaint().color(p.outline).stroke(1.5f, p.outlineStrong);
+}
+
+//!The filled part of a progress bar
+static inline GuiPaint MenuProgressFillPaint()
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+	return GuiPaint().gradient(MenuMix(p.accent, MenuRGBA(255, 255, 255), 0.3f), p.accent);
+}
+
+//!One dot of the busy spinner. level 0 is the head (bold, accent colored); higher
+//!levels trail off smaller and paler.
+static inline GuiPaint MenuSpinnerDotPaint(int level)
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+	const float t = (float)level / (float)(MENU_SPINNER_DOTS - 1);
+	return GuiPaint().color(MenuMix(p.accent, p.outline, t));
+}
+
+//!Diameter of the spinner dot at a trail level
+static inline float MenuSpinnerDotSize(int level)
+{
+	return 14.0f - 6.0f * (float)level / (float)(MENU_SPINNER_DOTS - 1);
+}
+
+//!Resting and lit colors of the page-turning arrows (gray, turning to the accent)
+static inline PixelColor MenuArrowRest() { return MenuPaletteCurrent().outlineStrong; }
+static inline PixelColor MenuArrowLit() { return MenuPaletteCurrent().accent; }
