@@ -29,7 +29,8 @@
 #define MENU_BAR_BLEED		6
 
 #define MENU_BTN_LONG_RADIUS	26.0f	// capsule
-#define MENU_BTN_LARGE_RADIUS	42.0f
+#define MENU_BTN_LARGE_RADIUS	46.0f	// capsule (half the button height)
+#define MENU_BTN_ICON_INSET		3.0f	// icons stay clear of the button's outline (up to its highlighted width)
 
 // the two cards of the game list page (the list itself is drawn by GuiFileBrowser)
 #define MENU_LIST_X			20

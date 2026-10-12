@@ -31,6 +31,15 @@ class MenuButtonShape : public GuiShape
 		}
 };
 
+class MenuIconData : public GuiImageData
+{
+	public:
+		MenuIconData(const uint8_t * png, float offsetX = 0.0f, float offsetY = 0.0f)
+		{
+			loadClipped(png, MENU_BTN_LARGE_W, MENU_BTN_LARGE_H, MENU_BTN_LARGE_RADIUS, MENU_BTN_ICON_INSET, offsetX, offsetY);
+		}
+};
+
 //!The header (top) or footer (bottom) bar
 class MenuBarShape : public GuiShape
 {

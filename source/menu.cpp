@@ -1687,11 +1687,11 @@ static int MenuGame()
 	GuiImageData btnOutlineOver(button_over_png);
 	GuiImageData btnCloseOutline(button_small_png);
 	GuiImageData btnCloseOutlineOver(button_small_over_png);
-	GuiImageData iconGameSettings(icon_game_settings_png);
-	GuiImageData iconLoad(icon_game_load_png);
-	GuiImageData iconSave(icon_game_save_png);
-	GuiImageData iconDelete(icon_game_delete_png);
-	GuiImageData iconReset(icon_game_reset_png);
+	MenuIconData iconGameSettings(icon_game_settings_png);
+	MenuIconData iconLoad(icon_game_load_png);
+	MenuIconData iconSave(icon_game_save_png);
+	MenuIconData iconDelete(icon_game_delete_png);
+	MenuIconData iconReset(icon_game_reset_png);
 
 	GuiImageData battery(battery_png);
 	GuiImageData batteryRed(battery_red_png);
@@ -2477,12 +2477,12 @@ static int MenuGameSettings()
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
 	GuiImageData btnOutline(button_png);
 	GuiImageData btnOutlineOver(button_over_png);
-	GuiImageData iconMappings(icon_settings_mappings_png);
-	GuiImageData iconVideo(icon_settings_video_png);
-	GuiImageData iconEmulation(icon_settings_emulation_png);
-	GuiImageData iconController(icon_game_controllers_png);
-	GuiImageData iconCheats(icon_game_cheats_png);
-	GuiImageData iconScreenshot(icon_settings_screenshot_png);
+	MenuIconData iconMappings(icon_settings_mappings_png, -4.0f);
+	MenuIconData iconVideo(icon_settings_video_png);
+	MenuIconData iconEmulation(icon_settings_emulation_png);
+	MenuIconData iconController(icon_game_controllers_png);
+	MenuIconData iconCheats(icon_game_cheats_png);
+	MenuIconData iconScreenshot(icon_settings_screenshot_png);
 	GuiImageData btnCloseOutline(button_small_png);
 	GuiImageData btnCloseOutlineOver(button_small_over_png);
 
@@ -2792,8 +2792,8 @@ static int MenuSettingsMappings()
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
 	GuiImageData btnOutline(button_png);
 	GuiImageData btnOutlineOver(button_over_png);
-	GuiImageData iconNESController(icon_settings_nescontroller_png);
-	GuiImageData iconZapper(icon_settings_zapper_png);
+	MenuIconData iconNESController(icon_settings_nescontroller_png);
+	MenuIconData iconZapper(icon_settings_zapper_png);
 
 	GuiTrigger trigB;
 	trigB.setSecondaryTrigger();
@@ -2912,12 +2912,12 @@ static int MenuSettingsMappingsController()
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
 	GuiImageData btnOutline(button_png);
 	GuiImageData btnOutlineOver(button_over_png);
-	GuiImageData iconWiimote(icon_settings_wiimote_png);
-	GuiImageData iconClassic(icon_settings_classic_png);
-	GuiImageData iconGamecube(icon_settings_gamecube_png);
-	GuiImageData iconNunchuk(icon_settings_nunchuk_png);
-	GuiImageData iconWiiupro(icon_settings_wiiupro_png);
-	GuiImageData iconDrc(icon_settings_drc_png);
+	MenuIconData iconWiimote(icon_settings_wiimote_png);
+	MenuIconData iconClassic(icon_settings_classic_png);
+	MenuIconData iconGamecube(icon_settings_gamecube_png);
+	MenuIconData iconNunchuk(icon_settings_nunchuk_png);
+	MenuIconData iconWiiupro(icon_settings_wiiupro_png);
+	MenuIconData iconDrc(icon_settings_drc_png);
 
 	GuiTrigger trigB;
 	trigB.setSecondaryTrigger();
@@ -4112,11 +4112,11 @@ static int MenuSettings()
 
 	GuiSound btnSoundOver(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	GuiSound btnSoundClick(button_click_pcm, button_click_pcm_size, SOUND::PCM);
-	GuiImageData iconFile(icon_settings_file_png);
-	GuiImageData iconMenu(icon_settings_menu_png);
-	GuiImageData iconNetwork(icon_settings_network_png);
-	GuiImageData iconCheats(icon_game_cheats_png);
-	GuiImageData iconCredits(icon_credits_png);
+	MenuIconData iconFile(icon_settings_file_png);
+	MenuIconData iconMenu(icon_settings_menu_png);
+	MenuIconData iconNetwork(icon_settings_network_png);
+	MenuIconData iconCheats(icon_game_cheats_png);
+	MenuIconData iconCredits(icon_credits_png);
 
 	GuiTrigger trigB;
 	trigB.setSecondaryTrigger();

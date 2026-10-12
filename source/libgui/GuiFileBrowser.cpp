@@ -10,7 +10,10 @@
 // Layout of the browser, in design pixels. The browser is one rounded card: the rows
 // sit inset from its edge, with the scrollbar column down the right side.
 #define BROWSER_PAD			6		// card edge to rows, and top/bottom of the scrollbar column
-#define ROW_HEIGHT			25
+#define ROW_HEIGHT			27		// the highlight pill is 2 shorter, leaving a gap between rows
+#define ROW_TEXT_Y			2		// text and icons sit this far below the row's middle: a font's
+#define ROW_ICON_Y			2		// line box carries room for descenders and the icon art is
+										// drawn high in its image, so they otherwise look raised
 #define ROW_GAP				6		// rows to scrollbar column
 #define SB_WIDTH			22		// scrollbar column (arrow buttons and thumb hit area)
 #define SB_INSET			7		// column to card's right edge
@@ -57,6 +60,7 @@ GuiFileBrowser::GuiFileBrowser(int w, int h)
 
 	const GuiTheme& theme = GuiTheme::current();
 	const int rowWidth = w - BROWSER_PAD - ROW_GAP - SB_WIDTH - SB_INSET;
+	const int rowTop = (h - FILE_PAGESIZE * ROW_HEIGHT) / 2;	// rows centred in the card
 	const int trackHeight = h - 2 * SB_TRACK_Y;
 	scrollTravel = trackHeight - SB_THUMB_HEIGHT;
 
@@ -165,7 +169,7 @@ GuiFileBrowser::GuiFileBrowser(int w, int h)
 	{
 		fileListText[i] = new GuiText(nullptr, 20, theme.text);
 		fileListText[i]->setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
-		fileListText[i]->setPosition(ROW_TEXT_X,0);
+		fileListText[i]->setPosition(ROW_TEXT_X,ROW_TEXT_Y);
 		fileListText[i]->setMaxWidth(rowWidth - ROW_TEXT_X - ROW_TEXT_PAD);
 
 		fileListBg[i] = new GuiShape(rowWidth, ROW_HEIGHT - 2);
@@ -178,7 +182,7 @@ GuiFileBrowser::GuiFileBrowser(int w, int h)
 		fileList[i]->setParent(this);
 		fileList[i]->setLabel(fileListText[i]);
 		fileList[i]->setImage(fileListBg[i]);
-		fileList[i]->setPosition(BROWSER_PAD, ROW_HEIGHT*i + BROWSER_PAD);
+		fileList[i]->setPosition(BROWSER_PAD, rowTop + ROW_HEIGHT*i);
 		fileList[i]->setTrigger(trigA);
 		fileList[i]->setSoundClick(btnSoundClick);
 	}
@@ -504,7 +508,7 @@ void GuiFileBrowser::update(InputController * controller)
 					delete fileListIcon[i];
 					fileListIcon[i] = nullptr;
 				}
-				fileListText[i]->setPosition(ROW_TEXT_X,0);
+				fileListText[i]->setPosition(ROW_TEXT_X,ROW_TEXT_Y);
 				fileListText[i]->setMaxWidth(fileList[i]->getWidth() - ROW_TEXT_X - ROW_TEXT_PAD);
 
 				switch(browserList[browser.pageIndex+i].icon)
@@ -529,8 +533,8 @@ void GuiFileBrowser::update(InputController * controller)
 				if(fileListIcon[i] != nullptr)
 				{
 					fileListIcon[i]->setAlignment(ALIGN_H::LEFT, ALIGN_V::MIDDLE);
-					fileListIcon[i]->setPosition(6,0);
-					fileListText[i]->setPosition(ROW_TEXT_X_ICON,0);
+					fileListIcon[i]->setPosition(6,ROW_ICON_Y);
+					fileListText[i]->setPosition(ROW_TEXT_X_ICON,ROW_TEXT_Y);
 					fileListText[i]->setMaxWidth(fileList[i]->getWidth() - ROW_TEXT_X_ICON - ROW_TEXT_PAD);
 				}
 			}

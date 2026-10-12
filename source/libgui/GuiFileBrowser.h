@@ -14,7 +14,7 @@ class GuiImage;
 class GuiShape;
 class GuiArrow;
 
-#define FILE_PAGESIZE 			10
+#define FILE_PAGESIZE 			9
 
 //!Resolves the source PNG path for a preview image, given a browser index.
 //!Return false (leaving outPath untouched) if entry index has no preview image.
