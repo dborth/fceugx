@@ -45,6 +45,10 @@ GuiOptionBrowser::GuiOptionBrowser(int w, int h, OptionList * l)
 	focus = 0; // allow focus
 	visibleCount = 0;
 	visiblePos = 0;
+	thumbHeight = 0;
+	thumbTravel = 0;
+	dragPos = 0;
+	dragging = false;
 	col1X = OB_TEXT_X;
 	col2X = 400;
 
@@ -55,6 +59,9 @@ GuiOptionBrowser::GuiOptionBrowser(int w, int h, OptionList * l)
 
 	trigA = new GuiTrigger;
 	trigA->setPrimaryTrigger();
+
+	trigHeldA = new GuiTrigger;
+	trigHeldA->setHeldTrigger(-1, INPUT_BTN_A);
 
 	btnSoundOver = new GuiSound(button_over_pcm, button_over_pcm_size, SOUND::PCM);
 	btnSoundClick = new GuiSound(button_click_pcm, button_click_pcm_size, SOUND::PCM);
@@ -74,12 +81,24 @@ GuiOptionBrowser::GuiOptionBrowser(int w, int h, OptionList * l)
 	trackShape->setCapsule();
 	trackShape->setPaint(GuiPaint().color(theme.outline));
 
+	// the thumb is a button so it can be grabbed; it takes the accent color when the
+	// pointer is on it and a deeper one while held (as in GuiFileBrowser)
 	thumbShape = new GuiShape(OB_THUMB_WIDTH, trackHeight);
-	thumbShape->setParent(this);
-	thumbShape->setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
 	thumbShape->setCapsule();
-	thumbShape->setPaint(GuiPaint().color(theme.outlineStrong));
-	thumbShape->setVisible(false);
+	thumbShape->setStyle(GuiShapeStyle(GuiPaint().color(theme.outlineStrong))
+		.onFocus(GuiPaint().color(theme.accent)).onPress(GuiPaint().color(theme.accentDark)));
+	thumbShape->setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
+
+	thumbBtn = new GuiButton(OB_SB_WIDTH, trackHeight);
+	thumbBtn->setParent(this);
+	thumbBtn->setImage(thumbShape);
+	thumbBtn->setAlignment(ALIGN_H::RIGHT, ALIGN_V::TOP);
+	thumbBtn->setPosition(-OB_SB_INSET, OB_SB_TRACK_Y);
+	thumbBtn->setSelectable(false);
+	thumbBtn->setClickable(false);
+	thumbBtn->setHoldable(true);
+	thumbBtn->setTrigger(trigHeldA);
+	thumbBtn->setVisible(false);
 
 	const GuiPaint controlRest = GuiPaint().color(theme.surfaceRaised).stroke(1.5f, theme.outline);
 	const GuiPaint controlLit = GuiPaint().color(theme.accent).stroke(1.5f, theme.accent);
@@ -160,6 +179,7 @@ GuiOptionBrowser::~GuiOptionBrowser()
 {
 	delete arrowUpBtn;
 	delete arrowDownBtn;
+	delete thumbBtn;
 
 	delete cardShape;
 	delete trackShape;
@@ -170,6 +190,7 @@ GuiOptionBrowser::~GuiOptionBrowser()
 	delete arrowDownGlyph;
 
 	delete trigA;
+	delete trigHeldA;
 	delete btnSoundOver;
 	delete btnSoundClick;
 
@@ -212,18 +233,24 @@ void GuiOptionBrowser::updateThumb()
 
 	if(visibleCount <= OPTION_PAGESIZE)
 	{
-		thumbShape->setVisible(false);
+		thumbBtn->setVisible(false);
+		thumbTravel = 0;
 		return;
 	}
 
-	const int thumbHeight = std::max(OB_THUMB_MIN_HEIGHT, trackHeight * OPTION_PAGESIZE / visibleCount);
-	const int travel = trackHeight - thumbHeight;
-	int y = travel * visiblePos / (visibleCount - OPTION_PAGESIZE);
-	if(y > travel) y = travel;
+	thumbHeight = std::max(OB_THUMB_MIN_HEIGHT, trackHeight * OPTION_PAGESIZE / visibleCount);
+	thumbTravel = trackHeight - thumbHeight;
 
-	thumbShape->setVisible(true);
+	// while dragged the thumb follows the pointer exactly; otherwise it sits at the list position
+	int y = dragging ? dragPos : thumbTravel * visiblePos / (visibleCount - OPTION_PAGESIZE);
+	if(y > thumbTravel) y = thumbTravel;
+
+	thumbBtn->setVisible(true);
+	thumbBtn->setSize(OB_SB_WIDTH, thumbHeight);
 	thumbShape->setSize(OB_THUMB_WIDTH, thumbHeight);
-	thumbShape->setPosition(-(OB_SB_INSET + (OB_SB_WIDTH - OB_THUMB_WIDTH) / 2), OB_SB_TRACK_Y + y);
+	thumbBtn->setMinY(0);
+	thumbBtn->setMaxY(thumbTravel);
+	thumbBtn->setPosition(-OB_SB_INSET, OB_SB_TRACK_Y + y);
 }
 
 void GuiOptionBrowser::setCol1Position(int x)
@@ -321,7 +348,7 @@ void GuiOptionBrowser::draw()
 	}
 
 	trackShape->draw();
-	thumbShape->draw();
+	thumbBtn->draw();
 	arrowUpBtn->draw();
 	arrowDownBtn->draw();
 
@@ -359,6 +386,43 @@ void GuiOptionBrowser::update(InputController * controller)
 	arrowUpBtn->update(controller);
 	arrowDownBtn->update(controller);
 
+	auto pad = controller->getPadData();
+	int currentChan = controller->getChannel();
+
+	// drag the scrollbar thumb: the list follows the pointer
+	if(thumbBtn->isVisible())
+		thumbBtn->update(controller);
+
+	const bool wasDragging = dragging;
+	dragging = thumbBtn->isVisible() && thumbTravel > 0 &&
+		thumbBtn->getState() == STATE::HELD &&
+		thumbBtn->getStateChan() == currentChan &&
+		pad.validPointer;
+
+	if(dragging)
+	{
+		// put the thumb's center under the pointer
+		int pos = pad.cursor_y - (this->getTop() + OB_SB_TRACK_Y + thumbHeight / 2);
+		if(pos < 0) pos = 0;
+		else if(pos > thumbTravel) pos = thumbTravel;
+		dragPos = pos;
+
+		// which listed option should lead the page (rows without a name are not listed)
+		const int target = (pos * (visibleCount - OPTION_PAGESIZE) + thumbTravel / 2) / thumbTravel;
+		int idx = this->findMenuItem(-1, 1);
+		for(int n = 0; n < target && idx >= 0; n++)
+		{
+			int nxt = this->findMenuItem(idx, 1);
+			if(nxt < 0) break;
+			idx = nxt;
+		}
+		if(idx >= 0 && idx != listOffset)
+			listOffset = idx;
+		listChanged = true;
+	}
+	else if(wasDragging)
+		listChanged = true; // snap the thumb to the list position
+
 	next = listOffset;
 
 	if(listChanged)
@@ -388,8 +452,6 @@ void GuiOptionBrowser::update(InputController * controller)
 		}
 	}
 
-	auto pad = controller->getPadData();
-	int currentChan = controller->getChannel();
 	// A InputController with no live signal this frame (e.g. a persistent
 	// but currently-disconnected controller slot) must not be able to claim
 	// or evict a selection just by taking its turn through this loop -- only

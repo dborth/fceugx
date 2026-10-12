@@ -47,7 +47,8 @@ class GuiOptionBrowser : public GuiElement
 
 		GuiShape * cardShape;
 		GuiShape * trackShape;
-		GuiShape * thumbShape;		// shows where the visible rows sit in the whole list; not interactive
+		GuiShape * thumbShape;		// shows where the visible rows sit in the whole list
+		GuiButton * thumbBtn;		// the thumb's hit area: drag it to scroll
 		GuiShape * arrowUpShape;
 		GuiShape * arrowDownShape;
 		GuiArrow * arrowUpGlyph;
@@ -55,6 +56,10 @@ class GuiOptionBrowser : public GuiElement
 
 		int rowWidth;
 		int trackHeight;
+		int thumbHeight;			// current thumb size, in pixels
+		int thumbTravel;			// how far the thumb can move, in pixels
+		int dragPos;				// thumb offset while it is being dragged
+		bool dragging;				// the thumb is held and following the pointer
 		int col1X;
 		int col2X;
 		int visibleCount;			// options that are listed (those with a name)
@@ -66,6 +71,7 @@ class GuiOptionBrowser : public GuiElement
 		GuiSound * btnSoundOver;
 		GuiSound * btnSoundClick;
 		GuiTrigger * trigA;
+		GuiTrigger * trigHeldA;
 
 		bool listChanged;
 };
