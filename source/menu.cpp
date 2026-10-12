@@ -409,7 +409,7 @@ static void CreditsWindow()
 	MenuDialogShape creditsBoxImg(MENU_CREDITS_W, MENU_CREDITS_H, MENU_CREDITS_HEADER_H);
 	creditsWindowBox.append(&creditsBoxImg);
 
-	int numEntries = 26;
+	int numEntries = 24;
 	GuiText * txt[numEntries];
 
 	// the title sits on the dialog's chrome band, so it is white; the credits start below the band
@@ -424,10 +424,6 @@ static void CreditsWindow()
 	txt[i] = new GuiText("Coding & menu design");
 	txt[i]->setPosition(40,y); i++;
 	txt[i] = new GuiText("Tantric");
-	txt[i]->setPosition(335,y); i++; y+=24;
-	txt[i] = new GuiText("Menu artwork");
-	txt[i]->setPosition(40,y); i++;
-	txt[i] = new GuiText("the3seashells");
 	txt[i]->setPosition(335,y); i++; y+=24;
 	txt[i] = new GuiText("Menu sound");
 	txt[i]->setPosition(40,y); i++;
