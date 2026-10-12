@@ -1,0 +1,180 @@
+/****************************************************************************
+ * FCE Ultra GX
+ *
+ * menustyle.h
+ *
+ * The look of the menus, drawn in code: colors, metrics and shape styles for
+ * the header/footer bars, the page background, the buttons and (through
+ * GuiTheme) the file browser and cards. Nothing here touches a platform API,
+ * so it can be built on a host for previews. The GuiShape wrappers live in
+ * menuart.h.
+ *
+ * Everything that gives the app its identity is in MenuPaletteDefault(): a
+ * primary hue for the chrome, an accent for focus and selection, and a gray
+ * secondary for surfaces. Sister emulators change that one function and keep
+ * the rest.
+ ***************************************************************************/
+#pragma once
+#include "libgui/GuiTheme.h"
+
+// design-canvas sizes
+#define MENU_BTN_LONG_W		216
+#define MENU_BTN_LONG_H		52
+#define MENU_BTN_LARGE_W	164
+#define MENU_BTN_LARGE_H	92
+#define MENU_BAR_TOP_H		96
+#define MENU_BAR_BOTTOM_H	112
+// shapes that touch the screen edge are drawn this much larger than the screen,
+// so their outline and feathered edge are never visible
+#define MENU_BAR_BLEED		6
+
+#define MENU_BTN_LONG_RADIUS	26.0f	// capsule
+#define MENU_BTN_LARGE_RADIUS	42.0f
+
+// the two cards of the game list page (the list itself is drawn by GuiFileBrowser)
+#define MENU_LIST_X			20
+#define MENU_LIST_Y			101
+#define MENU_LIST_W			330
+#define MENU_LIST_H			262
+#define MENU_PREVIEW_X		364
+#define MENU_PREVIEW_W		256
+#define MENU_PREVIEW_H		MENU_LIST_H
+
+static inline PixelColor MenuRGBA(int r, int g, int b, int a = 255)
+{
+	PixelColor c = { (uint8_t)r, (uint8_t)g, (uint8_t)b, (uint8_t)a };
+	return c;
+}
+
+//!Blends a toward b (t = 0 gives a, t = 1 gives b); alpha is kept from a
+static inline PixelColor MenuMix(PixelColor a, PixelColor b, float t)
+{
+	PixelColor c = a;
+	c.r = (uint8_t)(a.r + (b.r - a.r) * t + 0.5f);
+	c.g = (uint8_t)(a.g + (b.g - a.g) * t + 0.5f);
+	c.b = (uint8_t)(a.b + (b.b - a.b) * t + 0.5f);
+	return c;
+}
+
+//!Everything that differs between the emulators' themes
+struct MenuPalette {
+	// chrome: the header and footer bars (light edge at the top of the gradient)
+	PixelColor chromeLight, chromeDark, chromeEdge;
+	// page background, a vertical gradient behind everything
+	PixelColor backgroundTop, backgroundBottom;
+	// highlight: focused outline, selected-row outline, scrollbar thumb when grabbed
+	PixelColor accent, accentDark;
+	PixelColor accentTint;		// selected-row fill
+	PixelColor glow;			// halo around a focused button; must read on the chrome
+	// the gray secondary: cards, outlines, resting controls
+	PixelColor surface, surfaceRaised, outline, outlineStrong;
+	PixelColor text, textMuted, textOnAccent;
+};
+
+//!FCE Ultra GX: crimson chrome, gray secondary
+static inline MenuPalette MenuPaletteDefault()
+{
+	MenuPalette p;
+	p.chromeLight    = MenuRGBA(152, 30, 30);
+	p.chromeDark     = MenuRGBA(94, 2, 2);
+	p.chromeEdge     = MenuRGBA(184, 56, 56);
+	p.backgroundTop    = MenuRGBA(241, 241, 244);
+	p.backgroundBottom = MenuRGBA(213, 213, 220);
+	p.accent         = MenuRGBA(200, 32, 32);
+	p.accentDark     = MenuRGBA(146, 14, 14);
+	p.accentTint     = MenuRGBA(252, 232, 232);
+	p.glow           = MenuRGBA(255, 214, 200, 170);
+	p.surface        = MenuRGBA(246, 246, 249);
+	p.surfaceRaised  = MenuRGBA(255, 255, 255);
+	p.outline        = MenuRGBA(208, 208, 215);
+	p.outlineStrong  = MenuRGBA(166, 166, 175);
+	p.text           = MenuRGBA(30, 30, 34);
+	p.textMuted      = MenuRGBA(118, 118, 127);
+	p.textOnAccent   = MenuRGBA(255, 255, 255);
+	return p;
+}
+
+//!The palette in use
+static inline MenuPalette& MenuPaletteCurrent()
+{
+	static MenuPalette palette = MenuPaletteDefault();
+	return palette;
+}
+
+//!Makes the shared widgets (GuiFileBrowser, cards) follow the palette. Call once at
+//!startup, before any page is built.
+static inline void MenuApplyTheme()
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+	GuiTheme& t = GuiTheme::current();
+	t.background = p.backgroundBottom;
+	t.surface = p.surface;
+	t.surfaceRaised = p.surfaceRaised;
+	t.outline = p.outline;
+	t.outlineStrong = p.outlineStrong;
+	t.accent = p.accent;
+	t.accentLight = p.accentTint;
+	t.accentDark = p.accentDark;
+	t.text = p.text;
+	t.textMuted = p.textMuted;
+	t.textOnAccent = p.textOnAccent;
+	t.highlight = p.accentTint;
+	t.shadow = MenuRGBA(0, 0, 0, 64);
+	t.radius = 14.0f;
+	t.strokeWidth = 1.5f;
+	t.shadowBlur = 14.0f;
+}
+
+//!Resting, highlighted and pressed looks shared by the long and large buttons.
+//!Highlight: warmer face, accent outline and a pale glow that reads on the chrome
+//!as well as on the page.
+static inline GuiShapeStyle MenuButtonStyle()
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+
+	GuiPaint rest = GuiPaint()
+		.gradient(p.surfaceRaised, MenuMix(p.surface, p.outline, 0.45f))
+		.stroke(2.0f, p.chromeDark)
+		.shadow(8.0f, MenuRGBA(0, 0, 0, 100), 0.0f, 2.0f);
+
+	GuiPaint lit = GuiPaint()
+		.gradient(p.surfaceRaised, MenuMix(p.surfaceRaised, p.accentTint, 0.9f))
+		.stroke(3.0f, p.accent)
+		.glow(14.0f, p.glow, 1.0f);
+
+	GuiPaint pressed = GuiPaint()
+		.gradient(MenuMix(p.accentTint, p.outlineStrong, 0.25f), MenuMix(p.accentTint, p.outlineStrong, 0.5f))
+		.stroke(2.0f, p.chromeDark)
+		.shadow(4.0f, MenuRGBA(0, 0, 0, 80), 0.0f, 1.0f);
+
+	return GuiShapeStyle(rest).onFocus(lit).onPress(pressed);
+}
+
+//!The header bar: light at the top darkening downward, a fine light edge and a soft
+//!shadow onto the page below.
+static inline GuiPaint MenuBarTopPaint()
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+	return GuiPaint()
+		.gradient(p.chromeLight, p.chromeDark)
+		.stroke(1.5f, p.chromeEdge)
+		.shadow(18.0f, MenuRGBA(0, 0, 0, 150), 0.0f, 4.0f);
+}
+
+//!The footer bar: same chrome, shadow cast upward.
+static inline GuiPaint MenuBarBottomPaint()
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+	return GuiPaint()
+		.gradient(MenuMix(p.chromeLight, p.chromeDark, 0.15f), MenuMix(p.chromeDark, p.chromeLight, 0.05f))
+		.stroke(1.5f, p.chromeEdge)
+		.shadow(18.0f, MenuRGBA(0, 0, 0, 150), 0.0f, -4.0f);
+}
+
+//!The page behind everything: a quiet vertical gradient. (It replaces the striped
+//!flat color; stripes beat against the bars' shadows.)
+static inline GuiPaint MenuBackgroundPaint()
+{
+	const MenuPalette& p = MenuPaletteCurrent();
+	return GuiPaint().gradient(p.backgroundTop, p.backgroundBottom);
+}
