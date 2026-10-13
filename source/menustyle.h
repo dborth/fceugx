@@ -123,18 +123,18 @@ static inline MenuPalette MenuPaletteDefault()
 	p.chromeLight    = MenuRGBA(152, 30, 30);
 	p.chromeDark     = MenuRGBA(94, 2, 2);
 	p.chromeEdge     = MenuRGBA(184, 56, 56);
-	p.backgroundTop    = MenuRGBA(241, 241, 244);
-	p.backgroundBottom = MenuRGBA(213, 213, 220);
+	p.backgroundTop    = MenuRGBA(230, 230, 230);
+	p.backgroundBottom = MenuRGBA(200, 200, 200);
 	p.accent         = MenuRGBA(200, 32, 32);
 	p.accentDark     = MenuRGBA(146, 14, 14);
 	p.accentTint     = MenuRGBA(252, 232, 232);
 	p.glow           = MenuRGBA(255, 214, 200, 170);
-	p.surface        = MenuRGBA(246, 246, 249);
+	p.surface        = MenuRGBA(250, 250, 250);
 	p.surfaceRaised  = MenuRGBA(255, 255, 255);
-	p.outline        = MenuRGBA(208, 208, 215);
-	p.outlineStrong  = MenuRGBA(166, 166, 175);
-	p.text           = MenuRGBA(30, 30, 34);
-	p.textMuted      = MenuRGBA(118, 118, 127);
+	p.outline        = MenuRGBA(220, 220, 220);
+	p.outlineStrong  = MenuRGBA(160, 160, 160);
+	p.text           = MenuRGBA(30, 30, 30);
+	p.textMuted      = MenuRGBA(118, 118, 118);
 	p.textOnAccent   = MenuRGBA(255, 255, 255);
 	return p;
 }
@@ -178,7 +178,7 @@ static inline GuiShapeStyle MenuButtonStyle()
 	const MenuPalette& p = MenuPaletteCurrent();
 
 	GuiPaint rest = GuiPaint()
-		.gradient(p.surfaceRaised, MenuMix(p.surface, p.outline, 0.45f))
+		.gradient(p.surfaceRaised, MenuMix(p.surface, p.outline, 0.35f))
 		.stroke(2.0f, p.chromeDark)
 		.shadow(8.0f, MenuRGBA(0, 0, 0, 100), 0.0f, 2.0f);
 
@@ -230,7 +230,7 @@ static inline GuiPaint MenuDialogBodyPaint()
 {
 	const MenuPalette& p = MenuPaletteCurrent();
 	return GuiPaint()
-		.gradient(p.surfaceRaised, p.surface)
+		.gradient(MenuMix(p.surface, p.outline, 0.3f), MenuMix(p.surface, p.outline, 0.65f))
 		.stroke(2.0f, p.chromeDark)
 		.shadow(26.0f, MenuRGBA(0, 0, 0, 150), 0.0f, 8.0f);
 }
