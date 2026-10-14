@@ -78,12 +78,16 @@
 
 // the two cards of the game list page (the list itself is drawn by GuiFileBrowser)
 #define MENU_LIST_X			20
-#define MENU_LIST_Y			101
+#define MENU_LIST_Y			107
 #define MENU_LIST_W			330
-#define MENU_LIST_H			262
+#define MENU_LIST_H			249
 #define MENU_PREVIEW_X		364
-#define MENU_PREVIEW_W		256
+#define MENU_PREVIEW_W		248
 #define MENU_PREVIEW_H		MENU_LIST_H
+
+// option browser
+#define MENU_OPTIONS_W		552
+#define MENU_OPTIONS_H		MENU_LIST_H
 
 static inline PixelColor MenuRGBA(int r, int g, int b, int a = 255)
 {
@@ -203,7 +207,7 @@ static inline GuiPaint MenuBarTopPaint()
 	return GuiPaint()
 		.gradient(p.chromeLight, p.chromeDark)
 		.stroke(1.5f, p.chromeEdge)
-		.shadow(18.0f, MenuRGBA(0, 0, 0, 150), 0.0f, 4.0f);
+		.shadow(18.0f, MenuRGBA(0, 0, 0, 150), 0.0f, 1.0f);
 }
 
 //!The footer bar: same chrome, shadow cast upward.
@@ -213,7 +217,7 @@ static inline GuiPaint MenuBarBottomPaint()
 	return GuiPaint()
 		.gradient(MenuMix(p.chromeLight, p.chromeDark, 0.15f), MenuMix(p.chromeDark, p.chromeLight, 0.05f))
 		.stroke(1.5f, p.chromeEdge)
-		.shadow(18.0f, MenuRGBA(0, 0, 0, 150), 0.0f, -4.0f);
+		.shadow(18.0f, MenuRGBA(0, 0, 0, 150), 0.0f, -1.0f);
 }
 
 //!The page behind everything: a quiet vertical gradient. (It replaces the striped
