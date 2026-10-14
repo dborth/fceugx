@@ -5134,4 +5134,7 @@ void MainMenu (int selection)
 	}
 
 	menu = nullptr;
+
+	menuInstance.reset();
+	GuiMeshCache::flush();
 }
