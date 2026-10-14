@@ -1251,6 +1251,7 @@ static int MenuGameSelection()
 	#ifdef __WIIU__
 	GuiButton hiddenHomeBtn;
 	hiddenHomeBtn.setTrigger(&trigHome);
+	hiddenHomeBtn.setSelectable(false);
 	buttonWindow.append(&hiddenHomeBtn);
 	#endif
 
