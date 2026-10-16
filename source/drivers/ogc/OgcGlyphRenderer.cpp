@@ -5,7 +5,6 @@
  ***************************************************************************/
 #include "OgcVideoDriver.h"
 #include <malloc.h>
-#include "../../memmanager.h"
 #include <string.h>
 
 #define ALIGN8(x) (((x) + 7) & ~7)
