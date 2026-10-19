@@ -132,7 +132,7 @@ $(OUTPUT).wuhb: $(OUTPUT).rpx
 	@echo packaging $@ ...
 	@$(DEVKITPRO)/tools/bin/wuhbtool $< $@ \
 		--name="FCE Ultra GX" \
-		--short-name="fceugx" \
+		--short-name="FCE Ultra GX" \
 		--author="dborth" \
 		--icon=$(TOPDIR)/meta/icon.png \
 		--tv-image=$(TOPDIR)/meta/tv_splash.png \
