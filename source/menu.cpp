@@ -1437,7 +1437,7 @@ static void ControllerWindow()
 	GuiTrigger trigRight;
 	trigRight.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
 
-	MenuArrowImage arrowLeftImg(ARROW::LEFT);
+	MenuArrowImage arrowLeftImg(SHAPE::TRIANGLE_LEFT);
 	GuiButton arrowLeftBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowLeftBtn.setSoundOver(nullptr);
 	arrowLeftBtn.setSoundClick(nullptr);
@@ -1448,7 +1448,7 @@ static void ControllerWindow()
 	arrowLeftBtn.setSelectable(false);
 	arrowLeftBtn.setUpdateCallback(ControllerWindowLeftClick);
 
-	MenuArrowImage arrowRightImg(ARROW::RIGHT);
+	MenuArrowImage arrowRightImg(SHAPE::TRIANGLE_RIGHT);
 	GuiButton arrowRightBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowRightBtn.setSoundOver(nullptr);
 	arrowRightBtn.setSoundClick(nullptr);
@@ -1513,7 +1513,7 @@ static void PlayerMappingWindow(int chan)
 	GuiTrigger trigRight;
 	trigRight.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_RIGHT);
 
-	MenuArrowImage arrowLeftImg(ARROW::LEFT);
+	MenuArrowImage arrowLeftImg(SHAPE::TRIANGLE_LEFT);
 	GuiButton arrowLeftBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowLeftBtn.setSoundOver(nullptr);
 	arrowLeftBtn.setSoundClick(nullptr);
@@ -1524,7 +1524,7 @@ static void PlayerMappingWindow(int chan)
 	arrowLeftBtn.setSelectable(false);
 	arrowLeftBtn.setUpdateCallback(PlayerMappingWindowLeftClick);
 
-	MenuArrowImage arrowRightImg(ARROW::RIGHT);
+	MenuArrowImage arrowRightImg(SHAPE::TRIANGLE_RIGHT);
 	GuiButton arrowRightBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowRightBtn.setSoundOver(nullptr);
 	arrowRightBtn.setSoundClick(nullptr);
@@ -3069,7 +3069,7 @@ static void ScreenZoomWindow()
 	GuiTrigger trigDown;
 	trigDown.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_DOWN);
 
-	MenuArrowImage arrowLeftImg(ARROW::LEFT);
+	MenuArrowImage arrowLeftImg(SHAPE::TRIANGLE_LEFT);
 	GuiButton arrowLeftBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowLeftBtn.setSoundOver(nullptr);
 	arrowLeftBtn.setSoundClick(nullptr);
@@ -3081,7 +3081,7 @@ static void ScreenZoomWindow()
 	arrowLeftBtn.setSelectable(false);
 	arrowLeftBtn.setUpdateCallback(ScreenZoomWindowLeftClick);
 
-	MenuArrowImage arrowRightImg(ARROW::RIGHT);
+	MenuArrowImage arrowRightImg(SHAPE::TRIANGLE_RIGHT);
 	GuiButton arrowRightBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowRightBtn.setSoundOver(nullptr);
 	arrowRightBtn.setSoundClick(nullptr);
@@ -3093,7 +3093,7 @@ static void ScreenZoomWindow()
 	arrowRightBtn.setSelectable(false);
 	arrowRightBtn.setUpdateCallback(ScreenZoomWindowRightClick);
 
-	MenuArrowImage arrowUpImg(ARROW::UP);
+	MenuArrowImage arrowUpImg(SHAPE::TRIANGLE_UP);
 	GuiButton arrowUpBtn(MENU_ARROW_HIT_LONG, MENU_ARROW_HIT_SHORT);
 	arrowUpBtn.setSoundOver(nullptr);
 	arrowUpBtn.setSoundClick(nullptr);
@@ -3105,7 +3105,7 @@ static void ScreenZoomWindow()
 	arrowUpBtn.setSelectable(false);
 	arrowUpBtn.setUpdateCallback(ScreenZoomWindowUpClick);
 
-	MenuArrowImage arrowDownImg(ARROW::DOWN);
+	MenuArrowImage arrowDownImg(SHAPE::TRIANGLE_DOWN);
 	GuiButton arrowDownBtn(MENU_ARROW_HIT_LONG, MENU_ARROW_HIT_SHORT);
 	arrowDownBtn.setSoundOver(nullptr);
 	arrowDownBtn.setSoundClick(nullptr);
@@ -3197,7 +3197,7 @@ static void ScreenPositionWindow()
 	GuiTrigger trigDown;
 	trigDown.setButtonOnlyInFocusTrigger(-1, INPUT_BTN_DOWN);
 
-	MenuArrowImage arrowLeftImg(ARROW::LEFT);
+	MenuArrowImage arrowLeftImg(SHAPE::TRIANGLE_LEFT);
 	GuiButton arrowLeftBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowLeftBtn.setSoundOver(nullptr);
 	arrowLeftBtn.setSoundClick(nullptr);
@@ -3208,7 +3208,7 @@ static void ScreenPositionWindow()
 	arrowLeftBtn.setSelectable(false);
 	arrowLeftBtn.setUpdateCallback(ScreenPositionWindowLeftClick);
 
-	MenuArrowImage arrowRightImg(ARROW::RIGHT);
+	MenuArrowImage arrowRightImg(SHAPE::TRIANGLE_RIGHT);
 	GuiButton arrowRightBtn(MENU_ARROW_HIT_SHORT, MENU_ARROW_HIT_LONG);
 	arrowRightBtn.setSoundOver(nullptr);
 	arrowRightBtn.setSoundClick(nullptr);
@@ -3219,7 +3219,7 @@ static void ScreenPositionWindow()
 	arrowRightBtn.setSelectable(false);
 	arrowRightBtn.setUpdateCallback(ScreenPositionWindowRightClick);
 
-	MenuArrowImage arrowUpImg(ARROW::UP);
+	MenuArrowImage arrowUpImg(SHAPE::TRIANGLE_UP);
 	GuiButton arrowUpBtn(MENU_ARROW_HIT_LONG, MENU_ARROW_HIT_SHORT);
 	arrowUpBtn.setSoundOver(nullptr);
 	arrowUpBtn.setSoundClick(nullptr);
@@ -3230,7 +3230,7 @@ static void ScreenPositionWindow()
 	arrowUpBtn.setSelectable(false);
 	arrowUpBtn.setUpdateCallback(ScreenPositionWindowUpClick);
 
-	MenuArrowImage arrowDownImg(ARROW::DOWN);
+	MenuArrowImage arrowDownImg(SHAPE::TRIANGLE_DOWN);
 	GuiButton arrowDownBtn(MENU_ARROW_HIT_LONG, MENU_ARROW_HIT_SHORT);
 	arrowDownBtn.setSoundOver(nullptr);
 	arrowDownBtn.setSoundClick(nullptr);
