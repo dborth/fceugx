@@ -2453,6 +2453,7 @@ static int MenuGameCheats()
 	backBtn.setAlignment(ALIGN_H::LEFT, ALIGN_V::BOTTOM);
 	backBtn.setPosition(50, -35);
 	backBtn.setLabel(&backBtnTxt);
+	backBtn.setImage(&backBtnImg);
 	backBtn.setTrigger(trigA);
 	backBtn.setTrigger(&trigB);
 	backBtn.setEffectGrow();
