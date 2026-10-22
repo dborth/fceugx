@@ -19,7 +19,7 @@
 #include "videosupport.h"
 #include "fileop.h"
 #include "libgui/Gui.h"
-#include "menu.h"
+#include "menu/menu.h"
 #include "pad.h"
 #include "drivers/Time.h"
 

@@ -22,7 +22,7 @@
 #include "drivers/Platform.h"
 #include "fceusupport.h"
 #include "pad.h"
-#include "menu.h"
+#include "menu/menu.h"
 #include "fileop.h"
 #include "filebrowser.h"
 #include "cheatmgr.h"

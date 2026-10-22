@@ -27,7 +27,7 @@
 #include "filelist.h"
 #include "button_mapping.h"
 #include "filebrowser.h"
-#include "menu.h"
+#include "menu/menu.h"
 #include "fileop.h"
 #include "videosupport.h"
 #include "pad.h"

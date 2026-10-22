@@ -13,7 +13,7 @@
 #include "pad.h"
 #include "videosupport.h"
 #include "drivers/Platform.h"
-#include "menu.h"
+#include "menu/menu.h"
 
 int fskipc = 0;
 int fskip = 0;

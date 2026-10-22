@@ -12,7 +12,7 @@
 
 #include "fceugx.h"
 #include "fceusupport.h"
-#include "menu.h"
+#include "menu/menu.h"
 #include "memfile.h"
 #include "fileop.h"
 #include "filebrowser.h"

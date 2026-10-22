@@ -14,7 +14,7 @@
 
 #include "fceugx.h"
 #include "fceusupport.h"
-#include "menu.h"
+#include "menu/menu.h"
 #include "filebrowser.h"
 #include "fileop.h"
 #include "pad.h"

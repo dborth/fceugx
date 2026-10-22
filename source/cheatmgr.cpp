@@ -14,7 +14,7 @@
 #include "fceusupport.h"
 #include "fileop.h"
 #include "filebrowser.h"
-#include "menu.h"
+#include "menu/menu.h"
 #include "drivers/Platform.h"
 #include "drivers/FileSystemDriver.h"
 

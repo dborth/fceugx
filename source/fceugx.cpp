@@ -18,7 +18,7 @@
 #include "fceustate.h"
 #include "fceuram.h"
 #include "fceusupport.h"
-#include "menu.h"
+#include "menu/menu.h"
 #include "preferences.h"
 #include "fileop.h"
 #include "filebrowser.h"

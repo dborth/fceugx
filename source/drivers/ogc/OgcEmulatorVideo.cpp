@@ -20,7 +20,7 @@
 #include "../../fceugx.h"
 #include "../../fceusupport.h"
 #include "../../videosupport.h"
-#include "../../menu.h"
+#include "../../menu/menu.h"
 #include "../../pad.h"
 #include "videofilters.h"
 
