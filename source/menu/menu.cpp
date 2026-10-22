@@ -2581,7 +2581,7 @@ static int MenuSettingsMappings()
 		}
 		else if(otherBtn.getState() == STATE::CLICKED)
 		{
-			selection = MENU_GAMESETTINGS_MAPPINGS_OTHER;
+			selection = MENU_GAMESETTINGS_MAPPINGS_GENERAL;
 		}
 		else if(backBtn.getState() == STATE::CLICKED)
 		{
@@ -3271,7 +3271,7 @@ static void ScreenPositionWindow()
 	delete(settingText);
 }
 
-static int MenuSettingsOtherMappings()
+static int MenuSettingsGeneralMappings()
 {
 	int selection = MENU_NONE;
 	int ret;
@@ -4848,8 +4848,8 @@ void MainMenu (int selection)
 			case MENU_SETTINGS_NETWORK:
 				currentMenu = MenuSettingsNetwork();
 				break;
-			case MENU_GAMESETTINGS_MAPPINGS_OTHER:
-				currentMenu = MenuSettingsOtherMappings();
+			case MENU_GAMESETTINGS_MAPPINGS_GENERAL:
+				currentMenu = MenuSettingsGeneralMappings();
 				break;
 			default: // unrecognized menu
 				currentMenu = MenuGameSelection();
