@@ -64,7 +64,7 @@ void ResetControls(int consoleCtrl, int hardwareProfile)
 		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_A;
 		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_Y;
 		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_X;
-		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_TRIGGER_ZL; // GC Z button
+		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_TRIGGER_ZR; // GC Z button (the GameCube pad reports Z as ZR)
 		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_PLUS;   // GC Start
 		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_UP;
 		btnmap[CTRL_PAD][INPUT_HW_GAMECUBE][i++] = INPUT_BTN_DOWN;

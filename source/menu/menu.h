@@ -11,6 +11,8 @@
 #ifndef _MENU_H
 #define _MENU_H
 
+class GuiWindow;
+
 void InitGUIThreads();
 void MainMenu(int menuitem);
 void ErrorPrompt(const char * msg);
@@ -20,6 +22,11 @@ void ShowAction(const char *msg, void (*onCancel)(void) = nullptr);
 void CancelAction();
 void ShowProgress(const char *msg, int done, int total);
 void ChangeLanguage();
+
+// What a screen built outside menu.cpp needs of the menu: its main window, a frame of it, and the prompts
+GuiWindow& MenuMainWindow();
+bool MenuUpdateGui();	//!< Runs one frame of the menu. False when the application is exiting.
+bool MenuConfirm(const char * title, const char * msg, const char * yes, const char * no);	//!< true if `yes` was chosen
 
 extern uint8_t * bg_music;
 extern uint32_t bg_music_size;
@@ -39,8 +46,6 @@ enum
 	MENU_GAME_DELETE,
 	MENU_GAMESETTINGS,
 	MENU_GAMESETTINGS_MAPPINGS,
-	MENU_GAMESETTINGS_MAPPINGS_CTRL,
-	MENU_GAMESETTINGS_MAPPINGS_MAP,
 	MENU_GAMESETTINGS_VIDEO,
 	MENU_GAMESETTINGS_EMULATION,
 	MENU_GAMESETTINGS_CHEATS,
