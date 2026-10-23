@@ -656,6 +656,7 @@ int BrowserLoadFile()
 		if(GCMemROM(filesize) > 0)
 		{
 			romLoaded = true;
+			ClearPlayingFrom(); // a new game does not start from the last game's snapshot
 
 			// load RAM or state
 			if (EmuSettings.autoLoad == AUTOLOAD_RAM)

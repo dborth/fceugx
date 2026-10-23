@@ -339,13 +339,13 @@ The File Browser loads automatically on startup and lists the contents of your `
 
 ## Gameplay
 
-Press **Home** while playing to open the in-game menu (Save, Load, Reset, Controller, Cheats). Select **Main Menu** to return to the File Browser, or **Close** to resume play.
+Press **Home** while playing to open the in-game menu (Saves, Button Mappings, Reset, Controller, Game Settings). Select **Main Menu** to return to the File Browser, or **Close** to resume play.
 
-- **Save** offers options to create a new RAM save or a new save state; click either to create one, or click an existing save to overwrite it.
-- **Load** loads a saved RAM save or save state.
+- **Saves** shows your Snapshots (save states) in a grid, with the game's own **Game Save File** (RAM) under them for games that have one. Click **New Snapshot** to save the moment you are at, or click a Snapshot to Load, Update or Delete it. Click the Game Save File to Save Now, Make a Backup, or open its Backups to Restore or Delete one.
+- **Button Mappings** opens the [button mapping](#button-mappings) screen.
 - **Reset** resets the current game.
-- **Controller** toggles which controller drives the game.
-- **Cheats** toggles your loaded cheat codes (below).
+- **Controller** chooses which controller is being emulated: two controllers, four controllers (Four Score), or the Zapper.
+- **Game Settings** has Emulation, Video, Screenshot, and Cheats (your loaded cheat codes, below).
 
 ## Cheats & Game Genie
 

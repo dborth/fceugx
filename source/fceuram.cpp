@@ -63,6 +63,12 @@ static int GetGameRAM(unsigned char * buffer)
 	return 0;
 }
 
+// Size in bytes of the RAM this game saves: 0 when it has none (no battery save, or an FDS game)
+int GetRAMSaveSize ()
+{
+	return GetGameRAM(nullptr);
+}
+
 // Writes the RAM that is sitting in the savebuffer (datasize bytes) to filepath,
 // merging it into the existing file if that is a PocketNES save.
 // The caller holds the savebuffer (AllocSaveBuffer).

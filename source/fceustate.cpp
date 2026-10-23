@@ -25,6 +25,23 @@
 #include "fceustate.h"
 #include "videosupport.h"
 
+static char playingFrom[MAXPATHLEN] = "";
+
+const char * GetPlayingFrom ()
+{
+	return playingFrom;
+}
+
+void ClearPlayingFrom ()
+{
+	playingFrom[0] = 0;
+}
+
+static void SetPlayingFrom (const char * filepath)
+{
+	snprintf(playingFrom, sizeof(playingFrom), "%s", filepath);
+}
+
 bool SaveState (char * filepath, bool silent)
 {
 	bool retval = false;
@@ -53,6 +70,8 @@ bool SaveState (char * filepath, bool silent)
 
 	if (offset > 0)
 	{
+		SetPlayingFrom(filepath);
+
 		if (!silent)
 			InfoPrompt("Save successful");
 		retval = true;
@@ -180,6 +199,7 @@ bool LoadState (char * filepath, bool silent)
 	{
 		EMUFILE_MEMFILE save(savebuffer, offset);
 		FCEUSS_LoadFP(&save, SSLOADPARAM_NOBACKUP);
+		SetPlayingFrom(filepath);
 		retval = true;
 	}
 	else
