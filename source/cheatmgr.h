@@ -11,5 +11,7 @@
 void SetupCheats();
 bool FindGameGenie();
 void OpenGameGenie();
+void ResetGameGenie();
+const char *GameGenieError();
 
 extern int numcheats;

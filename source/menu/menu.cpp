@@ -1552,19 +1552,42 @@ static int MenuGame()
 	resetBtn.setTrigger(trigA);
 	resetBtn.setEffectGrow();
 
-	// Second row: the controller chip (a popover) and Game Settings, centred as a pair
+	// Second row: the controller chip (a popover), Game Genie, and Game Settings
 	UiScope ui;
 	bool controllerRequest = false;
 	GuiCard& controllerChip = MenuPopover_Chip(ui, MENU_BTN_NORMAL_W, "CONTROLLER", []{ return ControllerChipValue(); });
 	controllerChip.onClick([&controllerRequest]{ controllerRequest = true; });
 	controllerChip.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	controllerChip.setPosition(-120, 296);
+	controllerChip.setPosition(-208, 296);
+
+	// Game Genie is a button with an on/off switch inside it: it flips where it is, rather than opening a popover.
+	// It takes effect when the game is reset (or the next game is loaded).
+	GuiText genieBtnTxt("Game Genie", 18, (PixelColor){0, 0, 0, 255});
+	// The label is centred in the space between the button's left edge and the switch
+	const int genieTxtLeft = 14;
+	const int genieTxtW = MENU_BTN_NORMAL_W - genieTxtLeft - MenuSwitch::W - 16 - 12;
+	genieBtnTxt.setWrap(true, genieTxtW);
+	genieBtnTxt.setLineSpacing(-2);
+	genieBtnTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
+	genieBtnTxt.setPosition(genieTxtLeft + genieTxtW / 2 - MENU_BTN_NORMAL_W / 2, 0);
+	MenuSwitch genieSwitch(EmuSettings.gameGenie);
+	genieSwitch.setAlignment(ALIGN_H::RIGHT, ALIGN_V::MIDDLE);
+	genieSwitch.setPosition(-16, 0);
+	MenuButtonShape genieBtnImg(MenuButtonShape::NORMAL);
+	GuiButton genieBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
+	genieBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
+	genieBtn.setPosition(0, 290);
+	genieBtn.setLabel(&genieBtnTxt);
+	genieBtn.setImage(&genieBtnImg);
+	genieBtn.setIcon(&genieSwitch);
+	genieBtn.setTrigger(trigA);
+	genieBtn.setEffectGrow();
 
 	GuiText gameSettingsBtnTxt("Game Settings", 22, (PixelColor){0, 0, 0, 255});
 	MenuButtonShape gameSettingsBtnImg(MenuButtonShape::NORMAL);
 	GuiButton gameSettingsBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
 	gameSettingsBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	gameSettingsBtn.setPosition(120, 290);
+	gameSettingsBtn.setPosition(208, 290);
 	gameSettingsBtn.setLabel(&gameSettingsBtnTxt);
 	gameSettingsBtn.setImage(&gameSettingsBtnImg);
 	gameSettingsBtn.setTrigger(trigA);
@@ -1606,6 +1629,7 @@ static int MenuGame()
 	w.append(&mappingBtn);
 	w.append(&resetBtn);
 	w.append(&controllerChip);
+	w.append(&genieBtn);
 	w.append(&gameSettingsBtn);
 		
 	#ifndef HW_DOL
@@ -1664,6 +1688,7 @@ static int MenuGame()
 		{
 			if (WindowPrompt("Reset Game", "Are you sure that you want to reset this game? Any unsaved progress will be lost.", "OK", "Cancel"))
 			{
+				ResetGameGenie(); // picks up the Game Genie switch
 				PowerNES();
 				selection = MENU_EXIT;
 			}
@@ -1671,6 +1696,21 @@ static int MenuGame()
 			{
 				resetBtn.resetState();
 			}
+		}
+		else if(genieBtn.getState() == STATE::CLICKED)
+		{
+			bool genieOn = !EmuSettings.gameGenie;
+			if(genieOn && !FindGameGenie())
+			{
+				ErrorPrompt(GameGenieError());
+				genieOn = false;
+			}
+			EmuSettings.gameGenie = genieOn;
+			genieSwitch.setOn(genieOn);
+			// stays selected, so the button keeps its highlight and the D-pad stays on it
+			const int chan = genieBtn.getStateChan();
+			genieBtn.resetState();
+			genieBtn.setState(STATE::SELECTED, chan);
 		}
 		else if(gameSettingsBtn.getState() == STATE::CLICKED)
 		{
@@ -3571,12 +3611,6 @@ static int MenuSettingsEmulation()
 static int MenuSettings()
 {
 	int selection = MENU_NONE;
-	char gameGenieTxt[10];
-	
-	if(!FindGameGenie()) sprintf(gameGenieTxt, "DISABLED");
-	else if(EmuSettings.gameGenie) sprintf(gameGenieTxt, "ON");
-	else sprintf(gameGenieTxt, "OFF");
-
 	GuiText titleTxt("Settings", 26, (PixelColor){255, 255, 255, 255});
 	titleTxt.setAlignment(ALIGN_H::LEFT, ALIGN_V::TOP);
 	titleTxt.setPosition(50,50);
@@ -3584,7 +3618,6 @@ static int MenuSettings()
 	MenuIconData iconFile(icon_settings_file_png);
 	MenuIconData iconMenu(icon_settings_menu_png);
 	MenuIconData iconNetwork(icon_settings_network_png);
-	MenuIconData iconCheats(icon_game_cheats_png);
 	MenuIconData iconCredits(icon_credits_png);
 
 	GuiTrigger trigB;
@@ -3627,36 +3660,20 @@ static int MenuSettings()
 	GuiImage networkBtnIcon(&iconNetwork);
 	GuiButton networkBtn(MENU_BTN_LARGE_W, MENU_BTN_LARGE_H);
 	networkBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	networkBtn.setPosition(-200, 250);
+	networkBtn.setPosition(-125, 250);
 	networkBtn.setLabel(&networkBtnTxt);
 	networkBtn.setImage(&networkBtnImg);
 	networkBtn.setIcon(&networkBtnIcon);
 	networkBtn.setTrigger(trigA);
 	networkBtn.setEffectGrow();
 	
-	GuiText cheatsBtnTxt("Game Genie", 22, (PixelColor){0, 0, 0, 255});
-	GuiText cheatsBtnTxt2(gameGenieTxt, 18, (PixelColor){0, 0, 0, 255});
-	cheatsBtnTxt.setPosition(0, -16);
-	cheatsBtnTxt2.setPosition(0, +8);
-	MenuButtonShape cheatsBtnImg(MenuButtonShape::LARGE);
-	GuiImage cheatsBtnIcon(&iconCheats);
-	GuiButton cheatsBtn(MENU_BTN_LARGE_W, MENU_BTN_LARGE_H);
-	cheatsBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	cheatsBtn.setPosition(0, 250);
-	cheatsBtn.setLabel(&cheatsBtnTxt, 0);
-	cheatsBtn.setLabel(&cheatsBtnTxt2, 1);
-	cheatsBtn.setImage(&cheatsBtnImg);
-	cheatsBtn.setIcon(&cheatsBtnIcon);
-	cheatsBtn.setTrigger(trigA);
-	cheatsBtn.setEffectGrow();
-
 	GuiText creditsBtnTxt("Credits", 22, (PixelColor){0, 0, 0, 255});
 	creditsBtnTxt.setWrap(true, MENU_BTN_LARGE_W-20);
 	MenuButtonShape creditsBtnImg(MenuButtonShape::LARGE);
 	GuiImage creditsBtnIcon(&iconCredits);
 	GuiButton creditsBtn(MENU_BTN_LARGE_W, MENU_BTN_LARGE_H);
 	creditsBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	creditsBtn.setPosition(200, 250);
+	creditsBtn.setPosition(125, 250);
 	creditsBtn.setLabel(&creditsBtnTxt);
 	creditsBtn.setImage(&creditsBtnImg);
 	creditsBtn.setIcon(&creditsBtnIcon);
@@ -3689,7 +3706,6 @@ static int MenuSettings()
 	w.append(&savingBtn);
 	w.append(&menuBtn);
 	w.append(&networkBtn);
-	w.append(&cheatsBtn);
 	w.append(&creditsBtn);
 	w.append(&backBtn);
 	w.append(&resetBtn);
@@ -3717,22 +3733,6 @@ static int MenuSettings()
 		{
 			creditsBtn.resetState();
 			CreditsWindow();
-		}
-		else if(cheatsBtn.getState() == STATE::CLICKED)
-		{
-			cheatsBtn.resetState();
-			
-			if(!FindGameGenie())
-			{
-				ErrorPrompt("Game Genie ROM not found!");
-			}
-			else
-			{
-				EmuSettings.gameGenie = !EmuSettings.gameGenie;
-				if (EmuSettings.gameGenie) sprintf(gameGenieTxt, "ON");
-				else sprintf(gameGenieTxt, "OFF");
-				cheatsBtnTxt2.setText(gameGenieTxt);
-			}
 		}
 		else if(backBtn.getState() == STATE::CLICKED)
 		{
