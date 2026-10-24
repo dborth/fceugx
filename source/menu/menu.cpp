@@ -1555,26 +1555,28 @@ static int MenuGame()
 	// Second row: the controller chip (a popover), Game Genie, and Game Settings
 	UiScope ui;
 	bool controllerRequest = false;
-	GuiCard& controllerChip = MenuPopover_Chip(ui, MENU_BTN_NORMAL_W, "CONTROLLER", []{ return ControllerChipValue(); });
+	// Row 2 uses the same width and columns as the large buttons above it
+	const int row2W = MENU_BTN_LARGE_W;
+	GuiCard& controllerChip = MenuPopover_Chip(ui, row2W, "CONTROLLER", []{ return ControllerChipValue(); });
 	controllerChip.onClick([&controllerRequest]{ controllerRequest = true; });
 	controllerChip.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	controllerChip.setPosition(-208, 296);
+	controllerChip.setPosition(-200, 296);
 
 	// Game Genie is a button with an on/off switch inside it: it flips where it is, rather than opening a popover.
 	// It takes effect when the game is reset (or the next game is loaded).
 	GuiText genieBtnTxt("Game Genie", 18, (PixelColor){0, 0, 0, 255});
 	// The label is centred in the space between the button's left edge and the switch
 	const int genieTxtLeft = 14;
-	const int genieTxtW = MENU_BTN_NORMAL_W - genieTxtLeft - MenuSwitch::W - 16 - 12;
+	const int genieTxtW = row2W - genieTxtLeft - MenuSwitch::W - 16 - 12;
 	genieBtnTxt.setWrap(true, genieTxtW);
 	genieBtnTxt.setLineSpacing(-2);
 	genieBtnTxt.setAlignment(ALIGN_H::CENTRE, ALIGN_V::MIDDLE);
-	genieBtnTxt.setPosition(genieTxtLeft + genieTxtW / 2 - MENU_BTN_NORMAL_W / 2, 0);
+	genieBtnTxt.setPosition(genieTxtLeft + genieTxtW / 2 - row2W / 2, 0);
 	MenuSwitch genieSwitch(EmuSettings.gameGenie);
 	genieSwitch.setAlignment(ALIGN_H::RIGHT, ALIGN_V::MIDDLE);
 	genieSwitch.setPosition(-16, 0);
-	MenuButtonShape genieBtnImg(MenuButtonShape::NORMAL);
-	GuiButton genieBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
+	MenuButtonShape genieBtnImg(MenuButtonShape::NORMAL, row2W);
+	GuiButton genieBtn(row2W, MENU_BTN_NORMAL_H);
 	genieBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	genieBtn.setPosition(0, 290);
 	genieBtn.setLabel(&genieBtnTxt);
@@ -1584,10 +1586,10 @@ static int MenuGame()
 	genieBtn.setEffectGrow();
 
 	GuiText gameSettingsBtnTxt("Game Settings", 22, (PixelColor){0, 0, 0, 255});
-	MenuButtonShape gameSettingsBtnImg(MenuButtonShape::NORMAL);
-	GuiButton gameSettingsBtn(MENU_BTN_NORMAL_W, MENU_BTN_NORMAL_H);
+	MenuButtonShape gameSettingsBtnImg(MenuButtonShape::NORMAL, row2W);
+	GuiButton gameSettingsBtn(row2W, MENU_BTN_NORMAL_H);
 	gameSettingsBtn.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
-	gameSettingsBtn.setPosition(208, 290);
+	gameSettingsBtn.setPosition(200, 290);
 	gameSettingsBtn.setLabel(&gameSettingsBtnTxt);
 	gameSettingsBtn.setImage(&gameSettingsBtnImg);
 	gameSettingsBtn.setTrigger(trigA);

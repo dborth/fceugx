@@ -33,6 +33,14 @@ class MenuButtonShape : public GuiShape
 			setStyle(MenuButtonStyle());
 		}
 
+		//!A button face of this kind, but narrower or wider than its standard width
+		MenuButtonShape(Kind kind, int width) :
+			GuiShape(width, heightOf(kind))
+		{
+			setCorners(GuiCorners(radiusOf(kind)));
+			setStyle(MenuButtonStyle());
+		}
+
 	private:
 		static int widthOf(Kind k)
 		{
