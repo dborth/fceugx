@@ -242,7 +242,7 @@ Configure the **NES Controller** and **Zapper** independently, each against whic
 
 The NES Controller's mappable buttons include the usual **B / A / Select / Start / D-pad**, independent **B (Rapid) / A (Rapid)** bindings for per-button auto-fire (see [Turbo Mode & Rapid Fire](#turbo-mode--rapid-fire)), and a combined **Insert Coin / Switch Disk** button that does VS System coin-insert or FDS disk-switching depending on what's loaded. The Zapper's mappable inputs are **Fire** and **Insert Coin**.
 
-The **Other Mappings** screen (reached from Button Mappings) also lets you configure:
+The **General Mappings** screen (reached from Button Mappings) also lets you configure:
 
 | Option | What it does |
 |---|---|
@@ -357,7 +357,7 @@ FCE Ultra GX also supports **Game Genie** codes, which need a Game Genie patch R
 
 FCE Ultra GX has two distinct speed-up features that are easy to mix up:
 
-- **Turbo Mode** roughly doubles overall playback speed while active — game logic, scrolling, everything. It's remappable — set which button or combo triggers it under **Settings → Button Mappings → Other Mappings → Turbo Mode Button** — and can be disabled entirely from the same screen. Hold the assigned button to run at double speed; release it to return to normal playback.
+- **Turbo Mode** roughly doubles overall playback speed while active — game logic, scrolling, everything. It's remappable — set which button or combo triggers it under **Settings → Button Mappings → General Mappings → Turbo Mode Button** — and can be disabled entirely from the same screen. Hold the assigned button to run at double speed; release it to return to normal playback.
 - **Rapid Fire** (the classic NES-style "turbo" feature) only affects a single button — **B (Rapid)** and **A (Rapid)** are separate bindings under [Button Mappings](#button-mappings) that auto-fire that specific button for as long as it's held, at normal game speed. This is the equivalent of a third-party "turbo controller," useful for shooters and other rapid-tap games, and has nothing to do with overall playback speed.
 
 ## Famicom Disk System (FDS)
