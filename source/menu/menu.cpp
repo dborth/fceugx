@@ -39,6 +39,7 @@
 #include "filelist.h"
 #include "cheatmgr.h"
 #include "libgui/Gui.h"
+#include "widgets/GuiWidgets.h"
 #include "menuart.h"
 #include "controllerstatus.h"
 #include "utils/decompress.h"

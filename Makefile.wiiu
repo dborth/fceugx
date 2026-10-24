@@ -26,7 +26,7 @@ TARGET		:=	fceugx-wiiu
 BUILD		:=	build_wiiu
 EXECUTABLES	:=	executables
 
-SOURCES		:=	source source/menu source/libgui source/utils source/utils/sz \
+SOURCES		:=	source source/menu source/libgui source/widgets source/utils source/utils/sz \
 				source/drivers source/drivers/wut source/drivers/wut/shaders \
 				source/pocketnes source/pocketnes/minilzo \
 				source/fceultra source/fceultra/boards source/fceultra/input source/fceultra/utils
