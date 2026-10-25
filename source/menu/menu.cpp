@@ -4581,7 +4581,6 @@ static int FirstRunTask(void *) {
 
 void MainMenu (int selection)
 {
-	MenuApplyTheme();
 	static bool firstRun = true;
 	int currentMenu = selection;
 	lastMenu = MENU_NONE;
