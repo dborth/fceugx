@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "snes9xgx.h"
+#include "fceugx.h"
 #include "savemode.h"
 #include "fceuram.h"
 #include "fceustate.h"
