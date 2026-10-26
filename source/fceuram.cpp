@@ -24,6 +24,7 @@
 #include "filebrowser.h"
 #include "fileop.h"
 #include "fceuram.h"
+#include "savemode.h"
 #include "pocketnes/goombasav.h"
 
 // Copies the cart's battery-backed RAM to (operation 0) or from (operation 1) buffer.
@@ -122,12 +123,12 @@ static bool WriteRAMFromSaveBuffer (char * filepath, int datasize, bool silent)
 
 				if (sh1 == nullptr)
 				{
-					ErrorPrompt("PocketNES save file has no SRAM.");
+					ErrorPrompt("PocketNES save file has no Game Save File.");
 					datasize = 0;
 				}
 				else if (sh2 != nullptr)
 				{
-					ErrorPrompt("PocketNES save file has more than one SRAM.");
+					ErrorPrompt("PocketNES save file has more than one Game Save File.");
 					datasize = 0;
 				}
 				else
@@ -177,7 +178,7 @@ bool SaveRAM (char * filepath, bool silent)
 	if(GameInfo->type == GIT_FDS)
 	{
 		if(!silent)
-			InfoPrompt("RAM saving is not available for FDS games!");
+			InfoPrompt("Game Save Files are not available for FDS games!");
 		return false;
 	}
 
@@ -315,12 +316,12 @@ bool LoadRAM (char * filepath, bool silent)
 
 		if (sh1 == nullptr)
 		{
-			ErrorPrompt("PocketNES save file has no SRAM.");
+			ErrorPrompt("PocketNES save file has no Game Save File.");
 			offset = 0;
 		}
 		else if (sh2 != nullptr)
 		{
-			ErrorPrompt("PocketNES save file has more than one SRAM.");
+			ErrorPrompt("PocketNES save file has more than one Game Save File.");
 			offset = 0;
 		}
 		else
@@ -345,6 +346,7 @@ bool LoadRAM (char * filepath, bool silent)
 		else if(GameInfo->type == GIT_VSUNI)
 			WiiFCEU_GameSave(&UNIFCart, 1, savebuffer);
 
+		MarkLiveStateChanged();
 		ResetNES();
 		retval = true;
 	}
@@ -352,37 +354,20 @@ bool LoadRAM (char * filepath, bool silent)
 	{
 		// if we reached here, nothing was done!
 		if(!silent)
-			InfoPrompt ("Save file not found");
+			InfoPrompt ("Game Save File not found");
 	}
 	FreeSaveBuffer ();
 	return retval;
 }
 
+// Loads the game's Game Save File ("<name>.sav")
 bool
 LoadRAMAuto (bool silent)
 {
 	char filepath[MAXPATHLEN];
-	char filepath2[MAXPATHLEN];
 
-	// look for Auto save file
 	if(!MakeFilePath(filepath, FILE_RAM, romFilename, 0))
 		return false;
 
-	if (LoadRAM(filepath, silent))
-		return true;
-
-	if (!EmuSettings.appendAuto)
-		return false;
-
-	// look for file with no number or Auto appended
-	if(!MakeFilePath(filepath2, FILE_RAM, romFilename, -1))
-		return false;
-
-	if(LoadRAM(filepath2, silent))
-	{
-		// rename this file - append Auto
-		rename(filepath2, filepath); // rename file (to avoid duplicates)
-		return true;
-	}
-	return false;
+	return LoadRAM(filepath, silent);
 }

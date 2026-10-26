@@ -5,9 +5,9 @@
  *
  * fceustate.cpp
  *
- * Memory Based Load/Save State Manager
+ * Memory Based Load/Save Snapshot Manager
  *
- * These are simply the state routines, brought together as GCxxxxx
+ * These are simply the Snapshot routines, brought together as GCxxxxx
  * The original file I/O is replaced with Memory Read/Writes to the
  * statebuffer below
  ****************************************************************************/
@@ -23,6 +23,7 @@
 #include "filebrowser.h"
 #include "fileop.h"
 #include "fceustate.h"
+#include "savemode.h"
 #include "videosupport.h"
 
 static char playingFrom[MAXPATHLEN] = "";
@@ -82,7 +83,7 @@ bool SaveState (char * filepath, bool silent)
 /****************************************************************************
  * Deferred auto-save
  *
- * SnapshotStateAuto() serializes and compresses the state and copies the
+ * SnapshotStateAuto() serializes and compresses the Snapshot and copies the
  * screenshot, so it can be called from the main thread at the moment the game
  * is left. WriteStateSnapshot() then does the slow part - the device I/O -
  * and can run whenever, on any thread, even after another game has been
@@ -91,13 +92,13 @@ bool SaveState (char * filepath, bool silent)
 struct StateSnapshot
 {
 	char path[MAXPATHLEN];
-	unsigned char * data; // compressed state
+	unsigned char * data; // compressed Snapshot
 	int size;
 	unsigned char * png; // screenshot, or nullptr
 	int pngSize;
 };
 
-StateSnapshot * SnapshotStateAuto ()
+StateSnapshot * SnapshotStateAuto (bool withScreenshot)
 {
 	StateSnapshot * snapshot = (StateSnapshot *)calloc(1, sizeof(StateSnapshot));
 
@@ -139,7 +140,7 @@ StateSnapshot * SnapshotStateAuto ()
 		return nullptr;
 	}
 
-	if(gameScreenPng.size > 0 && gameScreenPng.buffer)
+	if(withScreenshot && gameScreenPng.size > 0 && gameScreenPng.buffer)
 	{
 		snapshot->png = (unsigned char *)malloc(gameScreenPng.size);
 
@@ -198,29 +199,44 @@ bool LoadState (char * filepath, bool silent)
 	if (offset > 0)
 	{
 		EMUFILE_MEMFILE save(savebuffer, offset);
-		FCEUSS_LoadFP(&save, SSLOADPARAM_NOBACKUP);
-		SetPlayingFrom(filepath);
-		retval = true;
+
+		if(FCEUSS_LoadFP(&save, SSLOADPARAM_NOBACKUP))
+		{
+			SetPlayingFrom(filepath);
+			MarkLiveStateChanged();
+			retval = true;
+		}
+		else if(!silent)
+		{
+			ErrorPrompt ("The Snapshot couldn't be loaded");
+		}
 	}
 	else
 	{
 		// if we reached here, nothing was done!
 		if(!silent)
-			ErrorPrompt ("State file not found");
+			ErrorPrompt ("Snapshot not found");
 	}
 	FreeSaveBuffer ();
 	return retval;
 }
 
-bool
-LoadStateAuto (bool silent)
+// Loads the game's Auto Snapshot ("<name> Auto.fcs")
+// \return 1 if it was loaded, 0 if there is none, -1 if there is one that couldn't be loaded
+int LoadStateAuto (bool silent)
 {
 	char filepath[1024];
 
 	if(!MakeFilePath(filepath, FILE_STATE, romFilename, 0))
-		return false;
+		return 0;
 
-	return LoadState(filepath, silent);
+	FILE * fp = fopen(filepath, "rb");
+
+	if(!fp)
+		return 0;
+
+	fclose(fp);
+	return LoadState(filepath, silent) ? 1 : -1;
 }
 
 bool SavePreviewImg (char * filepath, bool silent)

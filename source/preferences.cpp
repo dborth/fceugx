@@ -138,14 +138,12 @@ preparePrefsData ()
 
 	createXMLSection("File", "File Settings");
 
-	createXMLSetting("autoLoad", "Auto Load", toStr(EmuSettings.autoLoad));
-	createXMLSetting("autoSave", "Auto Save", toStr(EmuSettings.autoSave));
+	createXMLSetting("saveMode", "Save Mode", toStr(EmuSettings.saveMode));
 	createXMLSetting("loadDevice", "Load Device", toStr(EmuSettings.loadDevice));
 	createXMLSetting("saveDevice", "Save Device", toStr(EmuSettings.saveDevice));
 	createXMLSetting("loadFolder", "Load Folder", EmuSettings.loadFolder);
 	createXMLSetting("lastFileLoaded", "Last File Loaded", EmuSettings.lastFileLoaded);
 	createXMLSetting("saveFolder", "Save Folder", EmuSettings.saveFolder);
-	createXMLSetting("appendAuto", "Append Auto to .SAV Files", BtoStr(EmuSettings.appendAuto));
 	createXMLSetting("cheatFolder", "Cheats Folder", EmuSettings.cheatFolder);
 	createXMLSetting("gameGenie", "Game Genie", BtoStr(EmuSettings.gameGenie));
 	createXMLSetting("screenshotsFolder", "Screenshots Folder", EmuSettings.screenshotsFolder);
@@ -191,7 +189,6 @@ preparePrefsData ()
 	createXMLSetting("rumble", "Rumble", BtoStr(EmuSettings.rumble));
 	createXMLSetting("language", "Language", toStr(EmuSettings.language));
 	createXMLSetting("previewImage", "Preview Image", toStr(EmuSettings.previewImage));
-	createXMLSetting("hideSramSaving", "Hide RAM Saving", BtoStr(EmuSettings.hideSramSaving));
 
 	createXMLSection("Controller", "Controller Settings");
 
@@ -319,14 +316,12 @@ decodePrefsData ()
 
 	// File Settings
 
-	loadXMLSetting(&EmuSettings.autoLoad, "autoLoad");
-	loadXMLSetting(&EmuSettings.autoSave, "autoSave");
+	loadXMLSetting(&EmuSettings.saveMode, "saveMode");
 	loadXMLSetting(&EmuSettings.loadDevice, "loadDevice");
 	loadXMLSetting(&EmuSettings.saveDevice, "saveDevice");
 	loadXMLSetting(EmuSettings.loadFolder, "loadFolder", sizeof(EmuSettings.loadFolder));
 	loadXMLSetting(EmuSettings.lastFileLoaded, "lastFileLoaded", sizeof(EmuSettings.lastFileLoaded));
 	loadXMLSetting(EmuSettings.saveFolder, "saveFolder", sizeof(EmuSettings.saveFolder));
-	loadXMLSetting(&EmuSettings.appendAuto, "appendAuto");
 	loadXMLSetting(EmuSettings.cheatFolder, "cheatFolder", sizeof(EmuSettings.cheatFolder));
 	loadXMLSetting(&EmuSettings.gameGenie, "gameGenie");
 	loadXMLSetting(EmuSettings.screenshotsFolder, "screenshotsFolder", sizeof(EmuSettings.screenshotsFolder));
@@ -369,7 +364,6 @@ decodePrefsData ()
 	loadXMLSetting(&EmuSettings.rumble, "rumble");
 	loadXMLSetting(&EmuSettings.language, "language");
 	loadXMLSetting(&EmuSettings.previewImage, "previewImage");
-	loadXMLSetting(&EmuSettings.hideSramSaving, "hideSramSaving");
 
 	// Controller Settings
 
@@ -400,6 +394,8 @@ decodePrefsData ()
  ***************************************************************************/
 void FixInvalidSettings()
 {
+	if(EmuSettings.saveMode < SAVEMODE_SNAPSHOT || EmuSettings.saveMode >= SAVEMODE_LENGTH)
+		EmuSettings.saveMode = SAVEMODE_SNAPSHOT;
 	if(!isValidLoadDevice(EmuSettings.loadDevice))
 		EmuSettings.loadDevice = DEVICE_AUTO;
 	if(!isValidSaveDevice(EmuSettings.saveDevice))
@@ -545,7 +541,6 @@ void DefaultSettings()
 	EmuSettings.sfxVolume = 40;
 	EmuSettings.rumble = true;
 	EmuSettings.previewImage = PREVIEWIMAGE_COVER;
-	EmuSettings.hideSramSaving = false;
 	
 #ifdef HW_RVL
 	EmuSettings.language = CONF_GetLanguage();
@@ -568,8 +563,7 @@ void DefaultSettings()
 	sprintf (EmuSettings.screenshotsFolder, "%s/%s", APPFOLDER, loadFolder[LOADFOLDER_SCREENSHOTS].name); // Path to screenshots files
 	sprintf (EmuSettings.coverFolder, "%s/%s", APPFOLDER, loadFolder[LOADFOLDER_COVERS].name); // Path to cover files
 	sprintf (EmuSettings.artworkFolder, "%s/%s", APPFOLDER, loadFolder[LOADFOLDER_ARTWORK].name); // Path to artwork files
-	EmuSettings.autoLoad = AUTOLOAD_RAM;
-	EmuSettings.autoSave = AUTOSAVE_RAM;
+	EmuSettings.saveMode = SAVEMODE_SNAPSHOT;
 	EmuSettings.turboModeEnabled = true;
 	EmuSettings.turboModeButton = 0; // Default is Right Analog Stick (0)
 	EmuSettings.gamepadMenuToggle = GAMEPAD_MENU_TOGGLE_DEFAULT;

@@ -17,6 +17,7 @@
 #include "fceuload.h"
 #include "fceustate.h"
 #include "fceuram.h"
+#include "savemode.h"
 #include "fceusupport.h"
 #include "menu/menu.h"
 #include "preferences.h"
@@ -179,6 +180,7 @@ int main(int argc, char *argv[])
 #endif
 		autoboot = false;
 		appRequest = AppRequest::NONE;
+		MarkLiveStateChanged();
 		platform->getAudio()->startEmulatorAudio();
 
 		platform->getVideo()->getEmulatorVideo()->resetVideo();
@@ -253,12 +255,12 @@ int main(int argc, char *argv[])
 }
 
 // Everything that has to reach storage before we can go away
-static void SaveAppData()
+// screenshotIsCurrent: the game isn't still running, so its last screenshot is up to date
+static void SaveAppData(bool screenshotIsCurrent)
 {
 	SavePrefsAndWait(); // exit is the one time we wait for settings to reach the device
 
-	if (romLoaded && appRequest != AppRequest::MENU && EmuSettings.autoSave == AUTOSAVE_RAM)
-		SaveRAMAuto(SILENT);
+	AutoSaveOnQuit(screenshotIsCurrent);
 }
 
 // Wii U: the OS is about to take the foreground away (HOME menu, power
@@ -268,14 +270,14 @@ static void SaveAppDataBeforeRelease()
 	if (platform->isExiting())
 		return; // ExitApp() has the foreground and saves for itself
 
-	SaveAppData();
+	SaveAppData(false); // the game may still be running
 }
 
 void ExitApp()
 {
 	// Closed by the OS from the background: SaveAppDataBeforeRelease() has saved, and we can't write any more
 	if (platform->getStatus() != Status::Closed)
-		SaveAppData();
+		SaveAppData(true);
 
 	// Generic safety net: stop and join every Thread still outstanding
 	Thread::JoinAll();
