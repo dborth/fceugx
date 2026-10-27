@@ -32,7 +32,7 @@ FCE Ultra GX is homebrew — it isn't signed by Nintendo, so your console needs 
 - [Famicom Disk System (FDS)](#famicom-disk-system-fds)
 - [VS System](#vs-system)
 - [Famicom 3D System & Anaglyph Games](#famicom-3d-system--anaglyph-games)
-- [Importing and Exporting Game Save Files](#importing-and-exporting-game-save-files)
+- [Importing and Exporting Cartridge Saves](#importing-and-exporting-cartridge-saves)
 - [Building from Source](#building-from-source)
 - [Credits](#credits)
 - [Links](#links)
@@ -73,7 +73,7 @@ Every push builds automatically. Grab the latest continuous-integration build:
 - **Famicom 3D System** and anaglyph-game support — see [Famicom 3D System & Anaglyph Games](#famicom-3d-system--anaglyph-games)
 - Cheat code support (`.cht` files) plus **Game Genie** code support
 - Cover art / screenshot / artwork preview support
-- Save Mode: automatically resume from a Snapshot, keep the Game Save File, or manage everything yourself
+- Save Mode: automatically resume from a Snapshot, keep the Cartridge Save, or manage everything yourself
 - Fully customizable, per-controller button mappings, including independent **Rapid Fire** bindings for A/B
 - SD, USB, DVD, and SMB network share support (modern SMB2/3 via `libsmb2` — see [Network Shares (SMB)](#network-shares-smb)), plus ZIP/7z archive loading and automatic IPS/UPS ROM patching
 - Auto-detected PAL/NTSC/Dendy timing, 16:9 widescreen correction
@@ -97,7 +97,7 @@ Once you've placed the loader files for your console (below), also create these 
 ```text
 SD:/fceugx/
 ├── roms/          ← your NES/Famicom ROMs (.nes/.fds/.unf/.nsf, or zipped/.7z)
-├── saves/         ← Game Save Files and Snapshots
+├── saves/         ← Cartridge Saves and Snapshots
 ├── cheats/        ← .cht cheat files (see Cheats & Game Genie)
 ├── screenshots/   ← in-game screenshots and/or screenshot preview images
 ├── covers/        ← cover art preview images
@@ -285,14 +285,14 @@ The **General Mappings** screen (reached from Button Mappings) also lets you con
 | **Screenshots Folder** | Opens an on-screen keyboard to set a custom screenshots folder |
 | **Covers Folder** | Opens an on-screen keyboard to set a custom covers folder |
 | **Artwork Folder** | Opens an on-screen keyboard to set a custom artwork folder |
-| **Save Mode** | Snapshot, Game Save File, Manual |
+| **Save Mode** | Snapshot, Cartridge Save, Manual |
 
-FCE Ultra GX has two kinds of saves: the **Game Save File**, the game's own in-game save (only applicable to games that have one), and **Snapshots**, which capture exactly where you are and let you resume later.
+FCE Ultra GX has two kinds of saves: the **Cartridge Save**, the game's own in-game save (only applicable to games that have one), and **Snapshots**, which capture exactly where you are and let you resume later.
 
 **Save Mode** decides what FCE Ultra GX saves and loads for you, without being asked:
 
-- **Snapshot** (default) — Picks up exactly where you left off, as if you never turned the console off. Leaving a game saves its *Auto Snapshot*, and opening the game loads it. Load an earlier Snapshot from the **Saves** screen and leave, and the game comes back there next time. If a game has no Auto Snapshot yet, its Game Save File is loaded instead.
-- **Game Save File** — Like a real console: the game's own save is kept for you, and the game starts fresh each time. Leaving a game saves its Game Save File (`.sav`), and opening the game loads it.
+- **Snapshot** (default) — Picks up exactly where you left off, as if you never turned the console off. Leaving a game saves its *Auto Snapshot*, and opening the game loads it. Load an earlier Snapshot from the **Saves** screen and leave, and the game comes back there next time. If a game has no Auto Snapshot yet, its Cartridge Save is loaded instead.
+- **Cartridge Save** — Like a real console: the game's own save is kept for you, and the game starts fresh each time. Leaving a game saves its Cartridge Save (`.sav`), and opening the game loads it.
 - **Manual** — Nothing is saved or loaded unless you do it yourself from the **Saves** screen.
 
 Quitting FCE Ultra GX while a game is running (or while the console is shutting it down) saves the same way.
@@ -346,7 +346,7 @@ The File Browser loads automatically on startup and lists the contents of your `
 
 Press **Home** while playing to open the in-game menu (Saves, Button Mappings, Reset, Controller, Game Settings). Select **Main Menu** to return to the File Browser, or **Close** to resume play.
 
-- **Saves** shows your Snapshots in a grid, with the game's own **Game Save File** under them for games that have one. Click **New Snapshot** to save the moment you are at, or click a Snapshot to Load, Update or Delete it. Click the Game Save File to Save Now, Make a Backup, or open its Backups to Restore or Delete one.
+- **Saves** shows your Snapshots in a grid, with the game's own **Cartridge Save** under them for games that have one. Click **New Snapshot** to save the moment you are at, or click a Snapshot to Load, Update or Delete it. Click the Cartridge Save to Save Now, Make a Backup, or open its Backups to Restore or Delete one.
 - **Button Mappings** opens the [button mapping](#button-mappings) screen.
 - **Reset** resets the current game.
 - **Controller** chooses which controller is being emulated: two controllers, four controllers (Four Score), or the Zapper.
@@ -379,9 +379,9 @@ VS System arcade games are supported directly — load them like any other ROM. 
 
 FCE Ultra GX includes special handling for games designed around the **Famicom 3D System** (a red/blue anaglyph 3D peripheral) and other anaglyph-rendered NES/Famicom games, rendering them with a red/blue 3D effect you can view with a pair of anaglyph glasses. This support is inherited from the underlying FCEUX core and applies automatically to games it recognizes — no separate toggle is needed.
 
-## Importing and Exporting Game Save Files
+## Importing and Exporting Cartridge Saves
 
-FCE Ultra GX can load `.sav` Game Save Files created by FCEUX (or compatible emulators) on other platforms (Mac/PC/Linux/etc.), and vice versa.
+FCE Ultra GX can load `.sav` Cartridge Saves created by FCEUX (or compatible emulators) on other platforms (Mac/PC/Linux/etc.), and vice versa.
 
 - **To import**, make sure the `.sav` file's name matches your ROM's filename (aside from the extension).
 - **To export**, copy the save from your console's `fceugx/saves` folder over to the other platform — you may need to rename it to whatever that FCEUX build expects.

@@ -5,7 +5,7 @@
  *
  * fceustate.cpp
  *
- * Memory Based Load/Save RAM Manager
+ * RAM Save Manager
  *
  * These are the battery-backed RAM (save data) routines, brought together
  * as GCxxxxx
@@ -123,12 +123,12 @@ static bool WriteRAMFromSaveBuffer (char * filepath, int datasize, bool silent)
 
 				if (sh1 == nullptr)
 				{
-					ErrorPrompt("PocketNES save file has no Game Save File.");
+					ErrorPrompt("PocketNES save file has no Cartridge Save.");
 					datasize = 0;
 				}
 				else if (sh2 != nullptr)
 				{
-					ErrorPrompt("PocketNES save file has more than one Game Save File.");
+					ErrorPrompt("PocketNES save file has more than one Cartridge Save.");
 					datasize = 0;
 				}
 				else
@@ -178,7 +178,7 @@ bool SaveRAM (char * filepath, bool silent)
 	if(GameInfo->type == GIT_FDS)
 	{
 		if(!silent)
-			InfoPrompt("Game Save Files are not available for FDS games!");
+			InfoPrompt("Cartridge Saves are not available for FDS games!");
 		return false;
 	}
 
@@ -316,12 +316,12 @@ bool LoadRAM (char * filepath, bool silent)
 
 		if (sh1 == nullptr)
 		{
-			ErrorPrompt("PocketNES save file has no Game Save File.");
+			ErrorPrompt("PocketNES save file has no Cartridge Save.");
 			offset = 0;
 		}
 		else if (sh2 != nullptr)
 		{
-			ErrorPrompt("PocketNES save file has more than one Game Save File.");
+			ErrorPrompt("PocketNES save file has more than one Cartridge Save.");
 			offset = 0;
 		}
 		else
@@ -354,13 +354,13 @@ bool LoadRAM (char * filepath, bool silent)
 	{
 		// if we reached here, nothing was done!
 		if(!silent)
-			InfoPrompt ("Game Save File not found");
+			InfoPrompt ("Cartridge Save not found");
 	}
 	FreeSaveBuffer ();
 	return retval;
 }
 
-// Loads the game's Game Save File ("<name>.sav")
+// Loads the game's Cartridge Save ("<name>.sav")
 bool
 LoadRAMAuto (bool silent)
 {

@@ -183,7 +183,7 @@ struct SEmuSettings
 {
 	int		saveMode;
     int		loadDevice; // For ROMS: Auto, SD, DVD, USB, Network Share
-	int		saveDevice; // For Game Save Files, Snapshots, Prefs: Auto, SD, USB, Network Share
+	int		saveDevice; // For Cartridge Saves, Snapshots, Prefs: Auto, SD, USB, Network Share
 	char	loadFolder[MAXPATHLEN]; // Path to game files
 	char	lastFileLoaded[MAXPATHLEN]; //Last file loaded filename
 	char	saveFolder[MAXPATHLEN]; // Path to save files
