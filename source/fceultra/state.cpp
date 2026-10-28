@@ -723,7 +723,7 @@ bool FCEUSS_LoadFP(EMUFILE* is, ENUM_SSLOADPARAMS params)
 	{
 		FCEUPPU_LoadState(stateversion);
 		FCEUSND_LoadState(stateversion);
-		x=FCEUMOV_PostLoad();
+		//x=FCEUMOV_PostLoad();
 	}
 	else if (backup)
 	{
