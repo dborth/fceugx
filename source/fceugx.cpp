@@ -249,6 +249,7 @@ int main(int argc, char *argv[])
 
 		platform->getAudio()->stopEmulatorAudio();
 		TakeScreenshot();
+		MarkScreenshotCurrent();
 		platform->getVideo()->startMenuVideo();
 	} // main loop
 	ExitApp();
