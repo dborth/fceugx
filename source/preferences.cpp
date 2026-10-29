@@ -99,6 +99,46 @@ static void createXMLController(uint32_t controller[], const char * name, const 
 	}
 }
 
+struct CtrlMapKind
+{
+	int ctrl;
+	const char * key;
+	const char * description;
+};
+
+static const CtrlMapKind ctrlMapKinds[] =
+{
+	{ CTRL_PAD,	"pad", "NES Pad" },
+	{ CTRL_ZAPPER, "zapper", "Zapper" },
+};
+
+// indexed by GuiHardwareProfile; the description is ctrlrName[hw]
+static const char * const ctrlMapHardwareKeys[] =
+{
+	"gcpad", "wiimote", "nunchuk", "classic", "wupc", "wiidrc"
+};
+
+static void ctrlMapName(char * name, size_t nameSize, char * description, size_t descriptionSize, const CtrlMapKind & kind, int hw)
+{
+	snprintf(name, nameSize, "btnmapping_%s_%s", kind.key, ctrlMapHardwareKeys[hw]);
+	snprintf(description, descriptionSize, "%s - %s", kind.description, ctrlrName[hw]);
+}
+
+static void createXMLControllers()
+{
+	char name[48];
+	char description[96];
+
+	for(const CtrlMapKind & kind : ctrlMapKinds)
+	{
+		for(int hw = 0; hw < INPUT_HW_MAX; hw++)
+		{
+			ctrlMapName(name, sizeof(name), description, sizeof(description), kind, hw);
+			createXMLController(btnmap[kind.ctrl][hw], name, description);
+		}
+	}
+}
+
 static const char * XMLSaveCallback(mxml_node_t *node, int where)
 {
 	const char *name;
@@ -197,14 +237,7 @@ preparePrefsData ()
 	createXMLSetting("turboModeButton", "Turbo Mode Button", toStr(EmuSettings.turboModeButton));
 	createXMLSetting("gamepadMenuToggle", "Gamepad Menu Toggle", toStr(EmuSettings.gamepadMenuToggle));
 
-	createXMLController(btnmap[CTRL_PAD][INPUT_HW_GAMECUBE], "btnmapping_pad_gcpad", "NES Pad - GameCube Controller");
-	createXMLController(btnmap[CTRL_PAD][INPUT_HW_WIIMOTE], "btnmapping_pad_wiimote", "NES Pad - Wiimote");
-	createXMLController(btnmap[CTRL_PAD][INPUT_HW_CLASSIC], "btnmapping_pad_classic", "NES Pad - Classic Controller");
-	createXMLController(btnmap[CTRL_PAD][INPUT_HW_WUPC], "btnmapping_pad_wupc", "NES Pad - Wii U Pro Controller");
-	createXMLController(btnmap[CTRL_PAD][INPUT_HW_DRC], "btnmapping_pad_wiidrc", "NES Pad - Wii U Gamepad");
-	createXMLController(btnmap[CTRL_PAD][INPUT_HW_NUNCHUK], "btnmapping_pad_nunchuk", "NES Pad - Nunchuk + Wiimote");
-	createXMLController(btnmap[CTRL_ZAPPER][INPUT_HW_GAMECUBE], "btnmapping_zapper_gcpad", "Zapper - GameCube Controller");
-	createXMLController(btnmap[CTRL_ZAPPER][INPUT_HW_WIIMOTE], "btnmapping_zapper_wiimote", "Zapper - Wiimote");
+	createXMLControllers();
 
 	int datasize = mxmlSaveString(xml, (char *)savebuffer, SAVEBUFFERSIZE, XMLSaveCallback);
 
@@ -286,6 +319,21 @@ static void loadXMLController(uint32_t controller[], const char * name)
 				if(tmp)
 					controller[i] = atoi(tmp);
 			}
+		}
+	}
+}
+
+static void loadXMLControllers()
+{
+	char name[48];
+	char description[96];
+
+	for(const CtrlMapKind & kind : ctrlMapKinds)
+	{
+		for(int hw = 0; hw < INPUT_HW_MAX; hw++)
+		{
+			ctrlMapName(name, sizeof(name), description, sizeof(description), kind, hw);
+			loadXMLController(btnmap[kind.ctrl][hw], name);
 		}
 	}
 }
@@ -373,14 +421,7 @@ decodePrefsData ()
 	loadXMLSetting(&EmuSettings.turboModeButton, "turboModeButton");
 	loadXMLSetting(&EmuSettings.gamepadMenuToggle, "gamepadMenuToggle");
 
-	loadXMLController(btnmap[CTRL_PAD][INPUT_HW_GAMECUBE], "btnmapping_pad_gcpad");
-	loadXMLController(btnmap[CTRL_PAD][INPUT_HW_WIIMOTE], "btnmapping_pad_wiimote");
-	loadXMLController(btnmap[CTRL_PAD][INPUT_HW_CLASSIC], "btnmapping_pad_classic");
-	loadXMLController(btnmap[CTRL_PAD][INPUT_HW_WUPC], "btnmapping_pad_wupc");
-	loadXMLController(btnmap[CTRL_PAD][INPUT_HW_DRC], "btnmapping_pad_wiidrc");
-	loadXMLController(btnmap[CTRL_PAD][INPUT_HW_NUNCHUK], "btnmapping_pad_nunchuk");
-	loadXMLController(btnmap[CTRL_ZAPPER][INPUT_HW_GAMECUBE], "btnmapping_zapper_gcpad");
-	loadXMLController(btnmap[CTRL_ZAPPER][INPUT_HW_WIIMOTE], "btnmapping_zapper_wiimote");
+	loadXMLControllers();
 
 	mxmlDelete(xml);
 	return true;
