@@ -215,7 +215,7 @@ One thing plain (and injected) vWii keep that the native build doesn't: full acc
 
 #### vWii via VC-style injection (GamePad + unlocked CPU)
 
-Rather than launching FCE Ultra GX from the Homebrew Channel every time, you can package it as its **own injected channel** using **[TeconMoon's WiiVC Injector Mod](https://github.com/timefox/TeconMoon-s-WiiVC-Injector-Mod)**. This installs FCE Ultra GX as a Virtual-Console-style title in your vWii NAND rather than something launched through the Homebrew Channel, which is what unlocks the faster single-core CPU clock and lets you use the Wii U GamePad for display (without touch) and as an extra controller.
+Rather than launching FCE Ultra GX from the Homebrew Channel every time, you can package it as its **own injected channel** using **[TeconMoon's WiiVC Injector Mod](https://github.com/Rodrigo-Matsuura/MoonWiiVCInjector/releases)**. This installs FCE Ultra GX as a Virtual-Console-style title in your vWii NAND rather than something launched through the Homebrew Channel, which is what unlocks the faster single-core CPU clock and lets you use the Wii U GamePad for display (without touch) and as an extra controller.
 
 At a high level:
 
@@ -444,7 +444,7 @@ build.
 - [Wii U Homebrew Guide](https://wiiu.hacks.guide/)
 - [gc-forever.com — GameCube homebrew/hardware hub](https://www.gc-forever.com/)
 - [Swiss](https://github.com/emukidid/swiss-gc) — the recommended GameCube loader
-- [TeconMoon's WiiVC Injector Mod](https://github.com/timefox/TeconMoon-s-WiiVC-Injector-Mod)
+- [TeconMoon's WiiVC Injector Mod](https://github.com/Rodrigo-Matsuura/MoonWiiVCInjector/releases)
 - [Mocha](https://github.com/wiiu-env/MochaPayload) — USB storage access for the native Wii U build
 - [Bloopair](https://github.com/GaryOderNichts/Bloopair) — Bluetooth controller pairing for the native Wii U build
 - [Change History (CHANGELOG.md)](CHANGELOG.md)
