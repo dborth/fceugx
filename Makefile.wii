@@ -31,7 +31,7 @@ INCLUDES	:=	source
 # options for code generation
 #---------------------------------------------------------------------------------
 SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
-				-DFCEUGX -DHAVE_TABLET \
+				-DFCEUGX -DHAVE_TABLET -DHAVE_GCADAPTER -DHAVE_SICKSAXIS \
 				-DFORMAT_PAL8 -DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 				-fomit-frame-pointer -fno-strict-aliasing -ffunction-sections -fdata-sections \
@@ -52,7 +52,7 @@ LDFLAGS		+=	-L../buildtools
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-ldi -liso9660 -lpng -lmxml $(FREETYPE_LIBS) \
+LIBS	:=	-lsicksaxis -ldi -liso9660 -lpng -lmxml $(FREETYPE_LIBS) \
 			-lfat -lwiiuse -lz -lbte -lasnd -logc -lvorbisidec -logg -lsmb2
 
 #---------------------------------------------------------------------------------
