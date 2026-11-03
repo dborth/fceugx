@@ -294,7 +294,7 @@ Which saves are written and loaded for you automatically is set by the **Save Mo
 | Option | Options |
 |---|---|
 | **Exit Action** | Return to Loader, Return to Wii Menu, Power Off |
-| **Wiimote Orientation** | Vertical, Horizontal |
+| **Wiimote Orientation** | Vertical, Horizontal — only for a Wiimote with nothing plugged into it; with a Nunchuk, Classic Controller or other extension it is always vertical |
 | **Music Volume** / **Sound Effects Volume** | |
 | **Rumble** | Enabled/Disabled — on Wii U, the GamePad uses a shorter, reduced-amplitude pattern than the Wiimote |
 | **Language** | See [Language & Custom Fonts](#language--custom-fonts) |
