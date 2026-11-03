@@ -124,6 +124,22 @@ void ResetControls(int consoleCtrl, int hardwareProfile)
 		btnmap[CTRL_PAD][INPUT_HW_WUPC][i++] = INPUT_TRIGGER_L;
 	}
 
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == INPUT_HW_DS3))
+	{
+		i=0;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_Y;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_B;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_X;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_A;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_MINUS;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_PLUS;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_UP;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_DOWN;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_LEFT;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_BTN_RIGHT;
+		btnmap[CTRL_PAD][INPUT_HW_DS3][i++] = INPUT_TRIGGER_L;
+	}
+
 	/*** Wii U Gamepad (DRC) Padmap ***/
 	if(consoleCtrl == -1 || (consoleCtrl == CTRL_PAD && hardwareProfile == INPUT_HW_DRC))
 	{
@@ -170,6 +186,13 @@ void ResetControls(int consoleCtrl, int hardwareProfile)
 	{
 		btnmap[CTRL_ZAPPER][INPUT_HW_WIIMOTE][0] = INPUT_BTN_B; // shoot
 		btnmap[CTRL_ZAPPER][INPUT_HW_WIIMOTE][1] = INPUT_BTN_A; // insert coin
+	}
+
+	/*** Zapper : USB mouse / tablet button mapping ***/
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && hardwareProfile == INPUT_HW_USBPOINTER))
+	{
+		btnmap[CTRL_ZAPPER][INPUT_HW_USBPOINTER][0] = INPUT_BTN_A; // shoot
+		btnmap[CTRL_ZAPPER][INPUT_HW_USBPOINTER][1] = INPUT_BTN_B; // insert coin
 	}
 }
 

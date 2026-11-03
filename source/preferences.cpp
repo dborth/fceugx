@@ -115,7 +115,7 @@ static const CtrlMapKind ctrlMapKinds[] =
 // indexed by GuiHardwareProfile; the description is ctrlrName[hw]
 static const char * const ctrlMapHardwareKeys[] =
 {
-	"gcpad", "wiimote", "nunchuk", "classic", "wupc", "wiidrc"
+	"gcpad", "wiimote", "nunchuk", "classic", "wupc", "wiidrc", "usbpointer", "ds3"
 };
 
 static void ctrlMapName(char * name, size_t nameSize, char * description, size_t descriptionSize, const CtrlMapKind & kind, int hw)

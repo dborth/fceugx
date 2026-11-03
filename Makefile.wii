@@ -21,7 +21,7 @@ TARGET		:=	fceugx-wii
 TARGETDIR	:=  executables
 BUILD		:=	build_wii
 SOURCES		:=	source source/menu source/libgui source/widgets source/utils source/utils/sz \
-				source/drivers source/drivers/ogc source/drivers/ogc/wii \
+				source/drivers source/drivers/ogc source/drivers/ogc/wii source/drivers/ogc/wii/libwiiinput \
 				source/pocketnes source/pocketnes/minilzo \
 				source/fceultra source/fceultra/boards source/fceultra/input source/fceultra/utils
 DATA		:=	data/images data/sounds data/fonts data/lang			
@@ -31,7 +31,7 @@ INCLUDES	:=	source
 # options for code generation
 #---------------------------------------------------------------------------------
 SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
-				-DFCEUGX \
+				-DFCEUGX -DHAVE_TABLET -DHAVE_GCADAPTER -DHAVE_SICKSAXIS \
 				-DFORMAT_PAL8 -DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
 				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
 				-fomit-frame-pointer -fno-strict-aliasing -ffunction-sections -fdata-sections \
@@ -44,12 +44,15 @@ SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 CFLAGS		=	$(SHAREDFLAGS) -Wno-incompatible-pointer-types
 CXXFLAGS	=	$(SHAREDFLAGS) -Wno-register -Wno-catch-value -Wno-class-memaccess -fno-exceptions -fno-rtti -fno-threadsafe-statics
 LDFLAGS		=	-g -O3 $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--gc-sections
+# libwiiinput's tablet drivers: USB_GetDeviceList hides tablets from libogc's USB mouse driver, the other two
+# keep wiiuse from taking a uDraw GameTablet for a Classic Controller
+LDFLAGS		+=	-Wl,--wrap=classic_ctrl_handshake,--wrap=parse_event,--wrap=USB_GetDeviceList
 LDFLAGS		+=	-L../buildtools
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-ldi -liso9660 -lpng -lmxml $(FREETYPE_LIBS) \
+LIBS	:=	-lsicksaxis -ldi -liso9660 -lpng -lmxml $(FREETYPE_LIBS) \
 			-lfat -lwiiuse -lz -lbte -lasnd -logc -lvorbisidec -logg -lsmb2
 
 #---------------------------------------------------------------------------------
