@@ -1376,10 +1376,13 @@ static int MenuGameSelection()
 			}
 		}
 
-		if(settingsBtn.getState() == STATE::CLICKED)
+		if(settingsBtn.getState() == STATE::CLICKED) {
 			selection = MENU_SETTINGS;
-		else if(exitBtn.getState() == STATE::CLICKED)
+		}
+		else if(exitBtn.getState() == STATE::CLICKED) {
+			platform->getInput()->haltRumble();
 			platform->triggerExit();
+		}
 
 		#ifdef __WIIU__
 		if(hiddenHomeBtn.getState() == STATE::CLICKED) {
