@@ -34,7 +34,7 @@ static volatile unsigned int copynow = GX_FALSE;
 static unsigned char gp_fifo[DEFAULT_FIFO_SIZE] ATTRIBUTE_ALIGN (32);
 static Mtx GXmodelView2D;
 
-static uint32_t systemFrameTimer = 0;
+static volatile uint32_t systemFrameTimer = 0; // incremented from the retrace callback
 static bool progressive = false;
 static int FDSTimer = 0;
 
@@ -92,7 +92,8 @@ static inline void copy_to_xfb (u32 arg)
 		LWP_ThreadSignal(render_queue); // Wake up the main thread if it is waiting for the copy
 	}
 
-	++systemFrameTimer;
+	// Plain assignment: ++ on a volatile is deprecated in C++20. Only this callback writes it.
+	systemFrameTimer = systemFrameTimer + 1;
 
 	// FDS switch disk requested - need to eject, select, and insert
 	// but not all at once!
