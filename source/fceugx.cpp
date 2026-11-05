@@ -91,7 +91,6 @@ int main(int argc, char *argv[])
 	GuiImageData::setDecodeScratch(decodeScratch, IMAGE_DECODE_SCRATCH_SIZE);
 
 	fontSystem = new GuiTextRenderer(font_ttf, font_ttf_size, platform->getVideo()->getGlyphRenderer(), platform->getVideo()->getUIScale());
-	textTranslator = new GuiTextTranslator();
 	textTranslator->loadLanguage(en_lang, en_lang_size);
 
 	DefaultSettings();
