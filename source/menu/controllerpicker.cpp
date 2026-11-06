@@ -12,14 +12,7 @@
 #include "menu.h"
 #include "fceugx.h"
 
-extern GuiTextTranslator * textTranslator;
-
 namespace {
-
-std::string Tr(const char * s)
-{
-	return textTranslator ? std::string(textTranslator->getText(s)) : std::string(s);
-}
 
 // The controllers preferences.cpp accepts (CTRL_ZAPPER..CTRL_PAD4), gamepads first, then the light gun
 struct Kind {
