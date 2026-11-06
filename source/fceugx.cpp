@@ -36,9 +36,7 @@
 #include "drivers/ogc/videofilters.h"
 #endif
 
-#ifdef HW_RVL
-	#include "drivers/ogc/wii/mem2.h"
-#elif HW_DOL
+#ifdef HW_DOL
 	#include "drivers/ogc/gamecube/vm/vmalloc.h"
 #endif
 

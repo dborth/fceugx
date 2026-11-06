@@ -33,10 +33,6 @@
 #include "drivers/safestr.h"
 #include "drivers/SmbDriver.h"
 
-#ifdef HW_RVL
-	#include "drivers/ogc/wii/mem2.h"
-#endif
-
 #define PARSE_FIRST_BATCH 20
 #define PARSE_BATCH_SIZE  100
 
