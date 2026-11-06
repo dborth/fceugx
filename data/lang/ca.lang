@@ -456,3 +456,732 @@ msgstr "Nintendo Zapper"
 
 msgid "Zapper Crosshair"
 msgstr "Punter Zapper"
+
+msgid " "
+msgstr ""
+
+msgid "%s saved"
+msgstr "%s desat"
+
+msgid "%s updated"
+msgstr "%s actualitzat"
+
+msgid "%s uses %s"
+msgstr "%s usa %s"
+
+msgid "%s uses the default: %s"
+msgstr "%s usa el valor per defecte: %s"
+
+msgid "%s will do nothing"
+msgstr "%s no farà res"
+
+msgid "%s will do nothing."
+msgstr "%s no farà res."
+
+msgid "2xBR"
+msgstr ""
+
+msgid "2xBR-lv1"
+msgstr ""
+
+msgid "7z decompression failed: %s"
+msgstr "Ha fallat la descompressió 7z: %s"
+
+msgid "A changes what %s does"
+msgstr "A canvia què fa %s"
+
+msgid "A chooses the controller to map"
+msgstr "A tria el comandament a configurar"
+
+msgid "A chooses the device being emulated"
+msgstr "A tria el dispositiu emulat"
+
+msgid "A puts these buttons back to their defaults"
+msgstr "A restableix aquests botons als valors per defecte"
+
+msgid "AUTO"
+msgstr ""
+
+msgid "Additional improvements"
+msgstr "Millores addicionals"
+
+msgid "All %d backup slots are in use. Delete one to make room."
+msgstr "Els %d espais de còpia estan ocupats. Elimineu-ne un per fer lloc."
+
+msgid "All 99 snapshot slots are in use. Delete one to make room."
+msgstr "Els 99 espais de captura estan ocupats. Elimineu-ne un per fer lloc."
+
+msgid "Archive contains too many files."
+msgstr "L'arxiu comprimit conté massa fitxers."
+
+msgid "Artwork"
+msgstr ""
+
+msgid "Artwork Folder"
+msgstr "Carpeta d'il·lustracions"
+
+msgid "Aspect Ratio Correction"
+msgstr "Correcció de la relació d'aspecte"
+
+msgid "Auto Snapshot"
+msgstr "Captura automàtica"
+
+msgid "Automatic"
+msgstr "Automàtic"
+
+msgid "Autosave"
+msgstr "Desat automàtic"
+
+msgid "BUTTONS"
+msgstr "BOTONS"
+
+msgid "Backup %d"
+msgstr "Còpia %d"
+
+msgid "Backups"
+msgstr "Còpies de seguretat"
+
+msgid "Bilinear Filtering"
+msgstr "Filtratge bilineal"
+
+msgid "Brazilian Portuguese"
+msgstr "Portuguès del Brasil"
+
+msgid "Buttons"
+msgstr "Botons"
+
+msgid "CONTROLLER"
+msgstr ""
+
+msgid "Cancelling..."
+msgstr "Cancel·lant..."
+
+msgid "Cartridge Save"
+msgstr "Desat del cartutx"
+
+msgid "Cartridge Save not found"
+msgstr "Desat del cartutx no trobat"
+
+msgid "Cartridge Saves are not available for FDS games!"
+msgstr "Els desats de cartutx no estan disponibles per als jocs FDS!"
+
+msgid "Catalan"
+msgstr "Català"
+
+msgid "Cheats (none)"
+msgstr "Cheats (cap)"
+
+msgid "Check settings.xml."
+msgstr "Reviseu settings.xml."
+
+msgid "Chinese (Simplified)"
+msgstr "Xinès (simplificat)"
+
+msgid "Chinese (Traditional)"
+msgstr "Xinès (tradicional)"
+
+msgid "Choose 'Pressed button', then press the button you want on the %s."
+msgstr "Trieu «Botó premut» i premeu el botó que vulgueu (%s)."
+
+msgid "Composite Direct (FBX)"
+msgstr ""
+
+msgid "Copy the cartridge's save now"
+msgstr "Copieu ara el desat del cartutx"
+
+msgid "Copy, or restore one of %d"
+msgstr "Copieu, o restaureu una de les %d"
+
+msgid "Covers"
+msgstr "Caràtules"
+
+msgid "D-PAD"
+msgstr "CREU"
+
+msgid "DDT"
+msgstr ""
+
+msgid "DVD"
+msgstr ""
+
+msgid "Default (All Enabled)"
+msgstr "Per defecte (tot activat)"
+
+msgid "Default (Right Stick)"
+msgstr "Per defecte (palanca dreta)"
+
+msgid "Delete"
+msgstr "Elimina"
+
+msgid "Delete %s?"
+msgstr "Voleu eliminar %s?"
+
+msgid "Dendy"
+msgstr ""
+
+msgid "Device not found!"
+msgstr "Dispositiu no trobat!"
+
+msgid "Digital Prime (FBX)"
+msgstr ""
+
+msgid "EMULATING"
+msgstr "EMULA"
+
+msgid "Empty"
+msgstr "Buit"
+
+msgid "Empty until you play"
+msgstr "Buit fins que jugueu"
+
+msgid "Emulation"
+msgstr ""
+
+msgid "Error loading font!"
+msgstr "Error en carregar el tipus de lletra!"
+
+msgid "FCE Ultra GX GameCube"
+msgstr ""
+
+msgid "Failed to read file data."
+msgstr "No s'han pogut llegir les dades del fitxer."
+
+msgid "File is corrupt (CRC mismatch)."
+msgstr "El fitxer està malmès (error de CRC)."
+
+msgid "File is corrupt."
+msgstr "El fitxer està malmès."
+
+msgid "File uses too high of compression settings (dictionary size is too large)."
+msgstr "El fitxer usa uns paràmetres de compressió massa alts (la mida del diccionari és massa gran)."
+
+msgid "File uses unsupported compression settings."
+msgstr "El fitxer usa uns paràmetres de compressió no compatibles."
+
+msgid "Font file is too large!"
+msgstr "El fitxer del tipus de lletra és massa gran!"
+
+msgid "Font file not found!"
+msgstr "Fitxer del tipus de lletra no trobat!"
+
+msgid "Four Score: up to four players."
+msgstr "Four Score: fins a quatre jugadors."
+
+msgid "Game Genie"
+msgstr ""
+
+msgid "Game Settings - Emulation"
+msgstr "Configuració del joc - Emulació"
+
+msgid "General Mappings"
+msgstr "Controls generals"
+
+msgid "Go back to where you left off"
+msgstr "Torneu on ho vau deixar"
+
+msgid "HOME"
+msgstr ""
+
+msgid "Hardware Softening"
+msgstr "Suavitzat per maquinari"
+
+msgid "Home / Right Stick"
+msgstr "Home / palanca dreta"
+
+msgid "Home clears it."
+msgstr "Home l'esborra."
+
+msgid "Home or the C-Stick clears it."
+msgstr "Home o la palanca C l'esborra."
+
+msgid "Invalid network settings - %s"
+msgstr "Configuració de xarxa no vàlida - %s"
+
+msgid "It is not being updated in the current Save Mode. This can't be undone."
+msgstr "No s'actualitza amb el mode de desat actual. Aquesta acció no es pot desfer."
+
+msgid "It will be overwritten with your progress right now."
+msgstr "Se sobreescriurà amb el vostre progrés actual."
+
+msgid "Jump back to this moment"
+msgstr "Torna a aquest moment"
+
+msgid "Jump to this moment"
+msgstr "Ves a aquest moment"
+
+msgid "L+R+Start / 1+2+Plus"
+msgstr ""
+
+msgid "Like a real console: the game's own save is kept for you, and the game starts fresh each time."
+msgstr "Com en una consola real: es conserva el desat propi del joc i la partida comença de zero cada vegada."
+
+msgid "Logo"
+msgstr ""
+
+msgid "Magnum (FBX)"
+msgstr ""
+
+msgid "Make Backup"
+msgstr "Crea còpia"
+
+msgid "Make a copy of the save"
+msgstr "Feu una còpia del desat"
+
+msgid "Manual"
+msgstr "Manual"
+
+msgid "Manual Snapshot"
+msgstr "Captura manual"
+
+msgid "Maximum filepath length reached!"
+msgstr "S'ha assolit la longitud màxima de la ruta!"
+
+msgid "Menu Toggle"
+msgstr "Obre/tanca el menú"
+
+msgid "Minus"
+msgstr ""
+
+msgid "More than one NES ROM found in this file. Only files with one ROM are supported."
+msgstr "S'ha trobat més d'una ROM NES en aquest fitxer. Només es admeten fitxers amb una ROM."
+
+msgid "Move over a button to see what it uses"
+msgstr "Passeu per sobre d'un botó per veure què usa"
+
+msgid "Move over a kind to see its choices"
+msgstr "Passeu per sobre d'un tipus per veure'n les opcions"
+
+msgid "NES Classic (FBX-FS)"
+msgstr ""
+
+msgid "NES Zapper light gun."
+msgstr "Pistola òptica NES Zapper."
+
+msgid "NTSC"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Network share not connected!"
+msgstr "Xarxa compartida no connectada!"
+
+msgid "Next time you open this game it starts from its Cartridge Save, or from the beginning. This can't be undone."
+msgstr "La propera vegada que obriu aquest joc començarà des del seu desat del cartutx o des del principi. Aquesta acció no es pot desfer."
+
+msgid "No NES ROMs found in this file."
+msgstr "No s'ha trobat cap ROM NES en aquest fitxer."
+
+msgid "No game save file"
+msgstr "Sense fitxer de desat del joc"
+
+msgid "No image"
+msgstr "Sense imatge"
+
+msgid "No snapshots yet"
+msgstr "Encara no hi ha captures"
+
+msgid "Not saved yet"
+msgstr "Encara no desat"
+
+msgid "Not updated while Save Mode is Cartridge Save."
+msgstr "No s'actualitza mentre el mode de desat sigui «Desat del cartutx»."
+
+msgid "Not updated while Save Mode is Manual."
+msgstr "No s'actualitza mentre el mode de desat sigui «Manual»."
+
+msgid "Nothing is saved or loaded unless you do it yourself."
+msgstr "No es desa ni es carrega res si no ho feu vosaltres."
+
+msgid "Now: %s"
+msgstr "Ara: %s"
+
+msgid "Nunchuk + Wiimote"
+msgstr ""
+
+msgid "OTHER"
+msgstr "ALTRES"
+
+msgid "Optional save point"
+msgstr "Punt de desat opcional"
+
+msgid "Original (240p)"
+msgstr ""
+
+msgid "Original FCE"
+msgstr ""
+
+msgid "Output Mode"
+msgstr "Mode de sortida"
+
+msgid "Overwrite with your progress"
+msgstr "Sobreescriu amb el vostre progrés"
+
+msgid "PAL"
+msgstr ""
+
+msgid "PC-10"
+msgstr ""
+
+msgid "PVM Style D93 (FBX)"
+msgstr ""
+
+msgid "Palette"
+msgstr ""
+
+msgid "Password"
+msgstr "Contrasenya"
+
+msgid "Paused"
+msgstr "En pausa"
+
+msgid "Picks up exactly where you left off, as if you never turned the console off."
+msgstr "Continua exactament on ho vau deixar, com si mai haguéssiu apagat la consola."
+
+msgid "Player %d"
+msgstr "Jugador %d"
+
+msgid "Player Mapping - Controller %d"
+msgstr "Assignació de jugadors - Comandament %d"
+
+msgid "Playing from"
+msgstr "Jugant des de"
+
+msgid "Plus"
+msgstr ""
+
+msgid "PocketNES save file has more than one Cartridge Save."
+msgstr "El fitxer de desat de PocketNES té més d'un desat de cartutx."
+
+msgid "PocketNES save file has no Cartridge Save."
+msgstr "El fitxer de desat de PocketNES no té cap desat de cartutx."
+
+msgid "Power Off Wii"
+msgstr "Apaga la Wii"
+
+msgid "Press a button on the %s now."
+msgstr "Premeu ara un botó (%s)."
+
+msgid "Pressed button"
+msgstr "Botó premut"
+
+msgid "Preview Image"
+msgstr "Imatge de previsualització"
+
+msgid "Preview Screenshot"
+msgstr "Captura de previsualització"
+
+msgid "RAPID FIRE"
+msgstr "DISPAR RÀPID"
+
+msgid "Remembers the exact moment, so you"
+msgstr "Recorda el moment exacte, perquè pugueu"
+
+msgid "Remove this backup"
+msgstr "Elimina aquesta còpia"
+
+msgid "Remove this snapshot"
+msgstr "Elimina aquesta captura"
+
+msgid "Replace"
+msgstr "Substitueix"
+
+msgid "Replace %s?"
+msgstr "Voleu substituir %s?"
+
+msgid "Replace with your progress now"
+msgstr "Substitueix pel vostre progrés actual"
+
+msgid "Restore"
+msgstr "Restaura"
+
+msgid "Restored Wii VC"
+msgstr ""
+
+msgid "SD"
+msgstr ""
+
+msgid "SD Gecko Slot A"
+msgstr ""
+
+msgid "SD Gecko Slot B"
+msgstr ""
+
+msgid "SD in SP2"
+msgstr ""
+
+msgid "START"
+msgstr ""
+
+msgid "SYSTEM"
+msgstr "SISTEMA"
+
+msgid "Save Mode"
+msgstr "Mode de desat"
+
+msgid "Save Mode: %s"
+msgstr "Mode de desat: %s"
+
+msgid "Save Now"
+msgstr "Desa ara"
+
+msgid "Save a new Preview Screenshot? Current Screenshot image will be overwritten."
+msgstr "Voleu desar una nova captura de previsualització? La imatge actual se sobreescriurà."
+
+msgid "Save this moment"
+msgstr "Desa aquest moment"
+
+msgid "Saved %s"
+msgstr "Desat: %s"
+
+msgid "Saved inside your snapshots"
+msgstr "Desat dins de les vostres captures"
+
+msgid "Saved when you leave the game, or when you save it."
+msgstr "Es desa en sortir del joc o quan el deseu."
+
+msgid "Saved when you leave the game, or when you update it."
+msgstr "Es desa en sortir del joc o quan l'actualitzeu."
+
+msgid "Saves"
+msgstr "Desats"
+
+msgid "Saves when you do"
+msgstr "Es desa quan ho feu"
+
+msgid "Scale2x"
+msgstr ""
+
+msgid "Scanline Overlay"
+msgstr "Superposició de línies"
+
+msgid "Scanlines"
+msgstr ""
+
+msgid "Screenshot"
+msgstr ""
+
+msgid "Screenshots"
+msgstr ""
+
+msgid "Screenshots Folder"
+msgstr "Carpeta de captures"
+
+msgid "Settings - Network Share"
+msgstr "Configuració - Xarxa compartida"
+
+msgid "Settings - Storage"
+msgstr "Configuració - Emmagatzematge"
+
+msgid "Share IP is blank."
+msgstr "La IP de la xarxa compartida està buida."
+
+msgid "Share name is blank."
+msgstr "El nom de la xarxa compartida està buit."
+
+msgid "Sharp"
+msgstr "Nítid"
+
+msgid "Smooth (FBX)"
+msgstr ""
+
+msgid "Snapshot %d"
+msgstr "Captura %d"
+
+msgid "Snapshot not found"
+msgstr "Captura no trobada"
+
+msgid "Soft"
+msgstr "Suau"
+
+msgid "SoftDev, askot,"
+msgstr ""
+
+msgid "Sony CXA"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Start fresh next time"
+msgstr "Comença de zero la propera vegada"
+
+msgid "Storage"
+msgstr "Emmagatzematge"
+
+msgid "Storage device not found!"
+msgstr "Dispositiu d'emmagatzematge no trobat!"
+
+msgid "Swedish"
+msgstr "Suec"
+
+msgid "The Auto Snapshot couldn't be loaded. The Cartridge Save was loaded instead."
+msgstr "No s'ha pogut carregar la captura automàtica. S'ha carregat el desat del cartutx."
+
+msgid "The Auto Snapshot couldn't be loaded. The game starts from the beginning."
+msgstr "No s'ha pogut carregar la captura automàtica. El joc comença des del principi."
+
+msgid "The Snapshot couldn't be loaded"
+msgstr "No s'ha pogut carregar la captura"
+
+msgid "The current IOS has been altered (fake-signed). Functionality and/or stability may be adversely affected."
+msgstr "L'IOS actual ha estat modificat (fake-signed). El funcionament i/o l'estabilitat poden veure's afectats."
+
+msgid "The current IOS is unsupported. Functionality and/or stability may be adversely affected."
+msgstr "L'IOS actual no és compatible. El funcionament i/o l'estabilitat poden veure's afectats."
+
+msgid "This can't be undone."
+msgstr "Aquesta acció no es pot desfer."
+
+msgid "This game doesn't have its own save feature. Use snapshots to save."
+msgstr "Aquest joc no té funció de desat pròpia. Useu captures per desar."
+
+msgid "This is the snapshot you started from. This can't be undone."
+msgstr "Aquesta és la captura des de la qual heu començat. Aquesta acció no es pot desfer."
+
+msgid "This software is open source and may be copied, distributed, or modified"
+msgstr "Aquest programari és de codi obert i es pot copiar, distribuir o modificar"
+
+msgid "Turbo Mode"
+msgstr "Mode turbo"
+
+msgid "Turbo Mode Button"
+msgstr "Botó del mode turbo"
+
+msgid "Turbo mode and the menu toggle"
+msgstr "Mode turbo i obertura del menú"
+
+msgid "Turkish"
+msgstr "Turc"
+
+msgid "Two controllers, for one or two players."
+msgstr "Dos comandaments, per a un o dos jugadors."
+
+msgid "USB"
+msgstr ""
+
+msgid "USB Mass Storage 2"
+msgstr "Dispositiu USB 2"
+
+msgid "USB Mass Storage 3"
+msgstr "Dispositiu USB 3"
+
+msgid "USB Storage 1"
+msgstr "Emmagatzematge USB 1"
+
+msgid "USB Storage 2"
+msgstr "Emmagatzematge USB 2"
+
+msgid "USB Storage 3"
+msgstr "Emmagatzematge USB 3"
+
+msgid "USB drive 2 not found!"
+msgstr "Unitat USB 2 no trobada!"
+
+msgid "USB drive 3 not found!"
+msgstr "Unitat USB 3 no trobada!"
+
+msgid "USING"
+msgstr "USA"
+
+msgid "Unable to mount device."
+msgstr "No s'ha pogut muntar el dispositiu."
+
+msgid "Unassign"
+msgstr "Treu"
+
+msgid "Unsupported drive format. Use FAT32, exFAT or NTFS."
+msgstr "Format d'unitat no compatible. Useu FAT32, exFAT o NTFS."
+
+msgid "Unsupported format - FAT32 is recommended."
+msgstr "Format no compatible: es recomana FAT32."
+
+msgid "Unsupported format - please use FAT32/exFAT."
+msgstr "Format no compatible: useu FAT32/exFAT."
+
+msgid "Unsupported format."
+msgstr "Format no compatible."
+
+msgid "Unsupported language!"
+msgstr "Idioma no compatible!"
+
+msgid "Update"
+msgstr "Actualitza"
+
+msgid "Upscaling"
+msgstr "Escalat"
+
+msgid "Use the saved file in the game"
+msgstr "Useu el fitxer desat al joc"
+
+msgid "Use this as the cartridge's save"
+msgstr "Usa'l com a desat del cartutx"
+
+msgid "Username"
+msgstr "Nom d'usuari"
+
+msgid "Waiting for a button..."
+msgstr "Esperant un botó..."
+
+msgid "Wavebeam"
+msgstr ""
+
+msgid "What should %s use?"
+msgstr "Què ha d'usar %s?"
+
+msgid "Which controller is being emulated?"
+msgstr "Quin comandament s'està emulant?"
+
+msgid "Which controller is being mapped?"
+msgstr "Quin comandament s'està configurant?"
+
+msgid "Which device is being emulated?"
+msgstr "Quin dispositiu s'està emulant?"
+
+msgid "Wii U Gamepad"
+msgstr ""
+
+msgid "Wii U Pro Controller"
+msgstr ""
+
+msgid "Wii Virtual Console"
+msgstr ""
+
+msgid "Write the save to its file"
+msgstr "Escriviu el desat al seu fitxer"
+
+msgid "ZAPPER"
+msgstr ""
+
+msgid "can jump back to it any time."
+msgstr "tornar-hi en qualsevol moment."
+
+msgid "dsbomb, others"
+msgstr "dsbomb i altres"
+
+msgid "gg.rom has no graphics data!"
+msgstr "gg.rom no té dades gràfiques!"
+
+msgid "gg.rom is not a Game Genie ROM!"
+msgstr "gg.rom no és una ROM de Game Genie!"
+
+msgid "gg.rom is not a valid Game Genie ROM!"
+msgstr "gg.rom no és una ROM de Game Genie vàlida!"
+
+msgid "gg.rom is too small!"
+msgstr "gg.rom és massa petit!"
+
+msgid "hq2x"
+msgstr ""
+
+msgid "hq2x Bold"
+msgstr ""
+
+msgid "hq2x Soft"
+msgstr ""
+
+msgid "libogc / devkitPPC"
+msgstr ""
+
+msgid "under the terms of the GNU General Public License (GPL) Version 2."
+msgstr "sota els termes de la GNU General Public License (GPL) versió 2."

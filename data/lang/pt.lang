@@ -474,3 +474,714 @@ msgstr "O IOS actual não é suportado. A funcionalidade e/ou estabilidade podem
 
 msgid "Turkish"
 msgstr "Turco"
+
+msgid " "
+msgstr ""
+
+msgid "%s saved"
+msgstr "%s gravado"
+
+msgid "%s updated"
+msgstr "%s atualizado"
+
+msgid "%s uses %s"
+msgstr "%s usa %s"
+
+msgid "%s uses the default: %s"
+msgstr "%s usa o valor predefinido: %s"
+
+msgid "%s will do nothing"
+msgstr "%s não fará nada"
+
+msgid "%s will do nothing."
+msgstr "%s não fará nada."
+
+msgid "2xBR"
+msgstr ""
+
+msgid "2xBR-lv1"
+msgstr ""
+
+msgid "7z decompression failed: %s"
+msgstr "Falha na descompressão 7z: %s"
+
+msgid "A changes what %s does"
+msgstr "A altera o que %s faz"
+
+msgid "A chooses the controller to map"
+msgstr "A escolhe o comando a mapear"
+
+msgid "A chooses the device being emulated"
+msgstr "A escolhe o dispositivo emulado"
+
+msgid "A puts these buttons back to their defaults"
+msgstr "A repõe estes botões nos valores predefinidos"
+
+msgid "AUTO"
+msgstr ""
+
+msgid "Additional improvements"
+msgstr "Melhorias adicionais"
+
+msgid "All %d backup slots are in use. Delete one to make room."
+msgstr "Todas as %d posições de cópia estão ocupadas. Elimine uma para libertar espaço."
+
+msgid "All 99 snapshot slots are in use. Delete one to make room."
+msgstr "Todas as 99 posições de snapshot estão ocupadas. Elimine uma para libertar espaço."
+
+msgid "Archive contains too many files."
+msgstr "O arquivo comprimido contém demasiados ficheiros."
+
+msgid "Artwork"
+msgstr ""
+
+msgid "Artwork Folder"
+msgstr "Pasta de ilustrações"
+
+msgid "Aspect Ratio Correction"
+msgstr "Correção da proporção de ecrã"
+
+msgid "Auto Snapshot"
+msgstr "Snapshot automático"
+
+msgid "Autosave"
+msgstr "Gravação automática"
+
+msgid "BUTTONS"
+msgstr "BOTÕES"
+
+msgid "Backup %d"
+msgstr "Cópia %d"
+
+msgid "Backups"
+msgstr "Cópias de segurança"
+
+msgid "Bilinear Filtering"
+msgstr "Filtragem bilinear"
+
+msgid "Buttons"
+msgstr "Botões"
+
+msgid "CONTROLLER"
+msgstr ""
+
+msgid "Cancelling..."
+msgstr "A cancelar..."
+
+msgid "Cartridge Save"
+msgstr "Gravação do cartucho"
+
+msgid "Cartridge Save not found"
+msgstr "Gravação do cartucho não encontrada"
+
+msgid "Cartridge Saves are not available for FDS games!"
+msgstr "As gravações de cartucho não estão disponíveis para jogos FDS!"
+
+msgid "Cheats (none)"
+msgstr "Truques (nenhum)"
+
+msgid "Check settings.xml."
+msgstr "Verifique o settings.xml."
+
+msgid "Chinese (Simplified)"
+msgstr "Chinês (simplificado)"
+
+msgid "Chinese (Traditional)"
+msgstr "Chinês (tradicional)"
+
+msgid "Choose 'Pressed button', then press the button you want on the %s."
+msgstr "Escolha «Botão premido» e prima o botão pretendido (%s)."
+
+msgid "Composite Direct (FBX)"
+msgstr ""
+
+msgid "Copy the cartridge's save now"
+msgstr "Copiar agora a gravação do cartucho"
+
+msgid "Copy, or restore one of %d"
+msgstr "Copiar ou restaurar uma das %d"
+
+msgid "Covers"
+msgstr "Capas"
+
+msgid "D-PAD"
+msgstr "CRUZETA"
+
+msgid "DDT"
+msgstr ""
+
+msgid "DVD"
+msgstr ""
+
+msgid "Default (All Enabled)"
+msgstr "Predefinição (tudo ativado)"
+
+msgid "Default (Right Stick)"
+msgstr "Predefinição (manípulo direito)"
+
+msgid "Delete"
+msgstr "Eliminar"
+
+msgid "Delete %s?"
+msgstr "Eliminar %s?"
+
+msgid "Dendy"
+msgstr ""
+
+msgid "Device not found!"
+msgstr "Dispositivo não encontrado!"
+
+msgid "Digital Prime (FBX)"
+msgstr ""
+
+msgid "EMULATING"
+msgstr "A EMULAR"
+
+msgid "Empty"
+msgstr "Vazio"
+
+msgid "Empty until you play"
+msgstr "Vazio até jogar"
+
+msgid "Emulation"
+msgstr ""
+
+msgid "Error loading font!"
+msgstr "Erro ao carregar o tipo de letra!"
+
+msgid "FCE Ultra GX GameCube"
+msgstr ""
+
+msgid "Failed to read file data."
+msgstr "Não foi possível ler os dados do ficheiro."
+
+msgid "File is corrupt (CRC mismatch)."
+msgstr "O ficheiro está danificado (erro de CRC)."
+
+msgid "File is corrupt."
+msgstr "O ficheiro está danificado."
+
+msgid "File uses too high of compression settings (dictionary size is too large)."
+msgstr "O ficheiro usa definições de compressão demasiado elevadas (dicionário demasiado grande)."
+
+msgid "File uses unsupported compression settings."
+msgstr "O ficheiro usa definições de compressão não suportadas."
+
+msgid "Font file is too large!"
+msgstr "O ficheiro do tipo de letra é demasiado grande!"
+
+msgid "Font file not found!"
+msgstr "Ficheiro do tipo de letra não encontrado!"
+
+msgid "Four Score: up to four players."
+msgstr "Four Score: até quatro jogadores."
+
+msgid "Game Genie"
+msgstr ""
+
+msgid "Game Settings - Emulation"
+msgstr "Definições do jogo - Emulação"
+
+msgid "General Mappings"
+msgstr "Mapeamentos gerais"
+
+msgid "Go back to where you left off"
+msgstr "Voltar onde ficou"
+
+msgid "HOME"
+msgstr ""
+
+msgid "Hardware Softening"
+msgstr "Suavização por hardware"
+
+msgid "Home / Right Stick"
+msgstr "Home / manípulo direito"
+
+msgid "Home clears it."
+msgstr "Home limpa-o."
+
+msgid "Home or the C-Stick clears it."
+msgstr "Home ou o C-Stick limpa-o."
+
+msgid "Invalid network settings - %s"
+msgstr "Definições de rede inválidas - %s"
+
+msgid "It is not being updated in the current Save Mode. This can't be undone."
+msgstr "Não está a ser atualizada no modo de gravação atual. Esta ação não pode ser anulada."
+
+msgid "It will be overwritten with your progress right now."
+msgstr "Será substituído pelo seu progresso atual."
+
+msgid "Jump back to this moment"
+msgstr "Voltar a este momento"
+
+msgid "Jump to this moment"
+msgstr "Ir para este momento"
+
+msgid "L+R+Start / 1+2+Plus"
+msgstr ""
+
+msgid "Like a real console: the game's own save is kept for you, and the game starts fresh each time."
+msgstr "Como numa consola real: a gravação do próprio jogo é mantida e o jogo recomeça de raiz de cada vez."
+
+msgid "Logo"
+msgstr ""
+
+msgid "Magnum (FBX)"
+msgstr ""
+
+msgid "Make Backup"
+msgstr "Criar cópia"
+
+msgid "Make a copy of the save"
+msgstr "Fazer uma cópia da gravação"
+
+msgid "Manual"
+msgstr "Manual"
+
+msgid "Manual Snapshot"
+msgstr "Snapshot manual"
+
+msgid "Maximum filepath length reached!"
+msgstr "Comprimento máximo do caminho atingido!"
+
+msgid "Menu Toggle"
+msgstr "Abrir/fechar menu"
+
+msgid "Minus"
+msgstr ""
+
+msgid "More than one NES ROM found in this file. Only files with one ROM are supported."
+msgstr "Foi encontrada mais de uma ROM NES neste ficheiro. Só são suportados ficheiros com uma ROM."
+
+msgid "Move over a button to see what it uses"
+msgstr "Passe sobre um botão para ver o que usa"
+
+msgid "Move over a kind to see its choices"
+msgstr "Passe sobre um tipo para ver as opções"
+
+msgid "NES Classic (FBX-FS)"
+msgstr ""
+
+msgid "NES Zapper light gun."
+msgstr "Pistola de luz NES Zapper."
+
+msgid "NTSC"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "Network share not connected!"
+msgstr "Partilha de rede não ligada!"
+
+msgid "Next time you open this game it starts from its Cartridge Save, or from the beginning. This can't be undone."
+msgstr "Da próxima vez que abrir este jogo, começará a partir da sua gravação do cartucho ou do início. Esta ação não pode ser anulada."
+
+msgid "No NES ROMs found in this file."
+msgstr "Nenhuma ROM NES encontrada neste ficheiro."
+
+msgid "No game save file"
+msgstr "Sem ficheiro de gravação do jogo"
+
+msgid "No image"
+msgstr "Sem imagem"
+
+msgid "No snapshots yet"
+msgstr "Ainda não há snapshots"
+
+msgid "Not saved yet"
+msgstr "Ainda não gravado"
+
+msgid "Not updated while Save Mode is Cartridge Save."
+msgstr "Não é atualizado enquanto o modo de gravação for «Gravação do cartucho»."
+
+msgid "Not updated while Save Mode is Manual."
+msgstr "Não é atualizado enquanto o modo de gravação for «Manual»."
+
+msgid "Nothing is saved or loaded unless you do it yourself."
+msgstr "Nada é gravado ou carregado sem que o faça."
+
+msgid "Now: %s"
+msgstr "Agora: %s"
+
+msgid "Nunchuk + Wiimote"
+msgstr ""
+
+msgid "OTHER"
+msgstr "OUTROS"
+
+msgid "Optional save point"
+msgstr "Ponto de gravação opcional"
+
+msgid "Original (240p)"
+msgstr ""
+
+msgid "Original FCE"
+msgstr ""
+
+msgid "Output Mode"
+msgstr "Modo de saída"
+
+msgid "Overwrite with your progress"
+msgstr "Substituir pelo seu progresso"
+
+msgid "PAL"
+msgstr ""
+
+msgid "PC-10"
+msgstr ""
+
+msgid "PVM Style D93 (FBX)"
+msgstr ""
+
+msgid "Palette"
+msgstr ""
+
+msgid "Password"
+msgstr "Palavra-passe"
+
+msgid "Paused"
+msgstr "Em pausa"
+
+msgid "Picks up exactly where you left off, as if you never turned the console off."
+msgstr "Continua exatamente onde ficou, como se nunca tivesse desligado a consola."
+
+msgid "Player %d"
+msgstr "Jogador %d"
+
+msgid "Player Mapping - Controller %d"
+msgstr "Atribuição de jogadores - Comando %d"
+
+msgid "Playing from"
+msgstr "A jogar de"
+
+msgid "Plus"
+msgstr ""
+
+msgid "PocketNES save file has more than one Cartridge Save."
+msgstr "O ficheiro de gravação PocketNES tem mais de uma gravação de cartucho."
+
+msgid "PocketNES save file has no Cartridge Save."
+msgstr "O ficheiro de gravação PocketNES não tem gravação de cartucho."
+
+msgid "Power Off Wii"
+msgstr "Desligar a Wii"
+
+msgid "Press a button on the %s now."
+msgstr "Prima agora um botão (%s)."
+
+msgid "Pressed button"
+msgstr "Botão premido"
+
+msgid "Preview Image"
+msgstr "Imagem de pré-visualização"
+
+msgid "Preview Screenshot"
+msgstr "Captura de pré-visualização"
+
+msgid "RAPID FIRE"
+msgstr "TIRO RÁPIDO"
+
+msgid "Remembers the exact moment, so you"
+msgstr "Guarda o momento exato, para poder"
+
+msgid "Remove this backup"
+msgstr "Remover esta cópia"
+
+msgid "Remove this snapshot"
+msgstr "Remover este snapshot"
+
+msgid "Replace"
+msgstr "Substituir"
+
+msgid "Replace %s?"
+msgstr "Substituir %s?"
+
+msgid "Replace with your progress now"
+msgstr "Substituir pelo seu progresso atual"
+
+msgid "Restore"
+msgstr "Restaurar"
+
+msgid "Restored Wii VC"
+msgstr ""
+
+msgid "SD"
+msgstr ""
+
+msgid "SD Gecko Slot A"
+msgstr ""
+
+msgid "SD Gecko Slot B"
+msgstr ""
+
+msgid "SD in SP2"
+msgstr ""
+
+msgid "START"
+msgstr ""
+
+msgid "SYSTEM"
+msgstr "SISTEMA"
+
+msgid "Save Mode"
+msgstr "Modo de gravação"
+
+msgid "Save Mode: %s"
+msgstr "Modo de gravação: %s"
+
+msgid "Save Now"
+msgstr "Gravar agora"
+
+msgid "Save a new Preview Screenshot? Current Screenshot image will be overwritten."
+msgstr "Gravar uma nova captura de pré-visualização? A imagem atual será substituída."
+
+msgid "Save this moment"
+msgstr "Gravar este momento"
+
+msgid "Saved %s"
+msgstr "Gravado: %s"
+
+msgid "Saved inside your snapshots"
+msgstr "Gravado dentro dos seus snapshots"
+
+msgid "Saved when you leave the game, or when you save it."
+msgstr "Gravado ao sair do jogo ou quando o gravar."
+
+msgid "Saved when you leave the game, or when you update it."
+msgstr "Gravado ao sair do jogo ou quando o atualizar."
+
+msgid "Saves"
+msgstr "Gravações"
+
+msgid "Saves when you do"
+msgstr "Grava quando o fizer"
+
+msgid "Scale2x"
+msgstr ""
+
+msgid "Scanline Overlay"
+msgstr "Sobreposição de linhas"
+
+msgid "Scanlines"
+msgstr ""
+
+msgid "Screenshot"
+msgstr ""
+
+msgid "Screenshots"
+msgstr ""
+
+msgid "Screenshots Folder"
+msgstr "Pasta de capturas"
+
+msgid "Settings - Network Share"
+msgstr "Definições - Partilha de Rede"
+
+msgid "Settings - Storage"
+msgstr "Definições - Armazenamento"
+
+msgid "Share IP is blank."
+msgstr "O IP da partilha está vazio."
+
+msgid "Share name is blank."
+msgstr "O nome da partilha está vazio."
+
+msgid "Sharp"
+msgstr "Nítido"
+
+msgid "Smooth (FBX)"
+msgstr ""
+
+msgid "Snapshot %d"
+msgstr "Snapshot %d"
+
+msgid "Snapshot not found"
+msgstr "Snapshot não encontrado"
+
+msgid "Soft"
+msgstr "Suave"
+
+msgid "SoftDev, askot,"
+msgstr ""
+
+msgid "Sony CXA"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Start fresh next time"
+msgstr "Recomeçar do zero da próxima vez"
+
+msgid "Storage"
+msgstr "Armazenamento"
+
+msgid "Storage device not found!"
+msgstr "Dispositivo de armazenamento não encontrado!"
+
+msgid "Swedish"
+msgstr "Sueco"
+
+msgid "The Auto Snapshot couldn't be loaded. The Cartridge Save was loaded instead."
+msgstr "Não foi possível carregar o snapshot automático. Foi carregada a gravação do cartucho."
+
+msgid "The Auto Snapshot couldn't be loaded. The game starts from the beginning."
+msgstr "Não foi possível carregar o snapshot automático. O jogo começa do início."
+
+msgid "The Snapshot couldn't be loaded"
+msgstr "Não foi possível carregar o snapshot"
+
+msgid "This can't be undone."
+msgstr "Esta ação não pode ser anulada."
+
+msgid "This game doesn't have its own save feature. Use snapshots to save."
+msgstr "Este jogo não tem função de gravação própria. Use snapshots para gravar."
+
+msgid "This is the snapshot you started from. This can't be undone."
+msgstr "Este é o snapshot a partir do qual começou. Esta ação não pode ser anulada."
+
+msgid "This software is open source and may be copied, distributed, or modified"
+msgstr "Este software é de código aberto e pode ser copiado, distribuído ou modificado"
+
+msgid "Turbo Mode"
+msgstr "Modo turbo"
+
+msgid "Turbo Mode Button"
+msgstr "Botão do modo turbo"
+
+msgid "Turbo mode and the menu toggle"
+msgstr "Modo turbo e abrir/fechar menu"
+
+msgid "Two controllers, for one or two players."
+msgstr "Dois comandos, para um ou dois jogadores."
+
+msgid "USB"
+msgstr ""
+
+msgid "USB Mass Storage 2"
+msgstr "Dispositivo USB 2"
+
+msgid "USB Mass Storage 3"
+msgstr "Dispositivo USB 3"
+
+msgid "USB Storage 1"
+msgstr "Armazenamento USB 1"
+
+msgid "USB Storage 2"
+msgstr "Armazenamento USB 2"
+
+msgid "USB Storage 3"
+msgstr "Armazenamento USB 3"
+
+msgid "USB drive 2 not found!"
+msgstr "Unidade USB 2 não encontrada!"
+
+msgid "USB drive 3 not found!"
+msgstr "Unidade USB 3 não encontrada!"
+
+msgid "USING"
+msgstr "A USAR"
+
+msgid "Unable to mount device."
+msgstr "Não foi possível montar o dispositivo."
+
+msgid "Unassign"
+msgstr "Remover"
+
+msgid "Unsupported drive format. Use FAT32, exFAT or NTFS."
+msgstr "Formato de unidade não suportado. Use FAT32, exFAT ou NTFS."
+
+msgid "Unsupported format - FAT32 is recommended."
+msgstr "Formato não suportado - recomenda-se FAT32."
+
+msgid "Unsupported format - please use FAT32/exFAT."
+msgstr "Formato não suportado - use FAT32/exFAT."
+
+msgid "Unsupported format."
+msgstr "Formato não suportado."
+
+msgid "Unsupported language!"
+msgstr "Idioma não suportado!"
+
+msgid "Update"
+msgstr "Atualizar"
+
+msgid "Upscaling"
+msgstr "Ampliação"
+
+msgid "Use the saved file in the game"
+msgstr "Usar o ficheiro gravado no jogo"
+
+msgid "Use this as the cartridge's save"
+msgstr "Usar como gravação do cartucho"
+
+msgid "Username"
+msgstr "Nome de utilizador"
+
+msgid "Waiting for a button..."
+msgstr "A aguardar um botão..."
+
+msgid "Wavebeam"
+msgstr ""
+
+msgid "What should %s use?"
+msgstr "O que deve %s usar?"
+
+msgid "Which controller is being emulated?"
+msgstr "Que comando está a ser emulado?"
+
+msgid "Which controller is being mapped?"
+msgstr "Que comando está a ser mapeado?"
+
+msgid "Which device is being emulated?"
+msgstr "Que dispositivo está a ser emulado?"
+
+msgid "Wii U Gamepad"
+msgstr ""
+
+msgid "Wii U Pro Controller"
+msgstr ""
+
+msgid "Wii Virtual Console"
+msgstr ""
+
+msgid "Write the save to its file"
+msgstr "Escrever a gravação no seu ficheiro"
+
+msgid "ZAPPER"
+msgstr ""
+
+msgid "can jump back to it any time."
+msgstr "voltar a ele quando quiser."
+
+msgid "dsbomb, others"
+msgstr "dsbomb e outros"
+
+msgid "gg.rom has no graphics data!"
+msgstr "gg.rom não tem dados gráficos!"
+
+msgid "gg.rom is not a Game Genie ROM!"
+msgstr "gg.rom não é uma ROM Game Genie!"
+
+msgid "gg.rom is not a valid Game Genie ROM!"
+msgstr "gg.rom não é uma ROM Game Genie válida!"
+
+msgid "gg.rom is too small!"
+msgstr "gg.rom é demasiado pequeno!"
+
+msgid "hq2x"
+msgstr ""
+
+msgid "hq2x Bold"
+msgstr ""
+
+msgid "hq2x Soft"
+msgstr ""
+
+msgid "libogc / devkitPPC"
+msgstr ""
+
+msgid "under the terms of the GNU General Public License (GPL) Version 2."
+msgstr "nos termos da GNU General Public License (GPL) versão 2."
