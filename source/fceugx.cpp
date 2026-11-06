@@ -72,7 +72,11 @@ static void SaveAppDataBeforeRelease();
  * This is where it all happens!
  ***************************************************************************/
 
+#ifdef HW_RVL
 int main(int argc, char *argv[])
+#else
+int main(int, char *[])
+#endif
 {
 	PlatformConfig platformConfig;
 	platformConfig.canvasWidth = 640;

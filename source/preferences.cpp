@@ -26,6 +26,7 @@
 #include "fceugx.h"
 #include "filelist.h"
 #include "button_mapping.h"
+#include "drivers/safestr.h"
 #include "filebrowser.h"
 #include "menu/menu.h"
 #include "fileop.h"
@@ -119,10 +120,13 @@ static const char * const ctrlMapHardwareKeys[] =
 };
 static_assert(sizeof(ctrlMapHardwareKeys) / sizeof(ctrlMapHardwareKeys[0]) == INPUT_HW_MAX, "ctrlMapHardwareKeys needs one entry per GuiHardwareProfile");
 
-static void ctrlMapName(char * name, size_t nameSize, char * description, size_t descriptionSize, const CtrlMapKind & kind, uint32_t hw)
+//! The name is the key the mapping is stored and found by, so a name that does not fit must not be used:
+//! it could collide with another mapping's. Returns false, and the caller skips the mapping, if either
+//! string does not fit. (They are built from short constants, so this cannot happen today.)
+static bool ctrlMapName(char * name, size_t nameSize, char * description, size_t descriptionSize, const CtrlMapKind & kind, uint32_t hw)
 {
-	snprintf(name, nameSize, "btnmapping_%s_%s", kind.key, ctrlMapHardwareKeys[hw]);
-	snprintf(description, descriptionSize, "%s - %s", kind.description, ctrlrName[hw]);
+	return FormatString(name, nameSize, "btnmapping_%s_%s", kind.key, ctrlMapHardwareKeys[hw])
+		&& FormatString(description, descriptionSize, "%s - %s", kind.description, ctrlrName[hw]);
 }
 
 static void createXMLControllers()
@@ -134,7 +138,8 @@ static void createXMLControllers()
 	{
 		for(uint32_t hw = 0; hw < INPUT_HW_MAX; hw++)
 		{
-			ctrlMapName(name, sizeof(name), description, sizeof(description), kind, hw);
+			if(!ctrlMapName(name, sizeof(name), description, sizeof(description), kind, hw))
+				continue;
 			createXMLController(btnmap[kind.ctrl][hw], name, description);
 		}
 	}
@@ -333,7 +338,8 @@ static void loadXMLControllers()
 	{
 		for(uint32_t hw = 0; hw < INPUT_HW_MAX; hw++)
 		{
-			ctrlMapName(name, sizeof(name), description, sizeof(description), kind, hw);
+			if(!ctrlMapName(name, sizeof(name), description, sizeof(description), kind, hw))
+				continue;
 			loadXMLController(btnmap[kind.ctrl][hw], name);
 		}
 	}
@@ -705,13 +711,15 @@ static bool SavePrefsNow()
 
 	if(prefpath[0] != 0)
 	{
-		snprintf(filepath, sizeof(filepath), "%s/%s", prefpath, PREF_FILE_NAME);
+		if(!FormatString(filepath, sizeof(filepath), "%s/%s", prefpath, PREF_FILE_NAME))
+			return false; // the remembered folder is too long to put the file in
 		FindDevice(filepath, &device);
 	}
 	else if(appPath[0] != 0)
 	{
-		snprintf(filepath, sizeof(filepath), "%s/%s", appPath, PREF_FILE_NAME);
-		strcpy(prefpath, appPath);
+		if(!FormatString(filepath, sizeof(filepath), "%s/%s", appPath, PREF_FILE_NAME))
+			return false;
+		CopyString(prefpath, sizeof(prefpath), appPath);
 		FindDevice(filepath, &device);
 	}
 
@@ -735,13 +743,15 @@ static bool SavePrefsNow()
 			return false;
 		}
 
-		platform->getFileSystem()->getPath(filepath, device, APPFOLDER);
-		if(!CreateDirectory(filepath)) {
+		if(!platform->getFileSystem()->getPath(filepath, device, APPFOLDER) || !CreateDirectory(filepath)) {
 			return false;
 		}
 
-		platform->getFileSystem()->getPath(filepath, device, APPFOLDER, PREF_FILE_NAME);
-		platform->getFileSystem()->getPath(prefpath, device, APPFOLDER);
+		if(!platform->getFileSystem()->getPath(filepath, device, APPFOLDER, PREF_FILE_NAME)
+			|| !platform->getFileSystem()->getPath(prefpath, device, APPFOLDER)) {
+			prefpath[0] = 0;
+			return false;
+		}
 	}
 
 	if(device == DEVICE_AUTO)
@@ -810,7 +820,8 @@ LoadPrefsFromMethod (char * path)
 	bool retval = false;
 	int offset = 0;
 	char filepath[MAXPATHLEN];
-	sprintf(filepath, "%s/%s", path, PREF_FILE_NAME);
+	if(!FormatString(filepath, sizeof(filepath), "%s/%s", path, PREF_FILE_NAME))
+		return false;
 
 	AllocSaveBuffer ();
 
@@ -860,7 +871,8 @@ static bool ScanForExistingPrefs()
 		for(int f = 0; f < folderCount; f++)
 		{
 			char path[MAXPATHLEN];
-			MakeFilePathForFolderPath(path, device, folders[f]);
+			if(!MakeFilePathForFolderPath(path, device, folders[f]))
+				continue;
 
 			if(LoadPrefsFromMethod(path))
 				return true;
@@ -930,11 +942,13 @@ static void RemapUsbPathIfNeeded(char * path, size_t pathSize)
 			continue; // this slot isn't mounted right now
 
 		char candidatePath[MAXPATHLEN];
-		MakeFilePathForFolderPath(candidatePath, usbCandidates[i], suffix);
+		if(!MakeFilePathForFolderPath(candidatePath, usbCandidates[i], suffix))
+			continue;
 
-		if(stat(candidatePath, &st) == 0)
+		// (a path that does not fit in the caller's buffer is no use to it: leave path alone)
+		if(stat(candidatePath, &st) == 0 && strlen(candidatePath) < pathSize)
 		{
-			snprintf(path, pathSize, "%s", candidatePath);
+			CopyString(path, pathSize, candidatePath);
 			return;
 		}
 	}
@@ -1001,8 +1015,8 @@ bool LoadPrefs()
 
 void CreatePathWithPrefix(int device, const char* folder) {
 	char fullPath[MAXPATHLEN];
-	MakeFilePathForFolderPath(fullPath, device, folder);
-	CreateDirectory(fullPath);
+	if(MakeFilePathForFolderPath(fullPath, device, folder))
+		CreateDirectory(fullPath);
 }
 
 void CreateMissingDirectories() {

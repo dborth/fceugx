@@ -234,13 +234,10 @@ bool FindGameGenie()
 	size_t romSize = 0;
 	char filepath[1024];
 
-	platform->getFileSystem()->getPath(filepath, EmuSettings.loadDevice, APPFOLDER, "gg.rom");
-	romSize = LoadFile(filepath, SILENT);
-	if(romSize == 0 && strlen(appPath) > 0)
-	{
-		sprintf (filepath, "%s/gg.rom", appPath);
+	if(platform->getFileSystem()->getPath(filepath, EmuSettings.loadDevice, APPFOLDER, "gg.rom"))
 		romSize = LoadFile(filepath, SILENT);
-	}
+	if(romSize == 0 && strlen(appPath) > 0 && FormatString(filepath, sizeof(filepath), "%s/gg.rom", appPath))
+		romSize = LoadFile(filepath, SILENT);
 
 	bool ok = false;
 

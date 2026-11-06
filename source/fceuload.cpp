@@ -20,6 +20,7 @@
 
 #include "fceugx.h"
 #include "drivers/Platform.h"
+#include "drivers/safestr.h"
 #include "fceusupport.h"
 #include "pad.h"
 #include "menu/menu.h"
@@ -84,13 +85,10 @@ int GCMemROM(int size)
 
 			AllocSaveBuffer ();
 
-			platform->getFileSystem()->getPath(filepath, EmuSettings.loadDevice, APPFOLDER, "disksys.rom");
-			biosSize = LoadFile(filepath, SILENT);
-			if(biosSize == 0 && strlen(appPath) > 0)
-			{
-				sprintf (filepath, "%s/disksys.rom", appPath);
+			if(platform->getFileSystem()->getPath(filepath, EmuSettings.loadDevice, APPFOLDER, "disksys.rom"))
 				biosSize = LoadFile(filepath, SILENT);
-			}
+			if(biosSize == 0 && strlen(appPath) > 0 && FormatString(filepath, sizeof(filepath), "%s/disksys.rom", appPath))
+				biosSize = LoadFile(filepath, SILENT);
 
 			if (biosSize == 8192)
 			{
