@@ -89,7 +89,6 @@ int main(int, char *[])
 	platform->setSaveHandler(SaveAppDataBeforeRelease);
 
 	InitFileOpThreads();
-	MountAllFAT();
 
 	void * decodeScratch = malloc(IMAGE_DECODE_SCRATCH_SIZE);
 	GuiImageData::setDecodeScratch(decodeScratch, IMAGE_DECODE_SCRATCH_SIZE);
