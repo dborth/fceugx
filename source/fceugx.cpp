@@ -102,8 +102,6 @@ int main(int, char *[])
 	// store path app was loaded from
 	if(argc > 0 && argv[0] != nullptr)
 		CreateAppPath(argv[0]);
-
-	InitMem2Manager();
 	#endif
 
 	savebuffer = (unsigned char *)memalign(FILE_BUFFER_ALIGN,SAVEBUFFERSIZE);
