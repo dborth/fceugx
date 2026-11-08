@@ -4901,7 +4901,6 @@ static void * CreateBlurredGameTexture() {
  * MainMenu
  ***************************************************************************/
 static int FirstRunTask(void *) {
-	LoadPrefs();
 	AutoDetectDevices();
 	CreateMissingDirectories();
 	SavePrefs();
@@ -4954,6 +4953,8 @@ void MainMenu (int selection)
 
 	if(firstRun) {
 		firstRun = false;
+
+		LoadPrefs();
 
 		if(RunOnWorkerThread(FirstRunTask)) {
 			while(!IsWorkerThreadFinished()) {
