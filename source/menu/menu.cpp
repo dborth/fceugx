@@ -2315,23 +2315,6 @@ static int MenuGameSaves()
 	int selection = MENU_NONE;
 	char filepath[1024];
 
-	static ChangeInterfaceArgs ciArgs;
-	ciArgs.device = EmuSettings.saveDevice;
-	ciArgs.silent = NOTSILENT;
-	bool changeOk = false;
-
-	if(RunOnWorkerThread(ChangeInterfaceTask, &ciArgs))
-	{
-		while(!IsWorkerThreadFinished())
-		{
-			if(!UpdateGui()) return MENU_EXIT;
-		}
-		changeOk = GetWorkerThreadResult() != 0;
-	}
-
-	if(!changeOk)
-		return MENU_GAME;
-
 	// A game with no battery has no save file of its own: then there is nothing under the snapshots,
 	// and they get the room
 	const bool gameSave = GetRAMSaveSize() > 0;
@@ -2649,6 +2632,23 @@ static int MenuGameSaves()
 			}
 		}
 	};
+
+	static ChangeInterfaceArgs ciArgs;
+	ciArgs.device = EmuSettings.saveDevice;
+	ciArgs.silent = NOTSILENT;
+	bool changeOk = false;
+
+	if(RunOnWorkerThread(ChangeInterfaceTask, &ciArgs))
+	{
+		while(!IsWorkerThreadFinished())
+		{
+			if(!UpdateGui()) return MENU_EXIT;
+		}
+		changeOk = GetWorkerThreadResult() != 0;
+	}
+
+	if(!changeOk)
+		return MENU_GAME;
 
 	if(!loadSaves())
 		return MENU_EXIT;
