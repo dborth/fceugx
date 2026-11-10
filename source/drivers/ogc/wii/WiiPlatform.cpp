@@ -169,6 +169,10 @@ void WiiPlatform::init(const PlatformConfig& config)
 	this->fileSystemDriver = new WiiFileSystemDriver();
 	this->fileSystemDriver->init();
 
+	// After the filesystem driver, which brings up the USB stack
+	this->mouseDriver = new WiiMouseDriver();
+	this->mouseDriver->init();
+
 #if LOGGING_ENABLED
 	this->logger = new Logger();
 	this->logger->registerBackend(LOGGER_OSREPORT,	new OgcLoggerSysReport());
@@ -196,6 +200,12 @@ void WiiPlatform::shutdown()
 		logger->shutdown();
 		delete logger;
 		logger = nullptr;
+	}
+
+	if (mouseDriver) {
+		mouseDriver->shutdown();
+		delete mouseDriver;
+		mouseDriver = nullptr;
 	}
 
 	if (fileSystemDriver) {

@@ -116,7 +116,7 @@ static const CtrlMapKind ctrlMapKinds[] =
 // indexed by GuiHardwareProfile; the description is ctrlrName[hw]
 static const char * const ctrlMapHardwareKeys[] =
 {
-	"gcpad", "wiimote", "nunchuk", "classic", "wupc", "wiidrc"
+	"gcpad", "wiimote", "nunchuk", "classic", "wupc", "wiidrc", "usbmouse"
 };
 static_assert(sizeof(ctrlMapHardwareKeys) / sizeof(ctrlMapHardwareKeys[0]) == INPUT_HW_MAX, "ctrlMapHardwareKeys needs one entry per GuiHardwareProfile");
 

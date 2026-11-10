@@ -171,6 +171,13 @@ void ResetControls(int consoleCtrl, int hardwareProfile)
 		btnmap[CTRL_ZAPPER][INPUT_HW_WIIMOTE][0] = INPUT_BTN_B; // shoot
 		btnmap[CTRL_ZAPPER][INPUT_HW_WIIMOTE][1] = INPUT_BTN_A; // insert coin
 	}
+
+	/*** Zapper : USB mouse / pen tablet button mapping ***/
+	if(consoleCtrl == -1 || (consoleCtrl == CTRL_ZAPPER && hardwareProfile == INPUT_HW_USBMOUSE))
+	{
+		btnmap[CTRL_ZAPPER][INPUT_HW_USBMOUSE][0] = INPUT_BTN_A; // shoot: left button / pen tip
+		btnmap[CTRL_ZAPPER][INPUT_HW_USBMOUSE][1] = INPUT_BTN_B; // insert coin: right button / lower pen switch
+	}
 }
 
 /****************************************************************************

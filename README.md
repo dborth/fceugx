@@ -70,6 +70,7 @@ Every push builds automatically. Grab the latest continuous-integration build:
 - **Wii U GamePad** support — full touch + buttons on the **native Wii U build**; buttons/sticks and display (no touch) on **vWii via Virtual Console-style injection** — see [Wii U](#wii-u)
 - Native Wii U version outputs up to **1080p**, with a **GX2 shader-based ScaleFX** upscaler built specifically for the Wii U's GPU
 - **1–4 player support**, plus Zapper light gun support
+- **USB mouse** support on **Wii** — it moves the pointer in the menus and aims the Zapper (left click fires, right click inserts a coin, middle click is X)
 - iNES (`.nes`), Famicom Disk System (`.fds`), VS System, UNIF, and NSF (NES Sound Format) ROM support
 - **Famicom 3D System** and anaglyph-game support — see [Famicom 3D System & Anaglyph Games](#famicom-3d-system--anaglyph-games)
 - Cheat code support (`.cht` files) plus **Game Genie** code support

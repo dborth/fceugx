@@ -12,6 +12,7 @@
 #pragma once
 #include "../InputDriver.h"
 #include "../InputData.h"
+#include "../MousePointer.h"
 
 class OgcInputDriver : public InputDriver
 {
@@ -51,4 +52,5 @@ class OgcInputDriver : public InputDriver
 		bool rumbleRequest[4];
     int menuRumbleFrames[4];     // frames left in the current menu "tick" (0 = idle)
     int menuRumbleGapFrames[4];  // frames left in the enforced silent gap after a tick
+    MousePointer mousePointer;   // the USB mouse as a pointer on channel 0 (see Platform::getMouse())
 };
