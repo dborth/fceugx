@@ -5,6 +5,7 @@ All notable changes to FCE Ultra GX are recorded here, newest first. For the cur
 ## Unreleased
 
 * **USB mouse support** on Wii. The mouse moves the pointer in the menus and aims the Zapper
+* **USB pen tablet support** on Wii. The pen moves the pointer and aims the Zapper, using the USB mouse's button mapping
 
 ## 4.0.4 - November 3, 2026
 * **The left analog stick now moves the pointer in the menus**, on every controller, like a mouse. It no longer also steps through the buttons; the D-pad still does
