@@ -5,6 +5,9 @@ All notable changes to FCE Ultra GX are recorded here, newest first. For the cur
 ## Unreleased
 * Fixed some potential startup crash causes
 * Wii U: fixed a brief audio dropout that could happen every 10-15 seconds
+* Updated translations
+* Wii U - ignore unmountable drives, improve handling of blocked threads
+* Other minor fixes and enhancements
 
 ## 4.0.4 - November 3, 2026
 * **The left analog stick now moves the pointer in the menus**, on every controller, like a mouse. It no longer also steps through the buttons; the D-pad still does
