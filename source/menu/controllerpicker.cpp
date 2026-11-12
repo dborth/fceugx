@@ -31,7 +31,7 @@ const size_t kindCount = sizeof(kinds) / sizeof(kinds[0]);
 
 } // namespace
 
-std::string ControllerChipValue()
+const char * ControllerChipValue()
 {
 	return Tr(ctrlName[EmuSettings.controller]);
 }
@@ -49,7 +49,7 @@ bool ChooseController(const GuiPopover::Anchor& anchor)
 		items.push_back(it);
 	}
 
-	const int chosen = MenuPopover_Pick(Tr("Which controller is being emulated?").c_str(), items, anchor);
+	const int chosen = MenuPopover_Pick(Tr("Which controller is being emulated?"), items, anchor);
 	if(chosen < 0 || (size_t)chosen >= kindCount)
 		return false;
 

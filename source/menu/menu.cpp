@@ -1413,7 +1413,7 @@ static void PlayerMappingWindowUpdate(void * ptr, int dir)
 		if(playerMapping[playerMappingChan] < 0)
 			playerMapping[playerMappingChan] = 3;
 
-		settingText->setRawText(TrFormat("Player %d", playerMapping[playerMappingChan]+1).c_str());
+		settingText->setFormat("Player %d", playerMapping[playerMappingChan]+1);
 		b->resetState();
 	}
 }
@@ -1433,7 +1433,7 @@ static void PlayerMappingWindow(int chan)
 	MenuArrowButton arrowRightBtn(SHAPE::TRIANGLE_RIGHT, ALIGN_H::RIGHT, ALIGN_V::MIDDLE, 0, 0, PlayerMappingWindowRightClick);
 
 	settingText = new GuiText(nullptr, 22, (PixelColor){0, 0, 0, 255});
-	settingText->setRawText(TrFormat("Player %d", playerMapping[playerMappingChan]+1).c_str());
+	settingText->setFormat("Player %d", playerMapping[playerMappingChan]+1);
 
 	w->append(&arrowLeftBtn);
 	w->append(&arrowRightBtn);
@@ -1530,7 +1530,7 @@ static int MenuGame()
 	bool controllerRequest = false;
 	// Row 2 uses the same width and columns as the large buttons above it
 	const int row2W = MENU_BTN_LARGE_W;
-	GuiCard& controllerChip = MenuPopover_Chip(ui, row2W, "CONTROLLER", []{ return ControllerChipValue(); });
+	GuiCard& controllerChip = MenuPopover_Chip(ui, row2W, "CONTROLLER", [](UiText& t){ t.set(ControllerChipValue()); });
 	controllerChip.onClick([&controllerRequest]{ controllerRequest = true; });
 	controllerChip.setAlignment(ALIGN_H::CENTRE, ALIGN_V::TOP);
 	controllerChip.setPosition(-200, 296);
@@ -2599,7 +2599,7 @@ static int MenuGameSaves()
 	{
 		// as wide as the words need (a translation can be much longer than English), within the screen's margins
 		toastTxt.setMaxWidth(0);
-		toastTxt.setText(text.c_str());
+		toastTxt.setRawText(text.c_str());
 		int toastW = toastTxt.getTextWidth() + SAVE_TOAST_PAD_L + SAVE_TOAST_PAD_R;
 		if(toastW < SAVE_TOAST_W)
 			toastW = SAVE_TOAST_W;
@@ -2765,7 +2765,7 @@ static int MenuGameSaves()
 							}
 							MakeFilePath(filepath, FILE_STATE, romFilename, newSlot);
 						}
-						else if(!card.playing && !WindowPrompt(TrFormat("Replace %s?", Tr(entry.title.c_str()).c_str()).c_str(),
+						else if(!card.playing && !WindowPrompt(TrMessage<>("Replace %s?", Tr(entry.title.c_str())),
 							"It will be overwritten with your progress right now.", "Replace", "Cancel"))
 							break;
 
@@ -2802,7 +2802,7 @@ static int MenuGameSaves()
 							slot = freeSlot(FILE_RAM);
 							if(slot < 0 || (int)backups.size() >= SAVE_MAX_BACKUPS)
 							{
-								ErrorPrompt(TrFormat("All %d backup slots are in use. Delete one to make room.", SAVE_MAX_BACKUPS).c_str());
+								ErrorPrompt(TrMessage<>("All %d backup slots are in use. Delete one to make room.", SAVE_MAX_BACKUPS));
 								break;
 							}
 						}
@@ -2828,7 +2828,7 @@ static int MenuGameSaves()
 
 					case SAVEACT_DELETE:
 					{
-						std::string question = TrFormat("Delete %s?", Tr(entry.title.c_str()).c_str());
+						std::string question = TrFormat("Delete %s?", Tr(entry.title.c_str()));
 						const char * detail = "This can't be undone.";
 						if(card.autoSnap && EmuSettings.saveMode == SAVEMODE_SNAPSHOT)
 							detail = "Next time you open this game it starts from its Cartridge Save, or from the beginning. This can't be undone.";
@@ -2910,7 +2910,7 @@ static int MenuGameSaves()
 					showCards(cards[(size_t)was].type, cards[(size_t)was].slot, 0);
 				else
 					showCards(-1, -1, 0);
-				showToast(TrFormat("Save Mode: %s", Tr(modeNames[chosen]).c_str()));
+				showToast(TrFormat("Save Mode: %s", Tr(modeNames[chosen])));
 			}
 			else
 				menu->mainWindow.changeFocus(&saveBrowser);
