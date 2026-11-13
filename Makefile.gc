@@ -20,29 +20,35 @@ export	FREETYPE_LIBS		:=	`$(DEVKITPRO)/portlibs/ppc/bin/powerpc-eabi-pkg-config 
 TARGET		:=	fceugx-gc
 TARGETDIR   :=  executables
 BUILD		:=	build_gc
+CORE_SOURCES	:=	source/fceultra source/fceultra/boards source/fceultra/input source/fceultra/utils
 SOURCES		:=	source source/menu source/libgui source/widgets source/utils source/utils/sz \
 				source/drivers source/drivers/ogc source/drivers/ogc/gamecube source/drivers/ogc/gamecube/vm \
 				source/pocketnes source/pocketnes/minilzo \
-				source/fceultra source/fceultra/boards source/fceultra/input source/fceultra/utils
+				$(CORE_SOURCES)
 DATA		:=	data/images data/sounds data/fonts data/lang
 INCLUDES	:=	source
 
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
-SHAREDFLAGS	=	-g -O3 -Wall $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
-				-DFCEUGX \
-				-DFORMAT_PAL8 -DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
-				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
-				-fomit-frame-pointer -fno-strict-aliasing -ffunction-sections -fdata-sections \
+WARNFLAGS		:=	-Wall -Wextra
+CORE_WARNFLAGS	:=	-Wall \
 				-Wno-format -Wno-format-overflow \
 				-Wno-stringop-overflow -Wno-format-truncation \
 				-Wno-unused-parameter -Wno-write-strings -Wno-stringop-truncation -Wno-sign-compare \
 				-Wno-unused-variable -Wno-parentheses -Wno-unused-function -Wno-switch -Wno-unused-but-set-variable \
 				-Wno-narrowing -Wno-misleading-indentation -Wno-restrict -Wno-maybe-uninitialized -Wno-infinite-recursion
+CORE_CFLAGS	:=	-Wno-incompatible-pointer-types
+CORE_CXXFLAGS	:=	-Wno-register -Wno-catch-value -Wno-class-memaccess
 
-CFLAGS		=	$(SHAREDFLAGS) -Wno-incompatible-pointer-types
-CXXFLAGS	=	$(SHAREDFLAGS) -Wno-register -Wno-catch-value -Wno-class-memaccess -fno-exceptions -fno-rtti -fno-threadsafe-statics
+SHAREDFLAGS	=	-g -O3 $(WARNFLAGS) $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
+				-DFCEUGX \
+				-DFORMAT_PAL8 -DFRAMESKIP -DPSS_STYLE=1 -DPATH_MAX=1024 -DHAVE_ASPRINTF \
+				-D_SZ_ONE_DIRECTORY -D_LZMA_IN_CB -D_LZMA_OUT_READ \
+				-fomit-frame-pointer -fno-strict-aliasing -ffunction-sections -fdata-sections
+
+CFLAGS		=	$(SHAREDFLAGS)
+CXXFLAGS	=	$(SHAREDFLAGS) -fno-exceptions -fno-rtti -fno-threadsafe-statics
 ASFLAGS		=	$(MACHDEP) $(INCLUDE)
 LDFLAGS		=	-g -O3 $(MACHDEP) -Wl,-Map,$(notdir $@).map -Wl,--gc-sections
 LDFLAGS		+=	-L../buildtools
@@ -98,6 +104,10 @@ export OFILES_BIN	:=	$(addsuffix .o,$(BINFILES))
 export OFILES_SOURCES := $(CPPFILES:.cpp=.o) $(CFILES:.c=.o) $(sFILES:.s=.o) $(SFILES:.S=.o)
 export OFILES := $(OFILES_BIN) $(OFILES_SOURCES) x6502.o
 
+# the objects built from CORE_SOURCES, which get CORE_WARNFLAGS (see the top of this file)
+export CORE_COFILES	:=	$(foreach dir,$(CORE_SOURCES),$(patsubst %.c,%.o,$(notdir $(wildcard $(dir)/*.c))))
+export CORE_CXXOFILES	:=	$(foreach dir,$(CORE_SOURCES),$(patsubst %.cpp,%.o,$(notdir $(wildcard $(dir)/*.cpp))))
+
 export HFILES := $(addsuffix .h,$(subst .,_,$(BINFILES)))
 
 #---------------------------------------------------------------------------------
@@ -140,6 +150,11 @@ reload:
 else
 
 DEPENDS	:=	$(OFILES:.o=.d)
+
+# the emulator core is built with CORE_WARNFLAGS rather than WARNFLAGS
+$(CORE_COFILES) $(CORE_CXXOFILES): WARNFLAGS := $(CORE_WARNFLAGS)
+$(CORE_COFILES): CFLAGS += $(CORE_CFLAGS)
+$(CORE_CXXOFILES): CXXFLAGS += $(CORE_CXXFLAGS)
 
 #---------------------------------------------------------------------------------
 # main targets
