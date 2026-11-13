@@ -19,6 +19,20 @@ static int32 coeffs[NCOEFFS];
 static uint32 mrindex;
 static uint32 mrratio;
 
+// Output filter state, kept across calls (see SexyFilterReset)
+static int64 sexyAcc1=0,sexyAcc2=0;
+static int64 sexy2Acc=0;
+
+/// Clears the output filters' history. The high-pass in SexyFilter remembers
+/// the average level of everything it has filtered, so a new game that starts
+/// silent would otherwise open with the previous game's level decaying away
+/// as a low thump. Call when the sound hardware is powered on.
+void SexyFilterReset(void)
+{
+ sexyAcc1=sexyAcc2=0;
+ sexy2Acc=0;
+}
+
 void SexyFilter2(int32 *in, int32 count)
 {
  #ifdef moo
@@ -32,15 +46,13 @@ void SexyFilter2(int32 *in, int32 count)
  c=p*0x100000;
  //printf("%f\n",(double)c/0x100000);
  #endif
- static int64 acc=0;
-
  while(count--)
  {
   int64 dropcurrent;
-  dropcurrent=( int32(uint32(*in)<<16)-acc)>>3;
+  dropcurrent=( int32(uint32(*in)<<16)-sexy2Acc)>>3;
 
-  acc+=dropcurrent;
-  *in=acc>>16;
+  sexy2Acc+=dropcurrent;
+  *in=sexy2Acc>>16;
   in++;
   //acc=((int64)0x100000-c)* *in + ((c*acc)>>20);
   //*in=acc>>20;
@@ -50,7 +62,6 @@ void SexyFilter2(int32 *in, int32 count)
 
 void SexyFilter(int32 *in, int32 *out, int32 count)
 {
- static int64 acc1=0,acc2=0;
  int32 mul1,mul2,vmul;
 
  mul1=(94<<16)/FSettings.SndRate;
@@ -64,12 +75,12 @@ void SexyFilter(int32 *in, int32 *out, int32 count)
  while(count)
  {
   int64 ino=(int64)*in*vmul;
-  acc1+=((ino-acc1)*mul1)>>16;
-  acc2+=((ino-acc1-acc2)*mul2)>>16;
+  sexyAcc1+=((ino-sexyAcc1)*mul1)>>16;
+  sexyAcc2+=((ino-sexyAcc1-sexyAcc2)*mul2)>>16;
   //printf("%d ",*in);
   *in=0;
   {
-   int32 t=(acc1-ino+acc2)>>16;
+   int32 t=(sexyAcc1-ino+sexyAcc2)>>16;
    //if(t>32767 || t<-32768) printf("Flow: %d\n",t);
    if(t>32767) t=32767;
    if(t<-32768) t=-32768;

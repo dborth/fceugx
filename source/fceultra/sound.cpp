@@ -1203,6 +1203,7 @@ void FCEUSND_Power(void)
         memset(PSG,0x00,sizeof(PSG));
 	FCEUSND_Reset();
 
+	SexyFilterReset();
 	memset(Wave,0,sizeof(Wave));
         memset(WaveHi,0,sizeof(WaveHi));
 	memset(&EnvUnits,0,sizeof(EnvUnits));
