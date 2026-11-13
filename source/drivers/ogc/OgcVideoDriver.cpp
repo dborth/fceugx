@@ -11,6 +11,7 @@
 #include <malloc.h>
 #include <unistd.h>
 #include <ogc/machine/processor.h>
+#include <ogc/irq.h>
 
 #include "OgcVideoDriver.h"
 
@@ -53,25 +54,25 @@ static volatile bool vb_wait = false; // Tracks if the VSync thread should begin
  * This callback enables the emulator to keep running while waiting for a
  * vertical blank
  ***************************************************************************/
-static void * vbgetback (void *arg)
+static void * vbgetback (void *)
 {
 	while (1)
 	{
 		u32 level;
-		_CPU_ISR_Disable(level);
+		level = IRQ_Disable();
 		while (!vb_wait)
 		{
 			LWP_ThreadSleep(vb_queue);     // Sleep safely until waitForBufferReady kicks us off
 		}
 		vb_wait = false;
-		_CPU_ISR_Restore(level);
+		IRQ_Restore(level);
 
 		VIDEO_WaitVSync();                 // Wait for video vertical blank
 
-		_CPU_ISR_Disable(level);
+		level = IRQ_Disable();
 		vb_done = true;
 		LWP_ThreadSignal(render_queue);    // Instantly alert the main thread
-		_CPU_ISR_Restore(level);
+		IRQ_Restore(level);
 	}
 	return nullptr;
 }
@@ -82,7 +83,7 @@ static void * vbgetback (void *arg)
  * Stock code to copy the GX buffer to the current display mode.
  * Also increments the frameticker, as it's called for each vb.
  ***************************************************************************/
-static inline void copy_to_xfb (u32 arg)
+static inline void copy_to_xfb (u32)
 {
 	if (copynow == GX_TRUE)
 	{
@@ -357,12 +358,12 @@ void OgcVideoDriver::waitForBufferReady()
 {
 	u32 level;
 
-	_CPU_ISR_Disable(level);
+	level = IRQ_Disable();
 	while (!vb_done || (copynow == GX_TRUE))
 	{
 		LWP_ThreadSleep(render_queue); // Halts main thread with 0 CPU load until signals occur
 	}
-	_CPU_ISR_Restore(level);
+	IRQ_Restore(level);
 
 	// Every frame ends with GX_DrawDone() before it is presented, so the GPU is idle here
 	OgcFreeRetiredMeshes();
@@ -378,11 +379,11 @@ void OgcVideoDriver::presentBuffer()
 
 	// Reset state and signal background VSync thread to begin waiting for next blanking interval
 	u32 level;
-	_CPU_ISR_Disable(level);
+	level = IRQ_Disable();
 	vb_done = false;
 	vb_wait = true;
 	LWP_ThreadSignal(vb_queue);
-	_CPU_ISR_Restore(level);
+	IRQ_Restore(level);
 }
 
 OgcVideoDriver::OgcVideoDriver()
@@ -727,19 +728,19 @@ void OgcImageRenderer::destroyMesh(void * mesh)
 
 	// The GPU may not have read the list yet; OgcFreeRetiredMeshes() frees it once it has
 	u32 level;
-	_CPU_ISR_Disable(level);
+	level = IRQ_Disable();
 	m->next = retiredMeshes;
 	retiredMeshes = m;
-	_CPU_ISR_Restore(level);
+	IRQ_Restore(level);
 }
 
 void OgcFreeRetiredMeshes()
 {
 	u32 level;
-	_CPU_ISR_Disable(level);
+	level = IRQ_Disable();
 	OgcMesh * m = retiredMeshes;
 	retiredMeshes = nullptr;
-	_CPU_ISR_Restore(level);
+	IRQ_Restore(level);
 
 	while(m)
 	{
