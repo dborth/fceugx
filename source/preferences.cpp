@@ -33,9 +33,13 @@
 #include "videosupport.h"
 #include "pad.h"
 
-#if defined(HW_RVL) || defined(HW_DOL)
+#ifdef HW_RVL
 #include "drivers/ogc/wii/WiiPlatform.h"
+#elif HW_DOL
 #include "drivers/ogc/gamecube/GameCubePlatform.h"
+#endif
+
+#if defined(HW_RVL) || defined(HW_DOL)
 #include "drivers/ogc/videofilters.h"
 #endif
 
