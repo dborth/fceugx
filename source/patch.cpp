@@ -228,17 +228,15 @@ int LoadPatch(int size)
 	int newsize = size;
 	int patchsize = 0;
 	int patchtype;
-	char patchpath[2][512];
+	static const char * const patchExt[2] = { ".ips", ".ups" };
+	char patchpath[sizeof(browser.dir) + sizeof(romFilename) + 4];
 
 	AllocSaveBuffer ();
 
-	memset(patchpath, 0, sizeof(patchpath));
-	snprintf(patchpath[0], sizeof(patchpath[0]), "%s%s.ips", browser.dir, romFilename);
-	snprintf(patchpath[1], sizeof(patchpath[1]), "%s%s.ups", browser.dir, romFilename);
-
 	for(patchtype=0; patchtype<2; patchtype++)
 	{
-		patchsize = LoadFile(patchpath[patchtype], SILENT);
+		snprintf(patchpath, sizeof(patchpath), "%s%s%s", browser.dir, romFilename, patchExt[patchtype]);
+		patchsize = LoadFile(patchpath, SILENT);
 
 		if(patchsize)
 			break;
