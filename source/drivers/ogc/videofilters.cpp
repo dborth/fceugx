@@ -143,11 +143,11 @@ static bool invalidate_hashes = true; // Forces a full render on first pass or r
 // 128KB static buffer to hold the raw frame. Aligned to 32 bytes for cache.
 static typename ActiveSrcFormat::Type previousEmuScreen[MAX_HEIGHT * MAX_WIDTH] __attribute__((aligned(32)));
 
-template<int GuiScale> void RenderHQ2X (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height);
-template<int GuiScale> void RenderScale2X (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height);
-template<int GuiScale> void Render2xBR (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height);
-template<int GuiScale> void Render2xBRlv1 (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height);
-template<int GuiScale> void RenderDDT (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height);
+template<int GuiScale> void RenderHQ2X (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height);
+template<int GuiScale> void RenderScale2X (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height);
+template<int GuiScale> void Render2xBR (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height);
+template<int GuiScale> void Render2xBRlv1 (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height);
+template<int GuiScale> void RenderDDT (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height);
 
 const char* GetUpscaleFilterName (int filterID)
 {
@@ -680,7 +680,7 @@ static inline void ProcessHQ2XRow(
 // -------------------------------------------------------------------------
 
 template<int GuiScale>
-void RenderHQ2X (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height) {
+void RenderHQ2X (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height) {
 	if(!isValidDimensions(width, height)) return;
 	
 	// Execute Pre-Pass Deduplication (Combined Exact Compare & Copy)
@@ -893,7 +893,7 @@ static inline void ProcessScale2XRow(
 }
 
 template<int GuiScale>
-void RenderScale2X (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height)
+void RenderScale2X (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height)
 {
 	if(!isValidDimensions(width, height)) return;
 
@@ -1166,7 +1166,7 @@ static inline void Process2XBRRow(
 // Drop-in Replacement Functions
 // -------------------------------------------------------------------------
 template<int GuiScale>
-void Render2xBR (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height)
+void Render2xBR (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height)
 {
     if(!isValidDimensions(width, height)) return;
 
@@ -1194,7 +1194,7 @@ void Render2xBR (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t d
 }
 
 template<int GuiScale>
-void Render2xBRlv1 (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height)
+void Render2xBRlv1 (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height)
 {
     if(!isValidDimensions(width, height)) return;
 
@@ -1383,7 +1383,7 @@ static inline void ProcessDDTRow(
 }
 
 template<int GuiScale>
-void RenderDDT (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t dstPitch, int width, int height)
+void RenderDDT (uint8_t *srcPtr, uint32_t srcPitch, uint8_t *dstPtr, uint32_t, int width, int height)
 {
 	if(!isValidDimensions(width, height)) return;
 

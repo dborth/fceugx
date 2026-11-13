@@ -38,9 +38,9 @@ CORE_WARNFLAGS	:=	-Wall \
 				-Wno-unused-parameter -Wno-write-strings -Wno-stringop-truncation -Wno-sign-compare \
 				-Wno-unused-variable -Wno-parentheses -Wno-unused-function -Wno-switch -Wno-unused-but-set-variable \
 				-Wno-narrowing -Wno-misleading-indentation -Wno-restrict -Wno-maybe-uninitialized -Wno-infinite-recursion \
-				-Wno-array-bounds -Wno-return-type -Wno-volatile
+				-Wno-array-bounds -Wno-return-type
 CORE_CFLAGS	:=	-Wno-incompatible-pointer-types
-CORE_CXXFLAGS	:=	-Wno-register -Wno-catch-value -Wno-class-memaccess
+CORE_CXXFLAGS	:=	-Wno-register -Wno-catch-value -Wno-class-memaccess -Wno-volatile
 
 SHAREDFLAGS	=	-g -O3 $(WARNFLAGS) $(MACHDEP) $(INCLUDE) $(FREETYPE_CFLAGS) \
 				-DFCEUGX \
