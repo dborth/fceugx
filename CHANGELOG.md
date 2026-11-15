@@ -3,6 +3,7 @@
 All notable changes to FCE Ultra GX are recorded here, newest first. For the current features and setup instructions, see [README.md](README.md).
 
 ## Unreleased
+* Rewrite expensive sound filter that was causing us to go over frame budget
 * Fixed some potential startup crash causes
 * Wii U: fixed a brief audio dropout that could happen every 10-15 seconds
 * Fixed a low "puff" sound that could be heard when starting a game

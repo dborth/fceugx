@@ -104,6 +104,40 @@ void SexyFilter(int32 *in, int32 *out, int32 count)
    code to be higher, or you *might* overflow the FIR code.
 */
 
+/* Symmetric FIR evaluated at two adjacent input positions (for the linear
+   interpolation between them).
+
+   The coefficient table is symmetric (coeffs[k] == coeffs[n-1-k]), so taps k
+   and n-1-k share a coefficient and their input samples can be added first,
+   halving the multiplies. Neighbouring iterations also share input samples, so
+   those are carried in registers instead of reloaded. The result differs from
+   the straightforward per-tap sum by at most 1 LSB of output (the >>6 rounding
+   is applied to each pair instead of each tap).
+
+   'base' is the first input sample of the window, n must be even.
+   A product may be up to twice as large as before: inputs must stay below ~44000
+   (the existing "stay below 32767" rule still applies, see above). */
+static inline void FIRPair(const int32 *base, const int32 *coef, uint32 n, int32 &accOut, int32 &acc2Out)
+{
+	int32 acc = 0, acc2 = 0;
+	int32 h1 = base[n + 1];   // base[n-k+1], k = 0
+	int32 l0 = base[1];       // base[k+1],   k = 0
+	const int32 *hi = base + n;     // base[n-k]
+	const int32 *lo = base + 2;     // base[k+2]
+	for (uint32 c = n >> 1; c; c--)
+	{
+		const int32 d = *coef++;
+		const int32 h0 = *hi--;
+		const int32 l1 = *lo++;
+		acc  += ((h0 + l0) * d) >> 6;
+		acc2 += ((h1 + l1) * d) >> 6;
+		h1 = h0;
+		l0 = l1;
+	}
+	accOut = acc;
+	acc2Out = acc2;
+}
+
 int32 NeoFilterSound(int32 *in, int32 *out, uint32 inlen, int32 *leftover)
 {
 	uint32 x;
@@ -120,15 +154,9 @@ int32 NeoFilterSound(int32 *in, int32 *out, uint32 inlen, int32 *leftover)
 	if(FSettings.soundq==2)
         for(x=mrindex;x<max;x+=mrratio)
         {
-			int32 acc=0,acc2=0;
-			unsigned int c;
-			int32 *S,*D;
+			int32 acc,acc2;
 
-			for(c=SQ2NCOEFFS,S=&in[(x>>16)-SQ2NCOEFFS],D=sq2coeffs;c;c--,D++)
-			{
-				acc+=(S[c]**D)>>6;
-				acc2+=(S[1+c]**D)>>6;
-			}
+			FIRPair(&in[(x>>16)-SQ2NCOEFFS],sq2coeffs,SQ2NCOEFFS,acc,acc2);
 
 			acc=((int64)acc*(65536-(x&65535))+(int64)acc2*(x&65535))>>(16+11);
 			*out=acc;
@@ -138,15 +166,9 @@ int32 NeoFilterSound(int32 *in, int32 *out, uint32 inlen, int32 *leftover)
 	else
 		for(x=mrindex;x<max;x+=mrratio)
 		{
-			int32 acc=0,acc2=0;
-			unsigned int c;
-			const int32 *S,*D;
+			int32 acc,acc2;
 
-			for(c=NCOEFFS,S=&in[(x>>16)-NCOEFFS],D=coeffs;c;c--,D++)
-			{
-				acc+=(S[c]**D)>>6;
-				acc2+=(S[1+c]**D)>>6;
-			}
+			FIRPair(&in[(x>>16)-NCOEFFS],coeffs,NCOEFFS,acc,acc2);
 
 			acc=((int64)acc*(65536-(x&65535))+(int64)acc2*(x&65535))>>(16+11);
 			*out=acc;
