@@ -1129,8 +1129,6 @@ void OgcEmulatorVideo::presentFrame(const uint8_t* buffer)
 
 	// render textured quad
 	drawSquare(view);
-	GX_DrawDone();
-
 	videoDriver->presentBuffer();
 }
 
@@ -1171,8 +1169,6 @@ void OgcEmulatorVideo::presentStereoFrame(const uint8_t* bufferLeft, const uint8
 
 	// render textured quad
 	drawSquare(view);
-	GX_DrawDone();
-
 	videoDriver->presentBuffer();
 }
 

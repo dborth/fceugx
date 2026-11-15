@@ -365,7 +365,9 @@ void OgcVideoDriver::waitForBufferReady()
 	}
 	IRQ_Restore(level);
 
-	// Every frame ends with GX_DrawDone() before it is presented, so the GPU is idle here
+	// Make sure the GPU has finished the previous frame before the caller writes
+	// new texture data or frees meshes the GPU may still be reading
+	GX_DrawDone();
 	OgcFreeRetiredMeshes();
 
 	whichfb ^= 1;
