@@ -582,12 +582,26 @@ void FCEU_SoundCPUHook(int cycles)
  }
 }
 
+/* Performance note for RDoPCM/RDoSQ/RDoTriangle/RDoNoise (high quality path):
+   these run over every CPU cycle of the frame, so the work is kept out of the
+   per-cycle loop. The channel output only changes at counter reloads, so the
+   waveform is filled in runs between them, and a run whose value is zero is
+   skipped (adding zero changes nothing). Output is bit-identical to the old
+   per-cycle loops. A counter that is <= 0 on entry never reloads in this frame
+   (the old loop decremented it past zero), which the run code preserves. */
+static INLINE void AddRun(int32 *D, int32 n, int32 value)
+{
+ for(int32 i=0;i<n;i++)
+  D[i]+=value;
+}
+
 void RDoPCM(void)
 {
- uint32 V; //mbg merge 7/17/06 made uint32
+ const uint32 end=SOUNDTS;
+ const int32 pcm=(((RawDALatch<<16)/256) * FSettings.PCMVolume)&(~0xFFFF); // TODO get rid of floating calculations to binary. set log volume scaling.
 
- for(V=ChannelBC[4];V<SOUNDTS;V++)
-  WaveHi[V]+=(((RawDALatch<<16)/256) * FSettings.PCMVolume)&(~0xFFFF); // TODO get rid of floating calculations to binary. set log volume scaling.
+ if(pcm && ChannelBC[4]<end)
+  AddRun(&WaveHi[ChannelBC[4]],(int32)(end-ChannelBC[4]),pcm);
  ChannelBC[4]=SOUNDTS;
 }
 
@@ -632,16 +646,22 @@ static INLINE void RDoSQ(int x)		//Int x decides if this is Square Wave 1 or 2
 
    while(V>0)
    {
-    if(currdc<rthresh)
-     *D+=amp;
-    rc--;
-    if(!rc)
+    int32 n;
+    if(rc<=0) n=V;            // counter never reaches zero in this frame
+    else n=(rc<V)?rc:V;
+
+    if(amp && currdc<rthresh)
+     AddRun(D,n,amp);
+    D+=n;
+    V-=n;
+
+    if(rc>0 && n==rc)         // counter hit zero on the last cycle of the run
     {
      rc=cf;
      currdc=(currdc+1)&7;
     }
-    V--;
-    D++;
+    else
+     rc-=n;
    }
 
    RectDutyCount[x]=currdc;
@@ -779,24 +799,66 @@ static void RDoTriangle(void)
    start++;
   }*/
   int32 cout = (tcout/256*FSettings.TriangleVolume)&(~0xFFFF);
-  for(V=ChannelBC[2];V<SOUNDTS;V++)
-   WaveHi[V]+=cout;
+  const uint32 end=SOUNDTS;
+  if(cout && ChannelBC[2]<end)
+   AddRun(&WaveHi[ChannelBC[2]],(int32)(end-ChannelBC[2]),cout);
  }
  else
-  for(V=ChannelBC[2];V<SOUNDTS;V++)
+ {
+  const uint32 end=SOUNDTS;
+  const int32 reload=(PSG[0xa]|((PSG[0xb]&7)<<8))+1;
+
+  if(reload<8)
   {
+   /* Ultrasonic periods (games use these to silence the channel) reload nearly
+      every cycle, where the plain per-cycle loop is cheaper than run handling. */
+   for(V=ChannelBC[2];V<end;V++)
+   {
     //Modify volume based on channel volume modifiers
-	WaveHi[V]+=(tcout/256*FSettings.TriangleVolume)&(~0xFFFF);  // TODO OPTIMIZE ME!
+    WaveHi[V]+=(tcout/256*FSettings.TriangleVolume)&(~0xFFFF);
     wlcount[2]--;
     if(!wlcount[2])
     {
-     wlcount[2]=(PSG[0xa]|((PSG[0xb]&7)<<8))+1;
+     wlcount[2]=reload;
      tristep++;
      tcout=(tristep&0xF);
      if(!(tristep&0x10)) tcout^=0xF;
      tcout=(tcout*3) << 16;
     }
+   }
   }
+  else
+  {
+   int32 tv=(tcout/256*FSettings.TriangleVolume)&(~0xFFFF);
+   int32 rc=wlcount[2];
+
+   V=ChannelBC[2];
+   while(V<end)
+   {
+    const int32 left=(int32)(end-V);
+    int32 n;
+    if(rc<=0) n=left;
+    else n=(rc<left)?rc:left;
+
+    if(tv)
+     AddRun(&WaveHi[V],n,tv);
+    V+=n;
+
+    if(rc>0 && n==rc)
+    {
+     rc=reload;
+     tristep++;
+     tcout=(tristep&0xF);
+     if(!(tristep&0x10)) tcout^=0xF;
+     tcout=(tcout*3) << 16;
+     tv=(tcout/256*FSettings.TriangleVolume)&(~0xFFFF);
+    }
+    else
+     rc-=n;
+   }
+   wlcount[2]=rc;
+  }
+ }
 
  ChannelBC[2]=SOUNDTS;
 }
@@ -971,42 +1033,41 @@ static void RDoNoise(void)
   outo=amptab[0]=0;
  }
 
- if(PSG[0xE]&0x80)  // "short" noise
-  for(V=ChannelBC[3];V<SOUNDTS;V++)
+ {
+  const uint32 end=SOUNDTS;
+  const int shortNoise=PSG[0xE]&0x80;  // "short" noise
+  const int32 reload=PAL ? NoiseFreqTablePAL[PSG[0xE]&0xF] : NoiseFreqTableNTSC[PSG[0xE]&0xF];
+  int32 rc=wlcount[3];
+
+  V=ChannelBC[3];
+  while(V<end)
   {
-   WaveHi[V]+=outo;
-   wlcount[3]--;
-   if(!wlcount[3])
+   const int32 left=(int32)(end-V);
+   int32 n;
+   if(rc<=0) n=left;
+   else n=(rc<left)?rc:left;
+
+   if(outo)
+    AddRun(&WaveHi[V],n,outo);
+   V+=n;
+
+   if(rc>0 && n==rc)
    {
     uint8 feedback;
-    if(PAL)
-      wlcount[3]=NoiseFreqTablePAL[PSG[0xE]&0xF];
-	else
-      wlcount[3]=NoiseFreqTableNTSC[PSG[0xE]&0xF];
-    feedback=((nreg>>8)&1)^((nreg>>14)&1);
+    rc=reload;
+    if(shortNoise)
+     feedback=((nreg>>8)&1)^((nreg>>14)&1);
+    else
+     feedback=((nreg>>13)&1)^((nreg>>14)&1);
     nreg=(nreg<<1)+feedback;
     nreg&=0x7fff;
     outo=amptab[(nreg>>0xe)&1];
    }
+   else
+    rc-=n;
   }
- else
-  for(V=ChannelBC[3];V<SOUNDTS;V++)
-  {
-   WaveHi[V]+=outo;
-   wlcount[3]--;
-   if(!wlcount[3])
-   {
-    uint8 feedback;
-    if(PAL)
-      wlcount[3]=NoiseFreqTablePAL[PSG[0xE]&0xF];
-	else
-      wlcount[3]=NoiseFreqTableNTSC[PSG[0xE]&0xF];
-    feedback=((nreg>>13)&1)^((nreg>>14)&1);
-    nreg=(nreg<<1)+feedback;
-    nreg&=0x7fff;
-    outo=amptab[(nreg>>0xe)&1];
-   }
-  }
+  wlcount[3]=rc;
+ }
  ChannelBC[3]=SOUNDTS;
 }
 
@@ -1060,10 +1121,19 @@ int FlushEmulateSound(void)
 
    if(GameExpSound.HiFill) GameExpSound.HiFill();
 
+   /* The channel loops leave long runs of identical values, so remember the
+      last conversion instead of doing both table lookups for every cycle. */
+   uint32 lastb=0;
+   int32 lastv=wlookup2[0]+wlookup1[0];
    for(x=soundtimestamp;x;x--)
    {
     uint32 b=*tmpo;
-    *tmpo=(b&65535)+wlookup2[(b>>16)&255]+wlookup1[b>>24];
+    if(b!=lastb)
+    {
+     lastb=b;
+     lastv=(b&65535)+wlookup2[(b>>16)&255]+wlookup1[b>>24];
+    }
+    *tmpo=lastv;
     tmpo++;
    }
    end=NeoFilterSound(WaveHi,WaveFinal,SOUNDTS,&left);
