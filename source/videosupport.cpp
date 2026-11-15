@@ -43,6 +43,7 @@ bool AnaglyphPaletteValid = false; // Has the anaglyph palette below been genera
 static u32 normaldiff;
 static Ticks prev;
 static Ticks now;
+static int behind; // microseconds the emulation is behind real time (carried between frames)
 
 void setFrameTimer()
 {
@@ -51,6 +52,7 @@ void setFrameTimer()
 	else
 		normaldiff = 16667; // 60hz
 	prev = SystemTime::now();
+	behind = 0;
 }
 
 void SyncSpeed()
@@ -65,25 +67,29 @@ void SyncSpeed()
 	//     time there is no video rendering to go with it, so we need some delays.
 
 	now = SystemTime::now();
-	u32 diff = SystemTime::diffMicrosecs(prev, now);
 
-	if(turbomode)
+	// Lateness carries over from frame to frame, so it is paid back exactly once
+	behind += (int)SystemTime::diffMicrosecs(prev, now) - (int)normaldiff;
+	prev = now;
+
+	if(turbomode || behind > 4 * (int)normaldiff)
+		behind = 0; // not limiting speed
+
+	if (behind < 0) // ahead, so hold up
 	{
-		// do nothing
-	}
-	else if (diff > normaldiff)
-	{
-		frameskip++; // In 3D this will be ignored, then reset to 0 when leaving 3D
-	}
-	else // ahead, so hold up
-	{
-		while (SystemTime::diffMicrosecs(prev, now) < normaldiff)
+		const u32 wait = -behind;
+		while (SystemTime::diffMicrosecs(prev, now) < wait)
 		{
 			now = SystemTime::now();
 			usleep(50);
 		}
+		prev = now;
+		behind = 0;
 	}
-	prev = now;
+
+	// A whole frame behind: skip the next frame's video
+	// In 3D this is ignored, and reset to 0 when leaving 3D.
+	frameskip = (behind >= (int)normaldiff);
 }
 
 /****************************************************************************

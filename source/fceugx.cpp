@@ -216,20 +216,8 @@ int main(int, char *[])
 					fskipc++;
 				}
 			}
-			else if(frameskip > 0)
-			{
-				fskip = 1;
-				
-				if(fskipc >= frameskip)
-				{
-					fskipc = 0;
-					fskip = 0;
-				}
-				else
-				{
-					fskipc++;
-				}
-			}
+			else if(frameskip)
+				fskip = 1; // behind real time (set by SyncSpeed)
 
 			Check3D();
 
