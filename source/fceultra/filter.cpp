@@ -138,6 +138,72 @@ static inline void FIRPair(const int32 *base, const int32 *coef, uint32 n, int32
 	acc2Out = acc2;
 }
 
+/* ---- Sparse FIR evaluation --------------------------------------------------
+   The signal fed to the filter is the sum of a few channels that each change
+   only at counter reloads, so it is piecewise constant with long runs. The
+   filter is linear, so a step of size d at position pos in the window adds
+   d * (sum of the coefficients that see the step) to the output. With the prefix
+   sums of the coefficients (firPrefix[m] = sum of the first m coefficients),
+   one output costs one multiply per value change inside the window instead of
+   one per tap:
+
+     F(b) = in[b] * firPrefix[n]  +  sum over changes b < pos <= b+n of
+                                     delta(pos) * firPrefix[b+n+1-pos]
+
+   which equals sum_k coef[k] * in[b+n-k]. The sums are exact (64-bit), shifted
+   down by 6 once at the end, where the direct sum rounds every tap. The two
+   agree to well under 1 LSB of output. Frames with too many changes
+   (e.g. an ultrasonic triangle that changes on every cycle) fall back to the
+   direct FIR, so the worst case costs what it did before. */
+#define MAX_FIR_EVENTS 8192
+
+static uint32 firEvPos[MAX_FIR_EVENTS];    // index of each change
+static int32 firEvDelta[MAX_FIR_EVENTS];   // new value minus previous value
+static int32 firPrefix[SQ2NCOEFFS+2];      // [m] = coef[0]+..+coef[m-1] (exact), [n+1] = 0
+
+/* Lists the value changes in in[1..inlen-1]. Returns -1 if there are more than
+   MAX_FIR_EVENTS (the direct FIR is used then). */
+static int FIRBuildEvents(const int32 *in, uint32 inlen)
+{
+	int n=0;
+	int32 prev=in[0];
+	for(uint32 i=1;i<inlen;i++)
+	{
+		const int32 v=in[i];
+		if(v!=prev)
+		{
+			if(n==MAX_FIR_EVENTS) return -1;
+			firEvPos[n]=i;
+			firEvDelta[n]=(int32)((uint32)v-(uint32)prev);
+			n++;
+			prev=v;
+		}
+	}
+	return n;
+}
+
+/* Same result as FIRPair for the window starting at 'in[b]', n taps.
+   'ei' is the first change after the window start of the previous call (windows
+   only move forward within one NeoFilterSound call). */
+static inline void FIRSparse(const int32 *in, uint32 b, uint32 n, int nev, int &ei, int32 &accOut, int32 &acc2Out)
+{
+	while(ei<nev && firEvPos[ei]<=b) ei++;
+
+	const int64 total=firPrefix[n];
+	int64 a=(int64)in[b]*total;
+	int64 a2=(int64)in[b+1]*total;
+	const uint32 lim=b+n+1;
+	for(int j=ei;j<nev && firEvPos[j]<=lim;j++)
+	{
+		const uint32 r=lim-firEvPos[j];
+		const int64 d=firEvDelta[j];
+		a+=d*firPrefix[r];
+		a2+=d*firPrefix[r+1];
+	}
+	accOut=(int32)(a>>6);
+	acc2Out=(int32)(a2>>6);
+}
+
 int32 NeoFilterSound(int32 *in, int32 *out, uint32 inlen, int32 *leftover)
 {
 	uint32 x;
@@ -151,30 +217,27 @@ int32 NeoFilterSound(int32 *in, int32 *out, uint32 inlen, int32 *leftover)
 //	}
         max=(inlen-1)<<16;
 
-	if(FSettings.soundq==2)
-        for(x=mrindex;x<max;x+=mrratio)
-        {
-			int32 acc,acc2;
+	{
+		const uint32 nco=(FSettings.soundq==2)?SQ2NCOEFFS:NCOEFFS;
+		const int32 *coef=(FSettings.soundq==2)?sq2coeffs:coeffs;
+		const int nev=FIRBuildEvents(in,inlen);
+		int ei=0;
 
-			FIRPair(&in[(x>>16)-SQ2NCOEFFS],sq2coeffs,SQ2NCOEFFS,acc,acc2);
-
-			acc=((int64)acc*(65536-(x&65535))+(int64)acc2*(x&65535))>>(16+11);
-			*out=acc;
-			out++;
-			count++;
-        }
-	else
 		for(x=mrindex;x<max;x+=mrratio)
 		{
 			int32 acc,acc2;
 
-			FIRPair(&in[(x>>16)-NCOEFFS],coeffs,NCOEFFS,acc,acc2);
+			if(nev>=0)
+				FIRSparse(in,(x>>16)-nco,nco,nev,ei,acc,acc2);
+			else
+				FIRPair(&in[(x>>16)-nco],coef,nco,acc,acc2);
 
 			acc=((int64)acc*(65536-(x&65535))+(int64)acc2*(x&65535))>>(16+11);
 			*out=acc;
 			out++;
 			count++;
 		}
+	}
 
 	mrindex=x-max;
 
@@ -228,6 +291,19 @@ void MakeFilters(int32 rate)
  else
   for(x=0;x<NCOEFFS>>1;x++)
    coeffs[x]=coeffs[NCOEFFS-1-x]=tmp[x];
+
+ /* Prefix sums for the sparse FIR (see FIRSparse) */
+ {
+  const int32 *c=(FSettings.soundq==2)?sq2coeffs:coeffs;
+  int64 sum=0;
+  firPrefix[0]=0;
+  for(x=0;x<(int32)nco;x++)
+  {
+   sum+=c[x];
+   firPrefix[x+1]=(int32)sum;
+  }
+  firPrefix[nco+1]=0;
+ }
 
  #ifdef MOO
  /* Some tests involving precision and error. */
