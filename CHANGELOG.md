@@ -6,6 +6,7 @@ All notable changes to FCE Ultra GX are recorded here, newest first. For the cur
 * Fixed some potential startup crash causes
 * Wii U: fixed a brief audio dropout that could happen every 10-15 seconds
 * Fixed a low "puff" sound that could be heard when starting a game
+* Wii/GameCube: audio is now buffered ahead and adapts to timing variation, preventing brief dropouts when a frame is late
 * Updated translations
 * Wii U - ignore unmountable drives, improve handling of blocked threads
 * Other minor fixes and enhancements
