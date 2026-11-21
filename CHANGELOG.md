@@ -2,6 +2,9 @@
 
 All notable changes to FCE Ultra GX are recorded here, newest first. For the current features and setup instructions, see [README.md](README.md).
 
+## Unreleased
+* Fixed ZIP file loading failures (from archives created from some tools), and ZIP load errors are now reported consistently
+
 ## 4.0.5 - November 18, 2026
 * Rewrite expensive sound filter that was causing us to go over frame budget
 * Fixed some potential startup crash causes
