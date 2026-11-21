@@ -597,7 +597,10 @@ static bool IsValidROM()
 				// we need to check the file extension of the first file in the archive
 				zippedFilename = GetFirstZipFilename ();
 
-				if(zippedFilename && strlen(zippedFilename) > 4)
+				if(!zippedFilename)
+					return false;
+
+				if(strlen(zippedFilename) > 4)
 					p = strrchr(zippedFilename, '.');
 				else
 					p = nullptr;
@@ -715,8 +718,6 @@ int BrowserLoadSz()
 		browser.numEntries = szfiles;
 		inSz = true;
 	}
-	else
-		ErrorPrompt("Error opening archive!");
 
 	return szfiles;
 }
@@ -735,7 +736,10 @@ int BrowserLoadFile()
 	int device;
 			
 	if(!FindDevice(browser.dir, &device))
+	{
+		ErrorPrompt("Device not found!");
 		return 0;
+	}
 
 	// check that this is a valid ROM
 	if(!IsValidROM())
@@ -762,9 +766,15 @@ int BrowserLoadFile()
 				}
 
 				if (rom1 == nullptr)
+				{
 					ErrorPrompt("No NES ROMs found in this file.");
+					filesize = 0; // not a game we can load
+				}
 				else if (rom2 != nullptr)
+				{
 					ErrorPrompt("More than one NES ROM found in this file. Only files with one ROM are supported.");
+					filesize = 0; // not a game we can load
+				}
 				else
 				{
 					const void* rom = rom1 + 1;
@@ -787,11 +797,7 @@ int BrowserLoadFile()
 	
 	loadingFile = false;
 
-	if (filesize <= 0)
-	{
-		ErrorPrompt("Error loading game!");
-	}
-	else
+	if (filesize > 0)
 	{
 		// store the filename (w/o ext) - used for Cartridge Save/Snapshot naming
 		StripExt(romFilename, browserList[browser.selIndex].filename);
