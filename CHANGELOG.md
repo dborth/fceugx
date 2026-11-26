@@ -4,6 +4,7 @@ All notable changes to FCE Ultra GX are recorded here, newest first. For the cur
 
 ## Unreleased
 * Fixed ZIP file loading failures (from archives created from some tools), and ZIP load errors are now reported consistently
+* Exiting no longer hangs if a background thread is stuck
 
 ## 4.0.5 - November 18, 2026
 * Rewrite expensive sound filter that was causing us to go over frame budget
